@@ -1,0 +1,848 @@
+/*: ═══════════════════════════════════════════════════════════════
+      TROPE GAMES — Shared UI Styles
+        Contrôle l'apparence de tous les sous-modules Trope Games :
+        bannière horoscope, carte bingo, modal roulette,
+        toast achievements.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🎨 La couleur bordeaux (boutons, bingo)
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-tg-color-primary
+
+        ├─  🎨 La couleur violette (horoscope, stats)
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-tg-color-accent
+
+        ├─  🔲 Les coins arrondis des panneaux
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-tg-radius
+
+        ├─  📐 La position des boutons flottants
+        │     → SECTION 05 — BOUTONS TRIGGER FLOTTANTS
+        │     → variable : right dans .ao3h-tg-roulette/stats/ach-trigger
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Horoscope banner                          */
+/*#        |                                                 */
+/*####     ├─  02. Bingo card                                */
+/*#        |                                                 */
+/*=        ├─  03. Roulette modal                            */
+/*#        |                                                 */
+/*==       ├─  04. Achievement toast                         */
+/*#        |                                                 */
+/*===      ├─  05. Boutons trigger flottants (partagé)       */
+/*#        |                                                 */
+/*====     ├─  06. Achievements panel                        */
+/*#        |                                                 */
+/*++       ├─  07. Statistics panel                          */
+/*#        |                                                 */
+/*--       ├─  08. Bingo patterns info                       */
+/*#        |                                                 */
+/*---      ├─  09. Roulette trigger & tagline                */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##    
+  ═══════════════════════════════════════════════════════════════════════   
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Tu peux changer :
+      - La couleur bordeaux des boutons et du bingo
+      - La couleur violette de l'horoscope
+      - L'arrondi des panneaux
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🎨 Couleur principale — boutons, bingo, bordures */
+  --ao3h-tg-color-primary: #900;
+
+  /*- 🎨 Couleur accent violette — horoscope, stats, roulette */
+  --ao3h-tg-color-accent: #4a1a6e;
+
+  /*- 🎨 Couleur accent violette claire */
+  --ao3h-tg-color-accent-light: #a040c8;
+
+  /*- 🔲 Arrondi des panneaux */
+  --ao3h-tg-radius: 10px;
+
+  /*- 📐 Z-index bingo card */
+  --ao3h-tg-z-bingo: 8000;
+
+  /*- 📐 Z-index modal roulette */
+  --ao3h-tg-z-modal: 9500;
+
+  /*- 📐 Z-index achievement toast */
+  --ao3h-tg-z-toast: 10002;
+}
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — HOROSCOPE BANNER
+  ───────────────────────────────────────────────────────────────────────
+    Bannière dégradée affichée sur la page d'accueil.
+    À l'écran :
+      ┌─────────────────────────────────────────────────────┐
+      │ 🔮  Slow Burn                            [✕]        │
+      │      Votre trope du jour                            │
+      └─────────────────────────────────────────────────────┘
+    ⚠️ La bannière est cliquable — le curseur pointer est intentionnel.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BANNIÈRE PRINCIPALE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-horoscope-banner {
+  background: linear-gradient(135deg, #4a1a6e 0%, #7b2fa8 60%, #a040c8 100%);
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 8px;
+  margin: 10px 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.92em;
+  box-shadow: 0 2px 8px rgba(100,0,160,.25);
+  position: relative;
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+
+.ao3h-tg-horoscope-banner:hover  { transform: scale(1.02); }
+.ao3h-tg-horoscope-banner:active { transform: scale(0.95); }
+
+.ao3h-tg-horoscope-banner .ao3h-tg-horo-icon {
+  font-size: 1.6em;
+  flex-shrink: 0;
+}
+
+.ao3h-tg-horoscope-banner .ao3h-tg-horo-label {
+  font-size: 0.75em;
+  opacity: .7;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.ao3h-tg-horoscope-banner .ao3h-tg-horo-trope {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.ao3h-tg-horoscope-banner .ao3h-tg-horo-tagline {
+  opacity: .85;
+  font-style: italic;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON FERMER (DISMISS)
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-horo-dismiss {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.5);
+  font-size: 1em;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.ao3h-tg-horo-dismiss:hover { color: #fff; }
+
+
+/*####   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — BINGO CARD
+  ───────────────────────────────────────────────────────────────────────
+    Carte 5×5 flottante en bas à droite. Cochée automatiquement
+    d'après les tags des œuvres visitées.
+    À l'écran :
+      ┌──────────────────────┐
+      │ 🎴 TROPE BINGO  [✕]  │
+      │ ┌──┬──┬──┬──┬──┐    │
+      │ │  │  │  │✓ │  │    │
+      │ └──┴──┴──┴──┴──┘    │
+      └──────────────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    PANNEAU PRINCIPAL
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-bingo-wrap {
+  position: fixed;
+  bottom: 60px;
+  right: 16px;
+  z-index: var(--ao3h-tg-z-bingo);
+  background: #fff;
+  border: 2px solid var(--ao3h-tg-color-primary);
+  border-radius: var(--ao3h-tg-radius);
+  padding: 10px 10px 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+  width: 260px;
+}
+
+.ao3h-tg-bingo-title {
+  font-weight: bold;
+  font-size: .82em;
+  color: var(--ao3h-tg-color-primary);
+  margin-bottom: 6px;
+  text-align: center;
+  letter-spacing: .05em;
+  padding-right: 18px;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    GRILLE ET CELLULES
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-bingo-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+}
+
+.ao3h-tg-bingo-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.52em;
+  text-align: center;
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 2px;
+  line-height: 1.2;
+  transition: background .15s;
+  word-break: break-word;
+  hyphens: auto;
+  overflow: hidden;
+}
+
+/*- Cellule cochée */
+.ao3h-tg-bingo-cell.ao3h-tg-checked {
+  background: #e0ffe0;
+  border-color: #080;
+  color: #040;
+}
+
+/*- Case centrale FREE */
+.ao3h-tg-bingo-cell.ao3h-tg-free {
+  background: #f0e0ff;
+  border-color: #800080;
+  font-weight: bold;
+  font-size: 0.62em;
+}
+
+/*- Cellule dans un pattern gagnant */
+.ao3h-tg-bingo-cell.ao3h-tg-pattern {
+  background: linear-gradient(135deg, #ffe080, #ffc040);
+  border-color: #b08800;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTONS ET CONTRÔLES
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-bingo-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  justify-content: center;
+}
+
+/*- Bouton générique partagé par tous les sous-modules */
+.ao3h-tg-btn {
+  font-size: .75em;
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--ao3h-tg-color-primary);
+  color: var(--ao3h-tg-color-primary);
+  background: transparent;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.ao3h-tg-btn:hover {
+  background: var(--ao3h-tg-color-primary);
+  color: #fff;
+}
+
+/*- Bouton fermer la carte bingo */
+.ao3h-tg-bingo-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: .85em;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/*- Bouton toggle flottant pour afficher/masquer la carte */
+.ao3h-tg-bingo-toggle {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: calc(var(--ao3h-tg-z-bingo) + 1);
+  background: var(--ao3h-tg-color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: .8em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+
+.ao3h-tg-bingo-toggle:hover { background: #700; }
+
+
+/*=   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — ROULETTE MODAL
+  ───────────────────────────────────────────────────────────────────────
+    Modal centré sur fond semi-transparent. Affiche 3 tropes aléatoires.
+    À l'écran :
+      ┌──────────────────────────────┐
+      │  🎲 Trope Roulette      [✕]  │
+      │  ╭──────────────────╮        │
+      │  │  Slow Burn        │        │
+      │  │  Fake Dating      │        │
+      │  │  Hurt/Comfort     │        │
+      │  ╰──────────────────╯        │
+      └──────────────────────────────┘
+    ⚠️ display:none/flex contrôlé en JS (openModal/closeModal).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BACKDROP ET CONTENEUR
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-roulette-modal {
+  /*- ⚠️ display basculé par JS (flex / none) */
+  position: fixed;
+  inset: 0;
+  z-index: var(--ao3h-tg-z-modal);
+  background: rgba(0,0,0,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ao3h-tg-roulette-inner {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  min-width: 300px;
+  max-width: 420px;
+  width: 90vw;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  position: relative;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    CONTENU
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-roulette-title {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: var(--ao3h-tg-color-primary);
+  margin-bottom: 16px;
+}
+
+.ao3h-tg-roulette-tropes {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+}
+
+.ao3h-tg-roulette-tropes li {
+  background: #f5f0ff;
+  border: 1px solid #c0a0e0;
+  border-radius: 20px;
+  padding: 7px 16px;
+  margin: 6px 0;
+  font-size: .95em;
+  font-weight: bold;
+  color: var(--ao3h-tg-color-accent);
+}
+
+.ao3h-tg-roulette-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ao3h-tg-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 1.1em;
+  color: #999;
+  cursor: pointer;
+}
+
+.ao3h-tg-modal-close:hover { color: #333; }
+
+
+/*==   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — ACHIEVEMENT TOAST
+  ───────────────────────────────────────────────────────────────────────
+    Notification flottante dorée qui s'affiche brièvement en haut à droite.
+    À l'écran :
+      ┌──────────────────────────────────┐
+      │  🏅  (icône)                     │
+      │  🎉 Achievement Unlocked!        │
+      │  Titre du badge                  │
+      │  Description courte             │
+      └──────────────────────────────────┘
+    ⚠️ Les animations keyframes doivent correspondre
+       au nom de classe généré par JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    TOAST PRINCIPAL
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-achievement-toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: var(--ao3h-tg-z-toast);
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #3a2000;
+  padding: 16px 20px;
+  border-radius: var(--ao3h-tg-radius);
+  width: 300px;
+  text-align: center;
+  border: 3px solid #DAA520;
+  box-shadow: 0 4px 16px rgba(180,120,0,.4);
+  animation: ao3h-tg-ach-slide .3s ease, ao3h-tg-ach-pulse 1s ease .5s;
+}
+
+@keyframes ao3h-tg-ach-slide {
+  from { opacity: 0; transform: translateX(60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes ao3h-tg-ach-pulse {
+  0%   { box-shadow: 0 4px 16px rgba(180,120,0,.4); }
+  50%  { box-shadow: 0 4px 28px rgba(220,160,0,.8); }
+  100% { box-shadow: 0 4px 16px rgba(180,120,0,.4); }
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    ICÔNE ANIMÉE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-ach-icon {
+  display: inline-block;
+  animation: ao3h-tg-ach-bounce .6s ease;
+}
+
+@keyframes ao3h-tg-ach-bounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.3); }
+  60%  { transform: scale(.9); }
+  100% { transform: scale(1); }
+}
+
+
+/*===   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — BOUTONS TRIGGER FLOTTANTS (partagé)
+  ───────────────────────────────────────────────────────────────────────
+    Boutons fixes en bas de l'écran qui ouvrent les panneaux
+    Roulette, Statistics et Achievements.
+    À l'écran :
+      ──────────────────────────────────────────────────────
+      [ 🎲 Roulette ]  [ 📊 Stats ]  [ 🏅 Achievements ]
+      ──────────────────────────────────────────────────────
+    ⚠️ La position `right` de chaque bouton est définie dans
+       sa propre classe (sections 03, 07, 06).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    STYLES COMMUNS AUX 3 TRIGGERS
+  ───────────────────────────────────────────────────────────── */
+
+/*- ⚠️ Complète .ao3h-tg-btn — remplace background, padding et border-radius */
+.ao3h-tg-trigger-btn {
+  position: fixed;
+  bottom: 52px;
+  z-index: 8002;
+  padding: 6px 12px;
+  border-radius: 18px;
+  background: #fff;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    POSITION INDIVIDUELLE (right) PAR SOUS-MODULE
+  ───────────────────────────────────────────────────────────── */
+
+/*- Bouton Roulette */
+.ao3h-tg-roulette-trigger  { right: 90px; }
+
+/*- Bouton Statistics */
+.ao3h-tg-stats-trigger     { right: 180px; }
+
+/*- Bouton Achievements */
+.ao3h-tg-ach-trigger       { right: 256px; }
+
+
+/*====   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — ACHIEVEMENTS PANEL
+  ───────────────────────────────────────────────────────────────────────
+    Panneau flottant listant tous les badges et leur état.
+    À l'écran :
+      ┌──────────────────────────────┐
+      │ 🏅 Achievements (3/9)  [✕]   │
+      │ ✅ 🌱 First Steps             │
+      │    Read a work tagged…        │
+      │ ☐  📚 Trope Curious           │
+      │    Read 10 works…             │
+      └──────────────────────────────┘
+    ⚠️ display:block/none contrôlé par JS (openPanel/close).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    PANNEAU
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-ach-panel {
+  position: fixed;
+  bottom: 100px;
+  right: 16px;
+  z-index: 8004;
+  background: #fff;
+  border: 2px solid var(--ao3h-tg-color-accent);
+  border-radius: var(--ao3h-tg-radius);
+  padding: 14px;
+  width: 260px;
+  max-height: 400px;
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    EN-TÊTE DU PANNEAU
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-ach-panel-header {
+  font-weight: bold;
+  font-size: .85em;
+  color: var(--ao3h-tg-color-accent);
+  margin-bottom: 10px;
+}
+
+/*- Bouton fermer le panneau achievements */
+.ao3h-tg-ach-close {
+  float: right;
+  background: none;
+  border: none;
+  font-size: .9em;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.ao3h-tg-ach-close:hover { color: #333; }
+
+
+/*+ ───────────────────────────────────────────────────────────
+    LIGNES D'ACHIEVEMENTS (dans le panneau)
+  ───────────────────────────────────────────────────────────── */
+
+/*- Verrouillé par défaut (non débloqué) — classe .is-done ajoutée par JS */
+.ao3h-tg-ach-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 6px 0;
+  opacity: .35;
+}
+
+.ao3h-tg-ach-row.is-done {
+  opacity: 1;
+}
+
+.ao3h-tg-ach-row-icon {
+  font-size: 1.1em;
+}
+
+.ao3h-tg-ach-row-title {
+  font-size: .8em;
+  font-weight: bold;
+  color: #333;
+}
+
+.ao3h-tg-ach-row.is-done .ao3h-tg-ach-row-title {
+  color: #4a1a6e;
+}
+
+.ao3h-tg-ach-row-desc {
+  font-size: .72em;
+  opacity: .8;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    CONTENU DU TOAST (dans .ao3h-tg-achievement-toast)
+  ───────────────────────────────────────────────────────────── */
+
+/*- Ajoute cursor:pointer au toast (cliquable pour fermer) */
+.ao3h-tg-achievement-toast {
+  cursor: pointer;
+}
+
+/*- Icône du badge dans le toast */
+.ao3h-tg-ach-icon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+/*- Ligne "🎉 Achievement Unlocked!" */
+.ao3h-tg-ach-subtitle {
+  font-size: .78em;
+  opacity: .85;
+  margin-bottom: 4px;
+}
+
+/*- Titre du badge dans le toast */
+.ao3h-tg-ach-title-text {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+/*- Description du badge dans le toast */
+.ao3h-tg-ach-desc-text {
+  font-size: 13px;
+  opacity: .9;
+}
+
+
+/*++   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 07 — STATISTICS PANEL
+  ───────────────────────────────────────────────────────────────────────
+    Panneau flottant affichant les top tropes lus avec barres de progression.
+    À l'écran :
+      ┌──────────────────────────────────┐
+      │ 📊 Top Tropes              [✕]   │
+      │ 🔥 3-day reading streak!         │
+      │ Slow Burn      ████████░░  (12)  │
+      │ Enemies to Lovers  ██████░  (8)  │
+      │  [Export JSON]  [Export CSV]     │
+      └──────────────────────────────────┘
+    ⚠️ display:block/none contrôlé par JS.
+    ⚠️ La largeur des barres est calculée et injectée par JS (width:X%).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    PANNEAU
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-stats-panel {
+  position: fixed;
+  bottom: 100px;
+  right: 16px;
+  z-index: 8003;
+  background: #fff;
+  border: 2px solid var(--ao3h-tg-color-accent);
+  border-radius: var(--ao3h-tg-radius);
+  padding: 14px;
+  width: 240px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    EN-TÊTE DU PANNEAU
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-stats-header {
+  font-weight: bold;
+  font-size: .85em;
+  color: var(--ao3h-tg-color-accent);
+  margin-bottom: 6px;
+}
+
+/*- Bouton fermer le panneau statistiques */
+.ao3h-tg-stats-close {
+  float: right;
+  background: none;
+  border: none;
+  font-size: .9em;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.ao3h-tg-stats-close:hover { color: #333; }
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BANNIÈRE DE STREAK
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-stats-streak {
+  font-size: .75em;
+  color: #b06000;
+  margin-bottom: 8px;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    LIGNES DE TROPES (barres de progression)
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-stats-row {
+  margin: 4px 0;
+}
+
+.ao3h-tg-stats-row-label {
+  font-size: .78em;
+  margin-bottom: 2px;
+}
+
+.ao3h-tg-stats-row-count {
+  opacity: .6;
+}
+
+.ao3h-tg-stats-bar-bg {
+  height: 6px;
+  background: #e8e8e8;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+/*- ⚠️ width injectée dynamiquement par JS en fonction du count */
+.ao3h-tg-stats-bar-fill {
+  height: 100%;
+  background: var(--ao3h-tg-color-accent-light);
+  border-radius: 3px;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    ÉTAT VIDE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-stats-empty {
+  font-size: .8em;
+  opacity: .6;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTONS D'EXPORT
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-stats-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+/*- Réduction de font-size pour les boutons export (override .ao3h-tg-btn) */
+.ao3h-tg-stats-export-json,
+.ao3h-tg-stats-export-csv {
+  font-size: .7em;
+}
+
+
+/*--   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 08 — BINGO PATTERNS INFO
+  ───────────────────────────────────────────────────────────────────────
+    Zone de texte affichée sous la carte bingo lors du clic sur
+    "Export Patterns".
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-tg-bingo-patterns-info {
+  margin-top: 8px;
+  font-size: .72em;
+  color: #333;
+  text-align: center;
+}
+
+
+/*---   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 09 — ROULETTE TRIGGER & TAGLINE
+  ───────────────────────────────────────────────────────────────────────
+    Complète la Section 03 — styles spécifiques manquants.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*- Sous-titre dans la modal roulette ("Feeling adventurous?") */
+.ao3h-tg-roulette-tagline {
+  font-size: .82em;
+  opacity: .8;
+  margin: 0 0 12px;
+}

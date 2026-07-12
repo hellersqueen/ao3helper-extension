@@ -1,0 +1,61 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+
+   AO3 Helper — Fic Actions Module
+   Navigate & Interact > ficActions
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Button visibility & reorganization ────────────────────────────────── */
+
+html.ao3h-hide-share     #main .work.navigation li.share     { display: none; }
+html.ao3h-hide-bookmark  #main .work.navigation li.bookmark  { display: none; }
+html.ao3h-hide-subscribe #main .work.navigation li.subscribe { display: none; }
+html.ao3h-better-buttons #main .work.navigation {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+html.ao3h-better-buttons #main .work.navigation .subscribe,
+html.ao3h-better-buttons #main .work.navigation .bookmark {
+  flex: 0 0 auto;
+}
+
+/* ── Drag handles ───────────────────────────────────────────────────────── */
+
+.ao3h-drag-handle {
+  cursor: grab;
+  color: #999;
+  font-size: 0.9em;
+  margin-right: 4px;
+  user-select: none;
+  display: inline-block;
+}
+.ao3h-drag-handle:active { cursor: grabbing; }
+li.ao3h-dragging { opacity: 0.4; }
+
+/* ── Quick subscribe button (listings) ─────────────────────────────────── */
+
+.ao3h-quick-subscribe {
+  font-size: 0.78em;
+  background: none;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  padding: 1px 6px;
+  cursor: pointer;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ── Subscription status badge ─────────────────────────────────────────── */
+
+.ao3h-sub-badge {
+  font-size: 0.75em;
+  color: #900;
+  background: #fff0f0;
+  border: 1px solid #900;
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+}

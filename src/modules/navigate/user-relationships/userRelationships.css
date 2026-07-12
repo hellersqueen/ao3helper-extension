@@ -1,0 +1,202 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+
+   AO3 Helper — User Relationships Module
+   Navigate & Interact > userRelationships
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── authorBlocking — Hidden work placeholders ──────────────────────────── */
+
+.ao3h-blocked-work {
+  background: #f0f0f0;
+  color: #888;
+  font-style: italic;
+  padding: 0.4em 0.8em;
+  border-radius: 3px;
+  margin: 0.3em 0;
+}
+.ao3h-reveal-btn {
+  margin-left: 0.6em;
+  font-size: 0.85em;
+  cursor: pointer;
+  font-style: normal;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 2px;
+  padding: 1px 6px;
+}
+.ao3h-hide-again-btn {
+  display: block;
+  margin: 0.3em 0 0.5em;
+  font-size: 0.85em;
+  cursor: pointer;
+  border: 1px solid #c00;
+  color: #c00;
+  border-radius: 2px;
+  padding: 1px 6px;
+  background: #fff;
+}
+
+/* ── authorPreference — Author preference controls ──────────────────────── */
+
+.ao3h-hidden-author-blurb {
+  background: #f5f5f5;
+  color: #888;
+  font-style: italic;
+  padding: 0.4em 0.8em;
+  border-radius: 3px;
+  margin: 0.3em 0;
+}
+.ao3h-author-pref-controls {
+  margin-left: 0.5em;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+.ao3h-author-pref-btn {
+  padding: 1px 6px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 3px;
+  margin-right: 3px;
+}
+.ao3h-author-pref-read {
+  color: #666;
+  font-size: 0.9em;
+}
+
+/* ── authorTracking — Author activity badges ────────────────────────────── */
+
+.ao3h-author-new-works {
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 4px;
+  padding: 0.5em 1em;
+  margin: 0.5em 0;
+  color: #2e7d32;
+  font-weight: bold;
+}
+.ao3h-author-tracking-badges {
+  margin-left: 0.4em;
+  font-size: 0.8em;
+}
+.ao3h-tracking-star {
+  color: #e6ac00;
+  margin-right: 2px;
+}
+.ao3h-tracking-note-icon {
+  cursor: help;
+  margin-right: 2px;
+}
+
+/* ── blockingInterface — Context menu ───────────────────────────────────── */
+
+.ao3h-user-context-menu {
+  position: fixed;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .2);
+  z-index: 10000;
+  padding: 4px 0;
+  min-width: 170px;
+  font-family: inherit;
+  font-size: 14px;
+}
+.ao3h-user-context-menu-item {
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ao3h-user-context-menu-item:hover {
+  background: #f5f5f5;
+}
+
+/* ── blocklistManagement — Blocklist manager panel ──────────────────────── */
+
+#ao3h-blocklist-manager {
+  margin: 1em 0;
+  padding: 1em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fafafa;
+  max-width: 600px;
+  font-size: 0.9em;
+}
+#ao3h-blocklist-manager h4 {
+  margin: 0 0 0.8em;
+  font-size: 1em;
+  font-weight: bold;
+}
+#ao3h-bl-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.8em;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background: #fff;
+}
+.ao3h-bl-controls {
+  display: flex;
+  gap: 0.4em;
+  flex-wrap: wrap;
+  align-items: center;
+}
+#ao3h-bl-input {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.3em 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+#ao3h-blocklist-manager button,
+.ao3h-bl-label {
+  padding: 0.3em 0.7em;
+  cursor: pointer;
+}
+.ao3h-bl-label {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+}
+#ao3h-bl-import { display: none; }
+#ao3h-bl-clear  { color: #900; }
+.ao3h-bl-empty {
+  padding: 0.4em 0.8em;
+  color: #888;
+  font-style: italic;
+}
+.ao3h-bl-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25em 0.8em;
+  border-bottom: 1px solid #eee;
+}
+.ao3h-bl-remove-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #900;
+  font-size: 0.85em;
+}
+
+/* ── commentHiding — Hidden comment / note placeholders ─────────────────── */
+
+.ao3h-hidden-comment {
+  background: #f0f0f0;
+  color: #888;
+  font-style: italic;
+  padding: 0.4em 0.8em;
+  border-radius: 3px;
+  margin: 0.5em 0;
+}
+.ao3h-hidden-note {
+  background: #f0f0f0;
+  color: #888;
+  font-style: italic;
+  padding: 0.3em 0.6em;
+  border-radius: 3px;
+}

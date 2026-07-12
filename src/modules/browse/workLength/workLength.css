@@ -1,0 +1,137 @@
+/*: ═══════════════════════════════════════════════════════════════
+      WORK LENGTH — Injected UI Styles
+        Contrôle l'apparence des badges injectés par le module
+        Work Length : badge de temps de lecture et badge de longueur/catégorie.
+    ────────────────────────────────────────────────────────────── */
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  01. Badge de temps de lecture                 */
+/*#        |                                                 */
+/*###      ├─  02. Temps par chapitre                        */
+/*#        |                                                 */
+/*####     ├─  03. Badge de longueur/catégorie               */
+/*#        |                                                 */
+/*=        ├─  04. Catégorie abrégée dans le badge           */
+/*#        |                                                 */
+/*==       ├─  05. Badge équivalent en pages                 */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — BADGE DE TEMPS DE LECTURE
+  ───────────────────────────────────────────────────────────────────────
+    Le petit badge violet injecté à côté du nombre de mots.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-wl-time {
+  display: inline-block;
+  padding: 2px 6px;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-left: 4px;
+  color: #5b21b6;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — TEMPS PAR CHAPITRE
+  ───────────────────────────────────────────────────────────────────────
+    Le texte de temps estimé injecté dans la liste des chapitres.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-wl-chapter-time {
+  font-size: 11px;
+  color: #6b7280;
+  margin-left: 8px;
+}
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — BADGE DE LONGUEUR/CATÉGORIE
+  ───────────────────────────────────────────────────────────────────────
+    Le badge bleu clair indiquant la catégorie de longueur (Short, Medium…).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-wl-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #f0f7ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-left: 6px;
+  color: #1e40af;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — CATÉGORIE ABRÉGÉE DANS LE BADGE
+  ───────────────────────────────────────────────────────────────────────
+    Le préfixe en gras à l'intérieur du badge (ex. « Short »).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-wl-cat { font-weight: bold; margin-right: 4px; }
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — BADGE ÉQUIVALENT EN PAGES
+  ───────────────────────────────────────────────────────────────────────
+    Le badge jaune pâle indiquant le nombre de pages estimé.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-wl-pages {
+  display: inline-block;
+  padding: 2px 6px;
+  background: #fefce8;
+  border: 1px solid #fde68a;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-left: 4px;
+  color: #92400e;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — COULEURS DES CATÉGORIES DE LONGUEUR
+  ───────────────────────────────────────────────────────────────────────
+    Couleur du texte par catégorie dans le badge de longueur.
+    ⚠️ Liées au JavaScript : les slugs sont générés par getDynamicCategory()
+       dans lengthDisplay.js.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-wl-cat--short {
+  /*- 🟢 Vert — Short story */
+  color: #16a34a;
+}
+
+.ao3h-wl-cat--novella {
+  /*- 🔵 Bleu — Novella */
+  color: #2563eb;
+}
+
+.ao3h-wl-cat--novel {
+  /*- 🟠 Orange — Novel */
+  color: #ea580c;
+}

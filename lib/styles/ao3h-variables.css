@@ -1,0 +1,129 @@
+/* ============================================================
+   AO3 Helper
+   Global Design Tokens / Variables
+   ============================================================ */
+
+:root {
+
+  /* ==========================================================
+     AO3 COLORS
+     ========================================================== */
+
+  --ao3h-red: #900;
+  --ao3h-red-dark: #700;
+  --ao3h-red-light: #b22222;
+
+  --ao3h-text: #2a2a2a;
+  --ao3h-text-dark: #111;
+  --ao3h-text-light: #666;
+  --ao3h-text-muted: #888;
+
+  --ao3h-bg: #ffffff;
+  --ao3h-bg-soft: #f3efec;
+  --ao3h-bg-panel: #ededed;
+  --ao3h-bg-hover: #f8f8f8;
+  --ao3h-bg-disabled: #f0f0f0;
+
+  --ao3h-border: #bbb;
+  --ao3h-border-light: #ddd;
+  --ao3h-border-soft: #f3efec;
+
+  /* ==========================================================
+     STATUS COLORS
+     ========================================================== */
+
+  --ao3h-success: #2d7d46;
+  --ao3h-success-bg: #edf8f0;
+
+  --ao3h-warning: #856404;
+  --ao3h-warning-bg: #fff3cd;
+  --ao3h-warning-border: #d6b656;
+
+  --ao3h-error: #8b0000;
+  --ao3h-error-bg: #fbeaea;
+  --ao3h-error-border: #dca7a7;
+
+  --ao3h-info: #0f4c81;
+  --ao3h-info-bg: #eef6fd;
+  --ao3h-info-border: #a8c7e6;
+
+  /* ==========================================================
+     TYPOGRAPHY
+     ========================================================== */
+
+  --ao3h-font:
+    "Lucida Grande",
+    "Lucida Sans Unicode",
+    Verdana,
+    Helvetica,
+    sans-serif,
+    "GNU Unifont";
+
+  --ao3h-heading-font:
+    Georgia,
+    serif;
+
+  --ao3h-font-xs: 0.75rem;
+  --ao3h-font-sm: 0.857rem;
+  --ao3h-font-md: 1rem;
+  --ao3h-font-lg: 1.143rem;
+  --ao3h-font-xl: 1.286rem;
+  --ao3h-font-xxl: 1.714rem;
+
+  /* ==========================================================
+     SPACING
+     ========================================================== */
+
+  --ao3h-space-1: 0.25rem;
+  --ao3h-space-2: 0.5rem;
+  --ao3h-space-3: 0.75rem;
+  --ao3h-space-4: 1rem;
+  --ao3h-space-5: 1.5rem;
+  --ao3h-space-6: 2rem;
+
+  /* ==========================================================
+     BORDER RADIUS
+     ========================================================== */
+
+  --ao3h-radius-sm: 4px;
+  --ao3h-radius-md: 6px;
+  --ao3h-radius-lg: 10px;
+
+  /* ==========================================================
+     SHADOWS
+     ========================================================== */
+
+  --ao3h-shadow-sm:
+    1px 1px 3px rgba(0,0,0,0.15);
+
+  --ao3h-shadow-md:
+    0 3px 8px rgba(0,0,0,0.18);
+
+  --ao3h-shadow-inset:
+    inset 1px 1px 3px rgba(0,0,0,0.12);
+
+  /* ==========================================================
+     Z-INDEX
+     ========================================================== */
+
+  --ao3h-z-dropdown: 9000;
+  --ao3h-z-popover: 9500;
+  --ao3h-z-modal: 10000;
+  --ao3h-z-toast: 11000;
+
+  /* ==========================================================
+     ANIMATION
+     ========================================================== */
+
+  --ao3h-speed-fast: 120ms;
+  --ao3h-speed-normal: 200ms;
+  --ao3h-speed-slow: 300ms;
+
+  /* ==========================================================
+     FOCUS
+     ========================================================== */
+
+  --ao3h-focus-outline:
+    1px dotted var(--ao3h-red);
+
+}

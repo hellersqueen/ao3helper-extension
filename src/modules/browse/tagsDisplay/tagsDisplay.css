@@ -1,0 +1,195 @@
+/*: ═══════════════════════════════════════════════════════════════
+      TAGS DISPLAY — Injected UI Styles
+        Contrôle l'apparence de tous les éléments injectés par le
+        module Tags Display et ses sous-modules.
+    ────────────────────────────────────────────────────────────── */
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  01. Archive warnings — icônes compactes       */
+/*#        |                                                 */
+/*###      ├─  02. Auto-hide noise tags                      */
+/*#        |                                                 */
+/*####     ├─  03. Compact mode (tags/summary au survol)     */
+/*#        |                                                 */
+/*=        ├─  04. Tag highlighting — menu de couleur        */
+/*#        |                                                 */
+/*==       ├─  05. Tags reordering — drag & drop             */
+/*#        |                                                 */
+/*===      ├─  06. Tags visibility — boutons show more/less  */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — ARCHIVE WARNINGS — ICÔNES COMPACTES
+  ───────────────────────────────────────────────────────────────────────
+    Styles pour les icônes compactes qui remplacent le texte des
+    avertissements d'archive (CNTW, Violence, etc.).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-warning-icon {
+  font-size: 1.1em;
+  cursor: help;
+  display: inline-block;
+  padding: 0 2px;
+  transition: transform 0.15s ease;
+}
+
+.ao3h-warning-icon:hover,
+.ao3h-warning-icon:focus          { transform: scale(1.2); outline: none; }
+
+.ao3h-warning-icon:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.ao3h-warning-compact { text-decoration: none !important; }
+.ao3h-warning-cntw    { font-weight: bold; }
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — AUTO-HIDE NOISE TAGS
+  ───────────────────────────────────────────────────────────────────────
+    Masque les tags "bruit" quand le filtre est actif.
+    ⚠️ Déclenchée par la classe JS sur <html>. Ne pas supprimer.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+html.ao3h-noise-filter-on .ao3h-noise-tag-hidden { display: none !important; }
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — COMPACT MODE (TAGS/SUMMARY AU SURVOL)
+  ───────────────────────────────────────────────────────────────────────
+    Réduit les tags et le résumé par défaut ; les révèle au survol/focus.
+    ⚠️ Déclenchée par la classe JS sur <html>. Ne pas supprimer.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+html.ao3h-compact-mode-on .blurb .tags,
+html.ao3h-compact-mode-on .blurb .summary {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  opacity: 0.3;
+}
+
+html.ao3h-compact-mode-on .blurb:hover .tags,
+html.ao3h-compact-mode-on .blurb:hover .summary,
+html.ao3h-compact-mode-on .blurb:focus-within .tags,
+html.ao3h-compact-mode-on .blurb:focus-within .summary {
+  max-height: 500px;
+  opacity: 1;
+}
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — TAG HIGHLIGHTING — MENU DE COULEUR
+  ───────────────────────────────────────────────────────────────────────
+    Le petit menu flottant qui apparaît sur clic d'un tag pour
+    choisir une couleur de surlignage.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-tag-hl-menu {
+  position: fixed;
+  z-index: 10001;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.ao3h-tag-hl-menu button {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform .1s;
+}
+
+.ao3h-tag-hl-menu button:hover { transform: scale(1.25); }
+
+.ao3h-tag-hl-menu .ao3h-hl-remove {
+  width: auto;
+  height: auto;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 11px;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — TAGS REORDERING — DRAG & DROP
+  ───────────────────────────────────────────────────────────────────────
+    Styles pour la poignée de drag, les états dragging/drag-over,
+    et le bouton "Reset order".
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-drag-handle {
+  cursor: grab;
+  color: #aaa;
+  font-size: 0.7em;
+  letter-spacing: -1px;
+  margin-right: 3px;
+  user-select: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.ao3h-drag-handle:active { cursor: grabbing; }
+
+.ao3h-dragging  { opacity: 0.4; }
+.ao3h-drag-over { outline: 2px dashed #888; outline-offset: 1px; }
+
+.ao3h-tags-reset-order {
+  font-size: 0.8em;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 1px 6px;
+  cursor: pointer;
+  margin-top: 2px;
+  display: block;
+  color: #666;
+}
+
+
+/*===
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — TAGS VISIBILITY — BOUTONS SHOW MORE/LESS
+  ───────────────────────────────────────────────────────────────────────
+    Les boutons « +N more tags » et « – Show less » injectés dans
+    chaque blurb quand le nombre de tags dépasse le seuil configuré.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-show-more-tags,
+.ao3h-show-less-tags {
+  font-size: 0.78em;
+  background: none;
+  border: 1px solid #aaa;
+  border-radius: 10px;
+  padding: 1px 7px;
+  cursor: pointer;
+  margin: 1px 2px;
+  color: #555;
+  vertical-align: middle;
+}

@@ -1,0 +1,51 @@
+/*: ═══════════════════════════════════════════════════════════════
+      WORD SWAP — Styles
+        Contrôle l'apparence du module Word Swap.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🙈 L'input fichier caché (import JSON)
+        │     → SECTION 01 — INPUT CACHÉ
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*###      ├─  01. Input caché                               */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — INPUT CACHÉ
+  ───────────────────────────────────────────────────────────────────────
+    Masque l'input <input type="file"> généré dynamiquement pour
+    l'import de règles JSON. Le bouton "Import" le déclenche via .click().
+    ⚠️ Lié au JS : wordSwap.js crée cet élément et appelle .click() dessus.
+        Ne pas changer display à autre chose que none.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    INPUT FICHIER POUR IMPORT JSON
+  ─────────────────────────────────────────────────────────────
+      └─ Rendu invisible, déclenché programmatiquement par le bouton Import.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-ws-import-file {
+  /*- ⚠️ Masqué volontairement — déclenché via .click() par le bouton Import */
+  display: none;
+}

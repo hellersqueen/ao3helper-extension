@@ -1,0 +1,518 @@
+/*: ═══════════════════════════════════════════════════════════════
+      FILTER MANAGER — Config Panel Styles
+        Version novice-friendly / TDAH-friendly
+
+    ──────────────────────────────────────────────────────────────
+      > BUT DE CE FICHIER
+        Ce fichier contrôle l'apparence du panneau de configuration
+        du module Filter Manager.
+        Il gère l'affichage des presets sauvegardés.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence.
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  📦 L'encadré de la liste des presets
+        │     → SECTION 01 — LA LISTE DES PRESETS
+        │     → .ao3h-preset-list
+
+        ├─  💬 Le message quand il n'y a aucun preset
+        │     → SECTION 02 — MESSAGE LISTE VIDE
+        │     → .ao3h-preset-empty
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  01. La liste des presets                      */
+/*#        |                                                 */
+/*###      ├─  02. Message liste vide                        */
+/*#        |                                                 */
+/*####     ├─  03. Panneau de filtres rapides                */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — LA LISTE DES PRESETS
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle l'encadré qui affiche les presets sauvegardés.
+    À l'écran :
+      ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+        preset 1   preset 2   preset 3
+      └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+    Ici tu modifies :
+      - le fond gris pâle
+      - la bordure en pointillés
+      - les coins arrondis
+      - la hauteur minimale
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/*+ ───────────────────────────────────────────────────────────
+    ENCADRÉ DES PRESETS
+  ─────────────────────────────────────────────────────────────
+      └─ La zone qui contient les presets sauvegardés.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-preset-list {
+  /*- 🎨 Fond gris très pâle */
+  background: #f9f9f9;
+
+  /*- 🧱 Bordure en pointillés gris */
+  border: 1px dashed #d0d0d0;
+
+  /*- 🔲 Coins légèrement arrondis */
+  border-radius: 4px;
+
+  /*- ↔️ Espace intérieur */
+  padding: 12px;
+
+  /*- 📐 Hauteur minimale (pour ne pas s'effondrer si vide) */
+  min-height: 60px;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — MESSAGE LISTE VIDE
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle le message affiché quand il n'y a aucun preset.
+    À l'écran :
+      ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+              (aucun preset)
+      └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+    Ici tu modifies :
+      - la couleur grise du texte
+      - la taille du texte
+      - l'alignement centré
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/*+ ───────────────────────────────────────────────────────────
+    TEXTE "AUCUN PRESET"
+  ─────────────────────────────────────────────────────────────
+      └─ Affiché quand la liste est vide.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-preset-empty {
+  padding: 8px 12px;
+  color: #888;
+  font-style: italic;
+  font-size: 12px;
+}
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — PANNEAU DE FILTRES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle la barre de filtres rapides injectée
+    au-dessus de la liste des œuvres (One-shots / Hide crossovers).
+    Elle gère aussi les règles CSS qui masquent les blurbs selon l'état
+    actif du filtre (classe ajoutée à <html>).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/*+ ───────────────────────────────────────────────────────────
+    RÈGLES DE MASQUAGE PAR FILTRE
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Ces règles sont déclenchées par le JS via des classes
+             sur <html>. Ne pas supprimer.
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-fm-filter-oneshot li.blurb:not([data-fm-oneshot="1"]) { display: none !important; }
+html.ao3h-fm-hide-crossover li.blurb[data-fm-crossover="1"]     { display: none !important; }
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BARRE DE FILTRES RAPIDES
+  ─────────────────────────────────────────────────────────────
+      └─ La rangée de boutons « One-shots only » / « Hide crossovers ».
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-fm-quick-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  margin: 8px 0;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.ao3h-fm-quick-label {
+  font-weight: bold;
+  color: #555;
+  margin-right: 4px;
+}
+
+.ao3h-fm-quick-btn {
+  padding: 4px 10px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  color: #333;
+  font-size: 12px;
+}
+
+.ao3h-fm-quick-btn.ao3h-fm-active {
+  background: #900;
+  color: #fff;
+  border-color: #700;
+  font-weight: bold;
+}
+
+
+/*#####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — PRESET TOOLBAR & INTERFACE
+  ───────────────────────────────────────────────────────────────────────
+    Styles injectés dynamiquement par _filterManager.js (extraits).
+    Couvre : toolbar presets, dropdown, badges langue, bannière warnings,
+    filtre historique, compteur masqués, bande filtres actifs.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/* ═══ Preset Toolbar ═══════════════════════════════════════════════════ */
+dt.ao3h-presets-dt {
+  margin-top: 0.5em;
+  position: relative;
+}
+
+.ao3h-help-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 0.3em;
+  cursor: help;
+  vertical-align: super;
+  font: inherit;
+  font-size: 0.75em;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.ao3h-help-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 9999;
+  width: 22em;
+  background: #fff;
+  border: 1px solid #c9d8e8;
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.13);
+  padding: 0.75em 1em;
+  font-size: 0.8em;
+  font-family: 'Lucida Grande', 'Lucida Sans Unicode', Verdana, Helvetica, sans-serif;
+  color: #2a2a2a;
+  line-height: 1.4;
+}
+
+.ao3h-help-popover p  { margin: 0 0 0.5em; }
+.ao3h-help-popover ul { margin: 0; padding-left: 1.2em; }
+.ao3h-help-popover li { margin-bottom: 0.3em; }
+
+#ao3h-preset-toolbar {
+  font-size: 0.857em;
+  margin-top: 0.2em;
+}
+
+.ao3h-preset-toolbar-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+}
+
+.ao3h-preset-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ao3h-preset-select-wrap { position: relative; }
+
+.ao3h-preset-current {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: white;
+  border: 1px solid #b0c4de;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #333;
+  min-width: 190px;
+}
+
+.ao3h-preset-current:hover,
+.ao3h-preset-current[aria-expanded="true"] {
+  border-color: #2c5f8a;
+  background: #f8f9fa;
+}
+
+.ao3h-preset-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 230px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #c9d8e8;
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.13);
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  z-index: 9999;
+}
+
+.ao3h-preset-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #333;
+}
+
+.ao3h-preset-item:hover         { background: #e8f0f8; }
+.ao3h-preset-item.ao3h-last-used { font-weight: 600; }
+
+.ao3h-preset-star {
+  color: #ccc;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.ao3h-preset-star.ao3h-starred { color: #f0a500; }
+
+.ao3h-preset-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ao3h-preset-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  padding: 2px 4px;
+  font-size: 11px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.ao3h-preset-delete:hover { color: #c0392b; }
+
+.ao3h-preset-save,
+.ao3h-preset-import,
+.ao3h-preset-export {
+  padding: 5px 10px;
+  background: white;
+  border: 1px solid #b0c4de;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #2c5f8a;
+  white-space: nowrap;
+}
+
+.ao3h-preset-save:hover,
+.ao3h-preset-import:hover,
+.ao3h-preset-export:hover {
+  background: #e8f0f8;
+  border-color: #2c5f8a;
+}
+
+/* ═══ Language Badges ════════════════════════════════════════════════ */
+.ao3h-lang-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 3px;
+  border: 1px solid #c9d8e8;
+  background: #f0f4f8;
+  color: #2c5f8a;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.ao3h-lang-badge[role="button"] { cursor: pointer; }
+.ao3h-lang-badge[role="button"]:hover { background: #dceaf8; border-color: #2c5f8a; }
+
+/* ═══ Archive Warning Banner ═════════════════════════════════════════ */
+#ao3h-fm-warning-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #856404;
+}
+
+#ao3h-fm-warning-banner .ao3h-fm-warn-text { flex: 1; }
+
+#ao3h-fm-warning-banner .ao3h-fm-warn-remove {
+  padding: 4px 10px;
+  background: white;
+  border: 1px solid #ffc107;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #856404;
+  white-space: nowrap;
+}
+
+#ao3h-fm-warning-banner .ao3h-fm-warn-remove:hover { background: #ffeaa7; }
+
+#ao3h-fm-warning-banner .ao3h-fm-warn-dismiss {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #856404;
+  font-size: 15px;
+  padding: 0 4px;
+  line-height: 1;
+  margin-left: auto;
+}
+
+/* ═══ History Filter: hidden works ══════════════════════════════════ */
+.ao3h-fm-history-hidden { display: none !important; }
+
+/* ═══ Hidden-by-filters count ════════════════════════════════════════ */
+.ao3h-fm-hidden-count {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+  margin: 4px 0 8px;
+}
+
+/* ═══ Preset Action Row (Apply / Edit as chips) ══════════════════════ */
+.ao3h-preset-action-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.ao3h-preset-ready-label {
+  flex: 1;
+  font-size: 11px;
+  color: #2c5f8a;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ao3h-preset-apply {
+  padding: 5px 12px;
+  background: #2c5f8a;
+  color: white;
+  border: 1px solid #2c5f8a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ao3h-preset-apply:hover { background: #1e4060; }
+
+.ao3h-preset-expand {
+  padding: 5px 12px;
+  background: white;
+  color: #2c5f8a;
+  border: 1px solid #b0c4de;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ao3h-preset-expand:hover { background: #e8f0f8; border-color: #2c5f8a; }
+
+/* ═══ Active Filters Strip ═══════════════════════════════════════════ */
+.ao3h-active-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 8px;
+  background: #f8f9fa;
+  border: 1px dashed #b0c4de;
+  border-radius: 4px;
+  width: 100%;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.ao3h-active-filters-label {
+  color: #555;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-right: 2px;
+}
+
+.ao3h-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: #dceaf8;
+  border: 1px solid #b0c4de;
+  border-radius: 12px;
+  font-size: 11px;
+  color: #2c5f8a;
+}
+
+.ao3h-chip-label em { font-style: normal; font-weight: 500; }
+
+.ao3h-chip-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #7a9cbd;
+  padding: 0 1px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.ao3h-chip-bundle { font-size: 10px; cursor: help; opacity: 0.65; margin-left: 2px; }
+.ao3h-chip-remove:hover { color: #c0392b; }
+
+/* ═══ Preset heading icon ═══════════════════════════════════════════════ */
+.ao3h-presets-dt h4 > span[aria-hidden] { font-family: sans-serif; }

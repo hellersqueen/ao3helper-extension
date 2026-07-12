@@ -1,0 +1,62 @@
+/* ── Chapter Navigation ──────────────────────────────────────────────────── */
+
+.ao3h-sticky-nav-active ul.work.navigation.actions {
+  position: sticky; top: 0; z-index: 100;
+  background: #f0f0f0; padding: 4px 8px;
+  border-bottom: 1px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,.12);
+}
+.ao3h-chapwc {
+  display: inline-block; margin-left: 0.7em;
+  font-size: 0.82em; color: #888;
+  font-weight: normal; font-style: normal; vertical-align: middle;
+}
+.ao3h-chapidx-label {
+  display: block; font-size: 0.85em; color: #666;
+  margin-bottom: 4px; font-style: italic;
+}
+.ao3h-qnav-wrap { display: inline-flex; gap: 5px; margin-left: 0.5em; vertical-align: middle; }
+.ao3h-qnav-btn {
+  display: inline-block; font-size: 0.78em; padding: 1px 8px;
+  border-radius: 10px; border: 1px solid #900; color: #900;
+  background: transparent; cursor: pointer; text-decoration: none;
+  white-space: nowrap; transition: background .15s, color .15s; line-height: 1.6;
+}
+.ao3h-qnav-btn:hover,
+.ao3h-qnav-btn:focus { background: #900; color: #fff; text-decoration: none; }
+.ao3h-qnav-start { border-color: #555; color: #555; }
+.ao3h-qnav-start:hover,
+.ao3h-qnav-start:focus { background: #555 !important; color: #fff !important; }
+
+/* ── AutoScroll Controls ─────────────────────────────────────────────────── */
+
+#ao3h-autoscroll-ctrl {
+  position: fixed; bottom: 72px; right: 16px; z-index: 9100;
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,.95); border: 1px solid #ccc;
+  border-radius: 20px; padding: 5px 10px; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  font-size: .8em;
+}
+#ao3h-autoscroll-ctrl .ao3h-as-label { color: #555; margin-right: 2px; user-select: none; }
+#ao3h-autoscroll-ctrl button {
+  padding: 2px 8px; border-radius: 10px; border: 1px solid #bbb;
+  background: #f5f5f5; cursor: pointer; font-size: .85em; color: #444;
+  transition: background .12s;
+}
+#ao3h-autoscroll-ctrl button.active  { background: #900; color: #fff; border-color: #700; }
+#ao3h-autoscroll-ctrl button:hover   { background: #ddd; }
+#ao3h-autoscroll-ctrl button.active:hover { background: #b00; }
+#ao3h-autoscroll-ctrl .ao3h-as-stop  { margin-left: 4px; border-color: #aaa; color: #666; }
+#ao3h-autoscroll-ctrl .ao3h-as-pause-indicator {
+  width: 8px; height: 8px; border-radius: 50%; background: #ccc;
+  display: inline-block; margin-left: 6px; flex-shrink: 0;
+  transition: background .2s;
+}
+#ao3h-autoscroll-ctrl .ao3h-as-pause-indicator.running { background: #2a2; }
+
+/* ── Chapter Word Count ───────────────────────────────────────────────────── */
+
+.ao3h-wc-badge {
+  margin: .5rem 0;
+  font-size: .95rem;
+  opacity: .85;
+}

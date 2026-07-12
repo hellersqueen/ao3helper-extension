@@ -1,0 +1,1052 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   AO3 HELPER - MENU CSS
+   
+   Ce fichier définit les styles du menu déroulant principal d'AO3 Helper.
+   Le menu apparaît quand on clique sur "AO3 Helper" dans la barre de navigation.
+   
+   GUIDE POUR LES DÉBUTANTS EN CSS :
+   ─────────────────────────────────
+   • var(--nom) = Variable CSS. Définie une fois, utilisée partout
+   • rgba(r, g, b, a) = Couleur avec transparence (a = 0 transparent, 1 opaque)
+   • rem/em = Unités relatives à la taille de police (1rem ≈ 16px)
+   • !important = Force une valeur même si d'autres règles la contredisent
+   • ::before/::after = Pseudo-éléments créés par CSS (pas dans le HTML)
+   • @media = Règles conditionnelles (taille d'écran, thème sombre, etc.)
+   • transition = Animation automatique quand une valeur change
+   • transform = Déformation (déplacement, rotation, zoom)
+   
+   EFFET GLASS (VERRE DÉPOLI) :
+   ────────────────────────────
+   Le menu utilise l'effet "glassmorphism" :
+   - Fond semi-transparent (rgba avec alpha < 1)
+   - Flou sur le contenu derrière (backdrop-filter: blur)
+   - Bordure blanche semi-transparente
+   - Ombres pour la profondeur
+   
+   FICHIERS LIÉS :
+   ───────────────
+   - toggle-switch.css = Styles des interrupteurs on/off
+   - icon-button.css = Styles des boutons avec icône
+   
+═══════════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   TABLE DES MATIÈRES
+   ═══════════════════════════════════════════════════════════════════════════════
+   1. COULEURS ET DIMENSIONS (Variables CSS)
+   2. CACHER / MONTRER DES ÉLÉMENTS (Classes utilitaires)
+   3. COMPATIBILITÉ AVEC AO3 (Protection des styles natifs)
+   4. BOÎTE DU MENU DROPDOWN (Conteneur principal)
+   5. LIGNES CLIQUABLES (Items du menu)
+      5.1. Base commune
+      5.2. Catégories (titres rouges)
+      5.3. Modules (items gris)
+   6. COMPORTEMENT DES SOUS-MENUS
+      6.1. Ouverture / fermeture
+      6.2. Flèche ▼ et rotation
+   7. BOUTON "AO3 HELPER" DANS LA NAVBAR
+   8. BARRE DE DÉFILEMENT (Scrollbar personnalisée)
+   9. POPUP IMPORT/EXPORT
+   10. NAVIGATION CLAVIER (Accessibilité)
+   11. THÈME SOMBRE
+═══════════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 1 : COULEURS ET DIMENSIONS GÉNÉRALES
+   ───────────────────────────────────────────
+   Variables CSS globales. MODIFIEZ-LES ICI pour changer tout le menu !
+   
+   Les variables commencent par "--" et s'utilisent avec var(--nom)
+   Exemple : color: var(--ao3h-accent); → utilise le rouge #c62828
+═══════════════════════════════════════════════════════════════════════════ */
+
+:root { 
+  /* ─────────────────────────────────────────
+     COULEURS DU TEXTE
+  ───────────────────────────────────────── */
+  --ao3h-ink: #222;                    /* Noir/encre pour texte (legacy) */
+  --ao3h-accent: #990000;              /* ROUGE PRINCIPAL AO3 - Utilisé pour les titres */
+  --ao3h-fg: #0b1220;                  /* Texte principal - Bleu très foncé */
+  --ao3h-fg-dim: #445069;              /* Texte secondaire - Gris bleuté */
+
+  /* ─────────────────────────────────────────
+     EFFET GLASS (fond du menu)
+  ───────────────────────────────────────── */
+  --ao3h-glass-bg: rgba(255,255,255,.55);      /* Fond blanc 55% transparent */
+  --ao3h-glass-stroke: rgba(255,255,255,.45);  /* Bordure blanche 45% transparent */
+  --ao3h-glass-shadow: 0 12px 40px rgba(2,6,23,.22);  /* Ombre portée */
+
+  /* ─────────────────────────────────────────
+     ITEMS DU MENU (catégories cliquables)
+  ───────────────────────────────────────── */
+  --ao3h-item-bg: rgba(255,255,255,.75);       /* Fond normal */
+  --ao3h-item-hover: rgba(255,255,255,.54);    /* Fond au survol */
+
+  /* ─────────────────────────────────────────
+     MODULES (sous-items dans les sous-menus)
+  ───────────────────────────────────────── */
+  --ao3h-module-bg: rgba(255,255,255,.45);     /* Fond plus subtil que les catégories */
+  --ao3h-module-hover: rgba(255,255,255,.65);  /* Fond au survol */
+  --ao3h-module-fg: #2d3748;                   /* Texte gris foncé */
+
+  /* ─────────────────────────────────────────
+     TITRES DE GROUPES
+  ───────────────────────────────────────── */
+  --ao3h-group-fg: #a12020;            /* ROUGE pour les titres de catégories */
+
+  /* ─────────────────────────────────────────
+     SWITCH (interrupteur on/off)
+     Note: aussi défini dans toggle-switch.css
+  ───────────────────────────────────────── */
+  --ao3h-switch-on: #0bbf6a;           /* VERT quand activé */
+  --ao3h-switch-off: rgba(15,23,42,.35);  /* Gris quand désactivé */
+
+  /* ─────────────────────────────────────────
+     RAYONS DE BORDURE (coins arrondis)
+  ───────────────────────────────────────── */
+  --ao3h-radius-lg: 16px;              /* Grand rayon (conteneur menu) */
+  --ao3h-radius-md: 12px;              /* Moyen rayon (items) */
+
+  /* ─────────────────────────────────────────
+     ESPACEMENT
+  ───────────────────────────────────────── */
+  --ao3h-pad-y: .55em;                 /* Padding vertical */
+  --ao3h-pad-x: .9em;                  /* Padding horizontal */
+  --ao3h-gap: .75rem;                  /* Espace entre éléments flexbox */
+
+  /* ─────────────────────────────────────────
+     EFFETS VISUELS
+  ───────────────────────────────────────── */
+  --ao3h-focus-ring: 0 0 0 3px rgba(198,40,40,.25);  /* Halo rouge au focus */
+  --ao3h-loading-opacity: 0.6;         /* Opacité pendant le chargement */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 2 : CACHER OU MONTRER DES ÉLÉMENTS
+   ─────────────────────────────────────────
+   Classes utilitaires pour contrôler la visibilité.
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* Cache complètement un élément */
+.ao3h-hidden { 
+  display: none !important;   /* L'élément n'existe plus visuellement */
+}
+
+/* 
+   Cache visuellement mais garde accessible aux lecteurs d'écran.
+   Technique standard pour l'accessibilité (WCAG).
+   L'élément est techniquement présent mais invisible.
+*/
+.ao3h-sr-only {
+  position: absolute !important;  /* Retire du flux normal */
+  width: 1px;                     /* Minuscule */
+  height: 1px;
+  padding: 0;
+  margin: -1px;                   /* Décalé hors vue */
+  overflow: hidden;               /* Cache ce qui dépasse */
+  clip: rect(0, 0, 0, 0);         /* Zone de clip nulle */
+  white-space: nowrap;            /* Pas de retour à la ligne */
+  border: 0;
+}
+
+/* Rend visible au focus (pour navigation clavier) */
+.ao3h-sr-only:focus {
+  position: static !important;    /* Remet dans le flux */
+  width: auto;
+  height: auto;
+  clip: auto;
+  overflow: visible;
+  white-space: normal;
+}
+
+/* Zone pour les annonces aux lecteurs d'écran (aria-live) */
+.ao3h-live-region {
+  position: absolute;
+  left: -10000px;                 /* Très loin hors écran */
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 3 : PROTECTION DES ÉLÉMENTS NATIFS AO3
+   ─────────────────────────────────────────────
+   Ces règles empêchent AO3 Helper d'interférer avec les styles d'AO3.
+   
+   Problème : AO3 a ses propres styles pour les tags.
+   Solution : On force les styles originaux sur ces éléments.
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* Zone des tags dans les métadonnées d'une œuvre */
+dl.work.meta.group dd.tags {
+  overflow: visible !important;   /* Permet aux tags de dépasser */
+  white-space: normal !important; /* Permet le retour à la ligne */
+}
+
+/* Liste de tags */
+dl.work.meta.group dd.tags ul.tags,
+dl.work.meta.group dd.tags ul.tags.commas {
+  display: block !important;
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+/* Chaque tag individuel */
+dl.work.meta.group dd.tags ul.tags li {
+  display: inline !important;     /* Tags sur la même ligne */
+  white-space: normal !important;
+}
+
+/* Liens des tags */
+dl.work.meta.group dd.tags a.tag {
+  display: inline !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: none !important;     /* Pas de limite de largeur */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 4 : BOÎTE CONTENEUR DU MENU PRINCIPAL (DROPDOWN)
+   ────────────────────────────────────────────────────────
+   Le menu déroulant qui apparaît sous "AO3 Helper".
+═══════════════════════════════════════════════════════════════════════════ */
+
+ul.ao3h-menu,
+.ao3h-menu.dropdown-menu {
+  /* COULEUR DU TEXTE */
+  color: var(--ao3h-fg) !important;
+  
+  /* DIMENSIONS */
+  max-width: 280px;               /* LARGEUR MAXIMUM du menu */
+  padding: .5rem .5rem;           /* Espace intérieur */
+  
+  /* OMBRE COMPLEXE pour effet de profondeur */
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.35),   /* Bordure blanche subtile */
+    0 6px 18px rgba(0,0,0,.25),        /* Ombre moyenne */
+    0 18px 40px rgba(0,0,0,.15);       /* Ombre diffuse */
+}
+
+/* Conteneur racine du menu */
+.ao3h-root {
+  position: relative;             /* Pour positionner les enfants absolus */
+}
+
+/* Zone invisible autour du menu pour éviter la fermeture accidentelle */
+.ao3h-root::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -20px;                   /* Étend la zone de 20px à droite */
+  bottom: -20px;                  /* Étend la zone de 20px en bas */
+  left: -20px;                    /* Étend la zone de 20px à gauche */
+  z-index: -1;
+  pointer-events: none;           /* Ne bloque pas les clics */
+}
+
+.ao3h-root {
+  transition: opacity 0.2s ease;  /* Animation de fondu */
+}
+
+/* État "en cours de reconstruction" */
+.ao3h-root.ao3h-rebuilding {
+  opacity: 0.7;                   /* Légèrement transparent */
+}
+
+/* État "rafraîchissement en cours" */
+.ao3h-menu.ao3h-refreshing {
+  opacity: 0.95;
+  transition: opacity 0.1s ease;
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE - Écrans mobiles
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+  ul.ao3h-menu,
+  .ao3h-menu.dropdown-menu {
+    max-width: calc(100vw - 16px);  /* Presque toute la largeur - 16px de marge */
+    padding: 0.4rem 0.4rem;
+  }
+}
+
+/* Supprime les marges sur les items de menu AO3 natifs */
+#header .menu > li { 
+  margin: 0 !important; 
+}
+
+/* Items du menu en position statique (pas de positionnement absolu).
+   !important nécessaire : AO3 force "position: relative/absolute" sur les
+   <li>/<a> de ses menus natifs (mécanisme prévu pour ses propres sous-menus
+   imbriqués), ce qui casse la hauteur de nos lignes de catégories
+   personnalisées (le padding n'est plus compté, les lignes se chevauchent).
+   Sélecteur ancré sur #header + plusieurs classes : la règle native
+   concurrente est elle aussi !important, donc seule une spécificité au
+   moins égale permet de la battre de façon fiable. */
+#header li.dropdown.ao3h-root ul.ao3h-menu li,
+#header li.dropdown.ao3h-root ul.ao3h-menu li a,
+#header li.dropdown.ao3h-root ul.ao3h-menu ul.ao3h-submenu li,
+#header li.dropdown.ao3h-root ul.ao3h-menu ul.ao3h-submenu li a {
+  position: static !important;
+}
+
+/* Cache les séparateurs (lignes horizontales) */
+.ao3h-divider { 
+  display: none !important; 
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 5 : LIGNES CLIQUABLES
+   ────────────────────────────
+   Les items du menu sur lesquels on peut cliquer.
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────
+   5.1. Base commune (tous les liens du menu)
+───────────────────────────────────────── */
+.ao3h-menu a {
+  position: static !important;    /* Empêche AO3 de forcer un positionnement absolu (voir .ao3h-menu li) */
+  height: auto !important;        /* AO3 force une "height" fixe (pensée pour sa barre de nav horizontale) ;
+                                      combinée à son box-sizing:border-box, ça écrase le padding et fait
+                                      déborder le texte sur la ligne suivante. auto laisse la hauteur
+                                      s'adapter au contenu réel. */
+  display: flex;                  /* Disposition horizontale */
+  align-items: center;            /* Centre verticalement */
+  justify-content: space-between; /* Label à gauche, switch/flèche à droite */
+  gap: var(--ao3h-gap);           /* Espace entre les éléments */
+
+  padding: .5rem .75rem;          /* ESPACE INTÉRIEUR */
+  
+  font-size: 13px;                /* TAILLE DU TEXTE */
+  line-height: 1.15;              /* Hauteur de ligne */
+  
+  color: inherit !important;      /* Hérite la couleur du parent */
+  text-decoration: none;          /* Pas de soulignement */
+  white-space: nowrap;            /* Pas de retour à la ligne */
+  
+  background: var(--ao3h-item-bg);  /* FOND - utilise la variable */
+  border-radius: var(--ao3h-radius-md);  /* COINS ARRONDIS */
+  
+  /* ANIMATIONS */
+  transition: background .18s ease,     /* Changement de fond */
+              transform .12s ease,      /* Déplacement */
+              box-shadow .18s ease;     /* Ombre */
+  
+  box-shadow: 0 1px 0 rgba(2,6,23,.05); /* Légère ombre en bas */
+  margin: 6px 4px;                /* Espace entre les items */
+}
+
+/* Item au survol (hover) */
+.ao3h-menu a:hover {
+  background: var(--ao3h-item-hover) !important;  /* Fond plus clair */
+  transform: translateY(-1px);    /* Monte de 1px (effet "soulevé") */
+  box-shadow: 0 6px 18px rgba(2,6,23,.10);  /* Ombre plus prononcée */
+}
+
+/* Item au focus (navigation clavier) */
+.ao3h-menu a:focus {
+  outline: none;                  /* Pas de contour par défaut */
+  box-shadow: 0 0 0 0 rgba(0,0,0,0), var(--ao3h-focus-ring);  /* Halo rouge */
+}
+
+/* Composants internes des items */
+.ao3h-label { 
+  flex: 1 1 auto;                 /* Prend tout l'espace disponible */
+  min-width: 0;                   /* Permet le rétrécissement */
+}
+
+.ao3h-kbd { 
+  font-size: 12px;                /* Taille du raccourci clavier */
+  color: var(--ao3h-fg-dim);      /* Gris */
+  margin-left: .75rem;            /* Espace à gauche */
+}
+
+.ao3h-state { 
+  width: 1.2em;                   /* Largeur fixe pour l'icône d'état */
+  text-align: center; 
+}
+
+/* ─────────────────────────────────────────
+   5.2. Catégories → rouge, MAJUSCULES, gras
+   Les titres de sections (Search & Filters, Reading, etc.)
+───────────────────────────────────────── */
+.ao3h-menu > li > a {
+  background: transparent !important;  /* Pas de fond */
+  color: var(--ao3h-group-fg) !important;  /* ROUGE */
+  text-transform: uppercase;      /* TOUT EN MAJUSCULES */
+  letter-spacing: .25px;          /* Légèrement espacé */
+  font-size: 12px !important;     /* PLUS PETIT */
+  font-weight: 800 !important;    /* TRÈS GRAS */
+  margin: 4px 6px 2px;
+  padding: .35rem .5rem;
+  border-radius: 6px;
+  box-shadow: none !important;    /* Pas d'ombre */
+}
+
+/* ─────────────────────────────────────────
+   5.2.1. Bouton Manager Panel (même style que catégories)
+───────────────────────────────────────── */
+.ao3h-menu > li.ao3h-manager-panel-btn > a {
+  background: transparent !important;
+  border: none !important;
+  color: var(--ao3h-group-fg) !important;
+  text-transform: uppercase;
+  letter-spacing: .25px;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  margin: 4px 6px 2px;
+  padding: .35rem .5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: none !important;
+  transform: none !important;     /* Pas d'effet de levée */
+}
+
+/* États hover/active/focus du bouton Manager */
+.ao3h-menu > li.ao3h-manager-panel-btn > a:hover,
+.ao3h-menu > li.ao3h-manager-panel-btn > a:active,
+.ao3h-menu > li.ao3h-manager-panel-btn > a:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Cache le séparateur avant le bouton manager */
+.ao3h-menu > li.ao3h-divider[data-ao3h-manager-btn="1"] {
+  display: none !important;
+}
+
+/* Icône dans le bouton manager */
+.ao3h-menu > li.ao3h-manager-panel-btn .ao3h-icon-btn {
+  margin-right: 6px;
+}
+
+/* ─────────────────────────────────────────
+   5.3. Modules → fond pâle, texte gris
+   Les items individuels dans les sous-menus
+───────────────────────────────────────── */
+ul.ao3h-submenu .ao3h-module-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+ul.ao3h-submenu a {
+  display: flex !important; 
+  align-items: center !important; 
+  justify-content: space-between !important;
+  gap: var(--ao3h-gap, .75rem) !important; 
+  padding: .35rem .75rem !important;  /* Moins de padding que les catégories */
+  line-height: 1.2 !important; 
+  white-space: nowrap !important;
+  background: var(--ao3h-module-bg) !important;  /* Fond plus subtil */
+  color: var(--ao3h-module-fg) !important;       /* Texte gris */
+}
+
+ul.ao3h-submenu a .ao3h-label { 
+  flex: 1 1 auto !important; 
+  min-width: 0 !important; 
+  font-size: 12px !important;     /* PLUS PETIT que les catégories */
+}
+
+ul.ao3h-submenu a:hover { 
+  background: var(--ao3h-module-hover) !important;
+  color: var(--ao3h-fg) !important;  /* Texte plus foncé au survol */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2,6,23,.08);
+}
+
+/* Bouton settings dans sous-menu (version compacte) */
+ul.ao3h-submenu .ao3h-settings-btn {
+  width: 18px !important;
+  height: auto !important;
+  min-height: 24px !important;
+  font-size: 10px !important;
+  margin-right: 0 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 6 : COMPORTEMENT DES SOUS-MENUS
+   ──────────────────────────────────────
+   Gestion de l'ouverture/fermeture des sous-menus (les listes d'items
+   qui apparaissent quand on clique sur une catégorie).
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* Cache les éléments originaux qui ont été regroupés */
+ul.ao3h-menu > li[data-ao3h-grouped-original="1"] { 
+  display: none !important; 
+}
+
+/* Cache tous les items de base sauf les conteneurs de groupe et le bouton manager */
+ul.ao3h-menu > li:not([data-ao3h-submenu="1"]):not([data-ao3h-manager-btn="1"]):not(.ao3h-divider) {
+  display: none !important;
+}
+
+/* ─────────────────────────────────────────
+   6.1. Ouverture / fermeture des sous-menus
+───────────────────────────────────────── */
+
+/* Sous-menu fermé (état par défaut) */
+ul.ao3h-submenu {
+  list-style: none;               /* Pas de puces */
+  margin: 0; 
+  padding: 0;
+  display: none !important;       /* CACHÉ par défaut */
+  
+  /* Reste en place (pas de positionnement absolu) */
+  position: static !important; 
+  left: auto !important; 
+  right: auto !important; 
+  top: auto !important;
+  
+  /* Pas de style de conteneur (intégré au menu principal) */
+  background: transparent !important; 
+  border: 0 !important; 
+  box-shadow: none !important; 
+  transform: none !important;
+}
+
+/* Sous-menu OUVERT */
+ul.ao3h-submenu.open { 
+  display: block !important;      /* VISIBLE quand classe "open" est ajoutée */
+}
+
+/* Sous-menu avec classe dropdown-menu (compatibilité) */
+.ao3h-submenu.dropdown-menu {
+  position: static !important; 
+  left: auto !important; 
+  right: auto !important; 
+  top: auto !important;
+  margin: 0 !important; 
+  padding: 0 !important; 
+  min-width: 0 !important;
+  border: 0 !important; 
+  background: transparent !important; 
+  box-shadow: none !important; 
+  transform: none !important;
+}
+
+.ao3h-menu li { 
+  position: static; 
+}
+
+.ao3h-divider { 
+  display: none !important; 
+}
+
+/* ─────────────────────────────────────────
+   6.2. Flèche ▼ et rotation
+   La flèche indique si le sous-menu est ouvert ou fermé
+───────────────────────────────────────── */
+
+/* Flèche (caret) ▼ */
+.ao3h-caret { 
+  transition: transform .15s ease;  /* Animation de rotation */
+  margin-left: 8px;
+}
+
+/* Flèche dans les sous-menus */
+.ao3h-submenu > li > a .ao3h-caret { 
+  color: inherit; 
+  opacity: .9;                    /* Légèrement transparent */
+}
+
+/* Flèche TOURNÉE quand le sous-menu est ouvert (▲) */
+li > a[aria-expanded="true"] .ao3h-caret { 
+  transform: rotate(180deg);      /* Rotation de 180° = pointe vers le haut */
+}
+
+/* Fond légèrement différent quand un sous-menu est ouvert */
+li > a[aria-expanded="true"] {
+  background: rgba(0,0,0,.05) !important;  /* Gris très léger */
+}
+
+/* Catégories ouvertes → fond rouge AO3 + texte blanc */
+.ao3h-menu > li > a[aria-expanded="true"] {
+  background: rgba(153, 0, 0, 0.85) !important;  /* Fond ROUGE AO3 légèrement transparent */
+  color: #ffffff !important;                      /* Texte BLANC */
+  box-shadow: 0 2px 8px rgba(153, 0, 0, 0.2) !important;  /* Ombre rouge douce */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 7 : BOUTON "AO3 HELPER" DANS LA NAVBAR
+   ─────────────────────────────────────────────
+   Le lien dans la barre de navigation d'AO3 qui ouvre le menu.
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* Le lien "AO3 Helper" */
+.ao3h-navlink {
+  color: #fff;                    /* TEXTE BLANC */
+  text-decoration: none;          /* Pas de soulignement */
+  padding: var(--ao3h-pad-y) var(--ao3h-pad-x);  /* Espace intérieur */
+  display: inline-block;          /* Élément en ligne avec dimensions */
+  transition: background-color .2s, transform .12s;  /* Animations */
+  border-radius: 10px;            /* Coins arrondis */
+}
+
+/* États du lien (hover, focus, menu ouvert) */
+.ao3h-root:hover .ao3h-navlink,
+.ao3h-root:focus-within .ao3h-navlink,
+.ao3h-root.open .ao3h-navlink {
+  background: rgba(255, 255, 255, 0.18);  /* Fond blanc léger */
+  transform: translateY(-1px);     /* Légèrement soulevé */
+}
+
+/* Transitions sur les liens de navigation AO3 natifs */
+#header .primary.navigation > li > a,
+#header .primary.navigation.actions > li > a {
+  transition:
+    background-color 0.2s ease,
+    transform 0.12s ease,
+    color 0.2s ease !important;
+}
+
+/* Focus visible pour la navigation clavier (sauf notre lien) */
+#header .primary.navigation > li > a:focus-visible:not(.ao3h-navlink),
+#header .primary.navigation.actions > li > a:focus-visible:not(.ao3h-navlink) {
+  background: rgba(255, 255, 255, 0.18) !important;
+  transform: translateY(-1px) !important;
+  color: #fff !important;
+  outline: none !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 8 : BARRE DE DÉFILEMENT (Scrollbar personnalisée)
+   ────────────────────────────────────────────────────────
+   Style de la scrollbar quand le menu est trop long.
+═══════════════════════════════════════════════════════════════════════════ */
+
+.ao3h-menu {
+  max-height: calc(100vh - 120px);  /* Hauteur max = écran - 120px */
+  overflow-y: auto;               /* Scrollbar verticale si nécessaire */
+  overflow-x: hidden;             /* Pas de scrollbar horizontale */
+  overscroll-behavior: contain;   /* Empêche le scroll de "rebondir" */
+  
+  /* SCROLLBAR FIREFOX */
+  scrollbar-width: auto;          /* Largeur normale */
+  scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.08);  /* Pouce / Piste */
+  
+  scroll-behavior: smooth;        /* Défilement fluide */
+  position: relative;
+}
+
+/* ─────────────────────────────────────────
+   SCROLLBAR WEBKIT (Chrome, Safari, Edge)
+───────────────────────────────────────── */
+
+/* La scrollbar elle-même */
+.ao3h-menu::-webkit-scrollbar {
+  width: 14px;                    /* LARGEUR de la scrollbar */
+  background: transparent;
+}
+
+/* La piste (le fond de la scrollbar) */
+.ao3h-menu::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.08);  /* Gris très léger */
+  border-radius: 7px;             /* Coins arrondis */
+  margin: 8px 0;                  /* Espace en haut et en bas */
+}
+
+/* Le pouce (la partie qu'on déplace) */
+.ao3h-menu::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);  /* Gris moyen */
+  border-radius: 7px;
+  border: 3px solid transparent;   /* Espace autour du pouce */
+  background-clip: content-box;    /* Le fond ne s'étend pas sous la bordure */
+  transition: background 0.2s ease;
+}
+
+/* Pouce au survol */
+.ao3h-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);  /* Plus foncé au survol */
+  background-clip: content-box;
+}
+
+/* ─────────────────────────────────────────
+   INDICATEURS DE SCROLL (dégradés en haut/bas)
+   Montrent qu'il y a du contenu au-dessus/en-dessous
+───────────────────────────────────────── */
+
+/* Dégradé en HAUT (indique du contenu au-dessus) */
+.ao3h-menu::before {
+  content: "";
+  position: sticky;               /* Reste en place lors du scroll */
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  pointer-events: none;           /* Ne bloque pas les clics */
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.8) 0%,   /* Blanc en haut */
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%               /* Transparent en bas */
+  );
+  z-index: 10;
+  opacity: 0;                     /* Invisible par défaut */
+  transition: opacity 0.3s ease;
+}
+
+/* Dégradé visible quand on a scrollé vers le bas */
+.ao3h-menu.ao3h-scrolled-down::before {
+  opacity: 1;
+}
+
+/* Dégradé en BAS (indique du contenu en-dessous) */
+.ao3h-menu::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0;                      /* Pas de hauteur par défaut */
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 0.8) 0%,   /* Blanc en bas */
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%               /* Transparent en haut */
+  );
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease, height 0.3s ease;
+}
+
+/* Dégradé visible quand il y a du contenu à scroller */
+.ao3h-menu.ao3h-has-scroll::after {
+  opacity: 1;
+  height: 20px;
+}
+
+#header .menu > li{ margin:0 !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 9 : POPUP IMPORT/EXPORT
+   ──────────────────────────────
+   Fenêtre de dialogue pour importer/exporter les paramètres.
+   Note: Ces styles sont aussi dans dialog.css (duplication intentionnelle)
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* Fond sombre derrière la popup */
+#ao3h-ie-dialog::backdrop { 
+  background: rgba(2,6,23,.45);   /* Bleu très foncé à 45% opacité */
+}
+
+/* La boîte de dialogue elle-même */
+#ao3h-ie-dialog {
+  border: 1px solid rgba(255,255,255,.35);  /* Bordure blanche légère */
+  border-radius: 14px;            /* COINS ARRONDIS */
+  padding: 16px 16px 14px;        /* Espace intérieur */
+  width: 360px;                   /* LARGEUR */
+  max-width: 90vw;                /* Max 90% de l'écran */
+  
+  /* EFFET GLASS */
+  background: rgba(255,255,255,.65);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  backdrop-filter: blur(12px) saturate(130%);
+  
+  box-shadow: var(--ao3h-glass-shadow);
+  color: var(--ao3h-fg);
+}
+
+/* Titre de la popup */
+#ao3h-ie-title { 
+  font-weight: 800;               /* Très gras */
+  margin: 0 0 10px; 
+  font-size: 16px; 
+  letter-spacing: .2px; 
+}
+
+/* Description sous le titre */
+#ao3h-ie-desc { 
+  margin: 0 0 14px; 
+  font-size: 13px; 
+  color: var(--ao3h-fg-dim);      /* Gris */
+}
+
+/* Rangée de boutons */
+#ao3h-ie-row { 
+  display: flex;                  /* Disposition horizontale */
+  gap: 10px;                      /* Espace entre boutons */
+  margin-top: 8px; 
+}
+
+/* Chaque bouton d'action */
+#ao3h-ie-row button {
+  flex: 1;                        /* Même largeur pour tous */
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.4);
+  background: rgba(255,255,255,.75);
+  cursor: pointer; 
+  font-size: 13px;
+  transition: transform .12s ease, box-shadow .18s ease, background .18s ease;
+}
+
+/* Bouton au survol */
+#ao3h-ie-row button:hover {
+  transform: translateY(-1px);    /* Légèrement soulevé */
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 10px 28px rgba(2,6,23,.12);
+}
+
+/* Bouton désactivé */
+#ao3h-ie-row button[disabled] { 
+  opacity: .6;                    /* Semi-transparent */
+  cursor: not-allowed;            /* Curseur "interdit" */
+  filter: saturate(.6);           /* Couleurs moins vives */
+}
+
+/* Pied de la popup */
+#ao3h-ie-foot { 
+  display: flex; 
+  justify-content: flex-end;      /* Bouton à droite */
+  margin-top: 10px; 
+}
+
+/* Bouton Annuler */
+#ao3h-ie-cancel {
+  padding: 6px 10px; 
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.35);
+  background: rgba(255,255,255,.6);
+  cursor: pointer; 
+  font-size: 12px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 10 : NAVIGATION CLAVIER (ACCESSIBILITÉ)
+   ───────────────────────────────────────────────
+   Styles pour les utilisateurs qui naviguent au clavier (Tab, Enter, etc.)
+   Important pour l'accessibilité (WCAG).
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* Lien navlink au focus */
+.ao3h-navlink:focus,
+.ao3h-navlink:focus-visible {
+  outline: 2px solid var(--ao3h-accent, #c21);  /* CONTOUR ROUGE */
+  outline-offset: 2px;            /* Décalé de 2px du bord */
+  z-index: 1;                     /* Au-dessus des autres éléments */
+  position: relative;
+}
+
+/* Items du menu au focus */
+.ao3h-menu a:focus,
+.ao3h-menu a:focus-visible {
+  outline: 2px solid var(--ao3h-accent, #c21);
+  outline-offset: -2px;           /* Contour à l'INTÉRIEUR */
+  z-index: 1;
+}
+
+/* Catégories au focus visible */
+.ao3h-menu > li > a:focus-visible {
+  background: var(--ao3h-hover-bg);
+  outline: 2px solid var(--ao3h-accent, #c21);
+  outline-offset: -2px;
+}
+
+/* Items de sous-menu au focus */
+.ao3h-submenu li a:focus-visible {
+  background: var(--ao3h-hover-bg);
+}
+
+/* ─────────────────────────────────────────
+   CONTRASTE ÉLEVÉ (pour malvoyants)
+───────────────────────────────────────── */
+@media (prefers-contrast: high) {
+  .ao3h-navlink:focus,
+  .ao3h-menu a:focus {
+    outline-width: 3px;           /* Contour plus épais */
+    outline-color: currentColor;  /* Couleur du texte */
+    outline-style: solid;
+  }
+}
+
+/* ─────────────────────────────────────────
+   MODE SOMBRE - Focus
+───────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  .ao3h-navlink:focus,
+  .ao3h-menu a:focus {
+    outline-color: #ff5a5a;       /* Rouge plus vif en mode sombre */
+  }
+}
+
+/* Cache le focus quand on utilise la souris (pas le clavier) */
+:root:not(.keyboard-navigation) .ao3h-menu a:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Éléments de menu avec rôle ARIA */
+.ao3h-menu [role="menuitem"],
+.ao3h-menu [role="menuitemcheckbox"] {
+  position: relative;
+}
+
+/* ─────────────────────────────────────────
+   ÉCRANS TACTILES - items plus grands
+───────────────────────────────────────── */
+@media (pointer: coarse) {
+  .ao3h-menu a {
+    min-height: 44px;             /* Minimum 44px pour cibles tactiles (WCAG) */
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* ─────────────────────────────────────────
+   LIEN "SKIP TO CONTENT" (accessibilité)
+   Permet de sauter directement au contenu principal
+───────────────────────────────────────── */
+.ao3h-skip-link {
+  position: absolute;
+  left: -9999px;                  /* Hors écran par défaut */
+  z-index: 999;
+  padding: 8px;
+  background: var(--ao3h-accent);
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+/* Visible au focus */
+.ao3h-skip-link:focus {
+  left: 10px;
+  top: 10px;
+}
+
+/* Classe sr-only (dupliquée pour la section accessibilité) */
+.ao3h-sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ao3h-sr-only:focus {
+  position: static !important;
+  width: auto;
+  height: auto;
+  clip: auto;
+  overflow: visible;
+  white-space: normal;
+}
+
+.ao3h-live-region {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────────
+   MOUVEMENT RÉDUIT (utilisateurs sensibles)
+   Désactive les animations pour les personnes avec
+   troubles vestibulaires ou migraines
+───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ao3h-menu,
+  .ao3h-submenu,
+  .ao3h-navlink,
+  .ao3h-menu a,
+  .ao3h-switch {
+    transition: none !important;  /* Pas de transitions */
+    animation: none !important;   /* Pas d'animations */
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION 11 : THÈME SOMBRE (Dark Mode)
+   ─────────────────────────────────────
+   Adaptation automatique quand l'utilisateur préfère un thème sombre.
+   Détecté via les préférences système.
+═══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: dark) {
+  
+  /* Menu principal en mode sombre */
+  .ao3h-menu {
+    border: 2px solid rgba(255, 255, 255, 0.35) !important;  /* Bordure blanche */
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.6),           /* Contour noir */
+      0 8px 20px rgba(0, 0, 0, 0.6),          /* Ombre principale */
+      0 18px 40px rgba(255, 255, 255, 0.05);  /* Reflet subtil */
+  }
+
+  /* Scrollbar en mode sombre - couleurs inversées */
+  .ao3h-menu {
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.08);
+  }
+
+  .ao3h-menu::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);    /* Piste claire */
+  }
+
+  .ao3h-menu::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);     /* Pouce clair */
+  }
+
+  .ao3h-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Dégradé du haut en mode sombre */
+  .ao3h-menu::before {
+    background: linear-gradient(
+      to bottom,
+      rgba(16, 21, 38, 0.9) 0%,               /* Bleu foncé */
+      rgba(16, 21, 38, 0.5) 50%,
+      transparent 100%
+    );
+  }
+
+  /* Dégradé du bas en mode sombre */
+  .ao3h-menu::after {
+    background: linear-gradient(
+      to top,
+      rgba(16, 21, 38, 0.9) 0%,
+      rgba(16, 21, 38, 0.5) 50%,
+      transparent 100%
+    );
+  }
+  
+  /* Bouton Manager Panel en mode sombre */
+  .ao3h-menu > li.ao3h-manager-panel-btn > a {
+    background: rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  .ao3h-menu > li.ao3h-manager-panel-btn > a:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+  }
+  
+  .ao3h-menu > li.ao3h-manager-panel-btn > a:active {
+    background: rgba(255, 255, 255, 0.16) !important;
+  }
+}
+
+/* Popup Import/Export en mode sombre */
+@media (prefers-color-scheme: dark) {
+  #ao3h-ie-dialog {
+    background: rgba(16,21,38,.72);           /* Fond bleu foncé */
+    color: var(--ao3h-fg);
+  }
+}

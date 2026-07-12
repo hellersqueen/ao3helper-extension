@@ -1,0 +1,583 @@
+/*: ═══════════════════════════════════════════════════════════════
+      READING TIMELINE — Injected Styles
+        Contrôle l'apparence des éléments visuels injectés sur la
+        page d'historique de lecture (/users/{username}/readings) et les
+        pages de listings AO3.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ────────────────────────────────────────────────────────────── 
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ────────────────────────────────────────────────────────────── 
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🟩 La bordure verte + indentation des œuvres déjà lues
+        │     → SECTION 01 — SURBRILLANCE BLURB LU
+        │     → variable : --ao3h-rt-accent
+
+        ├─  📚 Le badge "Read N×" à côté du titre
+        │     → SECTION 02 — BADGE LU
+        │     → variable : --ao3h-rt-accent
+
+        ├─  📅 Les séparateurs de session (Today / Yesterday / ...)
+        │     → SECTION 03 — SÉPARATEURS DE SESSION
+        │     → variable : --ao3h-rt-divider-color
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Surbrillance blurb lu                     */
+/*#        |                                                 */
+/*####     ├─  02. Badge lu                                  */
+/*#        |                                                 */
+/*=        ├─  03. Séparateurs de session                    */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##    
+  ═══════════════════════════════════════════════════════════════════════   
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - La couleur d'accentuation (vert historique) pour blurb et badge
+      - La couleur des séparateurs de session (bleu AO3)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🟩 Couleur d'accentuation (bordure blurb lu + texte badge) */
+  --ao3h-rt-accent: #40c463;
+
+  /*- 📅 Couleur des séparateurs de session */
+  --ao3h-rt-divider-color: #2c5f8a;
+}
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — SURBRILLANCE BLURB LU
+  ───────────────────────────────────────────────────────────────────────
+    Appliqué aux blurbs d'œuvres présents dans l'historique de lecture.
+    À l'écran :
+      ┌──────────────────────────────────────────────────┐
+      │ ▌ Work Title                        (📚 Read 3×) │  ← bordure verte
+      └──────────────────────────────────────────────────┘
+    ⚠️ La couleur de fond (background-color) reste dynamique en JS
+       car elle est calculée par _recencyColor() selon la date.
+    ⚠️ La classe ao3h-rt-read-blurb est ajoutée par historyAnalytics.js.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-rt-read-blurb {
+  border-left: 4px solid var(--ao3h-rt-accent);
+  padding-left: 8px;
+}
+
+
+/*####   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — BADGE LU
+  ───────────────────────────────────────────────────────────────────────
+    Badge "📚 Read" ou "📚 Read N×" injecté après le titre de l'œuvre.
+    À l'écran :
+      Work Title  [📚 Read 3×]
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-read-badge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.8em;
+  color: var(--ao3h-rt-accent);
+  font-weight: bold;
+  cursor: default;
+  vertical-align: middle;
+}
+
+
+/*=   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — SÉPARATEURS DE SESSION
+  ───────────────────────────────────────────────────────────────────────
+    Séparateurs de période insérés entre les œuvres sur la page
+    d'historique (/users/{username}/readings).
+    À l'écran :
+      ──────────────────────────────
+      Yesterday
+      ──────────────────────────────
+      Work Title A
+      Work Title B
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-session-divider {
+  list-style: none;
+  font-weight: bold;
+  font-size: 1.05em;
+  color: var(--ao3h-rt-divider-color);
+  border-bottom: 2px solid var(--ao3h-rt-divider-color);
+  padding: 12px 0 4px;
+  margin: 16px 0 8px;
+}
+
+
+/*==   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — PANNEAU TIMELINE (scaffold)
+  ───────────────────────────────────────────────────────────────────────
+    Panneau flottant principal, son header, sa barre de contrôles,
+    le panneau de détails et le bouton de menu.
+    ⚠️ display:none initial géré par le CSS — show/hide via JS (.style.display)
+    ⚠️ .ao3h-timeline-details display:none initial — affiché par _showDateDetails()
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ── Panneau principal ──────────────────────────────────────────────── */
+
+.ao3h-reading-timeline-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  background: white;
+  border: 2px solid #2c5f8a;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .3);
+  z-index: 10000;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+
+/*+ ── Header ─────────────────────────────────────────────────────────── */
+
+.ao3h-timeline-header {
+  background: #2c5f8a;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ao3h-timeline-title {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.ao3h-timeline-close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5em;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+}
+
+
+/*+ ── Panneau de détails (date cliquée) ──────────────────────────────── */
+
+.ao3h-timeline-details {
+  padding: 20px;
+  border-top: 1px solid #ddd;
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+  display: none;
+}
+
+
+/*+ ── Barre de contrôles ─────────────────────────────────────────────── */
+
+.ao3h-timeline-controls {
+  padding: 15px 20px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ao3h-timeline-view-toggle { display: flex; gap: 5px; }
+
+.ao3h-timeline-month-select,
+.ao3h-timeline-year-select  { padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; }
+
+.ao3h-timeline-search {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  flex: 1;
+  min-width: 200px;
+}
+
+
+/*+ ── Bouton de menu (injecté dans la nav AO3) ───────────────────────── */
+
+.ao3h-timeline-menu-btn {
+  padding: 8px 15px;
+  background: #2c5f8a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 10px;
+}
+
+
+/*==   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — HEATMAP GRID
+  ───────────────────────────────────────────────────────────────────────
+    Grille annuelle (GitHub-style, 7 lignes × n colonnes) et grille
+    mensuelle (7 colonnes, Mon–Sun). Les cellules reçoivent leur
+    background dynamiquement via JS (getHeatmapColor).
+    ⚠️ background des cellules reste inline — calculé par getHeatmapColor()
+    ⚠️ color des cellules --month : #999 par défaut, #222 via --filled
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ── Container principal ───────────────────────────────────────────── */
+
+.ao3h-timeline-heatmap {
+  padding: 20px;
+  overflow: auto;
+  flex: 1;
+  background: #fafafa;
+}
+
+
+/*+ ── Grille annuelle ────────────────────────────────────────────────── */
+
+.ao3h-timeline-year-wrapper {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.ao3h-timeline-day-axis {
+  display: grid;
+  grid-template-rows: repeat(7, 15px);
+  gap: 3px;
+  padding-top: 0;
+}
+
+.ao3h-timeline-day-label {
+  font-size: 0.65em;
+  color: #999;
+  line-height: 15px;
+  white-space: nowrap;
+}
+
+.ao3h-timeline-year-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 15px);
+  grid-auto-flow: column;
+  grid-auto-columns: 15px;
+  gap: 3px;
+}
+
+.ao3h-timeline-grid-empty { width: 15px; height: 15px; }
+
+
+/*+ ── Cellules heatmap ───────────────────────────────────────────────── */
+/*  ⚠️ background toujours inline (JS) — seule la forme/taille est ici   */
+
+.ao3h-heatmap-cell--year {
+  width: 15px;
+  height: 15px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.ao3h-heatmap-cell--year:hover { transform: scale(1.2); }
+
+
+/*+ ── Grille mensuelle ───────────────────────────────────────────────── */
+
+.ao3h-timeline-month-title {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #2c5f8a;
+  margin-bottom: 12px;
+}
+
+.ao3h-timeline-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 40px);
+  gap: 4px;
+}
+
+.ao3h-timeline-month-day-header {
+  text-align: center;
+  font-size: 0.75em;
+  color: #666;
+  font-weight: bold;
+  padding-bottom: 4px;
+}
+
+.ao3h-heatmap-cell--month {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85em;
+  color: #999;
+  transition: transform 0.15s;
+}
+
+.ao3h-heatmap-cell--month.ao3h-heatmap-cell--filled { color: #222; }
+.ao3h-heatmap-cell--month:hover { transform: scale(1.1); }
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — FILTERS PANEL
+  ───────────────────────────────────────────────────────────────────────
+    Filters <details> panel: checkboxes, radios, range selects,
+    date pickers, and action buttons.
+    ⚠️ customRange.style.display toggled dynamically by JS (range select)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ── Filters container (<details>) ────────────────────────────────── */
+
+.ao3h-filters-panel {
+  border-bottom: 1px solid #ddd;
+  background: #fff;
+}
+
+.ao3h-filters-summary {
+  cursor: pointer;
+  padding: 10px 20px;
+  font-weight: bold;
+  color: #2c5f8a;
+  user-select: none;
+}
+
+.ao3h-filters-body {
+  padding: 12px 20px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+
+/*+ ── Group labels + field inputs ──────────────────────────────────── */
+
+.ao3h-filter-group-label {
+  font-size: 0.85em;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.ao3h-filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85em;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+
+.ao3h-filter-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85em;
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+
+.ao3h-filter-text-input {
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 160px;
+  font-size: 0.85em;
+  box-sizing: border-box;
+}
+
+
+/*+ ── Date range select + custom range ─────────────────────────────── */
+
+.ao3h-filter-range-select {
+  display: block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 0.85em;
+  margin-bottom: 6px;
+}
+
+.ao3h-filter-custom-range {
+  display: none;           /* toggled to flex by JS when 'custom' selected */
+  flex-direction: column;
+  gap: 4px;
+}
+
+
+/*+ ── Num / date sub-inputs ────────────────────────────────────────── */
+
+.ao3h-num-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.ao3h-num-input-label {
+  font-size: 0.85em;
+  color: #555;
+  width: 28px;
+}
+
+.ao3h-num-input {
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 90px;
+  font-size: 0.85em;
+}
+
+.ao3h-date-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ao3h-date-input-label {
+  font-size: 0.85em;
+  color: #555;
+  width: 28px;
+}
+
+.ao3h-date-input {
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 0.85em;
+}
+
+
+/*+ ── Action buttons ───────────────────────────────────────────────── */
+
+.ao3h-filter-btn-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 20px;
+}
+
+.ao3h-filter-apply-btn {
+  padding: 7px 14px;
+  background: #2c5f8a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+.ao3h-filter-secondary-btn {
+  padding: 7px 14px;
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 07 — CONTROLS BUTTONS + DATE DETAILS
+  ───────────────────────────────────────────────────────────────────────
+    View toggle buttons (Year View / Month View / Export JSON) and
+    date details panel work items.
+    ⚠️ detailsPanel.style.display toggled dynamically by JS
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ── View toggle buttons ───────────────────────────────────────────── */
+
+.ao3h-timeline-btn {
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+}
+
+.ao3h-btn--active {
+  background: #2c5f8a;
+  color: white;
+  border-color: #2c5f8a;
+}
+
+.ao3h-btn--inactive {
+  background: #f0f0f0;
+  color: #333;
+  border-color: #ccc;
+}
+
+
+/*+ ── Date details panel content ────────────────────────────────────── */
+
+.ao3h-timeline-details-heading {
+  margin-top: 0;
+  color: #2c5f8a;
+}
+
+.ao3h-timeline-work-item {
+  padding: 10px;
+  margin: 10px 0;
+  background: #f9f9f9;
+  border-left: 4px solid #2c5f8a;
+  border-radius: 4px;
+}
+
+.ao3h-timeline-work-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.ao3h-timeline-work-meta {
+  font-size: 0.9em;
+  color: #666;
+}

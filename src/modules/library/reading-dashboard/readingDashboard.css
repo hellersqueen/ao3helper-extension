@@ -1,0 +1,242 @@
+/*: ═══════════════════════════════════════════════════════════════
+      READING DASHBOARD — Injected Styles
+        Contrôle l'apparence du panneau de tableau de bord
+        affiché sur la page d'accueil AO3 (homepage).
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ────────────────────────────────────────────────────────────── 
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ────────────────────────────────────────────────────────────── 
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  📦 Le conteneur principal du tableau de bord
+        │     → SECTION 01 — PANNEAU PRINCIPAL
+        │     → variable : --ao3h-rd-panel-border / --ao3h-rd-panel-bg
+
+        ├─  🔲 La grille de sections
+        │     → SECTION 02 — GRILLE DE CONTENU
+
+        ├─  📝 Les textes secondaires et les liens
+        │     → SECTION 03 — TEXTES ET LIENS
+        │     → variable : --ao3h-rd-text-muted / --ao3h-rd-link-color
+
+        ├─  🔗 Les liens rapides (quick links)
+        │     → SECTION 04 — LIENS RAPIDES
+        │     → variable : --ao3h-rd-quicklink-color
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Panneau principal                         */
+/*#        |                                                 */
+/*####     ├─  02. Grille de contenu                         */
+/*#        |                                                 */
+/*=        ├─  03. Textes et liens                           */
+/*#        |                                                 */
+/*==       ├─  04. Liens rapides                             */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##    
+  ═══════════════════════════════════════════════════════════════════════   
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - La couleur de fond et de bordure du panneau
+      - La couleur des textes secondaires et des liens
+      - Les couleurs des liens rapides (quick links)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🔲 Bordure du panneau (bleu transparent) */
+  --ao3h-rd-panel-border: rgba(37, 99, 235, 0.35);
+
+  /*- 🎨 Fond du panneau (bleu très pâle) */
+  --ao3h-rd-panel-bg: rgba(239, 246, 255, 0.9);
+
+  /*- 📝 Texte secondaire (méta, compteur, vide) */
+  --ao3h-rd-text-muted: #4b5563;
+
+  /*- 🔗 Couleur des liens dans la liste */
+  --ao3h-rd-link-color: #1d4ed8;
+
+  /*- 🔗 Bordure du séparateur quick links */
+  --ao3h-rd-quicklinks-border: rgba(148, 163, 184, 0.6);
+
+  /*- 🔗 Fond des liens rapides (normal) */
+  --ao3h-rd-quicklink-bg: rgba(59, 130, 246, 0.08);
+
+  /*- 🔗 Fond des liens rapides (survol) */
+  --ao3h-rd-quicklink-hover-bg: rgba(59, 130, 246, 0.16);
+
+  /*- 🔗 Bordure des liens rapides */
+  --ao3h-rd-quicklink-border: rgba(37, 99, 235, 0.8);
+}
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — PANNEAU PRINCIPAL
+  ───────────────────────────────────────────────────────────────────────
+    Conteneur principal du tableau de bord injecté en haut de la
+    page d'accueil.
+    À l'écran :
+      ┌──────────────────────────────────────────────────┐
+      │  📊 Reading Dashboard                            │
+      │  ─────────────────────────────────────────────  │
+      │  [section] [section] [section]                   │
+      └──────────────────────────────────────────────────┘
+    ⚠️ Les styles ne s'appliquent que quand la classe
+       html.ao3h-dashboard-enabled est présente (ajoutée par le JS).
+    ⚠️ #ao3h-dashboard-panel est l'id du panneau — utilisé par le JS
+       pour retrouver et supprimer l'élément au cleanup.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel {
+  margin: 1.5em 0 1em;
+  padding: 1em 1.25em 1.1em;
+  border-radius: 0.9em;
+  border: 1px solid var(--ao3h-rd-panel-border);
+  background: var(--ao3h-rd-panel-bg);
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-title {
+  margin: 0 0 0.75em;
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+
+/*####   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — GRILLE DE CONTENU
+  ───────────────────────────────────────────────────────────────────────
+    Grille responsive qui organise les sections du tableau de bord
+    (récents, fandoms, tags...).
+    À l'écran :
+      ┌──────────────────┬──────────────────┬──────────────────┐
+      │  Récemment lus   │  Fandoms         │  Tags fréquents  │
+      └──────────────────┴──────────────────┴──────────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.9em 1.2em;
+  margin-bottom: 0.8em;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-section-title {
+  margin: 0 0 0.45em;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-empty {
+  margin: 0;
+  font-size: 0.8em;
+  color: var(--ao3h-rd-text-muted);
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-list li {
+  margin-bottom: 0.3em;
+}
+
+
+/*=   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — TEXTES ET LIENS
+  ───────────────────────────────────────────────────────────────────────
+    Liens cliquables vers les œuvres, métadonnées, labels et compteurs.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-list a {
+  display: block;
+  font-size: 0.85em;
+  color: var(--ao3h-rd-link-color);
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-meta {
+  display: block;
+  font-size: 0.75em;
+  color: var(--ao3h-rd-text-muted);
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-label {
+  font-size: 0.85em;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-count {
+  float: right;
+  font-size: 0.75em;
+  color: var(--ao3h-rd-text-muted);
+}
+
+
+/*==   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — LIENS RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    Rangée de liens rapides affichée en bas du panneau.
+    À l'écran :
+      ┌──────────────────────────────────────────────────┐
+      │  [Bookmarks] [History] [Later Shelf] [Works]     │
+      └──────────────────────────────────────────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-quicklinks {
+  border-top: 1px solid var(--ao3h-rd-quicklinks-border);
+  padding-top: 0.6em;
+  margin-top: 0.4em;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-quicklinks-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-quicklink {
+  display: inline-block;
+  font-size: 0.8em;
+  padding: 0.2em 0.7em;
+  border-radius: 999px;
+  border: 1px solid var(--ao3h-rd-quicklink-border);
+  background: var(--ao3h-rd-quicklink-bg);
+  color: var(--ao3h-rd-link-color);
+  text-decoration: none;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-quicklink:hover {
+  background: var(--ao3h-rd-quicklink-hover-bg);
+}

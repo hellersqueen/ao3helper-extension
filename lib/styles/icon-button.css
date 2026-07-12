@@ -1,0 +1,130 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   AO3 HELPER - ICON BUTTON COMPONENT
+   
+   Ce fichier définit le style des petits boutons avec icône (ex: ⋮ ⚙ ✕)
+   Utilisés pour les actions rapides dans les menus et listes.
+   
+   GUIDE POUR LES DÉBUTANTS EN CSS :
+   ─────────────────────────────────
+   • var(--nom, valeur) = utilise une variable CSS, avec valeur de secours
+   • rgba(r, g, b, a) = couleur avec transparence (a = 0 transparent, 1 opaque)
+   • :hover = quand la souris survole l'élément
+   • :focus = quand l'élément est sélectionné (clavier)
+   • :active = quand l'élément est cliqué
+   
+═══════════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION 1 : BOUTON ICÔNE DE BASE
+   ────────────────────────────────
+   Le bouton lui-même (zone cliquable carrée)
+═══════════════════════════════════════════════════════════════ */
+
+.ao3h-icon-btn {
+  /* Disposition - centre l'icône dans le bouton */
+  display: inline-flex;       /* Élément en ligne mais avec flexbox */
+  align-items: center;        /* Centre verticalement */
+  justify-content: center;    /* Centre horizontalement */
+  
+  /* DIMENSIONS DU BOUTON - Modifier pour changer la taille */
+  width: 20px;                /* LARGEUR - en pixels */
+  height: 20px;               /* HAUTEUR - en pixels */
+  
+  /* Espacement */
+  padding: 0;                 /* Pas d'espace intérieur */
+  margin: 0 6px 0 0;          /* Marge : haut droite bas gauche. 6px à droite */
+  
+  /* Apparence - transparent par défaut */
+  border: none;               /* Pas de bordure */
+  background: transparent;    /* Fond transparent (invisible) */
+  
+  /* COULEUR DE L'ICÔNE */
+  /* var() utilise une variable CSS définie ailleurs, avec valeur de secours */
+  color: var(--ao3h-fg-subtle, rgba(68, 68, 68, 0.6));  /* Gris foncé à 60% opacité */
+  
+  cursor: pointer;            /* Curseur "main" au survol (indique cliquable) */
+  
+  /* TAILLE DE L'ICÔNE - L'icône hérite de cette taille */
+  font-size: 16px;            /* Taille en pixels. Augmenter = icône plus grande */
+  line-height: 1;             /* Hauteur de ligne = taille de police */
+  
+  border-radius: 3px;         /* COINS ARRONDIS - 0 = carrés, plus grand = plus arrondi */
+  
+  transition: none;           /* Pas d'animation (changements instantanés) */
+  pointer-events: auto;       /* Réagit aux clics */
+  flex-shrink: 0;             /* Ne rétrécit pas si manque de place */
+  
+  position: relative;         /* Pour positionnement des éléments enfants */
+  top: 0;                     /* Pas de décalage vertical */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION 2 : ÉTATS INTERACTIFS (hover, focus, active)
+   ────────────────────────────────────────────────────
+   Ces styles s'appliquent quand l'utilisateur interagit avec le bouton.
+   Ici, on DÉSACTIVE tous les effets visuels (design minimaliste).
+═══════════════════════════════════════════════════════════════ */
+
+/* 
+   :hover  = souris au-dessus du bouton
+   :focus  = bouton sélectionné (navigation clavier avec Tab)
+   :active = bouton en cours de clic (souris enfoncée)
+*/
+.ao3h-icon-btn:hover,
+.ao3h-icon-btn:focus,
+.ao3h-icon-btn:active {
+  background: transparent;           /* Pas de changement de fond */
+  background-color: transparent;     /* Idem (redondance pour compatibilité) */
+  color: var(--ao3h-fg-subtle, rgba(68, 68, 68, 0.6));  /* Même couleur qu'au repos */
+  border: none;                      /* Pas de bordure */
+  outline: none;                     /* Pas de contour de focus */
+  box-shadow: none;                  /* Pas d'ombre */
+  transform: none;                   /* Pas de transformation (zoom, rotation...) */
+  text-decoration: none;             /* Pas de soulignement */
+}
+
+/*
+   NOTE : Si vous voulez ajouter un effet au survol, modifiez .ao3h-icon-btn:hover
+   Exemple pour ajouter un fond au survol :
+   .ao3h-icon-btn:hover {
+     background: rgba(0, 0, 0, 0.1);  // Fond gris léger
+   }
+*/
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION 3 : ICÔNE À L'INTÉRIEUR DU BOUTON
+   ─────────────────────────────────────────
+   Style de l'élément qui contient l'icône (span ou .ao3h-icon)
+═══════════════════════════════════════════════════════════════ */
+
+/* L'icône peut être dans un <span> ou un élément avec classe .ao3h-icon */
+.ao3h-icon-btn .ao3h-icon,
+.ao3h-icon-btn > span {
+  display: block;             /* Élément bloc */
+  font-size: inherit;         /* Hérite la taille du bouton parent */
+  line-height: inherit;       /* Hérite la hauteur de ligne */
+  pointer-events: none;       /* Les clics "passent à travers" vers le bouton */
+  margin: 0;                  /* Pas de marge */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION 4 : CONTEXTE SPÉCIFIQUE - MENU AVEC DATA-FLAG
+   ─────────────────────────────────────────────────────
+   Quand le bouton icône est dans un lien de menu qui a l'attribut data-flag
+═══════════════════════════════════════════════════════════════ */
+
+/* 
+   Sélecteur : .ao3h-menu a[data-flag] .ao3h-icon-btn
+   Signifie : un bouton icône (.ao3h-icon-btn) 
+              qui est à l'intérieur d'un lien (<a>) 
+              qui a l'attribut data-flag
+              qui est dans un menu (.ao3h-menu)
+*/
+.ao3h-menu a[data-flag] .ao3h-icon-btn {
+  visibility: visible;        /* S'assure que le bouton est visible */
+  opacity: 1;                 /* Totalement opaque (pas de transparence) */
+}

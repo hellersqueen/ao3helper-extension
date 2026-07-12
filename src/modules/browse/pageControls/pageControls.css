@@ -1,0 +1,137 @@
+/*: ═══════════════════════════════════════════════════════════════
+      PAGE CONTROLS — Injected UI Styles
+        Contrôle l'apparence des widgets injectés par le module
+        Page Controls : saut de page, works-per-page, navigation améliorée.
+    ────────────────────────────────────────────────────────────── */
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  01. Widget "Jump to page"                     */
+/*#        |                                                 */
+/*###      ├─  02. Sélecteur Works-per-page                  */
+/*#        |                                                 */
+/*####     ├─  03. Navigation améliorée                      */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — WIDGET "JUMP TO PAGE"
+  ───────────────────────────────────────────────────────────────────────
+    Le widget de saut direct à une page (champ numérique + bouton).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-jtp-row {
+  display: flex;
+  justify-content: center;
+  margin: .4rem 0 0;
+  padding-right: .5rem;
+}
+
+.ao3h-jtp {
+  display: inline-flex;
+  align-items: center;
+  gap: .2rem;
+  font: inherit;
+  color: inherit;
+}
+
+.ao3h-jtp .label { color: #666; font-size: .7em; padding-right: .3rem; }
+.ao3h-jtp .sep   { color: #888; }
+
+.ao3h-jtp .pg-input {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+  display: inline-block;
+  box-sizing: content-box;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  color: inherit;
+  font-size: .7rem;
+  line-height: 1.4;
+  padding: .1em .3em;
+  text-align: center;
+  outline: none;
+  width: 3.5em;
+}
+
+.ao3h-jtp .pg-input:focus {
+  border-color: #9bb1e0;
+  box-shadow: 0 0 0 2px #c9d6f0;
+}
+
+.ao3h-jtp .pg-input::-webkit-outer-spin-button,
+.ao3h-jtp .pg-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — SÉLECTEUR WORKS-PER-PAGE
+  ───────────────────────────────────────────────────────────────────────
+    La rangée de boutons pour choisir le nombre d'œuvres par page.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-wpp-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .82em;
+  margin: 6px 0 2px;
+  color: #555;
+}
+
+.ao3h-wpp-label { font-weight: 600; }
+
+.ao3h-wpp-btn {
+  padding: 1px 7px;
+  border-radius: 10px;
+  border: 1px solid #bbb;
+  background: #f5f5f5;
+  color: #444;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ao3h-wpp-btn.active             { background: #900; color: #fff; border-color: #700; }
+.ao3h-wpp-btn:hover:not(.active) { background: #e0e0e0; }
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — NAVIGATION AMÉLIORÉE
+  ───────────────────────────────────────────────────────────────────────
+    Les boutons de navigation (Première / Précédente / Suivante / Dernière)
+    et l'indicateur de page courante.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-en-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: center;
+  font-size: .82em;
+  margin: 4px 0;
+}
+
+.ao3h-en-btn {
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid #bbb;
+  background: #f5f5f5;
+  color: #900;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ao3h-en-btn.disabled            { color: #bbb; border-color: #ddd; cursor: default; pointer-events: none; }
+.ao3h-en-btn:hover:not(.disabled){ background: #ffe0e0; }
+.ao3h-en-current                 { font-size: .9em; color: #666; padding: 0 4px; }

@@ -1,0 +1,399 @@
+/*: ═══════════════════════════════════════════════════════════════
+      TEXT TO SPEECH — Styles
+        Contrôle l'apparence du panneau flottant TTS,
+        des boutons, du surlignage de phrase et de la barre de progression.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🎨 La couleur principale (boutons, barre de progression)
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-tts-color-primary
+
+        ├─  🟡 La couleur du surlignage de phrase en cours
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-tts-color-highlight
+
+        ├─  🔲 Les coins arrondis du panneau
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-tts-radius
+
+        ├─  📐 La position du panneau flottant
+        │     → SECTION 01 — PANNEAU FLOTTANT
+
+        ├─  🔘 Les boutons Play/Pause/Stop
+        │     → SECTION 02 — BOUTONS
+
+        ├─  📊 La barre de progression
+        │     → SECTION 05 — BARRE DE PROGRESSION
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Panneau flottant                          */
+/*#        |                                                 */
+/*####     ├─  02. Boutons                                   */
+/*#        |                                                 */
+/*=        ├─  03. Lignes de contrôle (row)                  */
+/*#        |                                                 */
+/*==       ├─  04. Sélecteur de voix                         */
+/*#        |                                                 */
+/*===      ├─  05. Barre de progression                      */
+/*#        |                                                 */
+/*====     ├─  06. Minuterie de sommeil                      */
+/*#        |                                                 */
+/*++       ├─  07. Surlignage de phrase                      */
+/*#        |                                                 */
+/*--       ├─  08. Bouton fermeture                          */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - La couleur principale des boutons et de la barre de progression
+      - La couleur du surlignage de la phrase en cours de lecture
+      - L'arrondi des coins du panneau
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🎨 Couleur principale — boutons, barre de progression */
+  --ao3h-tts-color-primary: #2c5f8a;
+
+  /*- 🎨 Couleur principale au survol des boutons */
+  --ao3h-tts-color-primary-dark: #1e4567;
+
+  /*- 🔴 Couleur d'accentuation — bouton actif, compte à rebours sommeil */
+  --ao3h-tts-color-accent: #900;
+
+  /*- 🟡 Couleur de surlignage de la phrase en cours de lecture */
+  --ao3h-tts-color-highlight: #fff3b0;
+
+  /*- 🔲 Arrondi du panneau flottant */
+  --ao3h-tts-radius: 8px;
+
+  /*- 📝 Texte secondaire gris */
+  --ao3h-tts-text-muted: #555;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — PANNEAU FLOTTANT
+  ───────────────────────────────────────────────────────────────────────
+    Le panneau de contrôle TTS, fixé en bas à droite de l'écran.
+    À l'écran :
+      ┌─────────────────────────────┐
+      │ 🔊 Text to Speech       [✕] │
+      │ ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬   │
+      │ [▶ Play] [⏸] [⏹]           │
+      │ Speed ──────────── 1×       │
+      └─────────────────────────────┘
+    ⚠️ Lié au JS : playbackControls.js alterne display none/'' sur ce panneau.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    CONTENEUR DU PANNEAU
+  ─────────────────────────────────────────────────────────────
+      └─ Position fixe en bas à droite, z-index élevé pour passer devant le contenu.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tts-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: var(--ao3h-tts-radius);
+  padding: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .2);
+  z-index: 9999;
+  width: 260px;
+  font-family: inherit;
+}
+
+.ao3h-tts-panel-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ao3h-tts-controls {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — BOUTONS
+  ───────────────────────────────────────────────────────────────────────
+    Boutons Play, Pause, Stop et le bouton flottant "Read Aloud".
+    ⚠️ Lié au JS : playbackControls.js active/désactive les boutons via
+        l'attribut `disabled` et la classe `.ao3h-tts-active`.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON GÉNÉRIQUE TTS
+  ─────────────────────────────────────────────────────────────
+      └─ Utilisé pour Play, Pause, Stop, et le FAB flottant.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tts-btn {
+  padding: 6px 10px;
+  background: var(--ao3h-tts-color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  flex: 1;
+  transition: background .15s;
+}
+
+.ao3h-tts-btn:hover {
+  background: var(--ao3h-tts-color-primary-dark);
+}
+
+.ao3h-tts-btn:disabled {
+  /*- ⚠️ Lié au JS : état désactivé géré par playbackControls.js */
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.ao3h-tts-btn.ao3h-tts-active {
+  /*- ⚠️ Lié au JS : classe ajoutée/retirée par playbackControls.js */
+  background: var(--ao3h-tts-color-accent);
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON FLOTTANT « READ ALOUD » (FAB)
+  ─────────────────────────────────────────────────────────────
+      └─ Visible en permanence sur les pages d'œuvre, remplace le panneau
+         quand celui-ci est fermé. Positionné au même endroit que le panneau.
+      └─ ⚠️ Lié au JS : playbackControls.js alterne display none/'' entre le
+             FAB et le panneau.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tts-fab {
+  /*- Position fixe, légèrement sous le panneau (z-index 9998 vs 9999) */
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9998;
+  /*- Forme pilule — remplace le border-radius: 4px de .ao3h-tts-btn */
+  border-radius: 20px;
+  /*- Padding plus généreux que les boutons du panneau */
+  padding: 8px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+  /*- FAB n'a pas besoin de flex: 1 (hors d'un flex container) */
+  flex: none;
+}
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — LIGNES DE CONTRÔLE (ROW)
+  ───────────────────────────────────────────────────────────────────────
+    Ligne "Speed" avec le slider et l'affichage de la valeur.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-tts-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--ao3h-tts-text-muted);
+}
+
+.ao3h-tts-row label {
+  flex-shrink: 0;
+  min-width: 50px;
+}
+
+.ao3h-tts-row input[type="range"] {
+  flex: 1;
+}
+
+.ao3h-tts-row .ao3h-tts-val {
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — SÉLECTEUR DE VOIX
+  ───────────────────────────────────────────────────────────────────────
+    Ligne avec le menu déroulant de sélection de voix et le bouton preview.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-tts-voice-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ao3h-tts-voice-row select {
+  flex: 1;
+  font-size: 12px;
+  padding: 3px 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.ao3h-tts-voice-preview {
+  padding: 3px 8px;
+  font-size: 11px;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.ao3h-tts-voice-preview:hover {
+  background: #ddd;
+}
+
+
+/*===
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — BARRE DE PROGRESSION
+  ───────────────────────────────────────────────────────────────────────
+    Fine barre en haut du panneau indiquant la progression de la lecture.
+    ⚠️ Lié au JS : playbackControls.js modifie dynamiquement la width
+        de .ao3h-tts-progress-bar via style.width (valeur en %, calculée).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-tts-progress {
+  height: 3px;
+  background: #eee;
+  border-radius: 2px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.ao3h-tts-progress-bar {
+  /*- ⚠️ La width est définie dynamiquement par le JS (valeur en %) */
+  height: 100%;
+  background: var(--ao3h-tts-color-primary);
+  width: 0%;
+  transition: width .3s;
+}
+
+
+/*====
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — MINUTERIE DE SOMMEIL
+  ───────────────────────────────────────────────────────────────────────
+    Ligne "Sleep" avec le select de durée et le compte à rebours.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-tts-sleep-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ao3h-tts-text-muted);
+  margin-bottom: 6px;
+}
+
+.ao3h-tts-sleep-row select {
+  font-size: 12px;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.ao3h-tts-sleep-countdown {
+  font-size: 11px;
+  color: var(--ao3h-tts-color-accent);
+  font-weight: bold;
+}
+
+
+/*++
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 07 — SURLIGNAGE DE PHRASE
+  ───────────────────────────────────────────────────────────────────────
+    Classe appliquée dynamiquement par visualFeedback.js sur la phrase
+    en cours de lecture dans le texte de l'œuvre.
+    ⚠️ Lié au JS : visualFeedback.js ajoute/retire cette classe à chaque phrase.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-tts-highlight {
+  background: var(--ao3h-tts-color-highlight);
+  border-radius: 2px;
+  transition: background .2s;
+}
+
+
+/*--
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 08 — BOUTON FERMETURE
+  ───────────────────────────────────────────────────────────────────────
+    Bouton ✕ en position absolue dans le coin supérieur droit du panneau.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-tts-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.ao3h-tts-close:hover {
+  color: #333;
+}

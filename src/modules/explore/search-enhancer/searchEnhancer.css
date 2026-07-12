@@ -1,0 +1,305 @@
+/*: ═══════════════════════════════════════════════════════════════
+      SEARCH ENHANCER — Injected UI Styles
+        Contrôle l'apparence des éléments injectés par le module :
+        dropdown autocomplete, panneau related-tags, sort toolbar,
+        badge ratio, icône quick search, et groupes de séries.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence.
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🎨 La couleur violette principale (titres, bordures, textes)
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-se-color-accent
+
+        ├─  🪟 Le fond clair des panneaux
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-se-color-bg-light
+
+        ├─  🔢 Le z-index du dropdown autocomplete
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-se-dropdown-z
+
+        ├─  🔍 Le dropdown d'autocomplétion
+        │     → SECTION 01 — DROPDOWN AUTOCOMPLETE
+
+        ├─  🏷 Le panneau related-tags
+        │     → SECTION 02 — PANNEAU RELATED-TAGS
+
+        ├─  🔃 La barre de tri
+        │     → SECTION 03 — SORT TOOLBAR
+
+        ├─  📊 Le badge ratio et l'icône quick search
+        │     → SECTION 04 — BADGE RATIO ET ICÔNE QUICK SEARCH
+
+        ├─  📚 Les groupes de séries
+        │     → SECTION 05 — REGROUPEMENT DE SÉRIES
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Dropdown autocomplete                     */
+/*#        |                                                 */
+/*####     ├─  02. Panneau related-tags                      */
+/*#        |                                                 */
+/*=        ├─  03. Sort toolbar                              */
+/*#        |                                                 */
+/*==       ├─  04. Badge ratio et icône quick search         */
+/*#        |                                                 */
+/*===      ├─  05. Regroupement de séries                    */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    Modifie ici les valeurs globales sans chercher dans tout le fichier.
+    Tu peux changer :
+      - La couleur violette principale (accent)
+      - La couleur de fond clair des panneaux
+      - Le z-index du dropdown autocomplete
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+:root {
+  /*- 🎨 Couleur violette principale (titres, bordures, texte coloré) */
+  --ao3h-se-color-accent: #4a1a6e;
+
+  /*- 🪟 Fond clair des panneaux et regroupements */
+  --ao3h-se-color-bg-light: #f9f5ff;
+
+  /*- 🔢 Z-index du dropdown autocomplete */
+  --ao3h-se-dropdown-z: 7000;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — DROPDOWN AUTOCOMPLETE
+  ───────────────────────────────────────────────────────────────────────
+    Le panneau de suggestions qui apparaît sous le champ de recherche.
+    ⚠️ Position absolue — le JS positionne top/left/width dynamiquement.
+    ⚠️ Les classes sont toutes injectées par JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/*+ ─────────────────────────────────────────────────────────────
+    Conteneur principal
+  ────────────────────────────────────────────────────────────── */
+
+.ao3h-se-autocomplete {
+  position: absolute;
+  z-index: var(--ao3h-se-dropdown-z);
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  min-width: 240px;
+  max-width: 420px;
+  overflow: hidden;
+  font-size: .88em;
+}
+
+/*+ ─────────────────────────────────────────────────────────────
+    Items de la liste
+  ────────────────────────────────────────────────────────────── */
+
+.ao3h-se-ac-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.ao3h-se-ac-item:last-child { border-bottom: none; }
+
+.ao3h-se-ac-item:hover,
+.ao3h-se-ac-item.ao3h-se-ac-active {
+  background: #f0e8ff;
+}
+
+.ao3h-se-ac-icon { font-size: .8em; opacity: .6; flex-shrink: 0; }
+.ao3h-se-ac-query { flex: 1; }
+.ao3h-se-ac-ts { font-size: .75em; opacity: .55; }
+
+/*+ ─────────────────────────────────────────────────────────────
+    Bouton "Effacer l'historique"
+  ────────────────────────────────────────────────────────────── */
+
+.ao3h-se-ac-clear {
+  padding: 4px 12px;
+  font-size: .75em;
+  color: #900;
+  cursor: pointer;
+  text-align: right;
+  border-top: 1px solid #eee;
+  background: #fafafa;
+}
+
+.ao3h-se-ac-clear:hover { background: #ffeaea; }
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — PANNEAU RELATED-TAGS
+  ───────────────────────────────────────────────────────────────────────
+    Le panneau de suggestions de tags liés affiché sous la recherche.
+    ⚠️ Toutes les classes sont injectées par JS (relatedSearches.js).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-se-related-panel {
+  background: var(--ao3h-se-color-bg-light);
+  border: 1px solid #c8a0e8;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 8px 0 12px;
+  font-size: .86em;
+}
+
+.ao3h-se-related-title {
+  font-weight: bold;
+  color: var(--ao3h-se-color-accent);
+  margin-bottom: 6px;
+  font-size: .9em;
+}
+
+/*- Titre de section avec une section au-dessus (classe ajoutée conditionnellement par JS) */
+.ao3h-se-related-title--spaced { margin-top: 8px; }
+
+.ao3h-se-related-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/*+ ─────────────────────────────────────────────────────────────
+    Pills de tags cliquables
+  ────────────────────────────────────────────────────────────── */
+
+.ao3h-se-tag-pill {
+  background: #fff;
+  border: 1px solid #c0a0e0;
+  border-radius: 12px;
+  padding: 3px 10px;
+  cursor: pointer;
+  color: var(--ao3h-se-color-accent);
+  transition: background .12s;
+  white-space: nowrap;
+}
+
+.ao3h-se-tag-pill:hover { background: #ede0ff; }
+
+.ao3h-se-tag-count { font-size: .78em; opacity: .65; margin-left: 3px; }
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — SORT TOOLBAR
+  ───────────────────────────────────────────────────────────────────────
+    La barre de tri injektée au-dessus des résultats de recherche.
+    ⚠️ Toutes les classes sont injectées par JS (resultsSorting.js).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-se-sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 4px;
+  flex-wrap: wrap;
+}
+
+.ao3h-se-sort-bar label { font-size: .82em; color: #555; }
+
+.ao3h-se-sort-select {
+  font-size: .82em;
+  padding: 2px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.ao3h-se-sort-apply {
+  font-size: .78em;
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 1px solid #900;
+  color: #900;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ao3h-se-sort-apply:hover { background: #900; color: #fff; }
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — BADGE RATIO ET ICÔNE QUICK SEARCH
+  ───────────────────────────────────────────────────────────────────────
+    Badge inline affiché à côté du titre, et icône de recherche rapide
+    visible au hover.
+    ⚠️ .ao3h-se-qs-icon est injecté par JS (searchAutocomplete.js).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-se-ratio {
+  font-size: .78em;
+  color: #555;
+  margin-left: 5px;
+  white-space: nowrap;
+}
+
+.ao3h-se-qs-icon {
+  display: inline-block;
+  font-size: .72em;
+  margin-left: 3px;
+  vertical-align: middle;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity .15s;
+  user-select: none;
+}
+
+a:hover + .ao3h-se-qs-icon,
+.ao3h-se-qs-icon:hover { opacity: 1; }
+
+
+/*===
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — REGROUPEMENT DE SÉRIES
+  ───────────────────────────────────────────────────────────────────────
+    Les blocs qui regroupent les works d'une même série sur les listings.
+    ⚠️ La classe .ao3h-se-series-group est posée par JS (seriesGrouping.js).
+    ⚠️ L'en-tête est le premier enfant direct du wrapper (div:first-child).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-se-series-group {
+  border: 1px solid #c0a0e0;
+  border-radius: 8px;
+  margin: 6px 0;
+  padding: 8px;
+  background: var(--ao3h-se-color-bg-light);
+  list-style: none;
+}
+
+.ao3h-se-series-group > div:first-child {
+  /*- En-tête "📚 Series: N works" */
+  font-size: .8em;
+  color: var(--ao3h-se-color-accent);
+  font-weight: bold;
+  margin-bottom: 6px;
+}

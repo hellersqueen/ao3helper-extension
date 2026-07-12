@@ -1,0 +1,411 @@
+/*: ═══════════════════════════════════════════════════════════════
+      READING TRACKER — Styles
+        Contrôle l'apparence des marqueurs de works vus,
+        des badges de chapitre, de la bannière de reprise,
+        des badges de progression et des indicateurs de mise à jour.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  👁️ L'opacité des works déjà vus
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-rt-seen-opacity
+        │     ⚠️ Valeur écrasée par le réglage JS cfg('seenWorksOpacity')
+
+        ├─  🔵 La couleur des badges "Updated"
+        │     → SECTION 07 — BADGES UPDATED
+
+        ├─  💜 La bannière de reprise de lecture
+        │     → SECTION 04 — BANNIÈRE DE REPRISE
+
+        ├─  📊 Le badge de progression flottant
+        │     → SECTION 05 — BADGE DE PROGRESSION FLOTTANT
+
+        ├─  🔲 Les coins arrondis
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-rt-radius
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Works vus (seen marks)                    */
+/*#        |                                                 */
+/*####     ├─  02. Bouton reveal et compteur                 */
+/*#        |                                                 */
+/*=        ├─  03. Badge de chapitre                         */
+/*#        |                                                 */
+/*==       ├─  04. Bannière de reprise                       */
+/*#        |                                                 */
+/*===      ├─  05. Badge de progression flottant             */
+/*#        |                                                 */
+/*====     ├─  06. Marqueur de position                      */
+/*#        |                                                 */
+/*++       ├─  07. Badges "Updated"                          */
+/*#        |                                                 */
+/*--       ├─  08. Masquage conditionnel (config)            */
+/*#        |                                                 */
+/*---      ├─  09. Toast de bienvenue                        */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - L'opacité des works déjà vus (⚠️ écrasée par le JS si configurée)
+      - L'arrondi des badges et bannières
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 👁️ Opacité des works déjà vus — ⚠️ valeur initiale, écrasée par cfg('seenWorksOpacity') */
+  --ao3h-rt-seen-opacity: 0.4;
+
+  /*- 🔲 Arrondi des badges et boutons */
+  --ao3h-rt-radius: 10px;
+
+  /*- 📝 Texte secondaire gris */
+  --ao3h-rt-text-muted: #666;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — WORKS VUS (SEEN MARKS)
+  ───────────────────────────────────────────────────────────────────────
+    Estompe ou masque les works déjà ouverts dans les listings.
+    ⚠️ .ao3h-seen-mark — l'opacité est pilotée par la variable
+        --ao3h-rt-seen-opacity, elle-même définie par le JS au init().
+    ⚠️ .ao3h-seen-hidden — class ajoutée/retirée par seenTracking.js.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    WORK VU — ESTOMPAGE
+  ─────────────────────────────────────────────────────────────
+      └─ Opacité définie par la variable CSS, surchargeable via SECTION 00.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-seen-mark {
+  /*- ⚠️ Valeur pilotée par JS : document.documentElement.style.setProperty('--ao3h-rt-seen-opacity', ...) */
+  opacity: var(--ao3h-rt-seen-opacity, 0.4);
+  transition: opacity .2s;
+}
+
+.ao3h-seen-mark:hover {
+  opacity: 0.8;
+}
+
+.ao3h-seen-hidden {
+  /*- ⚠️ Classe ajoutée/retirée par seenTracking.js (mode "hide") */
+  display: none !important;
+}
+
+.ao3h-seen-badge {
+  display: inline-block;
+  font-size: 0.75em;
+  margin-left: 0.4em;
+  vertical-align: middle;
+  cursor: default;
+  user-select: none;
+}
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — BOUTON REVEAL ET COMPTEUR
+  ───────────────────────────────────────────────────────────────────────
+    Bouton "Show hidden" et compteur de works masqués,
+    affichés au-dessus du listing quand des works sont cachés.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-hide-counter {
+  font-size: 0.85em;
+  color: var(--ao3h-rt-text-muted);
+  margin: 4px 0;
+  font-style: italic;
+}
+
+.ao3h-reveal-btn {
+  font-size: 0.78em;
+  padding: 1px 8px;
+  border: 1px solid #666;
+  border-radius: var(--ao3h-rt-radius);
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.ao3h-reveal-btn:hover {
+  background: #666;
+  color: #fff;
+}
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — BADGE DE CHAPITRE
+  ───────────────────────────────────────────────────────────────────────
+    Badge coloré affiché sur les blurbs pour indiquer le dernier
+    chapitre lu, avec un lien vers ce chapitre.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-ch-badge {
+  display: inline-block;
+  font-size: 0.75em;
+  padding: 0 7px;
+  border-radius: var(--ao3h-rt-radius);
+  /*- Utilise la couleur d'accent globale, avec fallback */
+  background: var(--ao3h-accent, #900);
+  color: #fff;
+  margin-left: 0.4em;
+  vertical-align: middle;
+  text-decoration: none;
+  line-height: 1.6;
+  cursor: pointer;
+}
+
+.ao3h-ch-badge:hover {
+  opacity: .8;
+  text-decoration: none;
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — BANNIÈRE DE REPRISE
+  ───────────────────────────────────────────────────────────────────────
+    Bannière "📍 Resume at Chapter X" affichée en haut d'une œuvre
+    quand l'utilisateur y revient après une lecture partielle.
+    ┌─────────────────────────────────────────────────────┐
+    │ 📍 Resume at Chapter 3  ·  2 days ago          [✕] │
+    └─────────────────────────────────────────────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-resume-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f5f0ff;
+  border: 1px solid #c8a0e0;
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin: 8px 0 14px;
+  font-size: 0.9em;
+  color: #333;
+}
+
+.ao3h-resume-banner a {
+  color: #900;
+  font-weight: bold;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    TEXTE SECONDAIRE DANS LA BANNIÈRE (ex: "· 2 days ago")
+  ─────────────────────────────────────────────────────────────
+      └─ Classe injectée dynamiquement dans le HTML de la bannière.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-resume-banner-ago {
+  color: var(--ao3h-rt-text-muted);
+  font-weight: normal;
+}
+
+.ao3h-resume-banner-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-size: 1em;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+
+/*===
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — BADGE DE PROGRESSION FLOTTANT
+  ───────────────────────────────────────────────────────────────────────
+    Badge fixe en bas à droite affichant le % de lecture en cours.
+    ⚠️ Lié au JS : readingProgress.js met à jour le textContent du badge.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-progress-badge {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 9000;
+  background: rgba(0, 0, 0, .65);
+  color: #fff;
+  font-size: 0.8em;
+  padding: 4px 10px;
+  border-radius: 12px;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity .3s;
+}
+
+
+/*====
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — MARQUEUR DE POSITION
+  ───────────────────────────────────────────────────────────────────────
+    Fine ligne horizontale insérée dans le texte de l'œuvre pour
+    indiquer la dernière position de lecture.
+    ⚠️ Lié au JS : readingProgress.js insère cet élément <hr> dans le DOM.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-pos-marker {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #c060c0 0%, transparent 100%);
+  margin: 4px 0;
+  border: none;
+  opacity: .7;
+}
+
+
+/*++
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 07 — BADGES "UPDATED"
+  ───────────────────────────────────────────────────────────────────────
+    Badges colorés indiquant qu'une œuvre a été mise à jour depuis
+    la dernière visite, avec 3 niveaux de récence.
+    ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+    │ 🆕 Updated   │ │ 🆕 Updated   │ │ 🆕 Updated   │
+    │  (récent)    │ │  (moyen)     │ │  (ancien)    │
+    └──────────────┘ └──────────────┘ └──────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-updated-badge {
+  display: inline-block;
+  font-size: 0.72em;
+  margin-left: 0.4em;
+  padding: 1px 7px;
+  border-radius: var(--ao3h-rt-radius);
+  vertical-align: middle;
+  font-weight: bold;
+  user-select: none;
+}
+
+.ao3h-updated-badge--recent {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+}
+
+.ao3h-updated-badge--medium {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+}
+
+.ao3h-updated-badge--old {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+.ao3h-updated-counter {
+  font-size: 0.85em;
+  color: #1d4ed8;
+  margin: 4px 0;
+  font-style: italic;
+}
+
+
+/*--
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 08 — MASQUAGE CONDITIONNEL (CONFIG)
+  ───────────────────────────────────────────────────────────────────────
+    Classes ajoutées sur <html> par _readingTracker.js au init()
+    pour masquer des boutons d'action selon la configuration.
+    ⚠️ Ne pas modifier sans changer le JS correspondant dans _readingTracker.js.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    MASQUER LE BOUTON "CLEAR HISTORY"
+  ─────────────────────────────────────────────────────────────
+      └─ Actif si cfg('historyClearAll') === false.
+         JS : document.documentElement.classList.add('ao3h-rt-hide-history-clear')
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-rt-hide-history-clear [data-action="clear-history"] {
+  display: none !important;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    MASQUER LE BOUTON "CLEAR PROGRESS"
+  ─────────────────────────────────────────────────────────────
+      └─ Actif si cfg('showClearProgressButton') === false.
+         JS : document.documentElement.classList.add('ao3h-rt-hide-progress-clear')
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-rt-hide-progress-clear [data-action="clear-progress"] {
+  display: none !important;
+}
+
+
+/*---
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 09 — TOAST DE BIENVENUE
+  ───────────────────────────────────────────────────────────────────────
+    Notification "📍 Welcome back — Chapter X" affichée
+    brèvement en haut à droite au retour sur une œuvre.
+    ⚠️ Lié au JS : readingProgress.js déclenche la disparition via
+        toast.style.opacity = '0' (transition CSS).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-rt-toast {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  background: #333;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: .85em;
+  opacity: 1;
+  /*- ⚠️ La transition est déclenchée par le JS via toast.style.opacity = '0' */
+  transition: opacity .4s;
+}

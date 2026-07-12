@@ -1,0 +1,203 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   AO3 HELPER - DIALOG (FENÊTRES DE DIALOGUE)
+   
+   Ce fichier définit les styles des fenêtres de dialogue modales.
+   Une "modale" est une fenêtre qui apparaît au-dessus du contenu et
+   demande une action de l'utilisateur (confirmer, annuler, etc.)
+   
+   GUIDE POUR LES DÉBUTANTS EN CSS :
+   ─────────────────────────────────
+   • ::backdrop = Le fond semi-transparent derrière la modale
+   • rgba(r, g, b, a) = Couleur avec transparence (a = 0 à 1)
+   • backdrop-filter = Effet appliqué au contenu DERRIÈRE l'élément (flou, etc.)
+   • var(--nom) = Utilise une variable CSS définie ailleurs
+   • vw = "viewport width" = pourcentage de la largeur de l'écran
+   • @media (prefers-color-scheme: dark) = Styles pour le mode sombre
+   
+   EFFET GLASS (VERRE DÉPOLI) :
+   ────────────────────────────
+   L'effet "glass" ou "glassmorphism" crée un effet de verre dépoli :
+   - Fond semi-transparent (rgba avec alpha < 1)
+   - Flou sur le contenu derrière (backdrop-filter: blur)
+   - Bordure claire semi-transparente
+   
+═══════════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION 1 : BACKDROP (Fond derrière la modale)
+   ──────────────────────────────────────────────
+   L'overlay sombre qui couvre la page quand la modale est ouverte.
+═══════════════════════════════════════════════════════════════ */
+
+/* ::backdrop est un pseudo-élément spécial des éléments <dialog> */
+#ao3h-ie-dialog::backdrop { 
+  background: rgba(2, 6, 23, .45);  /* COULEUR DU FOND - Bleu très foncé à 45% opacité */
+                                     /* Augmenter .45 = plus sombre */
+                                     /* Diminuer .45 = plus transparent */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION 2 : BOÎTE DE DIALOGUE PRINCIPALE
+   ───────────────────────────────────────
+   La fenêtre modale elle-même (le rectangle blanc/verre).
+═══════════════════════════════════════════════════════════════ */
+
+#ao3h-ie-dialog {
+  /* BORDURE - blanc semi-transparent pour l'effet verre */
+  border: 1px solid rgba(255, 255, 255, .35);  /* Épaisseur couleur */
+  border-radius: 14px;                          /* COINS ARRONDIS - 0 = carrés */
+  
+  /* ESPACEMENT INTÉRIEUR */
+  padding: 16px 16px 14px;    /* haut gauche/droite bas */
+  
+  /* DIMENSIONS */
+  width: 360px;               /* LARGEUR FIXE en pixels */
+  max-width: 90vw;            /* Ne jamais dépasser 90% de l'écran */
+  
+  /* EFFET GLASS - Fond semi-transparent */
+  background: rgba(255, 255, 255, .65);  /* Blanc à 65% opacité */
+  
+  /* EFFET GLASS - Flou du contenu derrière */
+  /* -webkit- est pour Safari et anciens navigateurs */
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  backdrop-filter: blur(12px) saturate(130%);
+  /* blur(12px) = intensité du flou. Plus grand = plus flou */
+  /* saturate(130%) = augmente les couleurs de 30% */
+  
+  /* OMBRE - définie dans une variable ailleurs */
+  box-shadow: var(--ao3h-glass-shadow);
+  
+  /* COULEUR DU TEXTE */
+  color: var(--ao3h-fg);      /* Utilise la variable de couleur de texte */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION 3 : TITRE ET DESCRIPTION
+   ───────────────────────────────
+   Textes à l'intérieur de la modale.
+═══════════════════════════════════════════════════════════════ */
+
+/* TITRE de la modale */
+#ao3h-ie-title { 
+  font-weight: 800;           /* TRÈS GRAS (100-900, 400=normal) */
+  margin: 0 0 10px;           /* Marge : haut droite bas gauche. 10px en bas */
+  font-size: 16px;            /* TAILLE DU TITRE */
+  letter-spacing: .2px;       /* Espacement entre lettres (légèrement élargi) */
+}
+
+/* DESCRIPTION sous le titre */
+#ao3h-ie-desc { 
+  margin: 0 0 14px;           /* 14px de marge en bas */
+  font-size: 13px;            /* TAILLE DU TEXTE */
+  color: var(--ao3h-fg-dim);  /* Couleur plus claire (variable) */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION 4 : RANGÉE DE BOUTONS D'ACTION
+   ─────────────────────────────────────
+   Les boutons principaux (Import, Export, etc.)
+═══════════════════════════════════════════════════════════════ */
+
+/* Conteneur de la rangée de boutons */
+#ao3h-ie-row { 
+  display: flex;              /* Disposition horizontale */
+  gap: 10px;                  /* ESPACE ENTRE LES BOUTONS */
+  margin-top: 8px;            /* Espace au-dessus */
+}
+
+/* Chaque bouton dans la rangée */
+#ao3h-ie-row button {
+  flex: 1;                    /* Chaque bouton prend la même largeur */
+  padding: 10px 12px;         /* ESPACE INTÉRIEUR - haut/bas gauche/droite */
+  border-radius: 10px;        /* COINS ARRONDIS */
+  
+  /* STYLE GLASS pour les boutons */
+  border: 1px solid rgba(255, 255, 255, .4);   /* Bordure blanche légère */
+  background: rgba(255, 255, 255, .75);        /* Fond blanc 75% opaque */
+  
+  cursor: pointer;            /* Curseur main */
+  font-size: 13px;            /* TAILLE DU TEXTE */
+  
+  /* ANIMATIONS au survol */
+  transition: transform .12s ease,      /* Mouvement en 0.12s */
+              box-shadow .18s ease,     /* Ombre en 0.18s */
+              background .18s ease;     /* Fond en 0.18s */
+}
+
+/* Bouton au survol (hover) */
+#ao3h-ie-row button:hover {
+  transform: translateY(-1px);            /* Monte de 1px (effet "soulevé") */
+  background: rgba(255, 255, 255, .95);   /* Fond presque blanc */
+  box-shadow: 0 10px 28px rgba(2, 6, 23, .12);  /* Ombre plus prononcée */
+}
+
+/* Bouton DÉSACTIVÉ */
+#ao3h-ie-row button[disabled] { 
+  opacity: .6;                /* 60% opacité (grisé) */
+  cursor: not-allowed;        /* Curseur "interdit" */
+  filter: saturate(.6);       /* Couleurs moins vives */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION 5 : PIED DE DIALOGUE (Footer)
+   ────────────────────────────────────
+   Zone en bas avec le bouton Annuler.
+═══════════════════════════════════════════════════════════════ */
+
+/* Conteneur du pied de dialogue */
+#ao3h-ie-foot { 
+  display: flex;
+  justify-content: flex-end;  /* Bouton(s) aligné(s) à DROITE */
+  margin-top: 10px;           /* Espace au-dessus */
+}
+
+/* Bouton Annuler */
+#ao3h-ie-cancel {
+  padding: 6px 10px;          /* Espace intérieur (plus petit que les boutons d'action) */
+  border-radius: 10px;        /* Coins arrondis */
+  border: 1px solid rgba(255, 255, 255, .35);
+  background: rgba(255, 255, 255, .6);  /* Fond légèrement plus transparent */
+  cursor: pointer;
+  font-size: 12px;            /* Texte légèrement plus petit */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION 6 : MODE SOMBRE (Dark Mode)
+   ──────────────────────────────────
+   Adaptation automatique quand l'utilisateur préfère un thème sombre.
+   
+   @media (prefers-color-scheme: dark) détecte les préférences système.
+═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: dark) {
+  
+  /* Menu AO3H en mode sombre */
+  .ao3h-menu {
+    /* Bordure blanche plus visible */
+    border: 2px solid rgba(255, 255, 255, .35) !important;
+    
+    /* Ombre complexe pour effet de profondeur */
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, .6),           /* Contour noir */
+      0 8px 20px rgba(0, 0, 0, .6),          /* Ombre principale */
+      0 18px 40px rgba(255, 255, 255, .05);  /* Reflet subtil */
+  }
+  
+  /* Éléments de menu au survol en mode sombre */
+  .ao3h-menu a[data-flag]:hover,
+  .ao3h-submenu > li > a:hover {
+    background: rgba(255, 255, 255, .08) !important;  /* Fond blanc très léger */
+  }
+  
+  /* Dialogue en mode sombre */
+  #ao3h-ie-dialog {
+    background: rgba(16, 21, 38, .72);  /* Fond bleu très foncé au lieu de blanc */
+    color: var(--ao3h-fg);               /* Texte clair */
+  }
+}

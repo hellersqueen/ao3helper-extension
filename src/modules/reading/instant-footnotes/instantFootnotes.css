@@ -1,0 +1,218 @@
+/*: ═══════════════════════════════════════════════════════════════
+      INSTANT FOOTNOTES — Styles
+        Contrôle l'apparence des popups de notes de bas de page
+        affichés au survol ou au clic sur les liens de renvoi.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🌑 Le fond du popup (thème sombre)
+        │     → SECTION 01 — POPUP DE NOTE
+        │     → variable : --ao3h-if-bg-dark
+
+        ├─  ☀️  Le fond du popup (thème clair)
+        │     → SECTION 01 — POPUP DE NOTE
+        │     → variable : --ao3h-if-bg-light
+
+        ├─  📐 La largeur maximale du popup
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → ⚠️ valeur fixée dynamiquement par le JS (cfg.maxWidth)
+
+        ├─  🔲 Les coins arrondis du popup
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-if-radius
+
+        ├─  🟢 La couleur du lien source surligné
+        │     → SECTION 04 — ÉTATS ACTIFS
+
+        ├─  🔵 La couleur du popup épinglé
+        │     → SECTION 04 — ÉTATS ACTIFS
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Popup de note                             */
+/*#        |                                                 */
+/*####     ├─  02. Contenu du popup                          */
+/*#        |                                                 */
+/*=        ├─  03. Flèche du popup                           */
+/*#        |                                                 */
+/*==       ├─  04. États actifs                              */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - Le fond sombre et clair du popup
+      - L'arrondi des coins
+    ⚠️ --ao3h-if-max-width est exclusivement piloté par instantFootnotes.js
+        (valeur cfg.maxWidth de l'utilisateur). Ne pas la surcharger ici.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🌑 Fond du popup en thème sombre */
+  --ao3h-if-bg-dark:  rgba(28, 28, 28, 0.95);
+
+  /*- ☀️  Fond du popup en thème clair */
+  --ao3h-if-bg-light: rgba(255, 255, 255, 0.98);
+
+  /*- 🔲 Arrondi du popup */
+  --ao3h-if-radius: 10px;
+
+  /*- 🔲 Arrondi des boutons du popup */
+  --ao3h-if-btn-radius: 6px;
+
+  /*- ⚠️ Largeur max du popup — pilotée par instantFootnotes.js (cfg.maxWidth) */
+  /* --ao3h-if-max-width: 420px; */
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — POPUP DE NOTE
+  ───────────────────────────────────────────────────────────────────────
+    Le conteneur principal du popup affiché au survol ou au clic.
+    À l'écran :
+      ┌────────────────────────────────────────────┐
+      │ ▲  Titre de la note                        │
+      │    Corps du texte...                       │
+      │    [Go to note]  [Pin]  [✕]               │
+      └────────────────────────────────────────────┘
+    ⚠️ Lié au JS : instantFootnotes.js crée, positionne et détruit ce popup.
+    ⚠️ max-width utilise --ao3h-if-max-width, définie dynamiquement par JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-gloss-pop {
+  position:      fixed;
+  z-index:       999999;
+  max-width:     var(--ao3h-if-max-width, 420px);
+  background:    var(--ao3h-pop-bg, var(--ao3h-if-bg-dark));
+  color:         #fff;
+  border-radius: var(--ao3h-if-radius);
+  padding:       0.6rem 0.75rem;
+  box-shadow:    0 10px 30px rgba(0, 0, 0, 0.35);
+  font:          13px/1.35 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  .ao3h-gloss-pop {
+    background: var(--ao3h-if-bg-light);
+    color:      #111;
+  }
+}
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — CONTENU DU POPUP
+  ───────────────────────────────────────────────────────────────────────
+    Titre, corps du texte, barre d'actions et boutons internes.
+    ⚠️ Les boutons [Pin] et [✕] sont créés par instantFootnotes.js.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-gloss-pop .ao3h-title {
+  font-weight:   600;
+  margin-bottom: 0.25rem;
+}
+
+.ao3h-gloss-pop .ao3h-body {
+  white-space: normal;
+}
+
+.ao3h-gloss-pop .ao3h-actions {
+  display:    flex;
+  gap:        0.5rem;
+  margin-top: 0.4rem;
+  opacity:    0.85;
+}
+
+/*- ⚠️ Lié au JS : instantFootnotes.js crée ce lien quand cfg.showPermalink est vrai */
+.ao3h-gloss-pop .ao3h-actions a {
+  text-decoration: underline;
+}
+
+.ao3h-gloss-pop button {
+  all:           unset;
+  cursor:        pointer;
+  padding:       2px 6px;
+  border-radius: var(--ao3h-if-btn-radius);
+  background:    rgba(0, 0, 0, 0.15);
+}
+
+@media (prefers-color-scheme: light) {
+  .ao3h-gloss-pop button {
+    background: rgba(0, 0, 0, 0.06);
+  }
+}
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — FLÈCHE DU POPUP
+  ───────────────────────────────────────────────────────────────────────
+    Petit carré pivoté à 45° qui forme la pointe de la bulle.
+    ⚠️ top/bottom sont repositionnés dynamiquement par instantFootnotes.js
+        selon que le popup s'affiche au-dessus ou en dessous du lien.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-gloss-pop .ao3h-arrow {
+  position:   absolute;
+  width:      10px;
+  height:     10px;
+  transform:  rotate(45deg);
+  background: inherit;
+  top:        -5px;
+  left:       12px;
+  box-shadow: -2px -2px 10px rgba(0, 0, 0, 0.15);
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — ÉTATS ACTIFS
+  ───────────────────────────────────────────────────────────────────────
+    .ao3h-gloss-pop.pinned — popup épinglé (reste affiché au clic)
+    .ao3h-gloss-src        — lien source du popup actuellement affiché
+    ⚠️ Ces classes sont ajoutées/retirées par instantFootnotes.js.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*- 🔵 Popup épinglé par l'utilisateur */
+.ao3h-gloss-pop.pinned {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+}
+
+/*- 🟢 Lien source dont le popup est actuellement affiché */
+.ao3h-gloss-src {
+  outline:        2px solid rgba(16, 185, 129, 0.5);
+  outline-offset: 2px;
+}

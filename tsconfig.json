@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2015",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": false,
+    "paths": {
+      "@core/*": ["./src/core/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@lib/*": ["./lib/*"],
+      "@ui/*": ["./lib/ui/*"],
+      "@styles/*": ["./lib/styles/*"]
+    }
+  },
+  "include": ["src/**/*.js", "tests/**/*.js"]
+}

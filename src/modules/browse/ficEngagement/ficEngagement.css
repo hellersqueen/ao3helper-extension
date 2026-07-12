@@ -1,0 +1,117 @@
+/*: ═══════════════════════════════════════════════════════════════
+      FIC ENGAGEMENT — Injected UI Styles
+        Contrôle l'apparence des badges d'engagement injectés
+        dans les blurbs (ratio kudos, densité, save rate, hidden gems).
+    ────────────────────────────────────────────────────────────── */
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  01. Conteneur des badges d'engagement         */
+/*#        |                                                 */
+/*###      ├─  02. Badge individuel                          */
+/*#        |                                                 */
+/*####     ├─  03. Code-couleur des niveaux                  */
+/*#        |                                                 */
+/*=        ├─  04. Badge Hidden Gem                          */
+/*#        |                                                 */
+/*==       ├─  05. Blurb Hidden Gem (halo de fond)           */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — CONTENEUR DES BADGES D'ENGAGEMENT
+  ───────────────────────────────────────────────────────────────────────
+    La rangée flex qui regroupe tous les badges d'un blurb.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-engagement-metrics {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 4px 0 2px;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — BADGE INDIVIDUEL
+  ───────────────────────────────────────────────────────────────────────
+    Chaque badge de métrique (ratio, densité, save rate).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-engagement-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: .75em;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #374151;
+  white-space: nowrap;
+  cursor: help;
+}
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — CODE-COULEUR DES NIVEAUX
+  ───────────────────────────────────────────────────────────────────────
+    Variantes appliquées selon le seuil calculé (high / mid / low).
+    ⚠️ Ces classes sont appliquées dynamiquement par le JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-metric-high { border-color: #86efac; background: #f0fdf4; color: #166534; }
+.ao3h-metric-mid  { border-color: #fde68a; background: #fffbeb; color: #92400e; }
+.ao3h-metric-low  { border-color: #fca5a5; background: #fef2f2; color: #991b1b; }
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — BADGE HIDDEN GEM
+  ───────────────────────────────────────────────────────────────────────
+    Le petit badge doré « 💎 Hidden gem » affiché sur les blurbs
+    détectés comme pépites cachées.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-gem-badge {
+  display: inline-block;
+  margin-left: .4em;
+  padding: .08em .6em;
+  font-size: .72em;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 179, 8, .9);
+  background: rgba(250, 204, 21, .16);
+  color: #854d0e;
+  vertical-align: middle;
+  white-space: nowrap;
+  cursor: help;
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — BLURB HIDDEN GEM (HALO DE FOND)
+  ───────────────────────────────────────────────────────────────────────
+    Le blurb entier reçoit cette classe + un pseudo-élément ::before
+    qui ajoute un léger halo doré en arrière-plan.
+    ⚠️ Le z-index négatif sur ::before est intentionnel.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-gem-blurb { position: relative; }
+
+.ao3h-gem-blurb::before {
+  content: "";
+  position: absolute;
+  inset: -.25em -.4em;
+  border-radius: .9em;
+  background: radial-gradient(circle at top left, rgba(250, 204, 21, .16), transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+}

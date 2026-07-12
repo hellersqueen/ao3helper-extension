@@ -1,0 +1,171 @@
+/*: ═══════════════════════════════════════════════════════════════
+      POV TRACKER — Injected UI Styles
+        Contrôle l'apparence des badges POV injectés dans les blurbs,
+        de la barre de filtre et de la barre de statistiques.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence.
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🔲 Les coins arrondis des badges
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-pov-badge-radius
+
+        ├─  📐 La taille du texte des badges
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-pov-badge-font-size
+
+        ├─  🎨 La couleur d'un type de POV (1st, 2nd, 3rd…)
+        │     → SECTION 02 — COULEURS PAR TYPE DE POV
+        │     ⚠️ Les couleurs sont aussi définies dans POV_META (JS) — sync requis
+
+        ├─  📋 La barre de filtres
+        │     → SECTION 03 — BARRE DE FILTRES
+
+        ├─  📊 La barre de statistiques
+        │     → SECTION 04 — BARRE DE STATISTIQUES
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Badge POV — base                          */
+/*#        |                                                 */
+/*####     ├─  02. Couleurs par type de POV                  */
+/*#        |                                                 */
+/*=        ├─  03. Barre de filtres                          */
+/*#        |                                                 */
+/*==       ├─  04. Barre de statistiques                     */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    Modifie ici les valeurs globales sans chercher dans tout le fichier.
+    Tu peux changer :
+      - L'arrondi des badges POV
+      - La taille du texte des badges
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+:root {
+  /*- 🔲 Arrondi des coins des badges POV */
+  --ao3h-pov-badge-radius: 3px;
+
+  /*- 📐 Taille du texte des badges */
+  --ao3h-pov-badge-font-size: 0.7em;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — BADGE POV — BASE
+  ───────────────────────────────────────────────────────────────────────
+    Styles de base communs à tous les badges POV injectés dans les blurbs.
+    ⚠️ La classe .ao3h-pov-badge est posée par JS — ne pas renommer.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-pov-badge {
+  display: inline-block;
+  font-size: var(--ao3h-pov-badge-font-size);
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: var(--ao3h-pov-badge-radius);
+  color: #fff;
+  margin-left: 6px;
+  vertical-align: middle;
+  cursor: default;
+  user-select: none;
+}
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — COULEURS PAR TYPE DE POV
+  ───────────────────────────────────────────────────────────────────────
+    Couleur de fond de chaque badge selon le type de POV détecté.
+    ⚠️ Ces couleurs sont aussi définies dans POV_META dans povPresentation.js
+       — les deux doivent rester en sync si tu les modifies.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-pov-first   { background: #6a5acd; }
+.ao3h-pov-second  { background: #2e8b57; }
+.ao3h-pov-third   { background: #4682b4; }
+.ao3h-pov-mixed   { background: #b8860b; }
+.ao3h-pov-multi   { background: #8b4513; }
+.ao3h-pov-unknown { background: #888888; }
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — BARRE DE FILTRES
+  ───────────────────────────────────────────────────────────────────────
+    La barre horizontale avec les boutons de filtrage par type de POV.
+    ⚠️ L'ID #ao3h-pov-filter-bar est injecté par JS — ne pas modifier.
+    ⚠️ La classe .active est ajoutée/retirée par JS sur les boutons actifs.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+#ao3h-pov-filter-bar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 6px 0 10px;
+}
+
+#ao3h-pov-filter-bar .ao3h-pov-filter-label {
+  font-size: 0.85em;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+#ao3h-pov-filter-bar button {
+  font-size: 0.78em;
+  padding: 2px 8px;
+  border-radius: var(--ao3h-pov-badge-radius);
+  border: 1px solid currentColor;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+#ao3h-pov-filter-bar button.active {
+  /*- ⚠️ Classe .active gérée par JS */
+  color: #fff;
+  opacity: 1;
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — BARRE DE STATISTIQUES
+  ───────────────────────────────────────────────────────────────────────
+    La ligne de texte résumant la répartition des POV sur la page.
+    ⚠️ L'ID #ao3h-pov-stats-bar est injecté par JS — ne pas modifier.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+#ao3h-pov-stats-bar {
+  font-size: 0.8em;
+  padding: 4px 0 8px;
+  color: #555;
+}
+
+#ao3h-pov-stats-bar span { margin-right: 10px; }

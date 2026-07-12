@@ -1,0 +1,369 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+
+   AO3 Helper — Comment Kit Module
+   Navigate & Interact > commentKit
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── commentComposing — Formatting toolbar ─────────────────────────────── */
+
+.ao3h-format-toolbar {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 0 0 6px;
+  padding: 6px 8px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.ao3h-format-btn {
+  padding: 3px 9px;
+  background: white;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #333;
+}
+.ao3h-format-btn:hover  { background: #f8f0f0; border-color: #900; color: #900; }
+.ao3h-format-btn:active { transform: translateY(1px); }
+
+/* ── commentComposing — Templates panel ────────────────────────────────── */
+
+.ao3h-templates-panel {
+  margin: 0 0 8px;
+  padding: 8px;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.ao3h-templates-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.ao3h-template-btn {
+  padding: 3px 9px;
+  background: white;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  color: #333;
+}
+.ao3h-template-btn:hover { background: #fff3f3; border-color: #900; }
+
+.ao3h-manage-templates-btn {
+  padding: 3px 8px;
+  background: none;
+  border: 1px dashed #aaa;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  color: #777;
+}
+.ao3h-manage-templates-btn:hover { border-color: #900; color: #900; }
+
+/* ── commentComposing — Templates management panel ─────────────────────── */
+
+.ao3h-templates-manage-panel {
+  margin-top: 8px;
+  padding: 8px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  display: none;
+}
+.ao3h-templates-manage-panel.open { display: block; }
+.ao3h-template-edit-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+  align-items: center;
+}
+.ao3h-template-edit-input {
+  flex: 1;
+  padding: 3px 6px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 11px;
+}
+.ao3h-template-del-btn {
+  padding: 2px 7px;
+  background: #c00;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.ao3h-template-del-btn:hover { background: #900; }
+.ao3h-template-add-btn {
+  padding: 3px 9px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.ao3h-template-add-btn:hover { background: #218838; }
+.ao3h-template-save-btn {
+  padding: 3px 9px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.ao3h-template-save-btn:hover { background: #0069d9; }
+.ao3h-template-manage-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* ── commentComposing — Comment preview ────────────────────────────────── */
+
+.ao3h-preview-toggle-btn {
+  margin: 4px 0 2px;
+  padding: 3px 10px;
+  background: none;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  color: #555;
+}
+.ao3h-preview-toggle-btn:hover  { border-color: #900; color: #900; }
+.ao3h-preview-toggle-btn.active { background: #f8f0f0; border-color: #900; color: #900; }
+
+.ao3h-comment-preview {
+  display: none;
+  margin: 4px 0 6px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 2em;
+  color: #333;
+}
+.ao3h-comment-preview.open { display: block; }
+.ao3h-comment-preview blockquote {
+  border-left: 3px solid #ccc;
+  margin: 6px 0 6px 12px;
+  padding-left: 8px;
+  color: #555;
+  font-style: italic;
+}
+
+/* ── commentHighlighting — Author & reply badges ────────────────────────── */
+
+.ao3h-author-comment {
+  border-left: 3px solid #900 !important;
+  background: #fff8f8 !important;
+}
+.ao3h-author-badge {
+  display: inline-block;
+  margin-left: 0.5em;
+  padding: 1px 5px;
+  background: #900;
+  color: #fff;
+  font-size: 0.75em;
+  border-radius: 3px;
+  vertical-align: middle;
+  font-weight: bold;
+}
+.ao3h-reply-to-me-comment {
+  border-left: 3px solid #2a6496 !important;
+  background: #f0f6fb !important;
+}
+.ao3h-reply-badge {
+  display: inline-block;
+  margin-left: 0.5em;
+  padding: 1px 5px;
+  background: #2a6496;
+  color: #fff;
+  font-size: 0.75em;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+/* ── commentNavigation — Jump & back-to-top buttons ───────────────────── */
+
+.ao3h-back-to-top-wrap {
+  text-align: center;
+  margin: 12px 0;
+}
+.ao3h-jump-comments-btn,
+.ao3h-back-to-top-btn {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 3px 10px;
+  background: white;
+  border: 1px solid #900;
+  border-radius: 3px;
+  color: #900;
+  font-size: 0.85em;
+  cursor: pointer;
+  text-decoration: none;
+  vertical-align: middle;
+}
+.ao3h-jump-comments-btn:hover,
+.ao3h-back-to-top-btn:hover {
+  background: #900;
+  color: white;
+}
+
+/* ── draftManagement — Counter, restored notice, floating box ────────── */
+
+.ao3h-draft-counter {
+  font-size: 0.78em;
+  color: #666;
+  margin: 2px 0 6px;
+  text-align: right;
+}
+.ao3h-draft-restored {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  padding: 6px 10px;
+  background: #f0f6fb;
+  border: 1px solid #2a6496;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: #2a6496;
+}
+.ao3h-draft-restored-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+  color: #2a6496;
+  padding: 0 2px;
+  line-height: 1;
+}
+.ao3h-draft-restored-dismiss:hover { color: #900; }
+
+.ao3h-floating-box {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 320px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  z-index: 9999;
+  flex-direction: column;
+  display: none;
+}
+.ao3h-floating-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  border-radius: 6px 6px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+}
+.ao3h-floating-box-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  line-height: 1;
+  padding: 0 2px;
+}
+.ao3h-floating-box-toggle:hover { color: #900; }
+.ao3h-floating-box-body {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ao3h-floating-box-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 12px;
+  resize: vertical;
+  font-family: inherit;
+  color: #333;
+}
+.ao3h-floating-box-textarea:focus { border-color: #900; outline: none; box-shadow: none; }
+.ao3h-floating-box-post-btn {
+  align-self: flex-end;
+  padding: 4px 14px;
+  background: #900;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.ao3h-floating-box-post-btn:hover { background: #700; }
+
+/* ── threadManagement — Collapse buttons, bulk bar, unread badges ─────── */
+
+.ao3h-collapse-btn {
+  margin-left: 6px;
+  padding: 1px 6px;
+  background: white;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.78em;
+  color: #555;
+  vertical-align: middle;
+}
+.ao3h-collapse-btn:hover { border-color: #900; color: #900; }
+
+.ao3h-thread-bulk-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ao3h-thread-bulk-btn {
+  padding: 3px 9px;
+  background: white;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.82em;
+  color: #333;
+}
+.ao3h-thread-bulk-btn:hover { border-color: #900; color: #900; }
+.ao3h-thread-mark-read-btn { margin-bottom: 8px; }
+
+.ao3h-thread-collapsed > .thread { display: none !important; }
+.ao3h-thread-collapsed > .comment-reply .ao3h-collapse-btn::before { content: '\25B6 '; }
+.ao3h-collapse-btn::before { content: '\25BC '; }
+
+.ao3h-new-badge {
+  display: inline-block;
+  margin-left: 0.4em;
+  padding: 1px 5px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 0.72em;
+  border-radius: 3px;
+  vertical-align: middle;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

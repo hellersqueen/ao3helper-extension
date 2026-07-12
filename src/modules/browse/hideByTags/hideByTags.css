@@ -1,0 +1,1441 @@
+/*: ═══════════════════════════════════════════════════════════════
+      HIDE BY TAGS — Config Panel Styles
+        Contrôle l'apparence du panneau de configuration
+        du module Hide By Tags. 
+    ────────────────────────────────────────────────────────────── */
+             
+/*:: ────────────────────────────────────────────────────────────── 
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ────────────────────────────────────────────────────────────── 
+        | GUIDE RAPIDE — Je veux modifier...                                                                      
+      
+        ├─  🎨 La couleur rouge des groupes nommés                  
+        │     → SECTION 00 — RÉGLAGES RAPIDES                     
+        │     → variable : --ao3h-hbt-color-named                 
+                                                                
+        ├─  📐 La hauteur des deux colonnes                         
+        │     → SECTION 00 — RÉGLAGES RAPIDES                     
+        │     → variable : --ao3h-hbt-panel-height                
+                                                               
+        ├─  ↔️ La largeur des deux colonnes                         
+        │     → SECTION 04 — LES DEUX COLONNES                    
+        │     → .ao3h-hbt-two-col                                 
+                                                              
+        ├─  🟥 La boîte rouge / le header d'un groupe               
+        │     → SECTION 01 — LA BOÎTE D'UN GROUPE                 
+        │     → SECTION 02 — LE TITRE DU GROUPE                   
+                                                              
+        ├─  🏷️ Les petites boîtes de tags                           
+        │     → SECTION 03 — LA LISTE DES TAGS                    
+                                                             
+        ├─  📁 Le menu qui choisit le groupe d'un tag               
+        │     → SECTION 06 — LE MENU 📁                            
+                                                             
+        ├─  💬 Le message quand il n'y a aucun tag                  
+        │     → SECTION 07 — LES INPUTS ET MESSAGES    
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. La boîte d'un groupe                      */
+/*#        |                                                 */
+/*####     ├─  02. Le titre du groupe                        */
+/*#        |                                                 */
+/*=        ├─  03. La liste des tags                         */
+/*#        |                                                 */
+/*==       ├─  04. Les deux colonnes                         */
+/*#        |                                                 */
+/*===      ├─  05. La zone de droite avec les groupes créés  */
+/*#        |                                                 */
+/*====     ├─  06. Le menu 📁 pour déplacer un tag           */
+/*#        |                                                 */
+/*++       ├─  07. Les inputs, options et messages           */
+/*#        |                                                 */
+/*--       ├─  08. Le petit badge de compteur                */
+/*#        |                                                 */
+/*---      ├─  09. Les états JavaScript                      */ 
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##    
+  ═══════════════════════════════════════════════════════════════════════   
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - la couleur rouge des groupes nommés
+      - la hauteur maximale des colonnes
+      - les arrondis principaux
+      - les bordures principales
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🎨 Couleur principale des groupes nommés */
+  --ao3h-hbt-color-named: #941919;
+
+  /*- 🎨 Couleur plus foncée utilisée sur certains détails rouges */
+  --ao3h-hbt-color-named-dark: #700;
+
+  /*- 📐 Hauteur maximale des deux colonnes principales */
+  --ao3h-hbt-panel-height: 260px;
+
+  /*- 🔲 Arrondi des boîtes principales */
+  --ao3h-hbt-radius-card: 10px;
+
+  /*- 🔲 Arrondi des petits menus et boutons */
+  --ao3h-hbt-radius-small: 6px;
+
+  /*- 🧱 Bordure gris pâle des boîtes normales */
+  --ao3h-hbt-border-light: #e6e8ee;
+
+  /*- 🧱 Ligne séparatrice très pâle */
+  --ao3h-hbt-border-soft: #e8e8e8;
+
+  /*- 📝 Texte gris pâle / secondaire */
+  --ao3h-hbt-text-muted: #999;
+
+  /*- 📝 Texte principal foncé */
+  --ao3h-hbt-text-main: #1f2937;
+}
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — LA BOÎTE D'UN GROUPE
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle la grosse boîte complète d'un groupe.
+    À l'écran :
+      ┌─────────────────────────────┐
+      │ titre du groupe             │
+      │ contenu du groupe           │
+      └─────────────────────────────┘
+    Ici tu modifies :
+      - la bordure
+      - le fond
+      - les coins arrondis
+      - l'espace entre les groupes
+    ⚠️ Cette section NE contrôle PAS :
+      - le texte du header
+      - le chevron ▶
+      - les tags
+      - les boutons 📁 ×
+    Ces éléments sont dans les sections suivantes.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOÎTE NORMALE
+  ─────────────────────────────────────────────────────────────
+      └─ Groupe standard non nommé.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group {
+  /*- 🧱 Bordure extérieure */
+  border: 1px solid var(--ao3h-hbt-border-light);
+
+  /*- 🎨 Fond de la boîte */
+  background: #fff;
+
+  /*- 🔲 Coins arrondis */
+  border-radius: var(--ao3h-hbt-radius-card);
+
+  /*- ✂️ Empêche le contenu de sortir des coins arrondis */
+  overflow: hidden;
+
+  /*- ↕️ Espace sous chaque groupe */
+  margin-bottom: var(--ao3h-space-2);
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    ESPACE AVANT UN GROUPE ROUGE
+  ─────────────────────────────────────────────────────────────
+      └─ Ajoute un plus grand espace avant le premier groupe nommé.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group:not(.ao3h-hbt-group--named)
++ .ao3h-hbt-group--named {
+  margin-top: var(--ao3h-space-4);
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    DERNIER GROUPE
+  ─────────────────────────────────────────────────────────────
+      └─ Le dernier groupe n'a pas besoin d'espace en dessous.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group:last-child {
+  margin-bottom: 0;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    GROUPE NOMMÉ (ROUGE)
+  ─────────────────────────────────────────────────────────────
+      └─ Groupe spécial avec couleur rouge.
+         La couleur vient de SECTION 00.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group--named {
+  /*- 🎨 Utilise la variable rouge définie en SECTION 00 */
+  border-color: var(--ao3h-hbt-color-named);
+
+  /*- 🎨 Fond du groupe */
+  background: #fff;
+}
+
+
+/*####  
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — LE TITRE DU GROUPE
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle la ligne cliquable en haut du groupe.
+    À l'écran :
+      ┌────────────────────────────────────┐
+      │ ▶ NOM DU GROUPE      12        ×   │
+      └────────────────────────────────────┘
+    Cette section contient :
+      - le fond du header
+      - le chevron ▶
+      - le nom du groupe
+      - le compteur
+      - le bouton × supprimer
+    ⚠️ Cette section NE contrôle PAS :
+      - les tags à l'intérieur
+      - la liste des tags
+      - le footer du groupe
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    HEADER CLIQUABLE
+  ─────────────────────────────────────────────────────────────
+      └─ Toute la ligne du haut du groupe.
+         On peut cliquer dessus pour ouvrir/fermer le groupe.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-header {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  box-sizing: border-box;
+  cursor: pointer;
+  user-select: none;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    HEADER QUAND LE GROUPE EST OUVERT
+  ─────────────────────────────────────────────────────────────
+      └─ Ajoute une ligne de séparation sous le header.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group[aria-expanded="true"]
+.ao3h-hbt-group-header {  
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    HEADER ROUGE D'UN GROUPE NOMMÉ
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group.ao3h-hbt-group--named
+.ao3h-hbt-group-header {
+  background: #fff;
+  border-left: none;
+  border-bottom: 1px solid #e6e8ee;
+}
+
+.ao3h-hbt-group.ao3h-hbt-group--named
+.ao3h-hbt-group-header:hover {
+  background: #f9f0f0;
+  border-bottom-color: #e0c8c8;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    HEADER ROUGE OUVERT
+  ─────────────────────────────────────────────────────────────
+      └─ Quand un groupe rouge est ouvert :
+          - garde le fond rouge
+          - ajoute une bordure plus foncée
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group.ao3h-hbt-group--named[aria-expanded="true"]
+.ao3h-hbt-group-header {
+  border-bottom: 1px solid #e6e8ee;
+  background: #fff;
+}
+
+.ao3h-hbt-group.ao3h-hbt-group--named[aria-expanded="true"]
+.ao3h-hbt-group-header:hover {
+  background: #f9f0f0;
+  border-bottom-color: #e0c8c8;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    CONTENU INTÉRIEUR DU HEADER
+  ─────────────────────────────────────────────────────────────
+      └─ Zone qui contient :
+          -  chevron ▶
+          -  nom du groupe
+          -  compteur
+          -  bouton ×
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-header-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 30px;
+  padding: 4px 8px;
+  gap: 8px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    FOCUS CLAVIER
+  ─────────────────────────────────────────────────────────────
+      └─ Contour visible quand on navigue avec TAB.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-header:focus-visible {
+  outline: 2px solid #7aa7ff;
+  outline-offset: 2px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    CHEVRON ▶
+  ─────────────────────────────────────────────────────────────
+      └─ Petite flèche qui tourne quand le groupe est ouvert.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-chevron {
+  display: inline-block;
+  width: 10px;
+  min-width: 10px;
+  flex-shrink: 0;
+  font-size: 9px;
+  color: var(--ao3h-hbt-text-muted);
+  transform-origin: 50% 50%;
+  transition: transform 0.18s ease;
+}
+
+/*- Chevron rouge dans les groupes nommés */
+.ao3h-hbt-group--named
+.ao3h-hbt-chevron {
+  color: #900;
+}
+
+/*- Rotation du chevron quand le groupe est ouvert */
+.ao3h-hbt-group[aria-expanded="true"]
+.ao3h-hbt-chevron {
+  transform: rotate(90deg);
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    ZONE NOM + COMPTEUR
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    NOM DU GROUPE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 650;
+  color: var(--ao3h-hbt-text-main);
+}
+
+/*- Nom sombre dans les groupes nommés */
+.ao3h-hbt-group--named
+.ao3h-hbt-group-label {
+  color: #333;
+  font-weight: 600;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    PETIT COMPTEUR
+  ─────────────────────────────────────────────────────────────
+      └─ Exemple : ▶ FAVORITES   12
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-count {
+  flex-shrink: 0;
+  margin-left: 2px;
+  font-size: 8px;
+  font-weight: 400;
+  color: #aaa;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    ZONE DES ACTIONS
+  ─────────────────────────────────────────────────────────────
+      └─ Zone à droite contenant le bouton ×.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON × SUPPRIMER
+  ─────────────────────────────────────────────────────────────
+      └─ Caché par défaut.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-delete {
+  flex-shrink: 0 !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 12px;
+  background: transparent !important;
+  border: none !important;
+  color: #900 !important;
+  opacity: 0.45;
+  box-shadow: none !important;
+}
+
+/*- Affiche le bouton × pleinement au survol */
+.ao3h-hbt-group-header:hover
+.ao3h-hbt-group-delete {
+  opacity: 1;
+}
+
+
+/*=     
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — LA LISTE DES TAGS
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle tout ce qui apparaît
+    À L'INTÉRIEUR du groupe quand il est ouvert.
+    À l'écran :
+      ┌────────────────────────────────────┐
+      │ tag individuel          📁     ×   │
+      │ another tag             📁     ×   │
+      │ another tag             📁     ×   │
+      ├────────────────────────────────────┤
+      │ footer / clear button              │
+      └────────────────────────────────────┘
+    Cette section contient :
+      - l'ouverture/fermeture du contenu
+      - la liste des tags
+      - les petites boîtes de tags
+      - les boutons 📁 et ×
+      - le footer sous les tags
+    ⚠️ Cette section NE contrôle PAS :
+      - le header du groupe
+      - le nom du groupe
+      - les colonnes du panel
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    ZONE FERMÉE
+  ─────────────────────────────────────────────────────────────
+      └─ Contenu du groupe quand le groupe est fermé.
+         max-height: 0 cache complètement le contenu.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-wrap {
+  overflow: hidden;
+  max-height: 0;
+  padding: 0;
+  transition:
+    max-height 0.22s ease,
+    padding 0.22s ease;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    ZONE OUVERTE
+  ─────────────────────────────────────────────────────────────
+      └─ Contenu du groupe quand le groupe est ouvert.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group[aria-expanded="true"]
+.ao3h-hbt-group-wrap {
+  /*- 📐 augmente cette valeur si des tags sont coupés */
+  max-height: 1200px;
+
+  border-top: none;
+  margin-top: 3px;
+
+  /*- haut | côtés | bas */
+  padding: 10px 12px 5px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    LISTE DES TAGS
+  ─────────────────────────────────────────────────────────────
+      └─ Force les tags à être affichés :
+          - un sous l'autre
+          - avec un espace entre eux
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-wrap
+.ao3h-tag-chips {
+  flex-direction: column;
+  gap: var(--ao3h-space-1);
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    PETITE BOÎTE D'UN TAG
+  ─────────────────────────────────────────────────────────────
+      └─ Chaque ligne de tag individuelle.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-wrap
+.ao3h-tag-chip {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  justify-content: space-between;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    TEXTE DU TAG
+  ─────────────────────────────────────────────────────────────
+      └─ Le texte prend tout l'espace disponible.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-wrap
+.ao3h-tag-chip
+> .ao3h-tag-chip-text {
+  flex: 1;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTONS 📁 ET ×
+  ─────────────────────────────────────────────────────────────
+      └─ Petits boutons à droite de chaque tag.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-wrap
+.ao3h-tag-chip
+button {
+  width: 16px;
+  opacity: 1;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    FOOTER DU GROUPE
+  ─────────────────────────────────────────────────────────────
+      └─ Zone sous les tags.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 1;
+  margin-top: 5px;
+  padding: 5px 8px;
+  border-top: 1px solid #eee;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    TEXTE DU FOOTER
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-footer-text {
+  display: block;
+  font-size: 11px;
+  color: #bbb;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON CLEAR DU FOOTER
+  ─────────────────────────────────────────────────────────────
+      └─ Petit bouton discret dans le footer.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-footer-clear {
+  background: none !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+  font-size: 11px !important;
+  line-height: 1;
+  color: #ccc;
+  cursor: pointer;
+  opacity: 0.7;
+  transition:
+    color 0.15s,
+    opacity 0.15s;
+}
+
+/*- Bouton clear au survol */
+.ao3h-hbt-footer-clear:hover {
+  background: none !important;
+  color: #c62828 !important;
+  opacity: 1;
+}
+
+
+/*==    
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — LES DEUX COLONNES
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle la structure principale du panneau.
+    À l'écran :
+      ┌────────────────────────┬────────────────────────┐
+      │ colonne des tags       │ colonne formulaire     │
+      │ liste des tags         │ ajout + groupes créés  │
+      └────────────────────────┴────────────────────────┘
+    Cette section contient :
+      - la grille à deux colonnes
+      - la largeur des colonnes
+      - la hauteur maximale
+      - le scroll de la colonne des tags
+      - la colonne formulaire
+    ⚠️ Ne renomme pas ces classes sans modifier le HTML/JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    GRILLE PRINCIPALE
+  ─────────────────────────────────────────────────────────────
+      └─ C'est le conteneur qui crée les deux colonnes.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-two-col {
+  display: grid;
+
+  /*- ↔️ Change ici pour modifier la largeur des colonnes */
+  grid-template-columns: 1fr 1fr;
+
+  gap: var(--ao3h-space-4);
+  align-items: stretch;
+  border-top: 1px solid var(--ao3h-hbt-border-soft);
+  padding-top: var(--ao3h-space-6);
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    QUAND IL N'Y A AUCUN TAG
+  ─────────────────────────────────────────────────────────────
+      └─ Si la liste est vide, on utilise une seule colonne.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-two-col:has(.ao3h-hbt-empty-msg) {
+  grid-template-columns: 1fr;
+}
+
+/*- Cache la colonne des tags quand il n'y a aucun tag */
+.ao3h-hbt-two-col:has(.ao3h-hbt-empty-msg)
+.ao3h-hbt-col-chips {
+  display: none;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    COLONNE DES TAGS
+  ─────────────────────────────────────────────────────────────
+      └─ C'est la colonne qui affiche la liste des tags.
+          ⚠️ order: -1 force cette colonne à apparaître à gauche.
+          Ne le retire pas si le HTML place cette colonne après l'autre.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-col-chips {
+  order: -1;
+  display: flex;
+  flex-direction: column;
+  max-height: var(--ao3h-hbt-panel-height);
+  overflow: hidden;
+  border-bottom: 1px solid var(--ao3h-hbt-border-soft);
+  border-radius: 0 0 var(--ao3h-hbt-radius-card) var(--ao3h-hbt-radius-card);
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    BLOC INTÉRIEUR DE LA COLONNE TAGS
+  ─────────────────────────────────────────────────────────────
+      └─ Permet au contenu de remplir toute la hauteur disponible.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-col-chips
+.ao3h-config-block {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    GROUPE PRINCIPAL DANS LA COLONNE TAGS
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-col-chips
+.ao3h-hbt-group {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    ZONE OUVERTE DANS LA COLONNE TAGS
+  ─────────────────────────────────────────────────────────────
+      └─ Version spéciale du contenu ouvert quand il est dans la colonne tags.
+         Cette règle rend le scroll possible à l'intérieur.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-col-chips
+.ao3h-hbt-group[aria-expanded="true"]
+.ao3h-hbt-group-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  max-height: var(--ao3h-hbt-panel-height);
+  display: flex;
+  flex-direction: column;
+  padding-right: 0;
+  padding-bottom: 0;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    LISTE DE TAGS SCROLLABLE
+  ─────────────────────────────────────────────────────────────
+      └─ C'est ici que le scroll vertical se fait.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-col-chips
+.ao3h-hbt-group[aria-expanded="true"]
+.ao3h-hbt-group-wrap
+.ao3h-tag-chips {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-wrap: nowrap;
+  padding-right: 12px;
+}
+
+/*- Empêche les tags de se compresser dans la zone scrollable */
+.ao3h-hbt-col-chips
+.ao3h-hbt-group[aria-expanded="true"]
+.ao3h-hbt-group-wrap
+.ao3h-tag-chips
+> * {
+  flex-shrink: 0;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    COLONNE FORMULAIRE
+  ─────────────────────────────────────────────────────────────
+      └─ C'est la colonne à droite :
+        - inputs
+        - ajout de tag
+        - groupes créés
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-col-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao3h-space-3);
+  max-height: var(--ao3h-hbt-panel-height);
+  overflow: hidden;
+}
+
+/*- Retire certains espaces inutiles dans la colonne formulaire */
+.ao3h-hbt-col-form
+.ao3h-config-row {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+
+/*===   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — LA ZONE DE DROITE AVEC LES GROUPES CRÉÉS
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle le panneau dans la colonne de droite.
+    À l'écran, ça correspond à la zone où les groupes créés
+    apparaissent sous les inputs.
+    Ici tu modifies :
+      - la bordure du panneau
+      - le fond
+      - le scroll intérieur
+      - l'espace intérieur
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*- Panneau qui contient les groupes créés */
+.ao3h-hbt-groups-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--ao3h-hbt-border-light);
+  border-radius: var(--ao3h-hbt-radius-card);
+  margin-top: var(--ao3h-space-1);
+}
+
+/*- Zone intérieure scrollable du panneau */
+.ao3h-hbt-groups-inner {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ao3h-space-3) var(--ao3h-space-3) 0;
+}
+
+/*- Cache le panneau s'il est vide */
+.ao3h-hbt-groups-panel:empty {
+  display: none;
+}
+
+
+/*====  
+  ═══════════════════════════════════════════════════════════════════════ 
+    SECTION 06 — LE MENU 📁 POUR DÉPLACER UN TAG
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle le petit menu qui s'ouvre quand tu cliques
+    sur 📁 dans un tag.
+    À l'écran :
+      ┌────────────────────┐
+      │ CHOOSE GROUP       │
+      │ groupe 1           │
+      │ groupe 2           │
+      │ [input] [+]        │
+      │ [Close]            │
+      └────────────────────┘
+    Ici tu modifies :
+      - la taille du menu
+      - les options dans le menu
+      - l'input pour créer un groupe
+      - les boutons du menu
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOÎTE COMPLÈTE DU MENU 📁
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-group-picker {
+  min-width: 180px;
+  max-width: 220px;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  padding: 6px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/*- Version flottante du menu */
+.ao3h-hbt-group-picker--floating {
+  position: fixed;
+  z-index: 1000000;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    TITRE DU MENU
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-gp-title {
+  font-weight: 700;
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 4px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0;
+}
+
+/*- Petit texte d'aide sous le titre */
+.ao3h-hbt-gp-hint {
+  font-size: 10px;
+  color: #ccc;
+  font-style: italic;
+  padding: 2px 4px 4px;
+  margin-bottom: 2px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    LISTE DES GROUPES DANS LE MENU
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-gp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 100px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/*- Une option dans la liste */
+.ao3h-hbt-gp-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 8px;
+  border: 1px solid #eee;
+  border-radius: var(--ao3h-hbt-radius-small);
+  cursor: pointer;
+  color: #333;
+  font-size: 11px;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
+  user-select: none;
+}
+
+/*- Option au survol */
+.ao3h-hbt-gp-item:hover {
+  background: #f0faf3;
+  border-color: #2a7a4b;
+  color: #111;
+}
+
+/*- Option qui représente le groupe actuel */
+.ao3h-hbt-gp-item--current {
+  background: #edf7f1;
+  border-color: #2a7a4b;
+  font-weight: 600;
+}
+
+/*- Petit point indiquant le groupe actuel */
+.ao3h-hbt-gp-item--current::after {
+  content: '•';
+  color: #2a7a4b;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/*- Option pour retirer le tag de son groupe */
+.ao3h-hbt-gp-item--leave {
+  color: var(--ao3h-hbt-text-muted);
+  border-color: transparent;
+  font-style: italic;
+  border-top: 1px solid #eee;
+  border-radius: 0;
+  margin-top: 2px;
+  padding-top: 6px;
+}
+
+/*- Option retirer au survol */
+.ao3h-hbt-gp-item--leave:hover {
+  background: #fff5f5;
+  color: #c62828;
+  border-color: transparent;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    INPUT DU MENU
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-gp-input {
+  font-size: 11px;
+  padding: 2px 6px;
+  border: 1px solid #cfd6e4;
+  border-radius: var(--ao3h-hbt-radius-small);
+  box-sizing: border-box;
+  align-self: stretch;
+  max-width: 9rem;
+}
+
+/*- Input actif */
+.ao3h-hbt-gp-input:focus {
+  outline: none;
+  border-color: #2a7a4b;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    ACTIONS EN BAS DU MENU
+  ─────────────────────────────────────────────────────────────
+      └─ Layout :
+        [✕ Ungroup] | [input nouveau groupe][+]
+            [          Close         ]
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-gp-actions {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px;
+  margin-top: 4px;
+  border-top: 1px solid #eee;
+  padding-top: 6px;
+  flex-shrink: 0;
+}
+
+/*- Ligne input + bouton + */
+.ao3h-hbt-gp-input-row {
+  display: flex;
+  gap: 3px;
+  align-items: stretch;
+  min-width: 0;
+}
+
+/*- Input dans la ligne input + bouton + */
+.ao3h-hbt-gp-input-row
+.ao3h-hbt-gp-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/*- Boutons du menu */
+.ao3h-hbt-gp-ungroup,
+.ao3h-hbt-gp-add,
+.ao3h-hbt-gp-close {
+  padding: 4px 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: var(--ao3h-hbt-radius-small);
+  background: #f5f7fb;
+  color: #333;
+  font-size: 11px;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+  white-space: nowrap;
+}
+
+/*- Boutons du menu au survol */
+.ao3h-hbt-gp-ungroup:hover,
+.ao3h-hbt-gp-add:hover,
+.ao3h-hbt-gp-close:hover {
+  background: #ecf1f8;
+  border-color: #b8c3d8;
+}
+
+/*- Bouton + */
+.ao3h-hbt-gp-add {
+  padding: 4px 8px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/*- Bouton Close pleine largeur */
+.ao3h-hbt-gp-close {
+  grid-column: 1 / -1;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+
+/*++    
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 07 — LES INPUTS, OPTIONS ET MESSAGES
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle les champs du formulaire et les options.
+    À l'écran, ça correspond à :
+      - input pour écrire un tag
+      - select de groupe
+      - input nouveau groupe
+      - checkboxes/options
+      - boutons import/export
+      - message quand il n'y a aucun tag
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    INPUTS DE LA LIGNE D'AJOUT
+  ───────────────────────────────────────────────────────────── */
+
+/* Input principal où on écrit un tag */
+.ao3h-hbt-tag-input {
+  flex: 2;
+  min-width: 100px;
+}
+
+/*- Select pour choisir un groupe */
+.ao3h-hbt-group-select {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+}
+
+/*- Input nouveau groupe — caché par défaut */
+.ao3h-hbt-group-text {
+  flex: 1;
+  min-width: 80px;
+  display: none;
+}
+
+/*- Input qui prend l'espace disponible dans la ligne */
+.ao3h-hbt-newgroup-input {
+  flex: 1;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    MESSAGE QUAND AUCUN TAG N'EXISTE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-hbt-empty-msg {
+  text-align: center;
+  color: var(--ao3h-hbt-text-muted);
+  font-size: 11px;
+  padding: 20px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    OPTIONS ET BOUTONS DE COMPORTEMENT
+  ───────────────────────────────────────────────────────────── */
+
+/*- Bloc de comportement */
+.ao3h-hbt-behavior-item {
+  margin-top: 1rem;
+}
+
+/*- Rangée des options de comportement */
+.ao3h-hbt-behavior-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--ao3h-space-3) var(--ao3h-space-8);
+  margin-top: var(--ao3h-space-4);
+  padding-top: var(--ao3h-space-6);
+  border-top: 1px solid var(--ao3h-hbt-border-soft);
+  margin-bottom: var(--ao3h-space-4);
+}
+
+/*- Chaque option dans la rangée de comportement */
+.ao3h-hbt-behavior-row
+> .ao3h-setting-item {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+/*- Actions dans la rangée de comportement */
+.ao3h-hbt-behavior-row
+> .ao3h-section-actions {
+  justify-content: flex-start;
+}
+
+/*- Deux checkboxes enable sur la même ligne */
+.ao3h-hbt-enables-row {
+  display: flex;
+  gap: var(--ao3h-space-4);
+  flex-wrap: wrap;
+  align-items: center;
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+/*- Actions sous les deux colonnes */
+.ao3h-hbt-below-actions {
+  display: flex;
+  gap: var(--ao3h-space-2);
+  margin-top: var(--ao3h-space-2);
+  grid-column: 1 / -1;
+}
+
+
+/*--    
+  ═══════════════════════════════════════════════════════════════════════  
+    SECTION 08 — LE PETIT BADGE DE COMPTEUR
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle le petit badge près du nom du module.
+    À l'écran, ça ressemble à :
+      Hide By Tags   12
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*- Petit badge de compte de tags à côté du nom du module */
+.ao3h-module-tag-count {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--ao3h-hbt-text-muted);
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--ao3h-hbt-radius-card);
+  padding: 1px 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+
+/*---   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 09 — LES ÉTATS JAVASCRIPT
+  ───────────────────────────────────────────────────────────────────────      
+    ⚠️ Cette section contient des classes que JavaScript ajoute ou retire.
+    Ne renomme pas ces classes sans modifier le JavaScript correspondant.
+    Ici, on contrôle surtout :
+      - le toast / petit message temporaire
+      - l'état visible du toast
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*- Petit message temporaire en bas de l'écran */
+.ao3h-hbt-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/*- Version visible du toast */
+.ao3h-hbt-toast.ao3h-hbt-toast--visible {
+  opacity: 1;
+}
+
+
+/*---
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 10 — STYLES UI INJECTÉS (blurbs & manager)
+  ───────────────────────────────────────────────────────────────────────
+    ⚠️ Ces classes sont utilisées directement par le JavaScript.
+    Ne pas renommer sans modifier le JS correspondant.
+    Couvre : fold/cut, icône hide inline, manager panel, toast,
+             commas control, whitelist, fold chip, dim mode.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/* ── Fold / Cut ─────────────────────────────────────────────────────── */
+.ao3h-fold {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  gap: .5rem;
+  justify-content: flex-start;
+  min-height: 14px;
+  padding: 10px 10px;
+  border: 1px dashed #bdbdbd;
+  border-radius: 8px;
+  background: #fee9e9;
+  font-size: 11px;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.ao3h-fold.ao3h-disabled { cursor: default; background: #f7f7f7; border-style: solid; }
+.ao3h-fold.ao3h-disabled:hover { background: #f7f7f7; }
+.ao3h-fold.ao3h-disabled .ao3h-hint { opacity:.55; }
+.ao3h-fold * { pointer-events: none; }
+.ao3h-fold:hover { background:#f1f3f7; }
+.ao3h-fold:focus { outline:2px solid #7aa7ff; outline-offset:2px; }
+.ao3h-note { font-weight:600; }
+.ao3h-reason { margin-left:4px; opacity:.85; }
+.ao3h-hint { margin-left:auto; font-size:.85em; opacity:.7; }
+.ao3h-cut { display:none; }
+.ao3h-fold[aria-expanded="true"] + .ao3h-cut { display:block; }
+.ao3h-fold[aria-expanded="true"] {
+  position: sticky; top: 0; z-index: 10;
+  margin-top: 0; margin-bottom: 8px; padding: 10px 10px;
+  background:#fffbe6; border:1px solid #e6d28a; border-bottom:1px dashed #bdbdbd;
+  border-radius:8px; opacity:.95;
+}
+.ao3h-force-show { display:list-item !important; }
+
+/* ── Inline hide icon ───────────────────────────────────────────────── */
+a.tag.ao3h-tag-wrap { position: relative; padding-right: 0; overflow: visible; transition: padding-right .12s; }
+a.tag.ao3h-tag-wrap:hover,
+a.tag.ao3h-tag-wrap:focus-visible,
+ul.commas li:hover > a.tag.ao3h-tag-wrap,
+ol.commas li:hover > a.tag.ao3h-tag-wrap,
+.commas   li:hover > a.tag.ao3h-tag-wrap { padding-right: 0.8em; }
+
+.ao3h-hide-ico {
+  position: absolute; right: -0.1em; top: 50%; transform: translateY(-50%);
+  width: 1em; height: 1em; line-height: 1em; text-align: center;
+  font-size: .9em; border: none; border-radius: 50%; background: transparent;
+  opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; z-index: 2;
+}
+
+a.tag.ao3h-tag-wrap:hover .ao3h-tag-comma,
+a.tag.ao3h-tag-wrap:focus-visible .ao3h-tag-comma,
+ul.commas li:hover > a.tag.ao3h-tag-wrap .ao3h-tag-comma,
+ol.commas li:hover > a.tag.ao3h-tag-wrap .ao3h-tag-comma,
+.commas   li:hover > a.tag.ao3h-tag-wrap .ao3h-tag-comma { display: none; }
+
+a.tag.ao3h-tag-wrap:hover .ao3h-hide-ico,
+a.tag.ao3h-tag-wrap:focus-visible .ao3h-hide-ico { opacity: 1; pointer-events: auto; }
+.ao3h-hide-ico:hover { transform: translateY(-50%) scale(1.06); }
+
+ul.commas li, ol.commas li, .commas li { white-space: nowrap; }
+ul.commas li > a.tag.ao3h-tag-wrap,
+ol.commas li > a.tag.ao3h-tag-wrap,
+.commas   li > a.tag.ao3h-tag-wrap { font-size: 0.92em; line-height: 1.15; }
+ul.commas li::after, ol.commas li::after, .commas li::after { font-size: 0.92em; }
+a.tag.ao3h-tag-wrap .ao3h-hide-ico { font-size: 0.9em; }
+
+/* ── Manager panel ──────────────────────────────────────────────────── */
+.ao3h-mgr-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:999998; }
+.ao3h-mgr {
+  position:fixed; top:10vh; left:50%; transform:translateX(-50%);
+  background:#fff; color:#000; border:1px solid #e5e7eb; padding:10px;
+  z-index:999999; box-shadow:0 16px 40px rgba(2,15,35,.12);
+  font: 12px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  display:grid; gap:8px; max-height: 60vh; max-width: 70vh; overflow: auto;
+}
+.ao3h-close-x {
+  position:absolute; top:2px; right:4px; width:16px; height:16px; padding-bottom: 6px;
+  border:none; border-radius:6px; background:transparent;
+  font-size:10px; line-height:16px; text-align:center; cursor:pointer;
+}
+.ao3h-close-x:hover { background:#f5f7fb; border-color:#cfd6e4; }
+.ao3h-mgr h3 { margin:.2rem 0 .4rem; font-size:1rem; text-align:center; }
+.ao3h-ul-head { display:grid; grid-template-columns: 1fr auto; gap:6px; align-items:center; }
+.ao3h-ul-search { border-radius: 8px; border:1px solid #cfd6e4; background:#fff; padding: 6px 10px; font-size:10px; }
+.ao3h-ul-count { font-weight:600; font-size:10px; color:#4b5563; }
+.ao3h-ul-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.ao3h-ul-btn {
+  height: 25px; padding: 0 10px; border-radius: 8px; border:1px solid #cfd6e4;
+  background:#f5f7fb; font-size:10px; cursor:pointer; transition: background .15s, transform .12s, border-color .15s;
+}
+.ao3h-ul-btn:hover { background:#ecf1f8; border-color:#b8c3d8; transform: translateY(-1px); }
+.ao3h-ul-list { display:grid; gap:8px; max-height:none; overflow:visible; padding-right:2px; }
+.ao3h-ul-group {
+  border: 1px solid #e6e8ee; background: #fff; border-radius: 10px; margin-bottom: 8px;
+  display: flex; flex-direction: column; min-height: 25px;
+}
+.ao3h-ul-ghead {
+  display:flex; align-items:center; gap:8px; height:25px; padding:3px;
+  background:transparent; border:none; cursor:pointer; user-select:none;
+}
+.ao3h-ul-ghead:focus-visible { outline: 2px solid #7aa7ff; outline-offset: 2px; }
+.ao3h-ul-chevron { display:inline-block; width:10px; min-width:10px; height:10px; transform-origin:50% 50%; transition: transform .18s ease; margin-left:10px; }
+.ao3h-ul-group[aria-expanded="true"] .ao3h-ul-chevron { transform: rotate(90deg); }
+.ao3h-ul-glabel { font-weight:650; font-size:12px; color:#1f2937; line-height:25px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-left:-15px; }
+.ao3h-ul-gwrap { overflow:hidden; max-height:0; transition:max-height .22s ease, padding-top .22s ease, margin-top .22s ease, border-color .22s ease; display:grid; gap:6px; }
+.ao3h-ul-group[aria-expanded="true"] .ao3h-ul-gwrap { max-height:1200px; border-top: 1px dashed #e7ebf5; }
+.ao3h-ul-row {
+  display:grid; grid-template-columns: 1fr auto auto; align-items:center; gap:8px;
+  padding:6px 8px; border:1px dashed transparent; border-radius:8px; transition: background .12s, border-color .12s;
+}
+.ao3h-ul-row:hover { background:#fafbfe; border-color:#e7ebf5; }
+.ao3h-ul-tag {
+  display:inline-block; max-width:100%; padding:4px 10px; border-radius:999px;
+  background:#f6f7fb; border:1px solid #dfe4f0; font-size:11px; font-weight:500;
+  color:#111827; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.ao3h-ul-del {
+  display:flex; align-items:center; justify-content:center;
+  height:26px; min-width:30px; padding:0 10px;
+  border:1px solid #f2c9c9; border-radius:8px; background:#fff6f6;
+  font-size:10px; cursor:pointer; transition: background .15s, transform .12s, border-color .15s;
+}
+.ao3h-ul-del:hover { background:#ffecec; border-color:#e9b3b3; }
+
+/* ── Toast ──────────────────────────────────────────────────────────── */
+.ao3h-toast {
+  position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,.75); color: #fff; padding: 6px 10px; border-radius: 10px;
+  font-size:11px; z-index: 999999; opacity: 0; transition: opacity .15s ease; pointer-events: none;
+}
+
+/* ── Commas control ─────────────────────────────────────────────────── */
+.ao3h-own-commas li::after { content: "" !important; }
+a.tag.ao3h-tag-wrap .ao3h-tag-comma { text-decoration: none; margin-right: .35em; }
+
+/* ── Whitelist ──────────────────────────────────────────────────────── */
+.ao3h-wl-strip {
+  display: flex; align-items: center; gap: .5rem;
+  padding: 10px 10px; margin: -0.429em -0.75em 8px -0.75em;
+  background: #f0faf0; border: 1px dashed #93c993; border-radius: 8px;
+  font-size: 11px; color: #333; user-select: none;
+  font-family: system-ui, sans-serif;
+}
+.ao3h-wl-strip--hidden {
+  background: #fee9e9; border-color: #bdbdbd; margin-bottom: 0;
+}
+.ao3h-wl-strip strong { font-weight: 700; font-size: 1.08em; color: #2a7a2a; }
+.ao3h-wl-strip .ao3h-wl-blocked { font-weight: 700; font-size: 1.08em; color: #a00; }
+.ao3h-wl-fold-note { margin-left: .6rem; color: #3a8a3a; font-size: 0.85em; font-weight: 500; }
+.ao3h-wl-hide-anyway {
+  margin-left: auto; padding: 1px 7px; border-radius: 5px; border: 1px solid rgba(180,40,40,.28);
+  background: transparent; color: #a00; font-size: inherit; cursor: pointer; white-space: nowrap;
+  transition: background .12s;
+}
+.ao3h-wl-hide-anyway:hover { background: rgba(180,40,40,.12); }
+
+/* ── Fold chip / Remove button ──────────────────────────────────────── */
+.ao3h-fold-chip {
+  display: inline-flex !important; align-items: center; gap: 0; vertical-align: middle;
+  background: rgba(180,40,40,.11); border: 1px solid rgba(180,40,40,.28);
+  border-radius: 3px; padding: 1px 0 1px 5px; margin: 0 1px; line-height: 1.4;
+  visibility: visible !important; transform: translateZ(0);
+}
+.ao3h-fold-chip strong { font-weight: 700; font-size: 1.08em; color: #6b0000; }
+.ao3h-fold-remove-btn {
+  display: inline-flex !important; align-items: center; justify-content: center;
+  width: 1.5em; height: 1.5em; flex-shrink: 0; padding: 0 3px; margin-left: 4px;
+  font-size: .9em; font-weight: 700; line-height: 1;
+  border: none !important; border-left: 1px solid rgba(180,40,40,.25) !important;
+  border-radius: 0 2px 2px 0; background: transparent !important; color: #a00 !important;
+  cursor: pointer; pointer-events: auto !important; user-select: none;
+  visibility: visible !important; opacity: 1 !important;
+}
+.ao3h-fold-remove-btn:hover { background: rgba(180,40,40,.22) !important; color: #700 !important; }
+
+/* ── Dim mode ───────────────────────────────────────────────────────── */
+li.work.blurb.ao3h-dimmed { opacity: 0.25; background: rgba(180, 40, 40, 0.08); border-left: 3px solid rgba(180, 40, 40, 0.35); transition: opacity 0.15s; }
+li.work.blurb.ao3h-dimmed:hover { opacity: 1; }
+.ao3h-dim-strip .ao3h-dim-tag { font-weight: 700; font-size: 1.08em; color: #a00; }
+.ao3h-dim-strip {
+  display: flex; align-items: center; gap: .5rem;
+  font-size: 11px; color: #333; font-weight: 600;
+  padding: 10px 10px; margin: -0.429em -0.75em 8px -0.75em;
+  background: #fee9e9; border: 1px dashed #bdbdbd; border-radius: 8px;
+  font-family: system-ui, sans-serif; user-select: none; pointer-events: none;
+}
+li.work.blurb.ao3h-dimmed:hover .ao3h-dim-strip { opacity: 0.7; }
+
+@media (max-width: 720px) {
+  .ao3h-ul-head { grid-template-columns: 1fr; }
+  .ao3h-ul-actions { justify-content:flex-start; }
+}

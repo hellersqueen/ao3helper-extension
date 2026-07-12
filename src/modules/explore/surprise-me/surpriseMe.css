@@ -1,0 +1,159 @@
+/*: ═══════════════════════════════════════════════════════════════
+      SURPRISE ME — Injected UI Styles
+        Contrôle l'apparence du bouton "Random work", de la carte
+        de preview et des messages d'état injectés dans les listings.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence.
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🎨 La couleur du bouton "Random work"
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-sm-color-primary
+
+        ├─  🔲 Les coins arrondis du bouton et de la carte
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-sm-radius
+
+        ├─  🎲 Le bouton "Random work"
+        │     → SECTION 01 — BOUTON RANDOM
+
+        ├─  🃏 La carte de preview
+        │     → SECTION 02 — CARTE DE PREVIEW
+
+        ├─  ❌ Le message "liste vide"
+        │     → SECTION 03 — MESSAGE VIDE
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Bouton random                             */
+/*#        |                                                 */
+/*####     ├─  02. Carte de preview                          */
+/*#        |                                                 */
+/*=        ├─  03. Message vide                              */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    Modifie ici les valeurs globales sans chercher dans tout le fichier.
+    Tu peux changer :
+      - La couleur principale du bouton random
+      - L'arrondi des coins du bouton et de la carte preview
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+:root {
+  /*- 🎨 Couleur principale du bouton "Random work" */
+  --ao3h-sm-color-primary: #2c5f8a;
+
+  /*- 🔲 Arrondi des coins du bouton et de la carte preview */
+  --ao3h-sm-radius: 4px;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — BOUTON RANDOM
+  ───────────────────────────────────────────────────────────────────────
+    Le bouton "🎲 Random work" injecté en haut des listings.
+    ⚠️ La classe .ao3h-random-btn est utilisée comme clé JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-random-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  background: var(--ao3h-sm-color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--ao3h-sm-radius);
+  cursor: pointer;
+  font-size: 13px;
+  margin: 8px 0;
+  transition: background .15s;
+}
+
+.ao3h-random-btn:hover { background: #1e4567; }
+
+.ao3h-random-btn::before { content: '🎲 '; }
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — CARTE DE PREVIEW
+  ───────────────────────────────────────────────────────────────────────
+    La carte qui affiche le work sélectionné au hasard avec les actions.
+    ⚠️ .ao3h-random-preview et .ao3h-random-preview-actions sont injectés par JS.
+    ⚠️ La classe .primary sur le bouton est ajoutée par JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-random-preview {
+  margin: 8px 0;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fafafa;
+  font-size: 13px;
+  max-width: 500px;
+}
+
+.ao3h-random-preview h4 { margin: 0 0 4px; font-size: 14px; }
+.ao3h-random-preview p  { margin: 4px 0 0; color: #555; font-size: 12px; }
+
+.ao3h-random-preview-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.ao3h-random-preview-actions button {
+  padding: 4px 12px;
+  border-radius: var(--ao3h-sm-radius);
+  border: 1px solid #999;
+  cursor: pointer;
+  font-size: 12px;
+  background: #fff;
+}
+
+.ao3h-random-preview-actions button.primary {
+  /*- ⚠️ Classe .primary ajoutée par JS sur le bouton d'action principale */
+  background: var(--ao3h-sm-color-primary);
+  color: #fff;
+  border-color: var(--ao3h-sm-color-primary);
+}
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — MESSAGE VIDE
+  ───────────────────────────────────────────────────────────────────────
+    Le message affiché inline quand il n'y a plus de works disponibles.
+    ⚠️ .ao3h-random-empty est injecté par JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-random-empty {
+  display: inline-block;
+  margin: 0 0 0 10px;
+  color: #900;
+  font-size: 12px;
+  font-style: italic;
+}

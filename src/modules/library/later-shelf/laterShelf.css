@@ -1,0 +1,361 @@
+/*: ═══════════════════════════════════════════════════════════════
+      LATER SHELF — Injected Styles
+        Contrôle l'apparence des éléments injectés par le module
+        Later Shelf sur les pages AO3.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ────────────────────────────────────────────────────────────── 
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ────────────────────────────────────────────────────────────── 
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🏷️ Le badge 📌 affiché sur les blurbs
+        │     → SECTION 01 — BADGES & DATES
+
+        ├─  📅 La date ajoutée sous un titre
+        │     → SECTION 01 — BADGES & DATES
+        │     → variable : --ao3h-ls-text-muted
+
+        ├─  🔢 Le compteur dans le titre de la page MFL
+        │     → SECTION 04 — COMPTEUR
+        │     → variable : --ao3h-ls-text-counter
+
+        ├─  🔀 La barre de tri/filtre
+        │     → SECTION 02 — BARRE DE TRI
+
+        ├─  ✅ La barre de sélection multiple
+        │     → SECTION 03 — SÉLECTION MULTIPLE
+
+        ├─  🗑️ Le bouton Supprimer
+        │     → SECTION 03 — SÉLECTION MULTIPLE
+        │     → variable : --ao3h-ls-delete-color
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Badges & dates                            */
+/*#        |                                                 */
+/*####     ├─  02. Barre de tri                              */
+/*#        |                                                 */
+/*=        ├─  03. Sélection multiple                        */
+/*#        |                                                 */
+/*==       ├─  04. Compteur                                  */
+/*#        |                                                 */
+/*===      ├─  05. Bouton quick-mark                         */
+/*#        |                                                 */
+/*====     ├─  06. Rappels (workReminder)                    */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##    
+  ═══════════════════════════════════════════════════════════════════════   
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - La couleur des textes secondaires (date, compteur)
+      - La couleur du bouton de suppression
+      - La couleur de bordure des champs de tri
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 📅 Couleur des dates ajoutées sous les titres */
+  --ao3h-ls-text-muted: #9ca3af;
+
+  /*- 🔢 Couleur du compteur dans le titre MFL */
+  --ao3h-ls-text-counter: #6b7280;
+
+  /*- 🔲 Couleur de bordure des champs de tri */
+  --ao3h-ls-border: #d1d5db;
+
+  /*- 🗑️ Couleur du bouton Supprimer */
+  --ao3h-ls-delete-color: #dc2626;
+
+  /*- 🗑️ Fond du bouton Supprimer au survol */
+  --ao3h-ls-delete-hover-bg: #fee;
+
+  /*- 📌 Bordure du bouton quick-mark (état normal) */
+  --ao3h-ls-btn-border: #cfd6e2;
+
+  /*- 📌 Fond du bouton quick-mark au survol */
+  --ao3h-ls-btn-hover-bg: #f1f5fb;
+
+  /*- 📌 Fond du bouton quick-mark en état actif (déjà dans le shelf) */
+  --ao3h-ls-btn-active-bg: #fff7d6;
+
+  /*- 📌 Bordure du bouton quick-mark en état actif */
+  --ao3h-ls-btn-active-border: #f2ce68;
+
+  /*- 📌 Texte du bouton quick-mark en état actif */
+  --ao3h-ls-btn-active-color: #b45309;
+
+  /*- 📌 Fond du bouton quick-mark actif au survol */
+  --ao3h-ls-btn-active-hover-bg: #ffeeb8;
+}
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — BADGES & DATES
+  ───────────────────────────────────────────────────────────────────────
+    Badge 📌 affiché à droite du titre d'un blurb marqué "Later Shelf".
+    Date ajoutée affichée sous le titre sur la page Marked for Later.
+    À l'écran :
+      ┌────────────────────────────────────────┐
+      │  Titre de la fic                  📌   │
+      │  ajouté le 12 mai 2026                 │
+      └────────────────────────────────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BADGE 📌
+  ─────────────────────────────────────────────────────────────
+      └─ Affiché après le titre (h4.heading) sur les blurbs
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-ls-badge {
+  margin-left: 4px;
+  font-size: .9em;
+  cursor: default;
+  vertical-align: middle;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    DATE AJOUTÉE
+  ─────────────────────────────────────────────────────────────
+      └─ Affichée sur la page MFL sous le titre du blurb
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-ls-date {
+  display: block;
+  font-size: .78em;
+  color: var(--ao3h-ls-text-muted);
+  margin-top: 2px;
+}
+
+
+/*####   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — BARRE DE TRI
+  ───────────────────────────────────────────────────────────────────────
+    Barre affichée en haut de la page MFL pour trier et filtrer les
+    œuvres marquées.
+    À l'écran :
+      ┌──────────────────────────────────────────────────┐
+      │  Trier par : [▾ Date ajoutée]  Max : [____]      │
+      │  ☑ Afficher seulement les œuvres complètes       │
+      └──────────────────────────────────────────────────┘
+    ⚠️ Le conteneur porte l'id #ao3h-ls-sort — utilisé par le JS
+       pour retrouver et supprimer la barre au cleanup.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+#ao3h-ls-sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin: 8px 0;
+  font-size: .88em;
+}
+
+#ao3h-ls-sort select,
+#ao3h-ls-sort input[type=number] {
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--ao3h-ls-border);
+  font-size: .9em;
+}
+
+#ao3h-ls-sort input[type=number] {
+  width: 90px;
+}
+
+#ao3h-ls-sort label {
+  font-size: .9em;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+
+/*=   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — SÉLECTION MULTIPLE
+  ───────────────────────────────────────────────────────────────────────
+    Barre d'actions et cases à cocher pour la sélection/suppression
+    en masse sur la page MFL.
+    À l'écran :
+      ┌──────────────────────────────────────────────────┐
+      │  ☑ Tout sélectionner  [Supprimer la sélection]   │
+      └──────────────────────────────────────────────────┘
+    ⚠️ #ao3h-ls-ms-bar et #ao3h-ls-del sont utilisés par le JS
+       pour retrouver et supprimer ces éléments au cleanup.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+#ao3h-ls-ms-bar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 4px 0;
+  font-size: .85em;
+}
+
+#ao3h-ls-ms-bar button {
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/*- Case à cocher sur chaque blurb (sélection individuelle) */
+.ao3h-ls-chk {
+  margin-right: 6px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+/*- Bouton "Supprimer la sélection" */
+#ao3h-ls-del {
+  border: 1px solid var(--ao3h-ls-delete-color);
+  color: var(--ao3h-ls-delete-color);
+  background: #fff;
+}
+
+#ao3h-ls-del:hover {
+  background: var(--ao3h-ls-delete-hover-bg);
+}
+
+
+/*==   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — COMPTEUR
+  ───────────────────────────────────────────────────────────────────────
+    Compteur affiché à droite du titre h2 sur la page MFL.
+    À l'écran :
+      ┌──────────────────────────────────┐
+      │  Marked for Later  (12 works)    │
+      └──────────────────────────────────┘
+    ⚠️ L'élément porte l'id #ao3h-ls-count — utilisé par le JS
+       pour retrouver et supprimer le compteur au cleanup.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+#ao3h-ls-count {
+  font-size: .8em;
+  color: var(--ao3h-ls-text-counter);
+  margin-left: 8px;
+  font-weight: normal;
+}
+
+
+/*===   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — BOUTON QUICK-MARK
+  ───────────────────────────────────────────────────────────────────────
+    Bouton 📌 injecté après le titre de chaque blurb pour marquer
+    rapidement une œuvre dans le Later Shelf.
+    À l'écran :
+      ┌──────────────────────────────────────────────────┐
+      │  Titre de la fic  [📌 Later]                     │
+      │  Titre marquée    [📌 Later ✓]  ← état actif     │
+      └──────────────────────────────────────────────────┘
+    ⚠️ Les classes .ao3h-ls-btn et .ao3h-ls-active sont
+       utilisées par le JS pour identifier l'état du bouton.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-ls-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid var(--ao3h-ls-btn-border);
+  background: #fff;
+  border-radius: 4px;
+  padding: 1px 6px;
+  cursor: pointer;
+  font-size: .82em;
+  line-height: 1.4;
+  color: var(--ao3h-ls-text-counter);
+  margin-left: 6px;
+  vertical-align: middle;
+  transition: background .12s, border-color .12s, color .12s;
+}
+
+.ao3h-ls-btn:hover {
+  background: var(--ao3h-ls-btn-hover-bg);
+  border-color: var(--ao3h-ls-text-muted);
+}
+
+/*- État actif : œuvre déjà dans le Later Shelf */
+.ao3h-ls-btn.ao3h-ls-active {
+  background: var(--ao3h-ls-btn-active-bg);
+  border-color: var(--ao3h-ls-btn-active-border);
+  color: var(--ao3h-ls-btn-active-color);
+}
+
+.ao3h-ls-btn.ao3h-ls-active:hover {
+  background: var(--ao3h-ls-btn-active-hover-bg);
+}
+
+
+/*====   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — RAPPELS (workReminder)
+  ───────────────────────────────────────────────────────────────────────
+    Badge ⏰ affiché sur les blurbs ayant un rappel actif.
+    Bouton ⏰ injecté sur la page MFL pour définir un rappel.
+    À l'écran :
+      ┌────────────────────────────────────────────────────┐
+      │  Titre de la fic  📌  ⏰                           │
+      │  Titre de la fic  [⏰ Remind me]                   │
+      └────────────────────────────────────────────────────┘
+    ⚠️ Les classes .ao3h-ls-reminder-badge et .ao3h-ls-remind-btn
+       sont utilisées par le JS pour retrouver et supprimer
+       ces éléments au cleanup.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*- Badge ⏰ sur les blurbs avec rappel actif */
+.ao3h-ls-reminder-badge {
+  margin-left: 4px;
+  font-size: .9em;
+  cursor: default;
+  vertical-align: middle;
+}
+
+/*- Bouton "Remind me" sur la page MFL */
+.ao3h-ls-remind-btn {
+  margin-left: 6px;
+  font-size: .78em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--ao3h-ls-border);
+  background: #fff;
+  cursor: pointer;
+  color: var(--ao3h-ls-text-counter);
+  vertical-align: middle;
+}

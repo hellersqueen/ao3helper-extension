@@ -1,0 +1,467 @@
+/*: ═══════════════════════════════════════════════════════════════
+      SKIP WORKS — Config Panel Styles
+        Contrôle l'apparence du panneau de configuration
+        du module Skip Works.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence.
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🎨 La couleur grise des titres de fics skippés
+        │     → SECTION 01 — COULEURS DES ENTRÉES
+        │     → .ao3h-skipworks-entry .ao3h-module-list-entry-title a
+
+        ├─  🏷️ Le badge de note (couleur, expand/collapse)
+        │     → SECTION 02 — LE BADGE DE NOTE
+        │     → .ao3h-skipworks-note
+
+        ├─  📐 La mise en page deux colonnes des presets
+        │     → SECTION 03 — QUICK NOTE PRESETS
+        │     → .ao3h-skipworks-two-col
+
+        ├─  💬 Le message quand il n'y a aucun preset
+        │     → SECTION 03 — QUICK NOTE PRESETS
+        │     → .ao3h-skipworks-presets:empty::before
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  01. Couleurs des entrées                      */
+/*#        |                                                 */
+/*###      ├─  02. Le badge de note                          */
+/*#        |                                                 */
+/*####     ├─  03. Quick Note Presets                        */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — COULEURS DES ENTRÉES
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle les couleurs spécifiques des fics skippés.
+    À l'écran :
+      ┌──────────────────────────────────────────┐
+      │  titre du fic (gris muet)    [note]      │
+      └──────────────────────────────────────────┘
+    Ici tu modifies :
+      - la couleur grise du lien titre
+      - la couleur du badge de note
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/*+ ───────────────────────────────────────────────────────────
+    TITRE DU FIC SKIPPÉ
+  ─────────────────────────────────────────────────────────────
+      └─ Le lien du titre devient gris (muet) au lieu du rouge AO3.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-entry .ao3h-module-list-entry-title a {
+  /*- 🎨 Gris muet (au lieu du rouge AO3 par défaut) */
+  color: #888;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    BADGE DE NOTE
+  ─────────────────────────────────────────────────────────────
+      └─ Le badge affichant la note courte de l'entrée skippée.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-note {
+  /*- 🎨 Texte blanc sur fond gris moyen */
+  color: #fff;
+  background: #888;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — LE BADGE DE NOTE
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle le comportement du badge de note.
+    Un clic sur un badge tronqué l'ouvre sur plusieurs lignes.
+    À l'écran :
+      État normal  →  [note courte...]
+      État ouvert  →  [note complète
+                       sur plusieurs lignes]
+    Ici tu modifies :
+      - le curseur pointer sur les notes tronquées
+      - l'alignement de l'entrée quand la note est ouverte
+      - la largeur max et le retour à la ligne du badge ouvert
+    ⚠️ Cette section est liée au JavaScript :
+      - .ao3h-skipworks-note--truncated → ajouté par JS si note tronquée
+      - .ao3h-skipworks-entry--note-open → ajouté par JS au clic
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/*+ ───────────────────────────────────────────────────────────
+    NOTE TRONQUÉE — CLIQUABLE
+  ─────────────────────────────────────────────────────────────
+      └─ Seules les notes tronquées sont cliquables pour s'ouvrir.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-note--truncated {
+  /*- 👆 Curseur pointer = indique que c'est cliquable */
+  cursor: pointer;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    ENTRÉE AVEC NOTE OUVERTE
+  ─────────────────────────────────────────────────────────────
+      └─ Réaligne l'entrée en haut quand le badge est développé.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-entry--note-open {
+  /*- ↕️ Alignement en haut pour ne pas couper le badge */
+  align-items: flex-start;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    BADGE DÉVELOPPÉ
+  ─────────────────────────────────────────────────────────────
+      └─ Le badge peut maintenant s'étaler sur plusieurs lignes.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-entry--note-open .ao3h-module-list-entry-badge {
+  /*- ↩️ Retour à la ligne autorisé */
+  white-space: normal;
+
+  /*- 👁️ Contenu visible même si ça dépasse */
+  overflow: visible;
+  text-overflow: unset;
+
+  /*- ↔️ Largeur max pour rester lisible */
+  max-width: 260px;
+
+  /*- ↕️ Hauteur de ligne confortable */
+  line-height: 1.5;
+}
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — QUICK NOTE PRESETS
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle la zone des presets de notes rapides.
+    À l'écran :
+      ┌───────────────────┬───────────────────┐
+      │  liste des fics   │  presets de notes │
+      │  skippés          │  [preset 1]       │
+      │                   │  [preset 2]       │
+      └───────────────────┴───────────────────┘
+    Ici tu modifies :
+      - la mise en page deux colonnes
+      - la ligne input + bouton Ajouter
+      - la zone de chips presets
+      - le message quand il n'y a aucun preset
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/*+ ───────────────────────────────────────────────────────────
+    WRAPPER DEUX COLONNES
+  ─────────────────────────────────────────────────────────────
+      └─ Divise la zone en deux colonnes égales.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-two-col {
+  /*- 📐 Deux colonnes égales */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  /*- ↔️ Espace entre les colonnes */
+  gap: 16px;
+
+  /*- ↕️ Colonnes alignées par le haut */
+  align-items: start;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    COLONNE INDIVIDUELLE
+  ─────────────────────────────────────────────────────────────
+      └─ Empêche la colonne de déborder de la grille.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-col {
+  /*- ↔️ Empêche le débordement horizontal */
+  min-width: 0;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    LIGNE INPUT + BOUTON AJOUTER
+  ─────────────────────────────────────────────────────────────
+      └─ La ligne qui contient le champ texte et le bouton "Ajouter".
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-preset-add-row {
+  /*- 📐 Ligne horizontale */
+  display: flex;
+  gap: 6px;
+  align-items: center;
+
+  /*- ↕️ Espace sous la ligne */
+  margin-bottom: 8px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    CHAMP TEXTE DU PRESET
+  ─────────────────────────────────────────────────────────────
+      └─ Le champ texte prend tout l'espace disponible.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-preset-input {
+  /*- ↔️ Occupe tout l'espace restant dans la ligne */
+  flex: 1;
+  min-width: 0;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    ZONE DE CHIPS PRESETS
+  ─────────────────────────────────────────────────────────────
+      └─ La zone qui affiche les chips de presets sauvegardés.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-presets {
+  /*- 📐 Chips sur plusieurs lignes si nécessaire */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  /*- 📐 Hauteur minimale même si vide */
+  min-height: 28px;
+  align-items: center;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    MESSAGE "AUCUN PRESET"
+  ─────────────────────────────────────────────────────────────
+      └─ Affiché automatiquement quand la zone de chips est vide.
+         ⚠️ Généré par CSS (::before), pas par le HTML.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-presets:empty::before {
+  /*- 📝 Texte du message */
+  content: "No presets yet";
+
+  /*- 🎨 Gris très pâle */
+  color: #bbb;
+
+  /*- 📝 Petite taille, italique */
+  font-size: 11px;
+  font-style: italic;
+}
+
+
+/*#####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — IN-PAGE UI (HIDE BAR & PICKER)
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle l'UI injectée directement dans les blurbs
+    de la page AO3 (pas dans le panneau de config).
+    À l'écran :
+      - Barre grise "Hidden: [raison]" qui remplace le blurb masqué
+      - Picker modal centré pour choisir/saisir la raison du masquage
+    ⚠️ Les noms de classes sont couplés au JavaScript :
+      - .ao3h-m5-hidebar → injectée par hideWork()
+      - .ao3h-m5-picker  → injectée au chargement, togglée par .ao3h-open
+      - .ao3h-m5-hide-btn → bouton "Hide" flottant sur chaque blurb
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/*+ ───────────────────────────────────────────────────────────
+    HIDE BAR — CONTENEUR PRINCIPAL
+  ─────────────────────────────────────────────────────────────
+      └─ Barre grise affichée à la place du blurb masqué.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5-hidebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px;
+  background: #f5f6f8;
+  border: 1px solid #d7dbe3;
+  border-radius: 8px;
+  margin: .5em 0;
+  font-size: 11px;
+  color: #1b2430;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    HIDE BAR — CÔTÉ GAUCHE
+  ─────────────────────────────────────────────────────────────
+      └─ Contient le label "Hidden:" et la raison.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5-hidebar .left {
+  display: flex;
+  gap: .5em;
+  align-items: center;
+  min-width: 0;
+}
+
+.ao3h-m5-hidebar .label {
+  opacity: .8;
+}
+
+.ao3h-m5-hidebar .reason-text {
+  font-weight: 600;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  max-width: none;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    HIDE BAR — CÔTÉ DROIT & BOUTONS
+  ─────────────────────────────────────────────────────────────
+      └─ Boutons Edit / Show / Unhide.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5-hidebar .right {
+  display: flex;
+  gap: 6px;
+}
+
+.ao3h-m5-btn {
+  border: 1px solid #cfd6e2;
+  background: #fff;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.ao3h-m5-btn:hover {
+  background: #f1f5fb;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON "HIDE" FLOTTANT
+  ─────────────────────────────────────────────────────────────
+      └─ Bouton flottant à droite du blurb pour masquer un fic.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5-hide-btn {
+  float: right;
+  margin-right: 8px;
+  margin-top: -20px;
+  border: 1px solid #cfd6e2;
+  background: #fff;
+  border-radius: 6px;
+  padding-bottom: 5px;
+  cursor: pointer;
+  font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.ao3h-m5-hide-btn:hover {
+  background: #f1f5fb;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    PICKER MODAL CENTRÉ
+  ─────────────────────────────────────────────────────────────
+      └─ Fenêtre modale pour choisir ou saisir la raison.
+         Visible uniquement quand .ao3h-open est présent.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5-picker {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border: 1px solid #cfd6e2;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .18);
+  display: none;
+  z-index: 99999;
+  width: min(520px, 92vw);
+  font: 14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #0f172a;
+}
+
+.ao3h-m5-picker.ao3h-open {
+  display: block;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    PICKER — ÉLÉMENTS INTERNES
+  ─────────────────────────────────────────────────────────────
+      └─ Titre, chips de raisons prédéfinies, ligne input,
+         boutons Ajouter/Annuler, hint et actions.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5p-title {
+  font-weight: 700;
+}
+
+.ao3h-m5p-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.ao3h-m5p-chip {
+  border: 1px solid #c7cbd3;
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+  background: #f8fafc;
+}
+
+.ao3h-m5p-chip:hover {
+  background: #eef2f8;
+}
+
+.ao3h-m5p-row {
+  display: flex;
+  gap: 8px;
+}
+
+.ao3h-m5p-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #cfd6e2;
+  border-radius: 6px;
+}
+
+.ao3h-m5p-add,
+.ao3h-m5p-cancel {
+  border: 1px solid #cfd6e2;
+  background: #f6f8fb;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.ao3h-m5p-add:hover,
+.ao3h-m5p-cancel:hover {
+  background: #eef2f8;
+}
+
+.ao3h-m5p-hint {
+  opacity: .7;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.ao3h-m5p-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}

@@ -1,0 +1,517 @@
+
+/* ═══════════════════════════════════════════════════════════════════════════
+
+AO3 Helper - Hide By Tags Module Coordinator
+    Module ID: hideByTags
+    Display Name: Hide By Tags
+    Tab: Browse
+
+    Submodules (imported directly as ES modules):
+        1. hiddenTags          → ./hiddenTags.js
+        2. nopeWords           → ./nopeWords.js
+        3. whitelistExceptions → ./whitelistExceptions.js
+
+    Storage keys:
+        ao3h:hideByTags:list       — tag blacklist
+        ao3h:hideByTags:whitelist  — whitelist tags
+        ao3h:hideByTags:nope       — NOPE words
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+import { register } from '../../../core/lifecycle.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { onReady, observe, debounce, css } from '../../../../lib/utils/index.js';
+import { Storage } from '../../../../lib/storage/index.js';
+import { wrapStorageForUser, UserLocalStorage } from '../../../../lib/storage/user.js';
+import { Flags } from '../../../../lib/utils/config.js';
+import styles from './hideByTags.css?inline';
+
+import { HiddenTags } from './hiddenTags.js';
+import { NopeWords } from './nopeWords.js';
+import { WhitelistExceptions } from './whitelistExceptions.js';
+
+css(styles, 'ao3h-hideByTags');
+
+const W = getGlobalWindow();
+
+// AO3H.store resolves to wrapStorageForUser(Storage) (src/core/lifecycle.js) —
+// reproduced directly via imports rather than going through window.AO3H.store.
+const wrappedStorage = wrapStorageForUser(Storage);
+const NS          = 'ao3h';
+// KeyboardNavigation (lib/ui/keyboard.js) isn't migrated to ES Modules yet —
+// kept as a global bridge read (Phase 18: don't migrate a dependency whose
+// target isn't ready).
+// Etape 318 : lecture window conservee volontairement — lib/ui/keyboard.js est
+// hors graphe Vite (les appels sont gardes, no-op cote Vite). Resolu en Phase 27.
+const KeyboardNav = W.AO3H_Common?.KeyboardNavigation || {};
+const UserLS      = UserLocalStorage;
+
+let enabled        = false;
+let observerActive = false;
+let listObserver   = null;
+let unwatchEnabled = null;
+let active         = false;
+
+// ── Submodule instances (set in init) ─────────────────────────────────────
+let hiddenTagsInst = null;
+let nopeWordsInst  = null;
+let whitelistInst  = null;
+
+// ── Notes integration ─────────────────────────────────────────────────────
+const hiddenByNotes   = new Set();
+// (session-only override: set data-wl-override="1" on the blurb directly)
+
+function onNotesHidden(e) {
+  const id = e?.detail?.workId;
+  if (id) { hiddenByNotes.add(id); processList(); }
+}
+function onNotesVisible(e) {
+  const id = e?.detail?.workId;
+  if (id) { hiddenByNotes.delete(id); processList(); }
+}
+
+// Augment hiddenTagsInst.isHiddenByNotes to also check the in-memory set.
+// Called after instantiation in init().
+function patchIsHiddenByNotes () {
+  const original = hiddenTagsInst.isHiddenByNotes.bind(hiddenTagsInst);
+  hiddenTagsInst.isHiddenByNotes = (blurb) => {
+    const id = hiddenTagsInst.getWorkIdFromBlurb(blurb);
+    if (id && hiddenByNotes.has(id)) return true;
+    return original(blurb);
+  };
+}
+
+// ── Settings ─────────────────────────────────────────────────────────────────
+
+const MOD = 'hideByTags';
+
+// ── Defaults (required for audit tooling) ────────────────────────────
+const DEFAULTS = {
+  hideMode:              'hide',
+  whitelistEnabled:      true,
+  showWhitelistBadge:    true,
+  whitelistMode:         'show',
+  textFilterEnabled:     true,
+  nopeHideMode:          'hide',
+  nopeTargetSummaries:   true,
+  nopeTargetNotes:       true,
+  nopeTargetTitles:      false,
+};
+
+function loadSettings () {
+  try {
+    const v = localStorage.getItem(`${NS}:mod:${MOD}:settings`);
+    return v ? JSON.parse(v) : {};
+  } catch { return {}; }
+}
+
+// ── Processing ─────────────────────────────────────────────────────────────
+
+/** Prepend (or refresh) a muted reason strip on a dimmed blurb. */
+function applyDimStrip (blurb, prefix, tag) {
+  blurb.querySelector(`.${NS}-dim-strip`)?.remove();
+  const strip = document.createElement('div');
+  strip.className = `${NS}-dim-strip`;
+  strip.appendChild(document.createTextNode(prefix));
+  const strong = document.createElement('strong');
+  strong.className = `${NS}-dim-tag`;
+  strong.textContent = tag;
+  strip.appendChild(strong);
+  blurb.prepend(strip);
+}
+
+async function processList () {
+  if (!active || !enabled || !hiddenTagsInst) return;
+
+  const hiddenList = await hiddenTagsInst.getHidden();
+  const hiddenSet  = new Set(hiddenList);
+
+  const s = loadSettings();
+  const hideMode    = s.hideMode ?? 'hide';
+  const wlEnabled   = !!(s.whitelistEnabled ?? true);
+  let wlSet = new Set(), showWLBadge = false, wlMode = 'show';
+  if (wlEnabled) {
+    wlSet       = new Set(await whitelistInst.getWhitelistTags());
+    showWLBadge = !!(s.showWhitelistBadge ?? true);
+    wlMode      = s.whitelistMode ?? 'show';
+  }
+
+  const textFilterEnabled = !!(s.textFilterEnabled ?? true);
+  let nopeWords = [], nopeHideMode = 'hide';
+  let nopeTargets = { summaries: true, notes: true, titles: false };
+  if (textFilterEnabled) {
+    nopeWords    = await nopeWordsInst.getNopeWords();
+    nopeHideMode = s.nopeHideMode ?? 'hide';
+    nopeTargets  = {
+      summaries: !!(s.nopeTargetSummaries ?? true),
+      notes:     !!(s.nopeTargetNotes ?? true),
+      titles:    !!(s.nopeTargetTitles ?? false),
+    };
+  }
+  if (!active || !enabled) return;
+
+  // Build remove callbacks — passed into hiddenTagsInst.wrapWork()
+  function buildRemoveCbs (hideType) {
+    if (hideType === 'nope') {
+      return { nope: async (word) => { await nopeWordsInst.removeNopeWord(word); await processList(); } };
+    } else if (hideType === 'wl-folded') {
+      return { whitelist: async (tag) => { await whitelistInst.removeWhitelistTag(tag); await processList(); } };
+    } else {
+      return { blacklist: async (tag) => { await hiddenTagsInst.removeHiddenTag(tag); await processList(); } };
+    }
+  }
+
+  const blurbs = hiddenTagsInst.getWorkBlurbs();
+
+  blurbs.forEach(blurb => {
+    const scopeForTags = blurb.querySelector(`.${NS}-cut`) || blurb;
+
+    // NOPE words check
+    if (textFilterEnabled && nopeWords.length > 0) {
+      const matchedWord = nopeWordsInst.matchesNope(blurb, nopeWords, nopeTargets);
+      if (matchedWord) {
+        hiddenTagsInst.clearWLHighlights(blurb);
+        if (nopeHideMode === 'dim') {
+          if (blurb.classList.contains(`${NS}-wrapped`)) hiddenTagsInst.unwrapWork(blurb);
+          blurb.classList.add(`${NS}-dimmed`);
+          applyDimStrip(blurb, '⛔ Soft-hidden — NOPE word: ', matchedWord);
+        } else {
+          blurb.querySelector(`.${NS}-dim-strip`)?.remove();
+          blurb.classList.remove(`${NS}-dimmed`);
+          hiddenTagsInst.wrapWork(blurb, [`⛔ "${matchedWord}"`], buildRemoveCbs, null, 'nope');
+        }
+        return;
+      }
+    }
+
+    const reasons = hiddenTagsInst.reasonsFor(scopeForTags, hiddenSet);
+
+    if (reasons.length === 0) {
+      hiddenTagsInst.clearWLHighlights(blurb);
+      blurb.classList.remove(`${NS}-dimmed`);
+      blurb.querySelector(`.${NS}-dim-strip`)?.remove();
+      if (blurb.classList.contains(`${NS}-wrapped`)) hiddenTagsInst.unwrapWork(blurb);
+      else hiddenTagsInst.forceShow(blurb);
+      return;
+    }
+
+    // Whitelist check
+    if (wlEnabled && wlSet.size > 0) {
+      const blurbTags   = Array.from(scopeForTags.querySelectorAll('a.tag'))
+        .map(a => hiddenTagsInst.canonicalFromAnchor(a)).filter(Boolean);
+      const savedByTags = whitelistInst.savedBy(blurbTags, wlSet);
+
+      if (savedByTags.length > 0) {
+        const wlSavedLabel = savedByTags.join(', ');
+
+        if (blurb.dataset.wlOverride === '1') {
+          // ── Overridden: single fold row + "Show again" button appended to the fold ──
+          blurb.querySelector(`.${NS}-wl-strip`)?.remove();
+          blurb.classList.remove(`${NS}-wl-saved`);
+          hiddenTagsInst.clearWLHighlights(blurb);
+
+          if (hideMode === 'dim') {
+            // Dim mode: work dimmed, strip prepended — already one row
+            if (blurb.classList.contains(`${NS}-wrapped`)) hiddenTagsInst.unwrapWork(blurb);
+            blurb.classList.add(`${NS}-dimmed`);
+            const strip = document.createElement('div');
+            strip.className = `${NS}-wl-strip ${NS}-wl-strip--hidden`;
+            strip.innerHTML = `🔴 Hidden because: <span class="${NS}-wl-blocked">${reasons.join(', ')}</span> — kept by: <strong>${wlSavedLabel}</strong>`;
+            const showBtn = document.createElement('button');
+            showBtn.type      = 'button';
+            showBtn.className = `${NS}-wl-hide-anyway`;
+            showBtn.textContent = '↩ Show again';
+            showBtn.title = 'Restore whitelist exception — show this work again';
+            showBtn.addEventListener('pointerdown', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              delete blurb.dataset.wlOverride;
+              strip.remove();
+              blurb.classList.remove(`${NS}-dimmed`);
+              hiddenTagsInst.forceShow(blurb);
+              blurb.classList.add(`${NS}-wl-saved`);
+              processList();
+            });
+            strip.appendChild(showBtn);
+            blurb.prepend(strip);
+          } else {
+            // Hide mode: use wrapWork normally (single fold row), then append
+            // "was kept by" info + "Show again" button directly onto the fold.
+            // The button uses stopPropagation so it intercepts the click before
+            // the fold's toggle handler, without needing to disable the fold.
+            blurb.classList.remove(`${NS}-dimmed`);
+            hiddenTagsInst.wrapWork(blurb, reasons, buildRemoveCbs);
+            const fold = blurb.querySelector(`.${NS}-fold`);
+            if (fold) {
+              // Remove stale appended elements from a previous processList run
+              fold.querySelector(`.${NS}-wl-hide-anyway`)?.remove();
+              fold.querySelector(`.${NS}-wl-fold-note`)?.remove();
+              // Remove the "Click to show" hint to keep the row concise
+              fold.querySelector(`.${NS}-hint`)?.remove();
+              const keptSpan = document.createElement('span');
+              keptSpan.className = `${NS}-wl-fold-note`;
+              keptSpan.innerHTML = ` — kept by: <strong>${wlSavedLabel}</strong>`;
+              const showBtn = document.createElement('button');
+              showBtn.type      = 'button';
+              showBtn.className = `${NS}-wl-hide-anyway`;
+              showBtn.textContent = '↩ Show again';
+              showBtn.title = 'Restore whitelist exception — show this work again';
+              showBtn.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                delete blurb.dataset.wlOverride;
+                hiddenTagsInst.unwrapWork(blurb);
+                hiddenTagsInst.forceShow(blurb);
+                blurb.classList.add(`${NS}-wl-saved`);
+                processList();
+              });
+              fold.append(keptSpan, document.createTextNode(' '), showBtn);
+            }
+          }
+          return;
+
+        } else {
+          // ── Normal whitelist rescue: show work with 🟢 banner ──
+          if (wlMode === 'fold-note') {
+            hiddenTagsInst.clearWLHighlights(blurb);
+            blurb.classList.remove(`${NS}-dimmed`);
+            hiddenTagsInst.wrapWork(blurb, reasons, buildRemoveCbs, wlSavedLabel);
+          } else {
+            if (blurb.classList.contains(`${NS}-wrapped`)) hiddenTagsInst.unwrapWork(blurb);
+            else hiddenTagsInst.forceShow(blurb);
+            blurb.classList.add(`${NS}-wl-saved`);
+            if (showWLBadge) {
+              let strip = blurb.querySelector(`.${NS}-wl-strip`);
+              if (!strip) {
+                strip = document.createElement('div');
+                strip.className = `${NS}-wl-strip`;
+                const header = blurb.querySelector('.header.module') || blurb.firstElementChild;
+                blurb.insertBefore(strip, header);
+              }
+              // Update text span only — never touch the button so hover state is stable
+              let textSpan = strip.querySelector(`.${NS}-wl-text`);
+              if (!textSpan) {
+                textSpan = document.createElement('span');
+                textSpan.className = `${NS}-wl-text`;
+                strip.insertBefore(textSpan, strip.firstChild);
+              }
+              textSpan.innerHTML = `🟢 Would be hidden because: <span class="${NS}-wl-blocked">${reasons.join(', ')}</span> — kept by: <strong>${wlSavedLabel}</strong>`;
+              // Create button once; only update its label on subsequent runs
+              let btn = strip.querySelector(`.${NS}-wl-hide-anyway`);
+              if (!btn) {
+                btn = document.createElement('button');
+                btn.type      = 'button';
+                btn.className = `${NS}-wl-hide-anyway`;
+                btn.title = 'Hide this work despite the whitelist exception (this session only)';
+                btn.addEventListener('pointerdown', (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  blurb.dataset.wlOverride   = '1';
+                  blurb.dataset.wlInteracted = '1';
+                  processList();
+                });
+                strip.appendChild(btn);
+              }
+              btn.textContent = blurb.dataset.wlInteracted ? '↩ Hide again' : '↩ Hide anyway';
+            } else {
+              blurb.querySelector(`.${NS}-wl-strip`)?.remove();
+            }
+          }
+          return;
+        }
+      }
+    }
+
+    hiddenTagsInst.clearWLHighlights(blurb);
+    if (hideMode === 'dim') {
+      if (blurb.classList.contains(`${NS}-wrapped`)) hiddenTagsInst.unwrapWork(blurb);
+      blurb.classList.add(`${NS}-dimmed`);
+      applyDimStrip(blurb, '🚫 Soft-hidden — tag: ', reasons.join(', '));
+    } else {
+      blurb.classList.remove(`${NS}-dimmed`);
+      blurb.querySelector(`.${NS}-dim-strip`)?.remove();
+      hiddenTagsInst.wrapWork(blurb, reasons, buildRemoveCbs);
+    }
+  });
+}
+
+function run () {
+  if (!enabled) return;
+  hiddenTagsInst.ensureInlineIcons(document, (root) => hiddenTagsInst.getWorkBlurbs(root));
+  processList();
+}
+
+// ── Live region ───────────────────────────────────────────────────────────
+
+let liveRegion = null;
+
+function ensureLiveRegion () {
+  if (!liveRegion && KeyboardNav.createLiveRegion) {
+    liveRegion = KeyboardNav.createLiveRegion({ politeness: 'polite' });
+  }
+}
+
+function toast (msg) {
+  hiddenTagsInst.toast(msg);
+  liveRegion?.announce?.(msg);
+}
+
+// ── Always-on manager exposure ────────────────────────────────────────────
+
+function openManager () {
+  if (!hiddenTagsInst) return;
+  hiddenTagsInst.openManager({ processList, toast });
+}
+
+function openNopeManager () {
+  if (!nopeWordsInst) return;
+  nopeWordsInst.openManager({ processList, toast });
+}
+
+function openWhitelistManager () {
+  if (!whitelistInst) return;
+    whitelistInst.openManager({ processList, toast });
+}
+
+function onOpenManager(e) { try { e?.preventDefault?.(); } catch {} openManager(); }
+function onOpenNopeManager(e) { try { e?.preventDefault?.(); } catch {} openNopeManager(); }
+function onOpenWhitelistManager(e) { try { e?.preventDefault?.(); } catch {} openWhitelistManager(); }
+
+function installManagerBridge () {
+  document.addEventListener(`${NS}:open-hide-manager`, onOpenManager);
+  document.addEventListener(`${NS}:open-nope-manager`, onOpenNopeManager);
+  document.addEventListener(`${NS}:open-whitelist-manager`, onOpenWhitelistManager);
+  W.ao3hOpenHiddenTagsManager = openManager;
+  W.ao3hOpenNopeWordsManager = openNopeManager;
+  W.ao3hOpenWhitelistManager = openWhitelistManager;
+}
+
+function removeManagerBridge () {
+  document.removeEventListener(`${NS}:open-hide-manager`, onOpenManager);
+  document.removeEventListener(`${NS}:open-nope-manager`, onOpenNopeManager);
+  document.removeEventListener(`${NS}:open-whitelist-manager`, onOpenWhitelistManager);
+  if (W.ao3hOpenHiddenTagsManager === openManager) delete W.ao3hOpenHiddenTagsManager;
+  if (W.ao3hOpenNopeWordsManager === openNopeManager) delete W.ao3hOpenNopeWordsManager;
+  if (W.ao3hOpenWhitelistManager === openWhitelistManager) delete W.ao3hOpenWhitelistManager;
+}
+
+function onSettingsChanged (e) {
+  if (e?.detail?.moduleId === MOD && enabled) processList();
+}
+
+// ── Module registration ───────────────────────────────────────────────────
+
+register('hideByTags', { title: 'Hide By Tags', enabledByDefault: true }, async function init () {
+  active = true;
+  // Instantiate submodules
+  hiddenTagsInst = new HiddenTags({ NS, Storage: wrappedStorage, UserLS, KeyboardNav });
+  nopeWordsInst  = new NopeWords({ NS, Storage: wrappedStorage, UserLS, KeyboardNav });
+  whitelistInst  = new WhitelistExceptions({ NS, Storage: wrappedStorage, UserLS, KeyboardNav });
+
+  patchIsHiddenByNotes();
+  installManagerBridge();
+  document.addEventListener(`${NS}:notes-hidden`, onNotesHidden);
+  document.addEventListener(`${NS}:notes-visible`, onNotesVisible);
+  document.addEventListener('ao3h:settingsChanged', onSettingsChanged);
+
+  const ENABLE_KEY = 'mod:hideByTags:enabled';
+  enabled = !!Flags.get(ENABLE_KEY, true);
+
+  onReady(() => {
+    if (!active) return;
+    ensureLiveRegion();
+
+    if (typeof GM_registerMenuCommand === 'function') {
+      GM_registerMenuCommand('AO3 Helper: Manage hidden tags…', openManager);
+      GM_registerMenuCommand('AO3 Helper: Manage NOPE words…', openNopeManager);
+      GM_registerMenuCommand('AO3 Helper: Manage whitelist…', openWhitelistManager);
+      GM_registerMenuCommand('AO3 Helper: Show hidden tags (console)', async () => {
+        const list = await hiddenTagsInst.getHidden();
+        console.log('[AO3H] Hidden tags (canonical):', list);
+        toast(`${list.length} hidden tag(s) — see console`);
+      });
+      GM_registerMenuCommand('AO3 Helper: Export hidden tags (JSON)', async () => {
+        const list = await hiddenTagsInst.getHidden();
+        const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url; a.download = 'ao3h-hidden-tags.json';
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      });
+      GM_registerMenuCommand('AO3 Helper: Import hidden tags (JSON)…', openManager);
+    }
+
+    if (enabled) {
+      hiddenTagsInst.attachDelegates({ onTagHidden: processList, toast });
+      run();
+      if (!observerActive) {
+        listObserver = observe(document.body, debounce(run, 250));
+        observerActive = true;
+      }
+    }
+  });
+
+  unwatchEnabled = Flags.watch(ENABLE_KEY, (val) => {
+    if (!active) return;
+    const wasEnabled = enabled;
+    enabled = !!val;
+
+    if (enabled && !wasEnabled) {
+      hiddenTagsInst.attachDelegates({ onTagHidden: processList, toast });
+      run();
+      if (!observerActive) {
+        listObserver = observe(document.body, debounce(run, 250));
+        observerActive = true;
+      }
+      return;
+    }
+    if (!enabled && wasEnabled) {
+      hiddenTagsInst.getWorkBlurbs().forEach(b => hiddenTagsInst.unwrapWork(b));
+      return;
+    }
+    if (enabled && wasEnabled) run();
+  });
+
+  return cleanup;
+});
+
+function cleanup () {
+  active = false;
+  enabled = false;
+  listObserver?.disconnect();
+  listObserver = null;
+  observerActive = false;
+  unwatchEnabled?.();
+  unwatchEnabled = null;
+  document.removeEventListener(`${NS}:notes-hidden`, onNotesHidden);
+  document.removeEventListener(`${NS}:notes-visible`, onNotesVisible);
+  document.removeEventListener('ao3h:settingsChanged', onSettingsChanged);
+  removeManagerBridge();
+
+  hiddenTagsInst?.getWorkBlurbs().forEach(blurb => {
+    hiddenTagsInst.clearWLHighlights(blurb);
+    blurb.querySelector(`.${NS}-dim-strip`)?.remove();
+    blurb.classList.remove(`${NS}-dimmed`, `${NS}-wl-saved`, `${NS}-force-show`);
+    delete blurb.dataset.wlOverride;
+    delete blurb.dataset.wlInteracted;
+    if (blurb.classList.contains(`${NS}-wrapped`)) hiddenTagsInst.unwrapWork(blurb);
+  });
+  hiddenTagsInst?.cleanup();
+  document.querySelectorAll(`.${NS}-hide-ico, .${NS}-tag-comma`).forEach(el => el.remove());
+  document.querySelectorAll(`.${NS}-tag-txt`).forEach(el => el.replaceWith(...el.childNodes));
+  document.querySelectorAll(`.${NS}-tag-wrap`).forEach(el => el.classList.remove(`${NS}-tag-wrap`));
+  document.querySelectorAll(`.${NS}-own-commas`).forEach(el => el.classList.remove(`${NS}-own-commas`));
+  document.querySelectorAll(`.${NS}-mgr-backdrop, .${NS}-mgr`).forEach(el => el.remove());
+  document.documentElement.classList.remove(`${NS}-lock`);
+  document.body?.classList.remove(`${NS}-lock`);
+  if (document.body) {
+    document.body.style.top = '';
+    delete document.body.dataset[`${NS}ScrollY`];
+  }
+  liveRegion?.remove?.();
+  liveRegion = null;
+  hiddenByNotes.clear();
+}
+
+console.log('[AO3H][hideByTags] registered');

@@ -1,0 +1,68 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+
+   AO3 Helper — Keyboard Shortcuts Module
+   Navigate & Interact > keyboardShortcuts
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Help overlay ───────────────────────────────────────────────────────── */
+
+.ao3h-kb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.55);
+}
+.ao3h-kb-panel {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px 28px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 30px rgba(0,0,0,.25);
+  font-size: 13px;
+  color: #222;
+}
+.ao3h-kb-panel h3 { margin: 0 0 12px; font-size: 15px; }
+.ao3h-kb-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.ao3h-kb-key {
+  font-family: monospace;
+  background: #f3f4f6;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.ao3h-kb-close {
+  margin-top: 12px;
+  padding: 5px 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+}
+.ao3h-kb-close small { color: #999; }
+
+/* ── Keypress flash feedback ────────────────────────────────────────────── */
+
+#ao3h-kb-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: rgba(255,255,255,.15);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+#ao3h-kb-flash.ao3h-kb-flash-active { opacity: 1; }

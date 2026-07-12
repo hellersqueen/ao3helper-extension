@@ -1,0 +1,49 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+
+   AO3 Helper — Main Navigation Module
+   Navigate & Interact > mainNavigation
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── addNavLinks — Injected nav links (Bookmarks / MFL / History) ───────── */
+
+.ao3h-add-nav-links {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: 10px;
+}
+.ao3h-add-nav-links a {
+  padding: 3px 7px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.85em;
+}
+.ao3h-add-nav-links a:hover { text-decoration: underline; }
+
+/* ── quickLinks — Custom quick links ────────────────────────────────────── */
+
+.ao3h-quick-links {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: 4px;
+}
+.ao3h-quick-links a {
+  padding: 3px 7px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.85em;
+}
+.ao3h-quick-links a:hover { text-decoration: underline; }
+
+/* ── menuActivation — Click-only menu mode ──────────────────────────────── */
+
+html.ao3h-no-hover-menu #header .primary.navigation li:hover > ul,
+html.ao3h-no-hover-menu #header .primary.navigation li:hover > div {
+  display: none !important;
+}
+html.ao3h-no-hover-menu #header .primary.navigation li.open > ul,
+html.ao3h-no-hover-menu #header .primary.navigation li.open > div {
+  display: block !important;
+}

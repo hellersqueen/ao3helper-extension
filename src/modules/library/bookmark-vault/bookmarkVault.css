@@ -1,0 +1,567 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+
+   AO3 Helper — Bookmark Vault
+   Module CSS — bookmarkVault
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Bookmark Maintenance — Analytics dashboard
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Analytics panel ─────────────────────────────────────────────────── */
+
+#ao3h-bm-analytics {
+  margin: 0.5em 0 1em;
+  font-size: 0.85em;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 10px;
+  background: #fafafa;
+}
+
+#ao3h-bm-analytics summary {
+  cursor: pointer;
+  font-weight: bold;
+  color: #555;
+}
+
+.ao3h-bm-analytics-inner {
+  margin-top: 6px;
+  display: flex;
+  gap: 1.5em;
+  flex-wrap: wrap;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Bookmark Maintenance — Export badge & button
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Export badge — base ─────────────────────────────────────────────── */
+
+.ao3h-export-badge {
+  display: inline-block;
+  margin-left: 0.7em;
+  padding: 1px 7px;
+  font-size: 0.78em;
+  border-radius: 3px;
+  vertical-align: middle;
+  font-weight: normal;
+  cursor: default;
+}
+
+/* ── Export badge — states ───────────────────────────────────────────── */
+
+.ao3h-export-badge--ok {
+  background: #d4edda;
+  color: #155724;
+}
+
+.ao3h-export-badge--warn {
+  background: #fdf3d0;
+  color: #856404;
+}
+
+/* ── Export button ───────────────────────────────────────────────────── */
+
+.ao3h-export-btn {
+  margin-left: 0.5em;
+  padding: 1px 8px;
+  font-size: 0.78em;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #f8f8f8;
+  vertical-align: middle;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Bookmark Navigation
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Back-to-work link ───────────────────────────────────────────────── */
+
+.ao3h-back-btn {
+  display: inline-block;
+  margin-left: 1em;
+  font-size: 0.9em;
+  color: #2a6496;
+  text-decoration: none;
+}
+
+/* ── View-my-bookmark link ───────────────────────────────────────────── */
+
+.ao3h-view-bm {
+  font-size: 0.9em;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Note Display
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Collapse: preview text ──────────────────────────────────────────── */
+
+.ao3h-note-preview {
+  margin: 0;
+  color: #555;
+  font-style: italic;
+}
+
+/* ── Collapse: toggle button ─────────────────────────────────────────── */
+
+.ao3h-note-toggle {
+  border: none;
+  background: none;
+  color: #2a6496;
+  cursor: pointer;
+  font-size: 0.85em;
+  padding: 0;
+  text-decoration: underline;
+}
+
+/* ── Hover tooltip ───────────────────────────────────────────────────── */
+
+.ao3h-note-tooltip {
+  display: none;
+  position: absolute;
+  z-index: 999;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.5em 0.8em;
+  max-width: 320px;
+  font-size: 0.85em;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
+  pointer-events: none;
+  white-space: pre-wrap;
+}
+
+/* ── Markdown: heading ───────────────────────────────────────────────── */
+
+.ao3h-note-h4 {
+  margin: 0.4em 0 0.2em;
+  font-size: 1em;
+}
+
+/* ── Markdown: blockquote ────────────────────────────────────────────── */
+
+.ao3h-note-quote {
+  margin: 0.3em 0 0.3em 0.8em;
+  padding-left: 0.6em;
+  border-left: 3px solid #ccc;
+  color: #666;
+}
+
+/* ── Markdown: inline code ───────────────────────────────────────────── */
+
+.ao3h-note-code {
+  background: #f4f4f4;
+  padding: 0 2px;
+  border-radius: 2px;
+  font-size: 0.9em;
+}
+
+/* ── Markdown: lists ─────────────────────────────────────────────────── */
+
+.ao3h-note-list {
+  margin: 0.3em 0;
+  padding-left: 1.4em;
+}
+
+/* ── Markdown: paragraph ─────────────────────────────────────────────── */
+
+.ao3h-note-p {
+  margin: 0.2em 0;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Note Management
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Word count badge ────────────────────────────────────────────────── */
+
+.ao3h-wc-badge {
+  display: block;
+  font-size: 0.8em;
+  color: #888;
+  text-align: right;
+  margin-top: 2px;
+}
+
+/* ── Notes search bar ────────────────────────────────────────────────── */
+
+#ao3h-notes-search {
+  margin: 0.5em 0 1em;
+  display: flex;
+  gap: 0.4em;
+  align-items: center;
+}
+
+#ao3h-notes-search input {
+  flex: 1;
+  max-width: 300px;
+  padding: 0.3em 0.6em;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+#ao3h-notes-search button {
+  padding: 0.2em 0.5em;
+  cursor: pointer;
+}
+
+/* ── Organization Tools ─────────────────────────────────── */
+
+/* Category label (background set dynamically via JS) */
+.ao3h-bv-cat-lbl {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: .75em;
+  color: #fff;
+}
+
+/* Category filter bar */
+#ao3h-bv-cf {
+  margin: 6px 0;
+  font-size: .85em;
+}
+
+/* Category filter button (border/bg/color set dynamically via JS) */
+.ao3h-bv-cf-btn {
+  margin-right: 4px;
+  padding: 1px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: .9em;
+  border-style: solid;
+  border-width: 1px;
+  background: none;
+}
+
+/* Category manager panel */
+#ao3h-bv-cm {
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin: 8px 0;
+  font-size: .85em;
+  border-radius: 4px;
+  background: #fafafa;
+}
+
+/* Category list */
+#ao3h-bv-cm-list {
+  margin: 4px 0;
+  padding-left: 16px;
+}
+
+#ao3h-bv-cm-list li {
+  margin: 2px 0;
+}
+
+/* Category colour dot (background set dynamically via JS) */
+.ao3h-bv-cat-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+/* Category manager add-form */
+.ao3h-bv-cm-form {
+  margin-top: 6px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.ao3h-bv-cm-form input[type="text"] {
+  flex: 1;
+  font-size: .9em;
+  padding: 2px 4px;
+}
+
+.ao3h-bv-cm-form input[type="color"] {
+  width: 30px;
+  height: 24px;
+  border: none;
+  cursor: pointer;
+}
+
+.ao3h-bv-cm-form button {
+  padding: 2px 8px;
+  background: #900;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+/* Bulk-select checkbox on blurb */
+.ao3h-bv-bulk-chk {
+  position: absolute;
+  left: -20px;
+  top: 8px;
+}
+
+/* Bulk action bar (display toggled via JS) */
+#ao3h-bv-bulk-bar {
+  display: none;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-bottom: 2px solid #ccc;
+  padding: 6px 12px;
+  z-index: 100;
+  font-size: .85em;
+}
+
+/* Select-All button */
+.ao3h-bv-bulk-selall {
+  margin-right: 8px;
+  padding: 2px 8px;
+  border: 1px solid #666;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+/* Bulk count label */
+#ao3h-bv-bulk-count {
+  margin-right: 12px;
+  color: #666;
+}
+
+/* Bulk delete button */
+.ao3h-bv-bulk-del {
+  padding: 2px 8px;
+  background: #c00;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+/* Pin button (border/color set dynamically via JS) */
+.ao3h-bv-pin-btn {
+  font-size: .75em;
+  background: none;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 1px 5px;
+  margin-top: 2px;
+}
+
+/* Sort controls bar */
+#ao3h-bv-sort {
+  margin: 6px 0;
+  font-size: .85em;
+}
+
+#ao3h-bv-sort select {
+  font-size: .9em;
+  padding: 1px 4px;
+}
+
+/* ── Rich Text Notes ────────────────────────────────────── */
+
+.ao3h-bv-note-wrap {
+  margin-top: 4px;
+  font-size: .85em;
+}
+
+.ao3h-bv-note-preview {
+  color: #555;
+  font-style: italic;
+}
+
+.ao3h-bv-note-btn {
+  font-size: .75em;
+  background: none;
+  border: 1px solid #900;
+  color: #900;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 1px 5px;
+}
+
+.ao3h-bv-editor {
+  margin-top: 4px;
+}
+
+.ao3h-bv-note-ta {
+  width: 100%;
+  min-height: 60px;
+  font-size: .85em;
+  box-sizing: border-box;
+}
+
+.ao3h-bv-note-save {
+  font-size: .75em;
+  background: #900;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 2px 8px;
+  margin-top: 3px;
+}
+
+.ao3h-bv-note-cancel {
+  font-size: .75em;
+  background: none;
+  border: 1px solid #ccc;
+  color: #666;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 2px 8px;
+  margin-top: 3px;
+  margin-left: 4px;
+}
+
+/* ── Sorting & Filtering ────────────────────────────────── */
+
+.ao3h-sort-controls {
+  margin: 0.5em 0 0.8em;
+  display: flex;
+  gap: 0.4em;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ao3h-sort-label {
+  font-size: 0.88em;
+  color: #555;
+  margin-right: 2px;
+}
+
+.ao3h-sort-btn {
+  font-size: 0.82em;
+  padding: 2px 9px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #f8f8f8;
+}
+
+.ao3h-sort-btn.ao3h-sort-active {
+  font-weight: 600;
+  background: #e8eaf6;
+  border-color: #9fa8da;
+}
+
+#ao3h-archived-toggle {
+  margin: 0.5em 0 0.8em;
+  padding: 0.3em 0.8em;
+  font-size: 0.85em;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #f8f8f8;
+  display: block;
+}
+
+/* ── Reading Status Tracking ────────────────────────────── */
+
+/* "Show more / Show less" toggle on long notes */
+.ao3h-bv-note-toggle {
+  background: none;
+  border: none;
+  color: #900;
+  font-size: .8em;
+  cursor: pointer;
+  padding: 0 0 0 4px;
+  text-decoration: underline;
+}
+
+/* Unavailable/deleted work badge */
+.ao3h-bv-unavail {
+  display: inline-block;
+  background: #ffd700;
+  color: #333;
+  font-size: .8em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+
+/* Note search bar */
+#ao3h-bv-note-search {
+  margin: 8px 0;
+  font-size: .9em;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+#ao3h-bv-ns-input {
+  flex: 1;
+  max-width: 300px;
+  padding: 2px 6px;
+  font-size: .9em;
+}
+
+#ao3h-bv-ns-count {
+  color: #666;
+}
+
+/* ── Status Indicators ──────────────────────────────────── */
+
+.ao3h-bv-badge {
+  margin-left: 4px;
+  font-size: .85em;
+  cursor: default;
+}
+
+.ao3h-bv-note-icon {
+  margin-left: 4px;
+  font-size: .85em;
+  cursor: help;
+}
+
+.ao3h-bv-last-read {
+  font-size: .8em;
+  color: #666;
+  margin-left: 8px;
+}
+
+/* Completion badge (color set dynamically via JS) */
+.ao3h-bv-completion {
+  margin-left: 4px;
+  font-size: .8em;
+  font-weight: bold;
+  cursor: default;
+}
+
+/* Progress ring SVG */
+.ao3h-bv-ring {
+  vertical-align: middle;
+  margin-left: 4px;
+  cursor: default;
+}
+
+/* Status filter bar */
+#ao3h-bv-sf {
+  margin: 6px 0;
+  font-size: .9em;
+}
+
+#ao3h-bv-sf-count {
+  margin-left: 8px;
+  color: #666;
+}
+
+.ao3h-bv-sf-lbl {
+  margin-right: 12px;
+  cursor: pointer;
+}

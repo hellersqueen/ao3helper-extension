@@ -1,0 +1,288 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+
+   AO3 Helper — Activity Panel
+   Module CSS — activityPanel
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ── Fandom Breakdown — Wrapper ──────────────────────────────────────── */
+
+#ao3h-fandom-breakdown {
+  margin: 1em 0;
+  padding: 1em;
+  border: 1px solid #2c5f8a22;
+  border-radius: 8px;
+  background: #f9f9f9;
+  max-width: 560px;
+}
+
+/* ── Fandom Breakdown — Empty state ──────────────────────────────────── */
+
+#ao3h-fandom-breakdown p {
+  color: #888;
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Fandom Breakdown — Heading ──────────────────────────────────────── */
+
+#ao3h-fandom-breakdown h4 {
+  margin: 0 0 0.6em;
+  color: #2c5f8a;
+  font-size: 1em;
+}
+
+/* ── Fandom Breakdown — Table ────────────────────────────────────────── */
+
+#ao3h-fandom-breakdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88em;
+}
+
+#ao3h-fandom-breakdown thead tr {
+  background: #2c5f8a;
+  color: #fff;
+}
+
+#ao3h-fandom-breakdown thead th {
+  padding: 5px 8px;
+  text-align: left;
+}
+
+#ao3h-fandom-breakdown thead th[data-sort] {
+  text-align: right;
+  cursor: pointer;
+}
+
+/* ── Fandom Breakdown — Data rows ────────────────────────────────────── */
+
+.ao3h-fb-row {
+  border-bottom: 1px solid #eee;
+}
+
+.ao3h-fb-row td {
+  padding: 4px 8px;
+}
+
+.ao3h-fb-row td:first-child {
+  color: #888;
+}
+
+.ao3h-fb-row td:nth-child(3),
+.ao3h-fb-row td:nth-child(4) {
+  text-align: right;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Habits Analysis widget
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Habits Analysis — Wrapper ───────────────────────────────────────── */
+
+#ao3h-habits-widget {
+  margin: 1em 0;
+  padding: 1em;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+  max-width: 560px;
+}
+
+/* ── Habits Analysis — Empty state ──────────────────────────────────── */
+
+.ao3h-habits-empty {
+  color: #888;
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Habits Analysis — Heading ───────────────────────────────────────── */
+
+#ao3h-habits-widget h4 {
+  margin: 0 0 0.5em;
+  color: #2c5f8a;
+  font-size: 1em;
+}
+
+/* ── Habits Analysis — Stats line ────────────────────────────────────── */
+
+.ao3h-habits-meta {
+  margin: 0 0 0.6em;
+  font-size: 0.88em;
+  color: #555;
+}
+
+/* ── Habits Analysis — Bars container ───────────────────────────────── */
+
+.ao3h-habits-bars {
+  display: flex;
+  align-items: flex-end;
+  height: 60px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 2px;
+}
+
+/* ── Habits Analysis — Bar column ────────────────────────────────────── */
+
+.ao3h-habits-bar {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: calc((100% - 48px) / 24);
+  margin: 0 1px;
+}
+
+/* ── Habits Analysis — Bar fill ──────────────────────────────────────── */
+
+.ao3h-habits-bar-fill {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: #90aec7;
+}
+
+.ao3h-habits-bar-fill.ao3h-habits-bar-peak {
+  background: #2c5f8a;
+}
+
+/* ── Habits Analysis — Hour label ────────────────────────────────────── */
+
+.ao3h-habits-bar-label {
+  font-size: 0.6em;
+  color: #888;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Pattern Analysis widget
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Pattern Analysis — Wrapper ──────────────────────────────────────── */
+
+#ao3h-pattern-widget {
+  margin: 1em 0;
+  padding: 1em;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+  max-width: 560px;
+  font-size: 0.88em;
+}
+
+/* ── Pattern Analysis — Empty state ──────────────────────────────────── */
+
+#ao3h-pattern-widget p {
+  color: #888;
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Pattern Analysis — Heading ──────────────────────────────────────── */
+
+#ao3h-pattern-widget h4 {
+  margin: 0 0 0.5em;
+  color: #2c5f8a;
+  font-size: 1em;
+}
+
+/* ── Pattern Analysis — Insights list ───────────────────────────────── */
+
+#ao3h-pattern-widget ul {
+  margin: 0;
+  padding-left: 1.2em;
+  line-height: 1.7;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Reading Insights widget
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Reading Insights — Container ────────────────────────────────────── */
+
+#ao3h-reading-insights {
+  margin: 1em 0;
+  padding: 0.8em 1em;
+  border: 1px solid #dde;
+  border-radius: 6px;
+  background: #f7f7fc;
+  font-size: 0.92em;
+}
+
+/* ── Reading Insights — Heading ──────────────────────────────────────── */
+
+#ao3h-reading-insights h3 {
+  margin: 0 0 0.6em;
+  font-size: 1em;
+  color: #2a2a5e;
+}
+
+/* ── Reading Insights — Stat cards row ──────────────────────────────── */
+
+.ao3h-insights-row {
+  display: flex;
+  gap: 0.8em;
+  flex-wrap: wrap;
+  margin-bottom: 0.6em;
+}
+
+/* ── Reading Insights — Stat card ────────────────────────────────────── */
+
+.ao3h-insights-card {
+  background: #fff;
+  border: 1px solid #dde;
+  border-radius: 4px;
+  padding: 0.4em 0.7em;
+  min-width: 80px;
+  text-align: center;
+}
+
+.ao3h-insights-card strong {
+  display: block;
+  font-size: 1.1em;
+}
+
+.ao3h-insights-card span {
+  font-size: 0.82em;
+  color: #666;
+}
+
+/* ── Reading Insights — Streak banner ───────────────────────────────── */
+
+.ao3h-streak-banner {
+  margin: 0.4em 0;
+  font-weight: 600;
+  color: #b45309;
+}
+
+/* ── Reading Insights — Achievements grid ───────────────────────────── */
+
+.ao3h-insights-achievements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 0.5em;
+}
+
+/* ── Reading Insights — Achievement badge ───────────────────────────── */
+
+.ao3h-achievement-badge {
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.8em;
+  cursor: default;
+}
+
+/* ── Reading Insights — No achievements ─────────────────────────────── */
+
+.ao3h-insights-empty {
+  margin: 0.4em 0;
+  font-size: 0.85em;
+  color: #888;
+  font-style: italic;
+}

@@ -1,0 +1,261 @@
+/* ============================================================
+   AO3 Helper
+   Base Styling Layer
+
+   Dépend de :
+   ao3h-variables.css
+   ============================================================ */
+
+
+/* ============================================================
+   RESET LOCAL AO3H
+   ============================================================ */
+
+.ao3h-root,
+.ao3h-root * {
+  box-sizing: border-box;
+}
+
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+
+.ao3h-root {
+  font-family: var(--ao3h-font);
+  color: var(--ao3h-text);
+}
+
+.ao3h-title,
+.ao3h-heading {
+  font-family: var(--ao3h-heading-font);
+  color: var(--ao3h-red);
+  font-weight: normal;
+}
+
+.ao3h-title {
+  font-size: var(--ao3h-font-xxl);
+}
+
+.ao3h-heading {
+  font-size: var(--ao3h-font-xl);
+}
+
+.ao3h-muted {
+  color: var(--ao3h-text-light);
+}
+
+
+/* ============================================================
+   PANELS
+   ============================================================ */
+
+.ao3h-panel {
+  background: var(--ao3h-bg-panel);
+
+  border: 1px solid var(--ao3h-border-light);
+
+  border-radius: var(--ao3h-radius-sm);
+
+  padding: var(--ao3h-space-4);
+
+  box-shadow: var(--ao3h-shadow-inset);
+}
+
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.ao3h-card {
+  background: var(--ao3h-bg);
+
+  border: 1px solid var(--ao3h-border-light);
+
+  border-radius: var(--ao3h-radius-sm);
+
+  padding: var(--ao3h-space-4);
+
+  box-shadow: var(--ao3h-shadow-sm);
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.ao3h-btn {
+  display: inline-block;
+
+  padding:
+    var(--ao3h-space-2)
+    var(--ao3h-space-3);
+
+  border: 1px solid var(--ao3h-border);
+
+  border-radius: var(--ao3h-radius-sm);
+
+  background: var(--ao3h-bg-soft);
+
+  color: var(--ao3h-text-dark);
+
+  cursor: pointer;
+
+  font-size: var(--ao3h-font-sm);
+
+  transition:
+    background var(--ao3h-speed-fast),
+    border-color var(--ao3h-speed-fast);
+}
+
+.ao3h-btn:hover {
+  border-color: var(--ao3h-red);
+  color: var(--ao3h-red);
+}
+
+.ao3h-btn-primary {
+  background: var(--ao3h-red);
+  border-color: var(--ao3h-red-dark);
+  color: white;
+}
+
+.ao3h-btn-primary:hover {
+  background: var(--ao3h-red-dark);
+  color: white;
+}
+
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+
+.ao3h-input,
+.ao3h-select,
+.ao3h-textarea {
+  width: 100%;
+
+  padding: var(--ao3h-space-2);
+
+  border: 1px solid var(--ao3h-border);
+
+  border-radius: var(--ao3h-radius-sm);
+
+  background: var(--ao3h-bg);
+
+  color: var(--ao3h-text);
+
+  box-shadow: var(--ao3h-shadow-inset);
+
+  font-family: var(--ao3h-font);
+}
+
+.ao3h-input:focus,
+.ao3h-select:focus,
+.ao3h-textarea:focus {
+  outline: var(--ao3h-focus-outline);
+}
+
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+
+.ao3h-badge {
+  display: inline-block;
+
+  padding:
+    2px
+    8px;
+
+  border: 1px solid var(--ao3h-border-light);
+
+  border-radius: var(--ao3h-radius-sm);
+
+  background: var(--ao3h-bg-soft);
+
+  font-size: var(--ao3h-font-xs);
+}
+
+
+/* ============================================================
+   TOOLBARS
+   ============================================================ */
+
+.ao3h-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ao3h-space-2);
+
+  padding: var(--ao3h-space-3);
+
+  background: var(--ao3h-bg-panel);
+
+  border: 1px solid var(--ao3h-border-light);
+
+  border-radius: var(--ao3h-radius-sm);
+}
+
+
+/* ============================================================
+   DROPDOWNS
+   ============================================================ */
+
+.ao3h-dropdown {
+  background: var(--ao3h-bg);
+
+  border: 1px solid var(--ao3h-border);
+
+  border-radius: var(--ao3h-radius-sm);
+
+  box-shadow: var(--ao3h-shadow-md);
+
+  z-index: var(--ao3h-z-dropdown);
+}
+
+
+/* ============================================================
+   MESSAGES
+   ============================================================ */
+
+.ao3h-warning {
+  background: var(--ao3h-warning-bg);
+  border: 1px solid var(--ao3h-warning-border);
+  color: var(--ao3h-warning);
+}
+
+.ao3h-error {
+  background: var(--ao3h-error-bg);
+  border: 1px solid var(--ao3h-error-border);
+  color: var(--ao3h-error);
+}
+
+.ao3h-info {
+  background: var(--ao3h-info-bg);
+  border: 1px solid var(--ao3h-info-border);
+  color: var(--ao3h-info);
+}
+
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+
+.ao3h-hidden {
+  display: none !important;
+}
+
+.ao3h-flex {
+  display: flex;
+}
+
+.ao3h-wrap {
+  flex-wrap: wrap;
+}
+
+.ao3h-center {
+  text-align: center;
+}
+
+.ao3h-right {
+  text-align: right;
+}

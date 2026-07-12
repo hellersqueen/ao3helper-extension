@@ -1,0 +1,431 @@
+/*: ═══════════════════════════════════════════════════════════════
+      FANFIC BINGE MODE — Styles injectés
+        Contrôle l'apparence du modal "Continue Reading",
+        du panneau homepage, des suggestions post-lecture
+        et de la queue de lecture.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🎨 La couleur principale (rouge AO3)
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-fbm-color-primary
+
+        ├─  🔗 La couleur des liens
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-fbm-color-link
+
+        ├─  💬 Le modal "Continue Reading?"
+        │     → SECTION 01 — MODAL CONTINUE READING
+
+        ├─  🏠 Le panneau sur la homepage
+        │     → SECTION 02 — PANNEAU HOMEPAGE
+
+        ├─  💡 Les suggestions post-lecture
+        │     → SECTION 03 — SUGGESTIONS POST-LECTURE
+
+        ├─  📋 La queue de lecture
+        │     → SECTION 04 — QUEUE DE LECTURE
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Modal "Continue Reading?"                 */
+/*#        |                                                 */
+/*####     ├─  02. Panneau homepage                          */
+/*#        |                                                 */
+/*=        ├─  03. Suggestions post-lecture                  */
+/*#        |                                                 */
+/*==       ├─  04. Queue de lecture                          */
+/*#        |                                                 */
+/*===      ├─  05. Bouton countdown cancel                   */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##    
+  ═══════════════════════════════════════════════════════════════════════   
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - La couleur principale (rouge AO3)
+      - La couleur des liens
+      - Le rayon des coins arrondis
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🎨 Rouge AO3 — boutons primaires, titres, en-tête de queue */
+  --ao3h-fbm-color-primary: #900;
+
+  /*- 🎨 Rouge foncé — bordure du bouton primaire */
+  --ao3h-fbm-color-primary-dark: #700;
+
+  /*- 🔗 Bleu liens */
+  --ao3h-fbm-color-link: #2c5f8a;
+
+  /*- 🔗 Fond survol des liens suggestions */
+  --ao3h-fbm-color-link-hover: #e8f0f8;
+
+  /*- 📝 Texte secondaire */
+  --ao3h-fbm-text-muted: #555;
+
+  /*- 🔲 Arrondi standard */
+  --ao3h-fbm-radius: 6px;
+
+  /*- 🔲 Arrondi large (modal, queue panel) */
+  --ao3h-fbm-radius-lg: 8px;
+}
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — MODAL "CONTINUE READING?"
+  ───────────────────────────────────────────────────────────────────────
+    Modal qui s'affiche quand l'utilisateur arrive à 95% de la dernière
+    page d'une fic. Propose de marquer comme lu, mettre en favori, etc.
+    À l'écran :
+      ┌─────────────────────────────────────────────────────┐
+      │ ░░░░░░░░░░░░░░░ overlay sombre ░░░░░░░░░░░░░░░░░░░ │
+      │  ┌────────────────────────────────────────────┐    │
+      │  │ ×   You've reached the end!               │    │
+      │  │     Finished reading <titre>…             │    │
+      │  │  [ Mark as Read ] [ Bookmark ] [ Dismiss ] │    │
+      │  └────────────────────────────────────────────┘    │
+      └─────────────────────────────────────────────────────┘
+    ⚠️ z-index: 99998/99999 — doit passer au-dessus du contenu AO3
+    ⚠️ #ao3h-fbm-modal-overlay est créé/supprimé par JS à chaque affichage
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    OVERLAY (fond sombre)
+  ───────────────────────────────────────────────────────────── */
+
+#ao3h-fbm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  z-index: 99998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOÎTE DE DIALOGUE
+  ───────────────────────────────────────────────────────────── */
+
+#ao3h-fbm-modal {
+  background: #fff;
+  border-radius: var(--ao3h-fbm-radius-lg);
+  padding: 24px 28px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .25);
+  position: relative;
+  z-index: 99999;
+}
+
+#ao3h-fbm-modal h3 { margin: 0 0 8px; font-size: 1.1em; }
+#ao3h-fbm-modal p  { margin: 0 0 16px; font-size: .9em; color: var(--ao3h-fbm-text-muted); }
+
+#ao3h-fbm-modal .ao3h-fbm-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+#ao3h-fbm-modal button {
+  padding: 7px 14px;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  cursor: pointer;
+  font-size: .85em;
+  background: #f5f5f5;
+}
+
+#ao3h-fbm-modal button.primary { background: var(--ao3h-fbm-color-primary); color: #fff; border-color: var(--ao3h-fbm-color-primary-dark); }
+#ao3h-fbm-modal button:hover   { filter: brightness(.92); }
+
+#ao3h-fbm-modal .ao3h-fbm-countdown { font-size: .78em; color: #777; margin-top: 10px; }
+
+#ao3h-fbm-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 1.3em;
+  cursor: pointer;
+  color: #888;
+  line-height: 1;
+}
+
+
+/*####   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — PANNEAU HOMEPAGE
+  ───────────────────────────────────────────────────────────────────────
+    Panneau "Continue Reading" injecté en haut de la page d'accueil AO3.
+    Affiche les dernières fics lues (depuis l'historique readingTracker).
+    À l'écran :
+      ┌─────────────────────────────────────┐
+      │ Continue Reading                    │
+      │  • Titre fic 1           Ch 3       │
+      │  • Titre fic 2                      │
+      └─────────────────────────────────────┘
+    ⚠️ Visible uniquement si readingTracker a un historique non vide
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+#ao3h-fbm-homepage-panel {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: var(--ao3h-fbm-radius);
+  padding: 14px 18px;
+  margin: 16px 0;
+}
+
+#ao3h-fbm-homepage-panel h3            { margin: 0 0 10px; font-size: 1em; color: var(--ao3h-fbm-color-primary); }
+#ao3h-fbm-homepage-panel ul            { margin: 0; padding: 0; list-style: none; }
+#ao3h-fbm-homepage-panel li            { padding: 4px 0; border-bottom: 1px solid #f0f0f0; font-size: .9em; }
+#ao3h-fbm-homepage-panel li:last-child { border-bottom: none; }
+#ao3h-fbm-homepage-panel a             { color: var(--ao3h-fbm-color-link); text-decoration: none; }
+#ao3h-fbm-homepage-panel a:hover       { text-decoration: underline; }
+
+/*- Numéro de chapitre affiché après le titre */
+#ao3h-fbm-homepage-panel .ao3h-fbm-meta { font-size: .78em; color: #888; margin-left: 6px; }
+
+
+/*=   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — SUGGESTIONS POST-LECTURE
+  ───────────────────────────────────────────────────────────────────────
+    Bloc injecté sous le contenu de la fic (après #work_endnotes ou
+    .afterword) proposant des fics similaires : même auteur, même série,
+    même tag freeform.
+    À l'écran :
+      ┌─────────────────────────────────────────────┐
+      │ WHAT TO READ NEXT                           │
+      │  [ More by Auteur ]                         │
+      │  [ More in series: Nom ]                    │
+      │  [ More tagged: Tag ]                       │
+      └─────────────────────────────────────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+#ao3h-fbm-suggestions {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--ao3h-fbm-radius);
+  padding: 14px 18px;
+  margin: 20px 0;
+}
+
+#ao3h-fbm-suggestions h3 {
+  margin: 0 0 12px;
+  font-size: .95em;
+  color: var(--ao3h-fbm-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+#ao3h-fbm-suggestions .ao3h-fbm-sugg-list { display: flex; flex-direction: column; gap: 8px; }
+
+#ao3h-fbm-suggestions a.ao3h-fbm-sugg-link {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid #ccc;
+  color: var(--ao3h-fbm-color-link);
+  font-size: .88em;
+  text-decoration: none;
+}
+
+#ao3h-fbm-suggestions a.ao3h-fbm-sugg-link:hover { background: var(--ao3h-fbm-color-link-hover); }
+
+
+/*==   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — QUEUE DE LECTURE
+  ───────────────────────────────────────────────────────────────────────
+    Panneau flottant (bas droite) + boutons "+ Queue" sur les blurbs
+    des pages de listings. Permet de gérer une liste de fics à lire.
+    À l'écran :
+      ┌──────────────────────────────────┐
+      │ Reading Queue (3)            ×  │  ← en-tête rouge
+      │  ≡  Titre fic 1        ★  ×    │
+      │  ≡  Titre fic 2        ★  ×    │
+      │  ≡  Titre fic 3        ★  ×    │
+      └──────────────────────────────────┘
+    ⚠️ position: fixed — flotte au-dessus du contenu
+    ⚠️ z-index: 9000 — doit passer au-dessus du contenu AO3
+    ⚠️ li.drag-over appliqué dynamiquement par JS lors du drag & drop
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON "+ QUEUE" SUR LES BLURBS
+  ─────────────────────────────────────────────────────────────
+      └─ Apparaît dans le heading de chaque work blurb sur les listings
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-fbm-add-queue {
+  font-size: .75em;
+  padding: 2px 7px;
+  margin-left: 6px;
+  border: 1px solid #999;
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+  color: var(--ao3h-fbm-text-muted);
+  vertical-align: middle;
+}
+
+.ao3h-fbm-add-queue:hover  { background: #eee; }
+.ao3h-fbm-add-queue.queued { background: #e8f8e8; border-color: #5cb85c; color: #2d6a2d; }
+
+
+/*+ ───────────────────────────────────────────────────────────
+    PANNEAU QUEUE (flottant)
+  ───────────────────────────────────────────────────────────── */
+
+#ao3h-fbm-queue-panel {
+  position: fixed;
+  bottom: 60px;
+  right: 16px;
+  width: 300px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: var(--ao3h-fbm-radius-lg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .15);
+  z-index: 9000;
+  overflow: hidden;
+}
+
+#ao3h-fbm-queue-panel .ao3h-fbm-qp-header {
+  background: var(--ao3h-fbm-color-primary);
+  color: #fff;
+  padding: 8px 12px;
+  font-size: .88em;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+}
+
+#ao3h-fbm-queue-panel .ao3h-fbm-qp-header button {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+#ao3h-fbm-queue-panel ul {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+#ao3h-fbm-queue-panel li {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: .82em;
+  gap: 5px;
+  cursor: grab;
+}
+
+#ao3h-fbm-queue-panel li:last-child { border-bottom: none; }
+#ao3h-fbm-queue-panel li.drag-over  { background: #f0f4ff; }
+
+#ao3h-fbm-queue-panel li .ao3h-fbm-qp-drag {
+  color: #ccc;
+  flex-shrink: 0;
+  font-size: .9em;
+  cursor: grab;
+  user-select: none;
+}
+
+#ao3h-fbm-queue-panel li a {
+  flex: 1;
+  color: var(--ao3h-fbm-color-link);
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#ao3h-fbm-queue-panel li a:hover { text-decoration: underline; }
+
+#ao3h-fbm-queue-panel li .ao3h-fbm-qp-priority {
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 1em;
+  line-height: 1;
+  padding: 0 2px;
+  color: #ccc;
+}
+
+#ao3h-fbm-queue-panel li .ao3h-fbm-qp-priority.high { color: #e6a800; }
+
+#ao3h-fbm-queue-panel li .ao3h-fbm-qp-remove {
+  background: none;
+  border: none;
+  color: #bbb;
+  cursor: pointer;
+  font-size: 1.1em;
+  flex-shrink: 0;
+}
+
+#ao3h-fbm-queue-panel li .ao3h-fbm-qp-remove:hover { color: var(--ao3h-fbm-color-primary); }
+
+#ao3h-fbm-queue-panel .ao3h-fbm-qp-empty {
+  padding: 12px;
+  font-size: .85em;
+  color: #888;
+  text-align: center;
+}
+
+
+/*===   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — BOUTON COUNTDOWN CANCEL
+  ───────────────────────────────────────────────────────────────────────
+    Petit bouton "Cancel" affiché dans le compteur de l'auto-advance
+    du modal (si autoAdvanceDelay > 0).
+    ⚠️ Lié au JS : le bouton est créé dynamiquement dans showContinueModal()
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-fbm-countdown-cancel {
+  font-size: .75em;
+  padding: 1px 6px;
+  margin-left: 4px;
+}

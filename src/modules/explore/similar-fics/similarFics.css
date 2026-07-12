@@ -1,0 +1,286 @@
+/*: ═══════════════════════════════════════════════════════════════
+      SIMILAR FICS — Module Styles
+        Contrôle l'apparence du panneau « fics similaires »
+        injecté sous les métadonnées d'une œuvre.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ────────────────────────────────────────────────────────────── 
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ────────────────────────────────────────────────────────────── 
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🎨 La couleur bleue (bordures, boutons, liens)
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-sf-color-primary
+
+        ├─  🎨 La couleur du score de similarité
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-sf-color-score
+
+        ├─  🔲 Les coins arrondis du panneau
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-sf-radius
+
+        ├─  📐 La largeur max du panneau
+        │     → SECTION 01 — PANNEAU PRINCIPAL
+        │     → propriété : max-width
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Panneau principal                         */
+/*#        |                                                 */
+/*####     ├─  02. Carte de résultat                         */
+/*#        |                                                 */
+/*=        ├─  03. Bouton "Similar Stories"                  */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##    
+  ═══════════════════════════════════════════════════════════════════════   
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    Tu peux changer :
+      - La couleur bleue principale (bordures, boutons, liens)
+      - La couleur du score de similarité (vert par défaut)
+      - L'arrondi du panneau
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🎨 Couleur principale bleue — bordures, boutons, liens */
+  --ao3h-sf-color-primary: #2563eb;
+
+  /*- 🎨 Couleur du texte des liens */
+  --ao3h-sf-color-text: #1d4ed8;
+
+  /*- 🎨 Couleur du score de similarité */
+  --ao3h-sf-color-score: #059669;
+
+  /*- 🎨 Fond du panneau */
+  --ao3h-sf-panel-bg: rgba(239, 246, 255, 0.9);
+
+  /*- 🔲 Arrondi du panneau */
+  --ao3h-sf-radius: 0.75em;
+}
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — PANNEAU PRINCIPAL
+  ───────────────────────────────────────────────────────────────────────
+    Panneau affiché sous les métadonnées d'une œuvre AO3.
+    À l'écran :
+      ┌─────────────────────────────────────────────────────┐
+      │  Similar Fics                                       │
+      │  Works that match your current read.                │
+      │  ─────────────────────────────────────────────────  │
+      │  [card] [card] [card] …                             │
+      └─────────────────────────────────────────────────────┘
+    ⚠️ Le panneau est activé uniquement quand
+       html.ao3h-similar-fics-enabled est présent (ajouté par JS au init).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    PANNEAU RACINE
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-similar-fics-enabled #ao3h-similar-fics-panel {
+  margin-top: 1.2em;
+  padding: 0.8em 1em;
+  border-radius: var(--ao3h-sf-radius);
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  background: var(--ao3h-sf-panel-bg);
+  max-width: 50rem;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    TITRES ET DESCRIPTION
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-similar-fics-enabled .ao3h-sf-title {
+  margin: 0 0 0.5em;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-desc {
+  font-size: 0.82em;
+  color: #555;
+  margin: 0 0 0.8em;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    ÉTATS (chargement, erreur, vide)
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-similar-fics-enabled .ao3h-sf-loading,
+html.ao3h-similar-fics-enabled .ao3h-sf-error,
+html.ao3h-similar-fics-enabled .ao3h-sf-empty {
+  font-size: 0.9em;
+  color: #555;
+  margin: 0.4em 0;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    SECTIONS INTERNES
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-similar-fics-enabled .ao3h-sf-section {
+  margin-top: 0.8em;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-section + .ao3h-sf-section {
+  margin-top: 1.2em;
+  padding-top: 0.8em;
+  border-top: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-section-title {
+  font-size: 0.78em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #666;
+  margin: 0 0 0.4em;
+}
+
+
+/*####   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — CARTE DE RÉSULTAT
+  ───────────────────────────────────────────────────────────────────────
+    Chaque œuvre recommandée est affichée sous forme de carte.
+    À l'écran :
+      ┌─────────────────────────────────────────────────────┐
+      │  [Titre de l'œuvre]          [score: 87%]           │
+      │  Fandoms · Pairings · Tags                          │
+      │  [Open ↗]  [+ MFL]                                  │
+      └─────────────────────────────────────────────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    CARTE PRINCIPALE
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-similar-fics-enabled .ao3h-sf-card {
+  padding: 0.55em 0;
+  border-bottom: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-card:last-child {
+  border-bottom: none;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-card-top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  flex-wrap: wrap;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    TITRE ET SCORE
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-similar-fics-enabled .ao3h-sf-work-title {
+  font-weight: 600;
+  color: var(--ao3h-sf-color-text);
+  text-decoration: none;
+  font-size: 0.95em;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-work-title:hover {
+  text-decoration: underline;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-score {
+  font-size: 0.78em;
+  color: var(--ao3h-sf-color-score);
+  white-space: nowrap;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-card-meta {
+  font-size: 0.8em;
+  color: #444;
+  margin: 0.2em 0;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTONS D'ACTION (Open, + MFL)
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-similar-fics-enabled .ao3h-sf-actions {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 0.3em;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-open,
+html.ao3h-similar-fics-enabled .ao3h-sf-mfl-btn {
+  font-size: 0.78em;
+  padding: 0.2em 0.6em;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 99, 235, 0.6);
+  background: rgba(59, 130, 246, 0.06);
+  color: var(--ao3h-sf-color-text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-open:hover,
+html.ao3h-similar-fics-enabled .ao3h-sf-mfl-btn:hover {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-mfl-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+
+/*=   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — BOUTON "SIMILAR STORIES"
+  ───────────────────────────────────────────────────────────────────────
+    Bouton injecté dans la liste d'actions de l'œuvre
+    (à côté de Bookmark/Subscribe).
+    ⚠️ Le scope html.ao3h-similar-fics-enabled est contrôlé par JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+html.ao3h-similar-fics-enabled #ao3h-similar-stories-li .ao3h-similar-stories-btn {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+}
+
+html.ao3h-similar-fics-enabled #ao3h-similar-stories-li .ao3h-similar-stories-btn:hover {
+  color: #900;
+}

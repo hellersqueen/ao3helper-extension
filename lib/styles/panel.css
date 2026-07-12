@@ -1,0 +1,3197 @@
+
+/*: ═══════════════════════════════════════════════════════════════
+      AO3 HELPER — PANEL STYLES
+        Version débutant-friendly / TDAH-friendly
+    ──────────────────────────────────────────────────────────────
+      > BUT DE CE FICHIER
+        Ce fichier contrôle l'apparence du panneau de paramètres
+        d'AO3 Helper — la fenêtre qui s'ouvre quand tu cliques
+        sur le bouton "AO3 Helper Settings".
+        Chaque section correspond à une zone visible à l'écran.
+    ────────────────────────────────────────────────────────────── 
+*/
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Commence par le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois.
+      │ 3. Modifie seulement les lignes indiquées.
+      │ 4. Les blocs ⚠️ sont liés au JavaScript : prudence.
+    ────────────────────────────────────────────────────────────── 
+*/
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🎨 La couleur rouge principale
+        │     → SECTION 00 — variable : --ao3h-accent
+
+        ├─  📐 La taille du panneau (largeur / hauteur)
+        │     → SECTION 01 — .ao3h-panel-box : width / height
+
+        ├─  🔴 Le bandeau rouge en haut
+        │     → SECTION 02 — .ao3h-panel-header
+
+        ├─  🔘 Les onglets (Search, Reading…)
+        │     → SECTION 03 — .ao3h-tab-btn
+
+        ├─  📋 Une ligne de module (nom, description)
+        │     → SECTION 04 — .ao3h-module-row
+
+        ├─  🔄 Le toggle on/off
+        │     → SECTION 05 — .ao3h-toggle
+
+        ├─  ☑️ Une option individuelle (checkbox, radio…)
+        │     → SECTION 07 — .ao3h-setting-item
+
+        ├─  💾 Les boutons Save / Reset
+        │     → SECTION 09 — .ao3h-config-save-btn
+
+        ├─  🏷️ Les chips / tags
+        │     → SECTION 10 — .ao3h-tag-chip
+
+        ────────────────────────────────────────────────────────────── 
+*/
+
+
+/*#   INDEX DES SECTIONS                                              */
+/*#        |                                                          */
+/*##       ├─  00. START HERE — Variables & réglages rapides          */
+/*#        |                                                          */
+/*###      ├─  01. Structure principale — backdrop, panel, body       */
+/*#        |                                                          */
+/*####     ├─  02. Header — titre et fermeture                        */
+/*#        |                                                          */
+/*=        ├─  03. Navigation — tabs et recherche                     */
+/*#        |                                                          */
+/*==       ├─  04. Liste des modules — lignes, noms, descriptions     */
+/*#        |                                                          */
+/*===      ├─  05. Contrôles — toggle switch, bouton config           */
+/*#        |                                                          */
+/*====     ├─  06. Zone ouverte — config-area, grille, sections       */
+/*#        |                                                          */
+/*++       ├─  07. Options — item, label, description, control        */
+/*#        |                                                          */
+/*--       ├─  08. Champs & boutons — inputs, selects, rows           */
+/*#        |                                                          */
+/*---      ├─  09. Save / Reset / Bulk actions                        */
+/*#        |                                                          */
+/*----     ├─  10. Composants spéciaux — chips, listes, badges        */
+/*#        |                                                          */
+/*!        ├─  11. États spéciaux — modifiers, tooltips               */
+/*#        |                                                          */
+/*?        └─  12. Petit écran — grille 1 colonne sous 700px          */
+/*#                                                                   */
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 00 — START HERE — Variables & réglages rapides
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher partout,
+    commence ici.
+
+    Une variable CSS = un nom qui stocke une valeur réutilisée partout.
+    Exemple : changer --ao3h-accent ici = la couleur rouge change
+    sur tous les boutons, bordures actives et titres du panneau.
+
+    Tu peux changer :
+      - la couleur principale (rouge AO3)
+      - les couleurs de texte et de fond
+      - les arrondis des boutons et boîtes
+      - les espacements
+      - la taille du texte
+      - les couleurs du toggle switch
+
+    ⚠️ Ces variables sont scoped à .ao3h-panel-box :
+       elles s'appliquent uniquement aux éléments à l'intérieur
+       du panneau. Pour les surcharger, redéclare-les sur la même
+       classe dans un CSS séparé.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-panel-box {
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ACCENT — Couleur principale
+  ─────────────────────────────────────────────────────────────
+        └─ Rouge AO3 utilisé sur les boutons, liens, et
+           bordures actives. C'est la variable la plus importante.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+  --ao3h-accent:            #900;        /*- 🎨 Couleur principale */
+  --ao3h-accent-hover:      #cc0000;     /*- 🎨 Hover / focus (rouge plus vif) */
+  --ao3h-accent-rgb:        153, 0, 0;   /*- Pour les rgba() avec l'accent */
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      TEXTE
+  ─────────────────────────────────────────────────────────────
+        └─ Plusieurs niveaux de gris selon l'importance du texte.
+           Plus le nombre est grand (999), plus c'est clair/discret.
+  ───────────────────────────────────────────────────────────── 
+*/
+  
+  --ao3h-text-primary:      #333;        /*- Texte principal */
+  --ao3h-text-secondary:    #555;        /*- Texte secondaire */
+  --ao3h-text-muted:        #666;        /*- Texte atténué */
+  --ao3h-text-faint:        #767676;    /*- Texte très discret (WCAG AA : 4.54:1 sur blanc) */
+  --ao3h-text-hint:         #767676;    /*- Placeholders, hints (WCAG AA : 4.54:1 sur blanc) */
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      BORDURES
+  ─────────────────────────────────────────────────────────────
+        └─ Trois niveaux de bordures selon la visibilité voulue.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+  --ao3h-border:            #e8e8e8;     /*- Légère (séparateurs) */
+  --ao3h-border-medium:     #e0e0e0;     /*- Moyenne */
+  --ao3h-border-strong:     #d0d0d0;     /*- Forte (inputs, boutons) */
+  --ao3h-border-input:      #cfd6e4;     /*- Spécifique aux champs de saisie */
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      FONDS
+  ─────────────────────────────────────────────────────────────
+*/
+
+  --ao3h-bg-surface:        #fafafa;     /*- Fond de surface (tabs, zones grises) */
+  --ao3h-bg-hover:          #f9f9f9;     /*- Survol des lignes */
+  --ao3h-bg-subtle:         #f5f5f5;     /*- Fond très léger (bouton reset…) */
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      TOGGLE SWITCH
+  ─────────────────────────────────────────────────────────────
+        └─ Couleurs du petit interrupteur on/off.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ARRONDIS
+  ─────────────────────────────────────────────────────────────
+        └─ Coins arrondis des boîtes et boutons.
+           Plus la valeur est grande, plus les coins sont ronds.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+  --ao3h-radius-sm:         4px;         /*- Petit (boutons, inputs simples) */
+  --ao3h-radius-md:         6px;         /*- Moyen */
+  --ao3h-radius-lg:         8px;         /*- Grand (inputs formulaires) */
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ESPACEMENT (grille 4px)
+  ─────────────────────────────────────────────────────────────
+        └─ Tous les espacements sont des multiples de 4px.
+           Ça garantit un alignement cohérent dans tout le panneau.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+  --ao3h-space-1:            4px;        /*  4px — micro-gaps (chips, icônes) */
+  --ao3h-space-2:            8px;        /*  8px — espaces internes courants */
+  --ao3h-space-3:           12px;        /* 12px — gaps de colonnes */
+  --ao3h-space-4:           16px;        /* 16px — espacement standard */
+  --ao3h-space-5:           20px;        /* 20px — padding de section */
+  --ao3h-space-6:           24px;        /* 24px — padding après séparateur */
+  --ao3h-space-8:           32px;        /* 32px — gap entre blocs côte à côte */
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      TAILLES DE TEXTE
+  ─────────────────────────────────────────────────────────────
+        └─ En rem (relatif à la taille de police du navigateur).
+           0.75rem = 12px si la police de base est 16px.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+  --ao3h-size-xxs:          0.6875rem;   /* 11px — chips, notes, flèches */
+  --ao3h-size-xs:           0.75rem;     /* 12px — texte par défaut */
+  --ao3h-size-sm:           0.8125rem;   /* 13px — contenu config */
+  --ao3h-size-base:         0.9375rem;   /* 15px — noms de modules, onglets */
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      COMPOSANTS
+  ─────────────────────────────────────────────────────────────
+        └─ Ces variables s'appuient sur celles ci-dessus.
+           Elles permettent de surcharger facilement un seul
+           composant sans toucher aux couleurs globales.
+           Exemple : changer --ao3h-label-color ne modifie
+           que les titres d'options, pas tout le texte.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+  /*- Label (titre d'une option) */
+  --ao3h-label-color:       var(--ao3h-text-primary);
+  --ao3h-label-size:        0.8125rem;
+  --ao3h-label-weight:      600;
+
+  /*- Titre de section (ao3h-config-section-title) */
+  --ao3h-title-color:       var(--ao3h-accent);
+  --ao3h-title-size:        0.9375rem;
+
+  /*- Texte descriptif sous une option (ao3h-setting-description) */
+  --ao3h-description-color: var(--ao3h-text-faint);
+  --ao3h-description-size:  var(--ao3h-size-xs);
+
+  /*- Ligne de contrôle (ao3h-setting-control) */
+  --ao3h-control-color:     var(--ao3h-text-secondary);
+  --ao3h-control-size:      var(--ao3h-label-size);
+  --ao3h-control-gap:       8px;
+
+  /*- Checkbox */
+  --ao3h-checkbox-accent:   var(--ao3h-accent);
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — Structure principale
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle le squelette de la fenêtre du panneau.
+    À l'écran :
+
+      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+      ░  ╔══════════════════════════════╗  ░  ← fond sombre = .ao3h-panel-backdrop
+      ░  ║  header                      ║  ░
+      ░  ║──────────────────────────────║  ░
+      ░  ║  tabs                        ║  ░  ← fenêtre blanche = .ao3h-panel-box
+      ░  ║──────────────────────────────║  ░
+      ░  ║                              ║  ░
+      ░  ║  liste des modules           ║  ░  ← contenu = .ao3h-panel-body
+      ░  ║                              ║  ░           + #ao3h-tab-container
+      ░  ║──────────────────────────────║  ░
+      ░  ║  bulk actions                ║  ░
+      ░  ╚══════════════════════════════╝  ░
+      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+    Cette section contrôle :
+      - le fond sombre derrière la fenêtre
+      - la fenêtre blanche (position, taille, ombre)
+      - la zone de contenu intérieure
+      - la zone scrollable qui contient les modules
+      - deux resets invisibles (box-sizing et boutons AO3)
+
+    ⚠️ Cette section NE contrôle PAS :
+      - le header rouge (→ SECTION 02)
+      - les onglets (→ SECTION 03)
+      - le contenu des modules (→ SECTION 04+)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      FOND SOMBRE (BACKDROP)
+  ─────────────────────────────────────────────────────────────
+      └─ Le voile semi-transparent qui assombrit la page
+         quand le panneau est ouvert.
+         Il est invisible mais bloque les clics sur la page.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-panel-backdrop {
+  position: fixed;        /*- Reste en place même si on scroll */
+  inset: 0;               /*- Couvre tout l'écran (top/right/bottom/left: 0) */
+  background: rgba(0, 0, 0, 0.35);  /*- Noir à 35% d'opacité — augmenter = plus sombre */
+  z-index: 999998;        /*- En dessous du panneau, au-dessus de tout le reste */
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      FENÊTRE PRINCIPALE (PANEL BOX)
+  ─────────────────────────────────────────────────────────────
+      └─ La boîte blanche centrée à l'écran.
+         C'est ici que tu modifies la taille du panneau.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-panel-box {
+  position: fixed;        /*- Reste en place même si on scroll */
+  top: 50%;               /*- Point de départ : milieu de l'écran */
+  left: 50%;
+  transform: translate(-50%, -50%);  /*- Décale de -50% pour vraiment centrer */
+
+  /*- 🎨 Apparence */
+  background: #fff;
+  border-radius: 6px;     /*- Coins arrondis de la fenêtre */
+  box-shadow: 0 16px 40px rgba(2, 15, 35, 0.12);  /*- Ombre portée */
+
+  z-index: 999999;        /*- Au-dessus du backdrop */
+
+  /*- 📐 Dimensions — modifier ici pour changer la taille du panneau */
+  width: 800px;
+  height: 650px;
+  max-width: 98vw;        /*- Ne jamais dépasser 98% de la largeur de l'écran */
+  max-height: 95vh;       /*- Ne jamais dépasser 95% de la hauteur de l'écran */
+
+  overflow: hidden;       /*- Cache ce qui dépasse (pas de scrollbar sur la box) */
+  padding: 0;             /*- Espace intérieur géré par les enfants */
+
+  /*- 🔤 Police de caractères — Lucida Grande (corps de texte AO3) */
+  font-family: 'Lucida Grande', 'Lucida Sans Unicode', Verdana, Helvetica, sans-serif;
+
+  /*- Disposition en colonne : header → tabs → body → bulk actions */
+  display: flex;
+  flex-direction: column;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      RESETS INVISIBLES
+  ─────────────────────────────────────────────────────────────
+      └─ Ces deux règles ne changent rien à l'apparence visible.
+         Elles corrigent des comportements par défaut d'AO3
+         qui pourraient casser le layout du panneau.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- box-sizing: border-box = la taille d'un élément inclut
+   son padding et sa bordure (comportement plus prévisible) */
+.ao3h-panel-box * {
+  box-sizing: border-box;
+}
+
+/*- Reset des styles de boutons qu'AO3 applique globalement.
+   ⚠️ :where(button) garde une spécificité basse (0,1,0)
+   pour que nos classes propres gagnent toujours. */
+.ao3h-panel-box :where(button) {
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  height: auto;
+  min-height: 0;
+  line-height: inherit;
+  width: auto;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  font-family: inherit;
+  cursor: pointer;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ZONE DE CONTENU (BODY)
+  ─────────────────────────────────────────────────────────────
+      └─ La zone blanche entre les onglets et le footer.
+         Elle prend tout l'espace disponible.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-panel-body {
+  order: 4;
+  flex: 1;                /*- Prend tout l'espace restant entre tabs et footer */
+  overflow: hidden;       /*- Cache ce qui dépasse */
+  padding: 0;
+  background: #fff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+  
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ZONE SCROLLABLE
+  ─────────────────────────────────────────────────────────────
+      └─ Le conteneur intérieur qui défile quand il y a
+         beaucoup de modules. C'est lui qui a la scrollbar.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+#ao3h-tab-container {
+  flex: 1;
+  overflow-y: auto;       /*- Scrollbar verticale si nécessaire */
+  padding: var(--ao3h-space-5) var(--ao3h-space-6);  /*- Marges intérieures */
+  transition: opacity 0.2s ease-out;  /*- Animation de fondu lors des changements d'onglet */
+  min-height: 400px;
+  scroll-behavior: smooth;
+}
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — Header
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle le bandeau rouge en haut du panneau.
+    À l'écran :
+
+      ╔══════════════════════════════════════════╗
+      ║  AO3 Helper Settings                  ×  ║  ← bandeau rouge
+      ╠══════════════════════════════════════════╣
+      ║  onglets                                 ║
+      ║                                          ║
+      ║  liste des modules                       ║
+      ║                                          ║
+      ╚══════════════════════════════════════════╝
+
+    Cette section contrôle :
+      - le bandeau rouge (.ao3h-panel-header)
+      - le titre "AO3 Helper Settings" (.ao3h-panel-title)
+      - le bouton de fermeture × (.ao3h-panel-close)
+      - l'état hover du bouton ×
+
+    ⚠️ Cette section NE contrôle PAS :
+      - les onglets (→ SECTION 03)
+      - le reste du panneau (→ SECTION 04+)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      BANDEAU D'EN-TÊTE
+  ─────────────────────────────────────────────────────────────
+      └─ La barre rouge en haut du panneau.
+         Contient le titre à gauche et le bouton × à droite.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-panel-header {
+  order: 1;
+  display: flex;
+  align-items: center;              /*- Centre titre et bouton verticalement */
+  justify-content: space-between;   /*- Titre à gauche, × à droite */
+
+  padding: var(--ao3h-space-4) 28px;              /*- Espace intérieur : haut/bas gauche/droite */
+  border-bottom: 1px solid var(--ao3h-border);    /*- Ligne fine sous le header */
+  background: #900 url("https://archiveofourown.org/images/skins/textures/tiles/red-ao3.png");  /*- 🔴 Texture AO3 */
+  box-shadow: inset 0 -6px 10px rgba(0,0,0,0.35),
+              1px 1px 3px -1px rgba(0,0,0,0.25),
+              inset 0 -1px 0 rgba(0,0,0,0.85);
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      TITRE DU PANNEAU
+  ─────────────────────────────────────────────────────────────
+      └─ "AO3 Helper Settings"
+         Texte blanc, semi-gras.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-panel-title {
+  margin: 0;
+  font-size: 1.125rem;        /*- Taille du texte — augmenter pour agrandir */
+  font-family: Georgia, serif;
+  font-weight: 600;           /*- 400=normal, 600=semi-gras, 700=gras */
+  color: rgba(255,255,255,0.85);  /*- 🔤 Couleur du texte — légèrement adoucie */
+  letter-spacing: -0.3px;     /*- Espacement entre lettres (négatif = plus serré) */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      BOUTON DE FERMETURE ×
+  ─────────────────────────────────────────────────────────────
+      └─ Le bouton en haut à droite pour fermer le panneau.
+         Fond transparent, devient plus visible au survol.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-panel-close {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;                       /*- Taille du symbole × */
+  color: rgba(255, 255, 255, 0.75);        /*- Blanc semi-transparent au repos (WCAG AA : 5.3:1) */
+  cursor: pointer;
+  padding: 4px 8px;                        /*- Espace autour du × */
+  border-radius: var(--ao3h-radius-md);    /*- Coins arrondis */
+  transition: background 0.2s, color 0.2s; /*- Animation douce au survol */
+  line-height: 1;
+}
+
+/*- Effet au survol : blanc plein */
+.ao3h-panel-close:hover {
+  background: transparent;
+  color: rgba(255, 255, 255, 1);
+}
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — Navigation
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle les onglets et la barre de recherche.
+    À l'écran :
+
+      ╔══════════════════════════════════════════╗
+      ║  AO3 Helper Settings                  ×  ║  (SECTION 02)
+      ╠══════════════════════════════════════════╣
+      ║  [Search]  [Reading]  [Bookmarks] ...    ║
+      ║  [Tags]    [Explore]  [History]   ...    ║  ← onglets (2 lignes)
+      ╠══════════════════════════════════════════╣
+      ║  🔍 Rechercher tous les modules...       ║  ← barre de recherche globale
+      ╠══════════════════════════════════════════╣
+      ║  liste des modules                       ║  (SECTION 04+)
+      ╚══════════════════════════════════════════╝
+
+    Cette section contrôle :
+      - la zone des onglets (.ao3h-panel-tabs-container + rows)
+      - chaque bouton d'onglet (normal, hover, focus, actif)
+      - la barre de recherche globale (.ao3h-global-search-wrapper)
+      - le champ texte de recherche (.ao3h-global-search-input)
+      - le badge "tab" dans les résultats de recherche
+      - le message "aucun résultat"
+
+    ⚠️ Cette section NE contrôle PAS :
+      - le header (→ SECTION 02)
+      - le contenu des onglets / modules (→ SECTION 04+)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ONGLETS — CONTENEUR
+  ─────────────────────────────────────────────────────────────
+      └─ La zone grise qui contient toutes les lignes d'onglets.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-panel-tabs-container {
+  order: 3;
+  display: flex;
+  flex-wrap: wrap;                              /*- Permet 2 lignes d'onglets si besoin */
+  justify-content: center;
+  background: var(--ao3h-bg-surface);           /*- 🎨 Fond gris clair de la zone d'onglets */
+  border-bottom: 2px solid var(--ao3h-border);  /*- Ligne épaisse sous les onglets */
+  padding: var(--ao3h-space-2);
+  gap: var(--ao3h-space-1);
+}
+
+/*- Chaque ligne d'onglets (il y en a 2) */
+.ao3h-panel-tabs-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;               /*- Espace entre les boutons d'une même ligne */
+  margin-bottom: 6px;
+  width: 100%;
+}
+
+/*- Dernière ligne : pas de marge en bas */
+.ao3h-panel-tabs-row:last-child {
+  margin-bottom: 0;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ONGLETS — BOUTONS
+  ─────────────────────────────────────────────────────────────
+      └─ Chaque bouton (Search, Reading, Bookmarks, etc.)
+         Gris inactif → rouge actif.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- État normal (inactif) */
+.ao3h-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;           /*- Barre invisible (prête pour l'animation) */
+  border-radius: var(--ao3h-radius-lg);
+
+  color: var(--ao3h-text-muted);                  /*- 🔤 Couleur texte inactif */
+  font-size: 0.8125rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.3;
+  min-height: 34px;         /*- Hauteur minimale du bouton */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+
+  flex: 0 0 auto;
+  border-radius: 4px;
+  min-width: fit-content;
+}
+
+/*- Survol : fond rouge très léger + barre rouge en bas */
+.ao3h-tab-btn:hover {
+  color: var(--ao3h-text-primary);
+  background: rgba(var(--ao3h-accent-rgb), 0.05);
+  border-bottom-color: rgba(var(--ao3h-accent-rgb), 0.3);
+}
+
+/*- Focus clavier : halo rouge (accessibilité) */
+.ao3h-tab-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--ao3h-accent-rgb), 0.3);
+}
+
+/*- Onglet actif : barre rouge en bas, sans boîte */
+.ao3h-tab-btn.ao3h-tab-active {
+  color: var(--ao3h-accent);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid #900;
+  border-radius: 0;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      BARRE DE RECHERCHE GLOBALE
+  ─────────────────────────────────────────────────────────────
+      └─ La barre blanche juste sous les onglets.
+         Permet de chercher dans tous les modules à la fois.
+         Apparaît à droite des boutons Enable/Disable All.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Barre complète : champ + boutons côte à côte */
+.ao3h-global-search-wrapper {
+  order: 2;
+  padding: 8px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--ao3h-border);
+  flex-shrink: 0;                     /*- Ne pas rétrécir si l'espace manque */
+  display: flex;
+  align-items: center;
+  gap: var(--ao3h-space-2);
+}
+
+/*- Le champ texte prend tout l'espace disponible */
+.ao3h-global-search-wrapper .ao3h-global-search-input {
+  flex: 1;
+}
+
+/*- Les boutons Enable/Disable All à côté du champ */
+.ao3h-global-search-wrapper .ao3h-bulk-actions-buttons {
+  flex-shrink: 0;
+  display: flex;
+  gap: 6px;
+}
+
+/*- Champ de texte : styles de base */
+.ao3h-global-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  border: 1px solid var(--ao3h-border-strong);
+  border-radius: var(--ao3h-radius-sm);
+  font-size: var(--ao3h-size-xs);
+  transition: border-color 0.2s;
+}
+
+/*- Champ actif (curseur dedans) : bordure rouge + halo léger */
+.ao3h-global-search-input:focus {
+  outline: none;
+  border-color: var(--ao3h-accent);
+  box-shadow: 0 0 0 2px rgba(var(--ao3h-accent-rgb), 0.08);
+}
+
+/*- Message affiché quand la recherche ne trouve rien */
+.ao3h-search-no-results {
+  color: var(--ao3h-text-hint);
+  text-align: center;
+  padding: 24px 20px;
+  font-size: var(--ao3h-size-sm);
+}
+
+/*- Badge "Search", "Reading", etc. affiché à côté du nom du module dans les résultats */
+.ao3h-search-tab-badge {
+  display: inline-block;
+  font-size: var(--ao3h-size-xxs);
+  color: var(--ao3h-text-muted);
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — Modules
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle l'apparence des lignes de modules.
+    À l'écran :
+
+      ╠══════════════════════════════════════════╣
+      ║  ☑  HIDE BY TAGS                      ▼  ║  ← .ao3h-module-row
+      ║      Cache les œuvres selon leurs tags   ║
+      ╠══════════════════════════════════════════╣
+      ║  ☑  FILTER PRESETS                    ▼  ║
+      ║      Sauvegarde tes filtres favoris      ║
+      ╠══════════════════════════════════════════╣
+
+         └── chaque bloc = .ao3h-module-container
+
+    Cette section contrôle :
+      - le conteneur d'un module (.ao3h-module-container)
+      - la ligne cliquable (.ao3h-module-row + hover + état ouvert)
+      - la zone d'activation rapide (checkbox à gauche)
+      - le nom du module (.ao3h-module-name)
+      - la description (.ao3h-module-desc)
+      - l'animation de surbrillance quand on navigue vers un module
+
+    ⚠️ Cette section NE contrôle PAS :
+      - le toggle on/off et le bouton ▼ (→ SECTION 05)
+      - la zone de config dépliable (→ SECTION 06)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      CONTENEUR DE MODULE
+  ─────────────────────────────────────────────────────────────
+      └─ Enveloppe une ligne + sa zone de config.
+         Sépare chaque module par une fine ligne.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-module-container {
+  border-bottom: 1px solid var(--ao3h-border);  /*- Séparateur entre modules */
+  transition: background-color 0.3s ease;
+}
+
+/*- Dernier module : pas de bordure en bas */
+.ao3h-module-container:last-child {
+  border-bottom: none;
+}
+
+/*- Espace sous la config quand elle est ouverte */
+.ao3h-module-container:has(.ao3h-module-config-area.ao3h-expanded) {
+  padding-bottom: var(--ao3h-space-4);
+}
+
+/*- Surbrillance quand on arrive sur ce module (ex: depuis la recherche) */
+.ao3h-module-container.ao3h-highlight {
+  background-color: rgba(144, 0, 0, 0.08);
+  animation: ao3h-highlight-pulse 0.5s ease-in-out;
+}
+
+@keyframes ao3h-highlight-pulse {
+  0%   { background-color: rgba(144, 0, 0, 0.2); }   /*- Commence plus visible */
+  100% { background-color: rgba(144, 0, 0, 0.08); }  /*- Termine plus léger */
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      LIGNE PRINCIPALE (MODULE ROW)
+  ─────────────────────────────────────────────────────────────
+      └─ La ligne cliquable : checkbox | nom + desc | toggle ▼
+         Un clic dessus déplie ou replie la config.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-module-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ao3h-space-4);   /*- Espace entre checkbox, texte, bouton */
+
+  padding: 8px 10px;
+  margin: 0 -8px;             /*- Compense le padding pour aligner avec le conteneur */
+
+  border: 2px solid transparent;        /*- Bordure invisible (prête pour l'animation hover) */
+  border-radius: var(--ao3h-radius-sm);
+
+  transition: background 0.2s, border-color 0.2s;
+  cursor: pointer;
+  user-select: none;          /*- Empêche la sélection de texte au clic */
+}
+
+/*- Survol : nom en rouge, bordure transparente */
+.ao3h-module-row:hover {
+  background: var(--ao3h-bg-hover);
+  border-color: transparent;
+}
+
+.ao3h-module-row:hover .ao3h-module-name {
+  color: #900;
+}
+
+/*- Config ouverte : bordure rouge + coins arrondis haut */
+.ao3h-module-container:has(.ao3h-module-config-area.ao3h-expanded) .ao3h-module-row {
+  background: var(--ao3h-bg-hover);
+  border-color: #900;
+  border-radius: 4px 4px 0 0;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      CHECKBOX D'ACTIVATION RAPIDE
+  ─────────────────────────────────────────────────────────────
+      └─ La petite checkbox à gauche de chaque module.
+         Active ou désactive sans ouvrir la config.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-module-quick-toggle {
+  position: relative;   /*- Nécessaire pour la zone cliquable élargie */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+/*- Zone de clic élargie (+12px sur les côtés, 8px haut/bas) sans déborder du row */
+.ao3h-module-quick-toggle::before {
+  content: '';
+  position: absolute;
+  inset: -8px -12px;
+}
+
+.ao3h-quick-enable-checkbox {
+  width: 16px !important;
+  height: 16px !important;
+  cursor: pointer;
+  margin: 0 !important;
+  accent-color: var(--ao3h-accent);   /*- 🔴 Couleur quand cochée */
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      NOM ET DESCRIPTION DU MODULE
+  ─────────────────────────────────────────────────────────────
+      └─ La zone de texte au centre de la ligne.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-module-info {
+  flex: 1;                    /*- Prend tout l'espace disponible entre checkbox et toggle */
+}
+
+/*- Nom du module — texte en majuscules, semi-gras */
+.ao3h-module-name {
+  font-size: var(--ao3h-size-base);
+  font-family: Georgia, serif;
+  font-weight: 500;
+  color: var(--ao3h-text-primary);
+  margin-bottom: 4px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/*- Description courte sous le nom */
+.ao3h-module-desc {
+  font-size: 0.75rem;
+  color: var(--ao3h-description-color);  /*- #767676 via --ao3h-text-faint (WCAG AA) */
+  line-height: 1.4;
+  padding-left: 8px;
+}
+
+
+/*===
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — Contrôles
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle les éléments à droite de chaque module.
+    À l'écran :
+
+      ║  ☑  NOM DU MODULE          [ ON  ] [▼] ║
+                                   ↑ toggle  ↑ config btn
+
+    Cette section contrôle :
+      - le conteneur des contrôles (.ao3h-module-controls)
+      - le bouton ▼/▲ pour ouvrir/fermer la config (.ao3h-config-btn)
+
+    ⚠️ Cette section NE contrôle PAS :
+      - la checkbox rapide à gauche (→ SECTION 04)
+      - la zone de config qui se déplie (→ SECTION 06)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      CONTENEUR DES CONTRÔLES
+  ─────────────────────────────────────────────────────────────
+      └─ La zone à droite : toggle + bouton ▼
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-module-controls {
+  display: flex;
+  gap: var(--ao3h-space-3);   /*- Espace entre le toggle et le bouton ▼ */
+  align-items: center;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      BOUTON CONFIG (▼ / ▲)
+  ─────────────────────────────────────────────────────────────
+      └─ Petit bouton à droite du toggle.
+         Cliquer dessus ouvre ou ferme la zone de config.
+         Il reste visuellement discret (transparent, pas de fond).
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-config-btn {
+  background: transparent;
+  border: none;
+  border-radius: var(--ao3h-radius-sm);
+  padding: var(--ao3h-space-1) var(--ao3h-space-2);
+  font-size: var(--ao3h-size-xxs);
+  cursor: pointer;
+  color: var(--ao3h-text-muted);
+  transition: none;
+  flex-shrink: 0;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  vertical-align: baseline;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/*- Survol : reste identique (volontairement discret) */
+.ao3h-config-btn:hover {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ao3h-text-muted);
+}
+
+
+/*====
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — Config area
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle la zone dépliable sous chaque module.
+    À l'écran (quand le module est ouvert) :
+
+      ║  ☑  MODULE NAME                 [ON] [▼]  ║  (SECTION 04+05)
+      ║  ┌────────────────────────────────────┐    ║
+      ║  │  Titre de section                  │    ║  .ao3h-config-section
+      ║  │  ┌───────────┐  ┌───────────┐      │    ║
+      ║  │  │  option 1 │  │  option 2 │      │    ║  grille 2 colonnes
+      ║  │  └───────────┘  └───────────┘      │    ║
+      ║  │  ╔══════════════════════════════╗   │    ║
+      ║  │  ║  GROUPE                      ║   │    ║  .ao3h-setting-group
+      ║  │  ║  ☐ option A   ☐ option B    ║   │    ║
+      ║  │  ╚══════════════════════════════╝   │    ║
+      ║  └────────────────────────────────────┘    ║
+
+    Cette section contrôle :
+      - la zone de config fermée (hauteur 0, invisible)
+      - la zone de config ouverte (grille 2 colonnes, opacity 1)
+      - ao3h-settings-row : helper 2 colonnes flex (hors grille)
+      - ao3h-config-section : groupe de règles avec subgrid
+      - ao3h-setting-group : boîte avec bordure (subgrid)
+      - règles pleine largeur automatiques et explicites
+      - taille de texte dans la config
+
+    ⚠️ Cette section NE contrôle PAS :
+      - les options individuelles (→ SECTION 07)
+      - les champs et boutons (→ SECTION 08+)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ZONE DE CONFIG — ÉTAT FERMÉ
+  ─────────────────────────────────────────────────────────────
+      └─ Par défaut, la zone est invisible (hauteur 0).
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-module-config-area {
+  height: 0;                  /*- Hauteur 0 = caché */
+  overflow: clip;             /*- Masque le contenu sans créer de scroll container */
+
+  /*- interpolate-size permet d'animer height: 0 → auto sur la vraie hauteur.
+     Navigateurs sans support (< Chrome 129 / Firefox 129) : height s'ouvre
+     sans animation, opacity anime quand même. */
+  interpolate-size: allow-keywords;
+
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  background: var(--ao3h-bg-surface);              /*- 🎨 Fond gris clair */
+  border: 2px solid var(--ao3h-border-medium);
+  border-top: none;           /*- Pas de bordure en haut (connecté au module row) */
+  padding: 0 16px;            /*- Padding vertical = 0 quand fermé */
+  margin: 0 -8px;             /*- Aligne avec le module row */
+  border-radius: 0 0 var(--ao3h-radius-sm) var(--ao3h-radius-sm);
+  opacity: 0;
+  font-size: var(--ao3h-size-sm);
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ZONE DE CONFIG — ÉTAT OUVERT
+  ─────────────────────────────────────────────────────────────
+      └─ Quand la classe .ao3h-expanded est ajoutée,
+         la zone s'anime en hauteur et devient visible.
+         Elle se transforme en GRILLE 2 COLONNES.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-module-config-area.ao3h-expanded {
+  height: auto;
+  padding: var(--ao3h-space-4);
+  padding-top: var(--ao3h-space-6);  /*- Espace supplémentaire en haut */
+  overflow: visible;
+  opacity: 1;
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.5s ease-out 0.1s;
+
+  /*- ── Grille 2 colonnes ──────────────────────────────────
+     Les ao3h-setting-item se placent côte à côte (50/50).
+     Les éléments structurels (titres, descriptions, etc.)
+     s'étirent sur les 2 colonnes automatiquement.
+  ────────────────────────────────────────────────────────── 
+  */
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: var(--ao3h-space-6);
+  row-gap: var(--ao3h-space-2);
+  align-items: start;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      HELPER 2 COLONNES (hors grille)
+  ─────────────────────────────────────────────────────────────
+      └─ ao3h-settings-row : wrapper flex utilisé dans les
+         contextes sans grille CSS.
+         À l'intérieur de la grille, il devient "transparent"
+         (display:contents) et ses enfants rejoignent la grille.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-settings-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 16px 32px;
+  align-items: flex-start;
+}
+
+.ao3h-settings-row .ao3h-setting-item {
+  flex: 1;                    /*- Chaque colonne prend 50% */
+}
+
+/*- Dans la grille : les enfants participent directement à la grille parente */
+.ao3h-module-config-area.ao3h-expanded > .ao3h-settings-row {
+  display: contents;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      SECTIONS ET GROUPES
+  ─────────────────────────────────────────────────────────────
+      └─ ao3h-config-section : regroupe des options par thème.
+         ao3h-setting-group  : boîte avec bordure visible.
+         Les deux utilisent subgrid pour que les enfants
+         s'alignent exactement avec la grille parente.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Section : regroupe des options sans bordure visible */
+.ao3h-config-section {
+  grid-column: 1 / -1;        /*- Toujours pleine largeur */
+  display: grid;
+  grid-template-columns: subgrid;  /*- Hérite la grille parente */
+  row-gap: var(--ao3h-space-2);
+  align-items: start;
+  margin-bottom: 0;
+}
+
+.ao3h-config-section:last-child {
+  margin-bottom: 0;
+}
+
+/*- Séparateur subtil entre deux sections consécutives */
+.ao3h-config-section + .ao3h-config-section {
+  padding-top: 2px;
+}
+
+/*- Groupe : regroupe des options avec bordure et fond */
+.ao3h-setting-group {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  row-gap: 5px;               /*- Plus serré que la grille principale */
+  align-items: start;
+  border: 1px solid var(--ao3h-border);
+  border-radius: var(--ao3h-radius-md);
+  padding: var(--ao3h-space-3) var(--ao3h-space-4);
+  margin-bottom: 8px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.ao3h-setting-group:last-child {
+  margin-bottom: 0;
+}
+
+/*- Le label dans un groupe : espace sous lui avant les options */
+.ao3h-setting-group > .ao3h-setting-label {
+  margin-bottom: 8px;
+}
+
+/*- Les items dans un groupe : pas de marge (géré par row-gap) */
+.ao3h-setting-group > .ao3h-setting-item {
+  margin-bottom: 0;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ÉLÉMENTS TOUJOURS PLEINE LARGEUR (structurels)
+  ─────────────────────────────────────────────────────────────
+      └─ Ces éléments délimitent des sections ou contiennent
+         plusieurs contrôles. Ils prennent toujours les 2 colonnes.
+         ao3h-config-block = classe utilitaire pour tout div custom.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+:is(.ao3h-module-config-area.ao3h-expanded, .ao3h-config-section, .ao3h-setting-group) > :is(
+  .ao3h-config-row,
+  .ao3h-setting-description,
+  .ao3h-setting-label,
+  .ao3h-config-block,
+  div[id]:not(.ao3h-setting-item)
+),
+:is(.ao3h-module-config-area.ao3h-expanded, .ao3h-config-section) > :is(
+  .ao3h-config-section-title,
+  .ao3h-config-footer
+) {
+  grid-column: 1 / -1;
+}
+
+/*- Dans la grille, c'est le row-gap qui gère l'espacement —
+   on supprime les marges pour éviter le double-stacking */
+:is(.ao3h-module-config-area.ao3h-expanded, .ao3h-config-section) > :is(
+  .ao3h-setting-item,
+  .ao3h-setting-group,
+  .ao3h-setting-label,
+  .ao3h-setting-description
+) {
+  margin-bottom: 0;
+}
+
+/*- Les items dans un div[id] enfant direct : pas de double marge */
+.ao3h-config-section > div[id]:not(.ao3h-setting-item) > .ao3h-setting-item {
+  margin-bottom: 0;
+}
+
+/*- div[id] structurel avec des setting-items directs : grille 2 colonnes automatique.
+   :where() maintient la spécificité basse (0,1,0) pour que le CSS module-specific
+   puisse toujours surcharger (ex: ao3h-hbt-behavior-row utilise display:flex). */
+:where(.ao3h-module-config-area.ao3h-expanded > div[id]:not(.ao3h-setting-item),
+       .ao3h-config-section > div[id]:not(.ao3h-setting-item)):has(> .ao3h-setting-item) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: var(--ao3h-space-6);
+  row-gap: var(--ao3h-space-2);
+  align-items: start;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      DÉTECTION AUTOMATIQUE DE PLEINE LARGEUR
+  ─────────────────────────────────────────────────────────────
+      └─ Un ao3h-setting-item passe automatiquement en pleine
+         largeur selon ce qu'il contient.
+
+         Reste en demi-colonne :
+           → checkbox seule
+
+         Passe en pleine largeur automatiquement :
+           → radios empilés ou groupe de checkboxes
+           → groupe de boutons radio (ao3h-radio-group)
+           → input texte / nombre / email / autre
+           → select (liste déroulante)
+           → note longue (ao3h-setting-note)
+  ───────────────────────────────────────────────────────────── 
+*/
+
+:is(.ao3h-module-config-area.ao3h-expanded, .ao3h-config-section, .ao3h-setting-group) > .ao3h-setting-item:has(
+  .ao3h-setting-control--radios-stacked,
+  .ao3h-setting-control--checkboxes,
+  .ao3h-radio-group,
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  .ao3h-setting-note
+) {
+  grid-column: 1 / -1;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      MODIFICATEURS EXPLICITES DE COLONNES
+  ─────────────────────────────────────────────────────────────
+      └─ À utiliser uniquement quand l'auto-détection ne suffit pas.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-col1 { grid-column: 1 !important; }       /*- Force la colonne gauche */
+.ao3h-col2 { grid-column: 2 !important; }       /*- Force la colonne droite */
+.ao3h-full { grid-column: 1 / -1 !important; }  /*- Force la pleine largeur */
+
+/*- Taille de base du texte dans la zone de config */
+.ao3h-module-config-area label,
+.ao3h-module-config-area p {
+  font-size: var(--ao3h-label-size);
+}
+
+
+/*++
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 07 — Options
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle chaque option individuelle à l'intérieur
+    d'une zone de config.
+    À l'écran :
+
+      ║  ┌────────────────────────────────────┐  ║
+      ║  │  Titre de l'option                 │  ║  .ao3h-setting-label
+      ║  │                                    │  ║
+      ║  │  ☐ Choix A    ☐ Choix B            │  ║  .ao3h-setting-control
+      ║  │                                    │  ║
+      ║  │  Note explicative en gris          │  ║  .ao3h-setting-description
+      ║  └────────────────────────────────────┘  ║
+
+    Cette section contrôle :
+      - l'enveloppe d'une option (.ao3h-setting-item)
+      - le texte d'explication gris (.ao3h-setting-description)
+      - le titre de l'option (.ao3h-setting-label + .ao3h-setting-note)
+      - le wrapper pour les inputs (.ao3h-setting-control)
+      - les variantes : checkboxes, radios, empilés, 2 colonnes
+      - les swatches de couleur (.ao3h-color-swatch-group)
+      - la checkbox standard (.ao3h-setting-checkbox)
+
+    ⚠️ Cette section NE contrôle PAS :
+      - les champs texte / selects (→ SECTION 08)
+      - les boutons Save/Reset (→ SECTION 09)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ENVELOPPE D'UNE OPTION (SETTING ITEM)
+  ─────────────────────────────────────────────────────────────
+      └─ Contient le label + le(s) contrôle(s).
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-setting-item {
+  margin-bottom: 14px;        /*- Espace entre options (hors grille) */
+}
+
+.ao3h-setting-item:last-child {
+  margin-bottom: 0;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      TEXTE D'EXPLICATION (SETTING DESCRIPTION)
+  ─────────────────────────────────────────────────────────────
+      └─ Le texte gris placé sous une option pour la décrire.
+         Doit être placé juste après le ao3h-setting-item concerné.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-setting-description {
+  font-size: var(--ao3h-description-size);   /*- Taille — surcharger via --ao3h-description-size */
+  color: var(--ao3h-description-color);      /*- Couleur — surcharger via --ao3h-description-color */
+  line-height: 1.5;
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+/*- Quand une description suit un item, l'item réduit son espace en bas */
+.ao3h-setting-item:has(+ .ao3h-setting-description) {
+  margin-bottom: 2px;
+}
+
+/*- Dans la grille : correction pour garder 4px entre l'item et sa description */
+.ao3h-module-config-area.ao3h-expanded > .ao3h-setting-item + .ao3h-setting-description,
+.ao3h-config-section > .ao3h-setting-item + .ao3h-setting-description {
+  margin-top: -4px;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      TITRE D'OPTION (SETTING LABEL)
+  ─────────────────────────────────────────────────────────────
+      └─ Le titre au-dessus d'un contrôle.
+         Ex: "Badge mode", "Couleur de surbrillance".
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-setting-label {
+  display: block;
+  font-size: var(--ao3h-label-size);     /*- Taille — surcharger via --ao3h-label-size */
+  font-weight: var(--ao3h-label-weight); /*- Graisse — surcharger via --ao3h-label-weight */
+  color: var(--ao3h-label-color);        /*- Couleur — surcharger via --ao3h-label-color */
+  margin-bottom: 8px;
+}
+
+/*- Label dans un setting-item : espace plus généreux */
+.ao3h-setting-item > .ao3h-setting-label {
+  margin-top: var(--ao3h-space-4);
+  margin-bottom: var(--ao3h-space-4);
+}
+
+/*- Exception : premier item directement après un titre de section — pas de marge top supplémentaire
+   (aligne visuellement avec les sections dont le premier item est un ao3h-setting-control direct) */
+.ao3h-config-section > .ao3h-config-section-title + .ao3h-setting-item > .ao3h-setting-label {
+  margin-top: 0;
+}
+
+/*- Label de groupe qui suit d'autres éléments : espace supplémentaire au-dessus */
+.ao3h-module-config-area.ao3h-expanded > .ao3h-setting-item ~ .ao3h-setting-label,
+.ao3h-config-section > .ao3h-setting-item ~ .ao3h-setting-label,
+.ao3h-module-config-area.ao3h-expanded > .ao3h-setting-description ~ .ao3h-setting-label,
+.ao3h-config-section > .ao3h-setting-description ~ .ao3h-setting-label {
+  margin-top: var(--ao3h-space-2);
+}
+
+/*- Note inline dans un label — ex: "(ex. : 'Blacklist (47 tags)')" */
+.ao3h-setting-note {
+  font-size: var(--ao3h-size-xxs);
+  font-weight: 400;
+  color: var(--ao3h-text-hint);
+  margin-left: 4px;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      WRAPPER DE CONTRÔLE (SETTING CONTROL)
+  ─────────────────────────────────────────────────────────────
+      └─ Contient un input, un select, des checkboxes ou des radios.
+         En mode horizontal par défaut (flex row).
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-setting-control {
+  display: flex;
+  align-items: center;
+  gap: var(--ao3h-control-gap);          /*- Espacement — surcharger via --ao3h-control-gap */
+  margin-bottom: 6px;
+  font-size: var(--ao3h-control-size);   /*- Taille — surcharger via --ao3h-control-size */
+  color: var(--ao3h-control-color);      /*- Couleur — surcharger via --ao3h-control-color */
+}
+
+.ao3h-setting-control:last-child {
+  margin-bottom: 0;
+}
+
+/*- Label inline : input + texte sur la même ligne, alignés */
+.ao3h-setting-control label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;                   /*- Espace entre l'input et son texte */
+  cursor: pointer;
+  line-height: 1;
+}
+
+/*- Reset des styles AO3 globaux sur checkbox/radio dans tout le panel.
+   ao3.css applique input { width:100%; border: 1px solid #bbb; box-shadow: inset... }
+   à tous les inputs, ce qui donne aux checkboxes/radios l'apparence de champs texte.
+   !important nécessaire : dans le vrai panel, GM_addStyle peut être injecté avant
+   les styles natifs AO3, qui gagneraient sinon en ordre de cascade. */
+.ao3h-panel-box input[type="checkbox"],
+.ao3h-panel-box input[type="radio"] {
+  width: 14px !important;
+  height: 14px !important;
+  margin: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  align-self: center;
+  flex-shrink: 0;
+  vertical-align: unset;
+  transform: translateY(-1px); /*- correction optique : cap-height ≈ 70% em */
+  accent-color: var(--ao3h-accent);
+}
+
+/*- Labels contenant un checkbox ou radio : flex centré dans tout le panel */
+.ao3h-panel-box label:has(input[type="checkbox"]),
+.ao3h-panel-box label:has(input[type="radio"]) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+}
+
+/*- Groupe de checkboxes — horizontal avec retour à la ligne */
+.ao3h-setting-control.ao3h-setting-control--checkboxes {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin-bottom: 0;
+}
+
+/*- Checkboxes ou radios empilés en colonne */
+.ao3h-setting-control.ao3h-setting-control--checkboxes-stacked,
+.ao3h-setting-control.ao3h-setting-control--radios-stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+/*- Groupe de radios — horizontal avec retour à la ligne */
+.ao3h-setting-control.ao3h-setting-control--radios,
+.ao3h-setting-control.ao3h-radio-group {
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+/*- Radios (ou checkboxes) répartis sur 2 colonnes.
+   Combiner avec ao3h-full sur le ao3h-setting-item parent. */
+.ao3h-setting-control.ao3h-radios-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+  align-items: start;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      SWATCHES DE COULEUR
+  ─────────────────────────────────────────────────────────────
+      └─ Groupe de petits cercles colorés pour choisir
+         une couleur de surbrillance (ex: dans HideByTags).
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-color-swatch-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ao3h-space-2);
+  align-items: center;
+}
+
+.ao3h-color-swatch-label {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+}
+
+/*- Le vrai input radio est caché (on affiche le swatch à la place) */
+.ao3h-color-swatch-label input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*- Cercle coloré */
+.ao3h-color-swatch {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  transition: transform 0.1s, border-color 0.1s;
+}
+
+/*- Survol : zoom léger + bordure faint */
+.ao3h-color-swatch-label:hover .ao3h-color-swatch {
+  transform: scale(1.15);
+  border-color: var(--ao3h-text-faint);
+}
+
+/*- Swatch sélectionné : double anneau */
+.ao3h-color-swatch-label input[type="radio"]:checked ~ .ao3h-color-swatch {
+  border-color: var(--ao3h-text-primary);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ao3h-text-primary);
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      CHECKBOX STANDARD
+  ─────────────────────────────────────────────────────────────
+      └─ Utilisée dans les setting-control, taille fixe 16×16.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-setting-checkbox {
+  width: 16px !important;
+  height: 16px !important;
+  cursor: pointer;
+  accent-color: var(--ao3h-checkbox-accent);  /*- Couleur quand cochée */
+}
+
+/*- Lien "Quick Access" dans le menu de navigation AO3 */
+.ao3h-quick-access > a {
+  font-weight: 600;
+  color: #2c5f8a !important;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      SECTIONS DE RÉGLAGES ET TEXTE D'AIDE
+  ─────────────────────────────────────────────────────────────
+      └─ Regroupement hérité (ao3h-settings-section) et texte
+         d'aide discret sous une option (ao3h-setting-hint).
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Conteneur d'un groupe de réglages avec séparateur en bas */
+.ao3h-settings-section {
+  padding-bottom: var(--ao3h-space-4);
+  margin-bottom: var(--ao3h-space-4);
+  border-bottom: 1px solid var(--ao3h-border);
+}
+
+.ao3h-settings-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/*- Texte d'aide très petit sous une option */
+.ao3h-setting-hint {
+  font-size: var(--ao3h-size-xxs);
+  color: var(--ao3h-text-faint);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+
+/*--
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 08 — Champs & boutons
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle les éléments de formulaire à l'intérieur
+    d'une zone de config : champs, selects, boutons, rangées.
+    À l'écran :
+
+      ║  │  TITRE DE SECTION           [12 hidden]  │  ║
+      ║  │  ─────────────────────────────────────   │  ║
+      ║  │  [champ texte...]  [Export] [Importer]   │  ║
+      ║  │  [Menu déroulant ▾]                      │  ║
+      ║  │  ☐ Option A    ☐ Option B                │  ║
+      ║  │                                          │  ║
+      ║  │               [Secondaire] [Confirmer]   │  ║
+
+    Cette section contrôle :
+      - le titre de section (.ao3h-config-section-title + compteur)
+      - les actions de section (.ao3h-section-actions, auto-sort)
+      - l'overlay "section désactivée" (.ao3h-section-disabled)
+      - le champ texte de config (.ao3h-config-input)
+      - le select de config (.ao3h-setting-select, .ao3h-select, .ao3h-input)
+      - les boutons inline (.ao3h-inline-btn + variantes)
+      - le select custom avec dropdown (.ao3h-group-select)
+      - les rangées flex (.ao3h-config-row + modifiers)
+      - les labels checkbox et radio (.ao3h-checkbox-label, .ao3h-radio-label)
+      - les boutons génériques (.ao3h-btn, .ao3h-btn-primary, .ao3h-btn-secondary)
+
+    ⚠️ Cette section NE contrôle PAS :
+      - les boutons Save/Reset/Bulk actions (→ SECTION 09)
+      - les chips et chipbox (→ SECTION 10)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      AUTO-SORT DES RANGÉES IMPORT/EXPORT
+  ─────────────────────────────────────────────────────────────
+      └─ Les rangées avec des boutons export/import sont
+         automatiquement poussées en bas de leur section,
+         pleine largeur, alignées à gauche.
+         Le bouton "Clear" (s'il est présent) va à droite.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-config-section > .ao3h-section-actions,
+.ao3h-config-section > .ao3h-config-row:has([data-action*="export"], [data-action*="import"]) {
+  order: 99;
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+/*- Exception : rangée import/export seule directement après un titre de section — pas de marge top
+   (évite l'écart supplémentaire quand la rangée est le seul contenu de la section) */
+.ao3h-config-section > .ao3h-config-section-title + .ao3h-config-row:has([data-action*="export"], [data-action*="import"]) {
+  margin-top: 0;
+}
+
+.ao3h-config-section > .ao3h-section-actions:has([data-action^="clear"]),
+.ao3h-config-section > .ao3h-config-row:has([data-action*="export"], [data-action*="import"]):has([data-action^="clear"]) {
+  justify-content: flex-start;
+}
+
+/*- Section-actions dans n'importe quel contexte config */
+.ao3h-module-config-area .ao3h-section-actions {
+  margin-top: 10px;
+}
+
+/*- Bouton "Clear" : toujours poussé à droite dans sa rangée */
+[data-action^="clear"] {
+  margin-left: auto;
+}
+
+/*- Rangée "Clear uniquement" (sans import/export) : en bas à droite */
+.ao3h-config-section > .ao3h-config-row:has([data-action^="clear"]):not(:has([data-action*="import"], [data-action*="export"])) {
+  order: 99;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      TITRE DE SECTION
+  ─────────────────────────────────────────────────────────────
+      └─ En-tête qui sépare des groupes d'options au sein
+         d'une zone de config. Texte en majuscules, ligne au-dessus.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-config-section-title {
+  display: flex;
+  align-items: baseline;
+  font-size: var(--ao3h-title-size);     /*- Taille — surcharger via --ao3h-title-size */
+  font-family: Georgia, serif;
+  font-weight: 400;
+  color: var(--ao3h-title-color);        /*- Couleur — surcharger via --ao3h-title-color */
+  padding: var(--ao3h-space-5) 0 4px 0;
+  margin: var(--ao3h-space-4) 0 var(--ao3h-space-4);
+  border-top: 1px solid var(--ao3h-border-strong);  /*- Ligne séparatrice au-dessus */
+}
+
+/*- Premier titre de section : pas de bordure ni d'espace au-dessus */
+.ao3h-config-section:first-child > .ao3h-config-section-title {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 4px;
+}
+
+/*- Compteur à droite du titre — ex: "12 hidden" */
+.ao3h-section-count {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: var(--ao3h-size-xs);
+  color: #bbb;
+}
+
+/*- Rangée d'actions export/import */
+.ao3h-section-actions {
+  display: flex;
+  gap: var(--ao3h-space-1);
+  align-items: start;
+  justify-content: flex-start;
+}
+
+.ao3h-section-actions:has([data-action^="clear"]) {
+  justify-content: flex-start;
+}
+
+/*- Petit bouton "Clear" dans le titre de section */
+.ao3h-section-title-clear {
+  font-size: var(--ao3h-size-xxs);
+  padding: 2px 8px;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+  margin-bottom: 2px;
+}
+.ao3h-section-title-clear:hover { opacity: 1; }
+
+/*- Section désactivée : grisée, non cliquable */
+.ao3h-section-disabled {
+  opacity: 0.38;
+  pointer-events: none;
+  user-select: none;
+  filter: grayscale(0.25);
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      CHAMPS TEXTE ET SELECTS
+  ─────────────────────────────────────────────────────────────
+      └─ Inputs et selects utilisés dans les zones de config.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Input texte/recherche dans une config */
+.ao3h-config-input {
+  font-size: var(--ao3h-size-xs);
+  padding: 6px 10px;
+  border: 1px solid var(--ao3h-border-input);
+  border-radius: var(--ao3h-radius-sm);
+  background: #fff;
+  box-shadow: inset 0 1px 2px 0 #ccc;
+  box-sizing: border-box;
+}
+
+/*- Select dans les settings (taille et style de base) */
+.ao3h-setting-select {
+  font-size: var(--ao3h-size-sm);
+  padding: var(--ao3h-space-1) var(--ao3h-space-2);
+  border: 1px solid var(--ao3h-border-input);
+  border-radius: var(--ao3h-radius-sm);
+  background: #fff;
+}
+
+/*- Select générique réutilisable */
+.ao3h-select {
+  padding: 6px 10px;
+  border: 1px solid var(--ao3h-border-strong);
+  border-radius: var(--ao3h-radius-sm);
+  font-size: var(--ao3h-size-xs);
+  background: #fff;
+  color: var(--ao3h-text-primary);
+  cursor: pointer;
+  min-width: 140px;
+}
+.ao3h-select:focus {
+  outline: none;
+  border-color: var(--ao3h-accent);
+}
+
+/*- Input texte générique réutilisable */
+.ao3h-input {
+  padding: 6px 10px;
+  border: 1px solid var(--ao3h-border-strong);
+  border-radius: var(--ao3h-radius-sm);
+  font-size: var(--ao3h-size-xs);
+  background: #fff;
+  color: var(--ao3h-text-primary);
+}
+.ao3h-input:focus {
+  outline: none;
+  border-color: var(--ao3h-accent);
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      BOUTONS INLINE
+  ─────────────────────────────────────────────────────────────
+      └─ Petits boutons d'action à l'intérieur des rangées
+         (Export, Importer, Ajouter, Supprimer…).
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Base : neutre, hauteur 28px, dégradé gris AO3 */
+.ao3h-inline-btn {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 3px;
+  border: 1px solid #bbb;
+  border-bottom-color: #aaa;
+  background: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+  color: #444;
+  box-shadow: none;
+  font-size: var(--ao3h-size-xs);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/*- Effet pressé au survol (sauf boutons destructifs) */
+.ao3h-inline-btn:not(.ao3h-inline-btn--danger):hover {
+  border-top-color: #999;
+  border-left-color: #999;
+  box-shadow: inset 2px 2px 2px #bbb;
+}
+
+/*- Boutons action (+Add, +Group) — poids normal */
+.ao3h-config-action-btn { font-weight: normal; }
+
+/*- Vert — action de confirmation / ajout */
+.ao3h-inline-btn--green {
+  background: linear-gradient(#f1f8e9 2%, #c8e6c9 95%, #a5d6a7 100%);
+  color: #2e7d32;
+  font-weight: normal;
+  padding: 0 12px;
+}
+
+/*- Violet/gris — action de groupe (hérite du dégradé gris de la base) */
+.ao3h-inline-btn--purple {
+  color: var(--ao3h-text-primary);
+  font-weight: normal;
+  padding: 0 12px;
+}
+
+/*- Rouge — action destructive */
+.ao3h-inline-btn--danger {
+  border-color: #e57373;
+  background: #fff5f5;
+  color: #c62828;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      SELECT CUSTOM AVEC DROPDOWN (GROUP SELECT)
+  ─────────────────────────────────────────────────────────────
+      └─ Un select entièrement stylisé avec un panel déroulant
+         positionné en absolu.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-group-select { position: relative; }
+
+.ao3h-group-select__trigger {
+  width: 100%;
+  height: 28px;
+  text-align: left;
+  position: relative;
+  padding-right: 28px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #757575;
+}
+.ao3h-group-select__trigger::after {
+  content: '▾';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: #666;
+  pointer-events: none;
+}
+.ao3h-group-select__trigger--active {
+  color: var(--ao3h-text-primary);
+  font-weight: 600;
+}
+
+.ao3h-group-select__panel {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: var(--ao3h-radius-sm);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  z-index: 9999;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.ao3h-group-select__option {
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: var(--ao3h-size-xs);
+  text-align: center;
+  border-bottom: 1px solid var(--ao3h-border);
+}
+.ao3h-group-select__option:last-child { border-bottom: none; }
+.ao3h-group-select__option:hover { background: var(--ao3h-bg-subtle); }
+.ao3h-group-select__option--selected { font-weight: 700; color: var(--ao3h-text-primary); }
+.ao3h-group-select__option--new {
+  background: #edf2f9;
+  color: #2d4f78;
+  font-weight: 600;
+  border-top: 2px solid #c2d4e8;
+  border-bottom: none;
+}
+.ao3h-group-select__option--new:hover { background: #dde8f5; }
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      RANGÉES FLEX (CONFIG ROW)
+  ─────────────────────────────────────────────────────────────
+      └─ Wrapper flex pour aligner plusieurs éléments
+         sur une même ligne dans une config.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-config-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding-top: 8px;
+  margin-top: var(--ao3h-space-2);
+}
+
+.ao3h-config-row:first-child,
+.ao3h-config-block > .ao3h-config-row {
+  padding-top: 0;
+  margin-top: 0;
+}
+.ao3h-config-row:last-child { margin-bottom: 0; }
+
+/*- Dans les contextes grille : row-gap gère l'espacement */
+:is(.ao3h-module-config-area.ao3h-expanded, .ao3h-config-section, .ao3h-setting-group) > .ao3h-config-row {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+}
+
+/*- Labels directs dans un config-row */
+.ao3h-config-row > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+/*- Modifier : boutons alignés à droite */
+.ao3h-config-row--end {
+  justify-content: flex-end;
+  gap: var(--ao3h-space-1);
+}
+
+/*- Modifier : rangée sans espace en haut (option enfant) */
+.ao3h-config-row--tight {
+  padding-top: 0;
+  margin-bottom: 4px;
+}
+.ao3h-config-row:has(+ .ao3h-config-row--tight) { margin-bottom: 2px; }
+
+/*- Modifier : espacement large entre items côte à côte */
+.ao3h-config-row--wide { gap: var(--ao3h-space-4); }
+
+/*- Label principal — gras */
+.ao3h-label--bold { font-weight: 600; }
+
+/*- Label secondaire — taille réduite, couleur atténuée */
+.ao3h-label--secondary {
+  font-size: var(--ao3h-size-xs);
+  color: var(--ao3h-text-muted);
+}
+
+/*- Indentation d'un élément subordonné (sous-option conditionnelle) */
+.ao3h-indent { padding-left: 32px; }
+
+/*- Rangée enfant : visuellement liée à la rangée parente.
+   Double-class pour battre ao3h-config-row:first-child et forcer le padding-top. */
+.ao3h-config-row.ao3h-config-row--child {
+  padding-left: 32px;
+  padding-top: 8px;
+  margin-top: 0;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      ESPACEMENTS CONTEXTUELS AUTOMATIQUES
+  ─────────────────────────────────────────────────────────────
+      └─ Règles de combinateurs qui gèrent l'espacement entre
+         éléments connus — supprime le besoin de margins inline.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Espace après un titre de section qui précède une row */
+.ao3h-config-section-title + .ao3h-config-row { margin-bottom: 8px; }
+
+/*- Espace avant une row d'actions qui suit un bloc de contenu */
+.ao3h-config-block + .ao3h-config-row--end { margin-top: var(--ao3h-space-4); }
+
+/*- Réduction d'espace pour sous-options liées (ao3h-indent) */
+.ao3h-setting-item + .ao3h-indent,
+.ao3h-config-block + .ao3h-indent { margin-top: -6px; }
+
+/*- Espace avant une row qui suit une description */
+.ao3h-setting-description + .ao3h-config-row { margin-top: 6px; }
+
+/*- Espace avant un bloc qui suit une row */
+.ao3h-config-row + .ao3h-config-block,
+:has(> .ao3h-config-row:last-child) + .ao3h-config-block { margin-top: 12px; }
+
+/*- Espace au-dessus des divs nommés qui suivent des toggles/rows */
+.ao3h-config-section > div[id]:not(.ao3h-setting-item):not(:first-child),
+.ao3h-module-config-area.ao3h-expanded > div[id]:not(.ao3h-setting-item):not(:first-child) {
+  padding-top: 10px;
+}
+
+/*- Espace avant une row qui suit un setting-item ou un control */
+.ao3h-setting-item + .ao3h-config-row,
+.ao3h-setting-control + .ao3h-config-row { margin-top: var(--ao3h-space-2); }
+
+/*- Séparateur vertical fin dans une rangée d'actions */
+.ao3h-config-separator {
+  width: 1px;
+  height: 16px;
+  background: var(--ao3h-border-medium);
+  flex-shrink: 0;
+}
+
+/*- Séparateur horizontal entre sections */
+.ao3h-config-divider {
+  grid-column: 1 / -1;
+  border: none;
+  border-top: 1px solid var(--ao3h-border);
+}
+
+/*- Pas de marge sous une description en fin de conteneur */
+.ao3h-setting-description:last-child { margin-bottom: 0; }
+
+/*- Dernier item d'un config-block : pas de marge en bas */
+.ao3h-config-block > .ao3h-setting-item:last-child { margin-bottom: 0; }
+
+/*- Chip box — conteneur flex display-only pour pastilles de tags */
+.ao3h-config-chipbox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: var(--ao3h-space-2);
+  border: 1px solid var(--ao3h-border-input);
+  border-radius: var(--ao3h-radius-lg);
+  background: #fff;
+  margin-bottom: 8px;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      LABELS CHECKBOX ET RADIO
+  ─────────────────────────────────────────────────────────────
+      └─ Wrappers label réutilisables avec styles cohérents.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Groupe de checkboxes avec retour à la ligne */
+.ao3h-checkbox-group {
+  flex-wrap: wrap;
+  gap: var(--ao3h-space-3);
+}
+
+/*- Label checkbox : texte et case sur la même ligne */
+.ao3h-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ao3h-size-xs);
+  color: var(--ao3h-text-secondary);
+  cursor: pointer;
+}
+.ao3h-checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/*- Label radio : texte peut être long (retour à la ligne OK) */
+.ao3h-radio-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--ao3h-size-xs);
+  color: var(--ao3h-text-secondary);
+  cursor: pointer;
+  line-height: 1.4;
+}
+.ao3h-radio-label input[type="radio"] {
+  margin-top: 2px;  /*- Aligne le radio avec la première ligne du texte */
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      BOUTONS GÉNÉRIQUES (AO3H-BTN)
+  ─────────────────────────────────────────────────────────────
+      └─ Famille de boutons réutilisables, hauteur 28px.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-btn {
+  padding: 6px 12px;
+  border-radius: var(--ao3h-radius-sm);
+  font-size: var(--ao3h-size-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  height: 28px;
+}
+
+/*- Principal : fond rouge, texte blanc */
+.ao3h-btn-primary {
+  background: var(--ao3h-accent);
+  color: #fff;
+  border: none;
+}
+.ao3h-btn-primary:hover { background: var(--ao3h-accent-hover); }
+
+/*- Secondaire : transparent avec bordure */
+.ao3h-btn-secondary {
+  background: transparent;
+  color: var(--ao3h-text-muted);
+  border: 1px solid var(--ao3h-border-strong);
+}
+.ao3h-btn-secondary:hover {
+  background: var(--ao3h-bg-subtle);
+  border-color: #bbb;
+  color: var(--ao3h-text-primary);
+}
+
+
+/*---
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 09 — Save / Reset / Bulk actions
+  ───────────────────────────────────────────────────────────────────────
+    Cette section contrôle les boutons d'enregistrement et les actions
+    globales sur tous les modules.
+    À l'écran :
+
+      ║  │  [Reset]                    [Save]  │  ║  ← config footer (bas du module)
+      ║  └────────────────────────────────────┘  ║
+      ╠══════════════════════════════════════════╣
+      ║  Enable All   Disable All        Close   ║  ← bulk actions (bas du panneau)
+      ╚══════════════════════════════════════════╝
+
+    Cette section contrôle :
+      - le footer de config (.ao3h-config-footer)
+      - le bouton Save (.ao3h-config-save-btn)
+      - le bouton Reset (.ao3h-config-reset-btn + état de confirmation)
+      - la barre bulk actions (.ao3h-bulk-actions)
+      - les boutons Enable All / Disable All / Close
+        (.ao3h-panel-action-btn)
+
+    ⚠️ Cette section NE contrôle PAS :
+      - la barre de recherche globale (→ SECTION 03)
+      - les boutons inline des rangées (→ SECTION 08)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      FOOTER DE CONFIG (Save / Reset)
+  ─────────────────────────────────────────────────────────────
+      └─ La barre en bas de chaque zone de config ouverte.
+         Reset à gauche, Save à droite.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-config-footer {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ao3h-border-medium);  /*- Ligne de séparation */
+  display: flex;
+  justify-content: flex-end;  /*- Boutons à droite par défaut */
+  align-items: center;
+  gap: var(--ao3h-space-2);
+}
+
+/*- Bouton "Save Settings" — fond rouge, texte blanc */
+.ao3h-config-save-btn {
+  background: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+  color: #900;
+  border: 1px solid #bbb;
+  border-bottom-color: #aaa;
+  border-radius: 0.25em;
+  padding: 6px 12px;
+  font-size: var(--ao3h-size-xs);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  height: 28px;
+  box-sizing: border-box;
+}
+.ao3h-config-save-btn:hover {
+  color: #900;
+  border-top-color: #999;
+  border-left-color: #999;
+  box-shadow: inset 2px 2px 2px #bbb;
+}
+
+/*- Bouton "Reset" — dégradé gris, texte rouge au survol */
+.ao3h-config-reset-btn {
+  margin-right: auto;         /*- Pousse Save vers la droite */
+  background: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+  color: #444;
+  border: 1px solid #bbb;
+  border-bottom-color: #aaa;
+  border-radius: 0.25em;
+  padding: 6px 12px;
+  font-size: var(--ao3h-size-xs);
+  font-weight: 400;
+  cursor: pointer;
+  box-shadow: none;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  height: 28px;
+  box-sizing: border-box;
+}
+.ao3h-config-reset-btn:hover {
+  color: #900;
+  border-top-color: #999;
+  border-left-color: #999;
+  box-shadow: inset 2px 2px 2px #bbb;
+}
+
+/*- État de confirmation (1er clic = "Tu es sûr ?", 2e clic = reset) */
+.ao3h-config-reset-btn.ao3h-reset-confirming {
+  background: #fff3cd;
+  border-color: #e6a817;
+  color: #7d5a00;
+  font-weight: 600;
+  animation: ao3h-reset-pulse 0.4s ease;
+}
+.ao3h-config-reset-btn.ao3h-reset-confirming:hover {
+  background: #ffe69c;
+  border-color: #c87800;
+  color: #5a3e00;
+}
+
+@keyframes ao3h-reset-pulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      BARRE BULK ACTIONS (bas du panneau)
+  ─────────────────────────────────────────────────────────────
+      └─ La barre grise tout en bas du panneau.
+         Contient "Enable All", "Disable All" et "Close".
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-panel-box .ao3h-bulk-actions {
+  order: 5;
+  position: relative;
+  bottom: auto;
+  left: 0;
+  right: 0;
+  z-index: 100;
+
+  background: var(--ao3h-bg-surface);              /*- 🎨 Fond gris clair */
+  border-top: 1px solid var(--ao3h-border);
+  padding: var(--ao3h-space-2) var(--ao3h-space-6);
+
+  display: flex;
+  gap: var(--ao3h-space-3);
+  align-items: center;
+  justify-content: flex-end;  /*- Boutons à droite */
+
+  font-size: var(--ao3h-size-xs);
+  border-radius: 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/*- Texte en gras dans la note box de la barre bulk */
+.ao3h-bulk-actions .note-box strong {
+  color: var(--ao3h-text-primary) !important;
+}
+
+/*- Conteneur des boutons (flex avec espace entre eux) */
+.ao3h-bulk-actions-buttons {
+  display: none;
+  gap: 6px;
+  align-items: center;
+}
+
+/*- Boutons universels du panneau (Enable All, Disable All, Close) */
+.ao3h-panel-box .ao3h-panel-action-btn {
+  padding: 6px 12px;
+  background: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+  border: 1px solid #bbb;
+  border-bottom-color: #aaa;
+  border-radius: 0.25em;
+  font-size: var(--ao3h-size-xs);
+  font-weight: 400;
+  color: #444;
+  box-shadow: none;
+  cursor: pointer;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  height: 28px;
+  box-sizing: border-box;
+}
+.ao3h-panel-box .ao3h-panel-action-btn:hover {
+  color: #900;
+  border-top-color: #999;
+  border-left-color: #999;
+  box-shadow: inset 2px 2px 2px #bbb;
+}
+
+
+/*----
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 10 — Composants spéciaux
+  ───────────────────────────────────────────────────────────────────────
+    Composants réutilisables dans plusieurs modules.
+    À l'écran :
+
+      ║  ┌──────────────────────────────────────────────┐  ║
+      ║  │  [Menu ▾]  [+ Add]                           │  ║  picker row
+      ║  │  [English ×]  [Français ×]  [中文 ×]         │  ║  chip container
+      ║  │                                              │  ║
+      ║  │  ┌────────────────────────────────────────┐  │  ║
+      ║  │  │  Titre de l'œuvre     Auteur · 2024    │  │  ║  module list entry
+      ║  │  └────────────────────────────────────────┘  │  ║
+      ║  └──────────────────────────────────────────────┘  ║
+
+      + note-box dans la barre bulk actions (bas du panneau)
+
+    Cette section contrôle :
+      - la note box et le compteur de tab (.ao3h-tab-count)
+      - le picker row (select + bouton Add)
+      - les chips rouge (.ao3h-chip) et neutre (.ao3h-chip--neutral)
+      - le chip container (zone qui contient les chips)
+      - les tag chips éditables avec boutons cachés (.ao3h-tag-chip)
+      - la module list (liste scrollable d'items)
+      - le footer de la module list
+
+    ⚠️ Cette section NE contrôle PAS :
+      - les boutons génériques (→ SECTION 08)
+      - les inputs et selects de base (→ SECTION 08)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      NOTE BOX ET COMPTEUR DE TAB
+  ─────────────────────────────────────────────────────────────
+      └─ Deux éléments qui affichent des infos textuelles légères.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Cache la note box héritage AO3 dans le tab container */
+#ao3h-tab-container > .note-box {
+  display: none !important;
+}
+
+/*- Compteur de modules en haut de chaque tab (ex: "3 modules") */
+.ao3h-tab-count {
+  text-align: right;
+  font-size: var(--ao3h-size-xxs);
+  color: var(--ao3h-text-hint);
+  font-weight: 400;
+  padding: 0 4px;
+  margin-top: -10px;
+  margin-bottom: 8px;
+}
+
+/*- Note box dans la barre bulk actions — override des styles AO3 */
+.ao3h-bulk-actions .note-box {
+  display: block !important;
+  margin: 0 !important;
+  font-size: var(--ao3h-size-xs) !important;
+  padding: 6px 10px !important;
+  background: transparent !important;
+  border: none !important;
+  color: var(--ao3h-text-muted) !important;
+  border-radius: 0 !important;
+  flex: 1 !important;
+  margin-right: 16px !important;
+  font-weight: 500 !important;
+}
+
+.ao3h-footer-status {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ao3h-footer-unsaved {
+  color: #900;
+  font-weight: 600;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      PICKER ROW (select + bouton Add)
+  ─────────────────────────────────────────────────────────────
+      └─ Pattern pour ajouter des éléments à une liste.
+         Le select prend tout l'espace, le bouton ne rétrécit pas.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-picker-row {
+  display: flex;
+  gap: var(--ao3h-space-2);
+  align-items: center;
+}
+.ao3h-picker-row .ao3h-select { flex: 1; }
+.ao3h-picker-row .ao3h-btn   { flex-shrink: 0; }
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      CHIP CONTAINER (zone des chips)
+  ─────────────────────────────────────────────────────────────
+      └─ La zone flex-wrap qui contient les chips.
+         Affiche un texte gris si elle est vide.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--ao3h-space-2);
+  min-height: 28px;
+  padding: 6px;
+  background: transparent;
+  border-radius: var(--ao3h-radius-sm);
+  border: none;
+  align-items: center;
+}
+
+/*- Pas de marge quand le container suit directement le picker row */
+.ao3h-picker-row + .ao3h-chip-container {
+  margin-top: 0;
+  margin-left: 4px;
+}
+
+/*- Texte affiché si le container est vide (lu depuis data-empty-text) */
+.ao3h-chip-container:empty::before {
+  content: attr(data-empty-text);
+  color: var(--ao3h-text-hint);
+  font-style: italic;
+  font-size: var(--ao3h-size-xxs);
+}
+
+/*- Texte par défaut si data-empty-text est absent */
+.ao3h-chip-container:empty:not([data-empty-text])::before {
+  content: "No items selected";
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      CHIP ROUGE (tag sélectionné)
+  ─────────────────────────────────────────────────────────────
+      └─ Pastille rouge avec un × pour supprimer.
+         Ex: [English ×]  [Français ×]
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px 2px 8px;
+  background: var(--ao3h-accent);
+  color: #fff;
+  border-radius: 12px;
+  font-size: var(--ao3h-size-xxs);
+}
+
+.ao3h-chip button {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  padding: 0;
+  font-size: var(--ao3h-size-xs);
+  line-height: 1;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ao3h-chip button:hover {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
+/*- Variante neutre (grise) — presets, keywords, labels */
+.ao3h-chip--neutral {
+  background: #f0f0f0;
+  color: var(--ao3h-text-secondary);
+  border: 1px solid var(--ao3h-border-medium);
+}
+.ao3h-chip--neutral button { color: #aaa; }
+.ao3h-chip--neutral button:hover {
+  background: rgba(0,0,0,0.08);
+  color: var(--ao3h-text-primary);
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      TAG CHIPS ÉDITABLES
+  ─────────────────────────────────────────────────────────────
+      └─ Tags dans les listes éditables (ex: HideByTags).
+         Fond gris neutre. Les boutons (groupe, supprimer)
+         sont cachés et apparaissent au survol.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ao3h-tag-chips-card {
+  border: 1px solid #e6e8ee;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fff;
+}
+.ao3h-tag-chips-card--empty { display: none; }
+
+.ao3h-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px 4px 12px;
+  background: #fff;
+  border: 1px solid #e6e8ee;
+  border-radius: 10px;
+  font-size: var(--ao3h-size-xxs);
+  white-space: nowrap;
+  max-width: 160px;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.ao3h-tag-chip > .ao3h-tag-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.ao3h-tag-chip:hover {
+  background: #fff5f5;
+  border-color: #900;
+}
+
+/*- Boutons cachés, révélés au survol */
+.ao3h-tag-chip button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: var(--ao3h-size-xs);
+  line-height: 1;
+  width: 0;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ao3h-radius-sm);
+  flex-shrink: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: width 0.15s, opacity 0.12s;
+  color: var(--ao3h-text-faint);
+}
+.ao3h-tag-chip:hover button { width: 16px; opacity: 1; }
+.ao3h-tag-chip button:hover {
+  background: rgba(0,0,0,0.08);
+  color: var(--ao3h-text-primary);
+}
+
+/*- Bouton supprimer : toujours visible, discret au repos */
+.ao3h-tag-chip button.ao3h-tag-chip-remove {
+  background: transparent;
+  color: #900;
+  border: none;
+  border-radius: 3px;
+  width: 16px;
+  opacity: 0.45;
+}
+.ao3h-tag-chip button.ao3h-tag-chip-remove:hover {
+  background: transparent;
+  opacity: 1;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      MODULE LIST (liste scrollable d'items)
+  ─────────────────────────────────────────────────────────────
+      └─ Pattern réutilisable : liste d'œuvres, tags ou items
+         avec scrollbar fine.
+         Utilisé par : skipWorks, readingTracker, laterShelf, etc.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-module-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ao3h-space-1);
+  margin-top: var(--ao3h-space-2);
+  max-height: 215px;          /*- ≈ 5 items — surcharger par module si besoin */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+}
+.ao3h-module-list::-webkit-scrollbar       { width: 4px; }
+.ao3h-module-list::-webkit-scrollbar-track { background: transparent; }
+.ao3h-module-list::-webkit-scrollbar-thumb { background: #ddd; border-radius: 1px; }
+.ao3h-module-list::-webkit-scrollbar-thumb:hover { background: #bbb; }
+
+.ao3h-module-list-entry {
+  display: flex;
+  align-items: center;
+  gap: var(--ao3h-space-2);
+  padding: 6px 8px;
+  background: #fff;
+  border: 1px solid var(--ao3h-border);
+  border-radius: 5px;
+  font-size: var(--ao3h-size-xs);
+  position: relative;
+}
+.ao3h-module-list-entry:hover {
+  border-color: var(--ao3h-border-strong);
+  background: var(--ao3h-bg-surface);
+}
+
+.ao3h-module-list-entry-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ao3h-module-list-entry-title a {
+  color: var(--ao3h-accent);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: var(--ao3h-size-sm);
+}
+.ao3h-module-list-entry-title a:hover { text-decoration: underline; }
+
+.ao3h-module-list-entry-meta {
+  color: var(--ao3h-text-hint);
+  font-size: var(--ao3h-size-xs);
+  margin-left: 4px;
+}
+
+.ao3h-module-list-entry-badge {
+  background: #f0f0f0;
+  color: var(--ao3h-text-secondary);
+  font-size: var(--ao3h-size-xs);
+  padding: 4px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+  flex-shrink: 1;
+  transition: max-width 0.2s ease, white-space 0.1s;
+}
+
+.ao3h-module-list-entry-actions {
+  display: flex;
+  gap: var(--ao3h-space-1);
+  flex-shrink: 0;
+}
+
+.ao3h-module-list-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: -2px;
+}
+
+.ao3h-module-list-count {
+  font-size: var(--ao3h-size-xs);
+  color: var(--ao3h-text-hint);
+  margin-top: -6px;
+}
+
+
+/*!
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 11 — États spéciaux
+  ───────────────────────────────────────────────────────────────────────
+    Classes modificatrices (BEM) et tooltips d'aide.
+
+    Les modificateurs ne changent PAS le comportement —
+    ils ajustent seulement l'apparence d'une classe existante.
+    Usage : class="ao3h-setting-label ao3h-setting-label--muted"
+
+    À l'écran (tooltip) :
+
+      ║  Titre de l'option  (?)           ║  ← .ao3h-help-btn
+      ║  ┌─────────────────────────────┐  ║
+      ║  │  Explication courte du      │  ║  ← .ao3h-help-tooltip (flottant)
+      ║  │  réglage en question.       │  ║
+      ║  └─────────────────────────────┘  ║
+
+    Cette section contrôle :
+      - les variantes de .ao3h-setting-label (--small, --large, --muted…)
+      - les variantes de .ao3h-config-section-title (--accent, --compact…)
+      - les variantes de .ao3h-setting-item (--indent, --compact)
+      - les variantes de .ao3h-setting-description (--warning, --info, --success, --danger)
+      - les variantes de .ao3h-setting-control (--column)
+      - les variantes de .ao3h-setting-checkbox (--large)
+      - le bouton (?) et le tooltip flottant
+
+    ⚠️ Cette section NE contrôle PAS :
+      - les classes de base (→ SECTIONS 06–10)
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      MODIFICATEURS — ao3h-setting-label
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-setting-label--small  { font-size: var(--ao3h-size-xs); }
+.ao3h-setting-label--large  { font-size: var(--ao3h-size-sm); }
+.ao3h-setting-label--normal { font-weight: 400; }
+.ao3h-setting-label--muted  { color: var(--ao3h-text-hint); font-weight: 400; }
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      MODIFICATEURS — ao3h-config-section-title
+  ───────────────────────────────────────────────────────────── 
+*/
+
+.ao3h-config-section-title--accent    { color: var(--ao3h-accent); }
+.ao3h-config-section-title--no-border { border-top: none; }
+.ao3h-config-section-title--compact   { padding-bottom: 1px; }
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      MODIFICATEURS — ao3h-setting-item
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Indentation visuelle : sous-option qui dépend d'un réglage parent */
+.ao3h-setting-item--indent {
+  padding-left: 14px;
+  border-left: 2px solid var(--ao3h-border);
+  margin-left: 2px;
+}
+
+.ao3h-setting-item--compact { margin-bottom: 4px; }
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      MODIFICATEURS — ao3h-setting-description (bandes colorées)
+  ─────────────────────────────────────────────────────────────
+      └─ Chaque variante ajoute une bande de couleur avec
+         une bordure gauche et un fond teinté.
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- ⚠️ Avertissement — fond ambré */
+.ao3h-setting-description--warning {
+  color: #7d5a00;
+  background: #fff8e1;
+  border-left: 3px solid #f5a623;
+  padding: var(--ao3h-space-1) var(--ao3h-space-2);
+  border-radius: 0 4px 4px 0;
+  margin-top: 4px;
+}
+
+/*- ℹ️ Information — fond bleu */
+.ao3h-setting-description--info {
+  color: #1565c0;
+  background: #e3f2fd;
+  border-left: 3px solid #2196f3;
+  padding: var(--ao3h-space-1) var(--ao3h-space-2);
+  border-radius: 0 4px 4px 0;
+  margin-top: 4px;
+}
+
+/*- ✅ Succès — fond vert */
+.ao3h-setting-description--success {
+  color: #2e7d32;
+  background: #e8f5e9;
+  border-left: 3px solid #4caf50;
+  padding: var(--ao3h-space-1) var(--ao3h-space-2);
+  border-radius: 0 4px 4px 0;
+  margin-top: 4px;
+}
+
+/*- 🚫 Danger — fond rouge */
+.ao3h-setting-description--danger {
+  color: #c62828;
+  background: #fff5f5;
+  border-left: 3px solid #e57373;
+  padding: var(--ao3h-space-1) var(--ao3h-space-2);
+  border-radius: 0 4px 4px 0;
+  margin-top: 4px;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      MODIFICATEURS — ao3h-setting-control et ao3h-setting-checkbox
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Empile les éléments en colonne au lieu d'une ligne */
+.ao3h-setting-control--column {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/*- Checkbox légèrement plus grande */
+.ao3h-setting-checkbox--large {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+
+/*&&& 
+  ─────────────────────────────────────────────────────────────
+      TOOLTIPS D'AIDE (?)
+  ─────────────────────────────────────────────────────────────
+      └─ Petit bouton (?) à côté d'un label.
+         Au clic, un tooltip flottant s'affiche avec
+         l'explication du réglage.
+         Géré par : lib/ui/help-tooltips.js
+  ───────────────────────────────────────────────────────────── 
+*/
+
+/*- Bouton circulaire (?) */
+.ao3h-help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--ao3h-border-strong);
+  background: var(--ao3h-bg-subtle);
+  color: #aaa;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 5px;
+  vertical-align: text-top;
+  position: relative;
+  top: -2px;
+  flex-shrink: 0;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+/*- Survol : devient rouge */
+.ao3h-help-btn:hover {
+  background: #fff0f0;
+  border-color: var(--ao3h-accent);
+  color: var(--ao3h-accent);
+}
+
+/*- Tooltip flottant (positionné par JS) */
+.ao3h-help-tooltip {
+  position: fixed;
+  z-index: 1000001;
+  background: #fff;
+  border: 1px solid var(--ao3h-border-medium);
+  border-radius: var(--ao3h-radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 8px 10px;
+  max-width: 220px;
+  font-size: var(--ao3h-size-xxs);
+  color: var(--ao3h-text-secondary);
+  line-height: 1.5;
+  transition: opacity 0.4s ease;
+}
+
+/*- Fade-out animé avant la fermeture */
+.ao3h-help-tooltip--closing {
+  opacity: 0;
+}
+
+/*- Masque la description inline quand elle est déplacée dans un tooltip */
+.ao3h-setting-item[data-help-wired] .ao3h-setting-description,
+.ao3h-setting-label[data-help-wired] + .ao3h-setting-description {
+  display: none;
+}
+
+/*- Restaure la marge de l'item quand sa description est masquée */
+.ao3h-setting-item[data-help-wired]:has(+ .ao3h-setting-description) {
+  margin-bottom: unset;
+}
+
+
+/*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  PREVIEW PARITY OVERRIDES
+  The preview test intentionally tightens the panel's visual language.
+  Keep the real panel aligned with that rendering so both surfaces match.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*/
+
+.ao3h-panel-box {
+  font-family: 'Lucida Grande', 'Lucida Sans Unicode', Verdana, Helvetica, sans-serif;
+}
+
+.ao3h-panel-header {
+  background: #900 url("https://archiveofourown.org/images/skins/textures/tiles/red-ao3.png");
+  box-shadow: inset 0 -6px 10px rgba(0, 0, 0, 0.35),
+              1px 1px 3px -1px rgba(0, 0, 0, 0.25),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.85);
+}
+
+.ao3h-panel-title {
+  font-family: Georgia, serif;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.ao3h-panel-close {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.75);
+  background: transparent;
+  padding: 4px 8px;
+}
+
+.ao3h-panel-close:hover {
+  color: rgba(255, 255, 255, 1);
+  background: transparent;
+}
+
+.ao3h-panel-tabs-row {
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.ao3h-tab-btn {
+  border-radius: 4px;
+  font-size: 0.8125rem;
+}
+
+.ao3h-tab-btn.ao3h-tab-active {
+  color: #900;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid #900;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.ao3h-global-search-wrapper {
+  padding: 8px 20px;
+  background: #fff;
+}
+
+.ao3h-bulk-actions-buttons {
+  display: none !important;
+}
+
+.ao3h-module-row {
+  padding: 8px 10px;
+}
+
+.ao3h-module-row:hover {
+  border-color: transparent;
+}
+
+.ao3h-module-row:hover .ao3h-module-name {
+  color: #900;
+}
+
+.ao3h-module-name {
+  font-family: Georgia, serif;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.ao3h-module-desc {
+  color: #767676;
+  font-size: 0.75rem;
+  padding-left: 8px;
+}
+
+.ao3h-tag-chip {
+  background: #fff;
+  border: 1px solid #e6e8ee;
+  border-radius: 10px;
+  color: #555;
+}
+
+.ao3h-tag-chip:hover {
+  background: #fff5f5;
+  border-color: #900;
+}
+
+.ao3h-panel-box input[type="checkbox"],
+.ao3h-panel-box input[type="radio"] {
+  accent-color: #900;
+}
+
+.ao3h-setting-group {
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.ao3h-config-input,
+.ao3h-inline-btn {
+  border-radius: 3px;
+}
+
+.ao3h-inline-btn:not(.ao3h-inline-btn--red):not(.ao3h-inline-btn--danger) {
+  background-image: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+  border: 1px solid #bbb;
+  border-bottom-color: #aaa;
+  color: #444;
+  box-shadow: none;
+}
+
+.ao3h-inline-btn.ao3h-inline-btn--green {
+  background-image: linear-gradient(#f1f8e9 2%, #c8e6c9 95%, #a5d6a7 100%);
+  color: #2e7d32;
+}
+
+.ao3h-config-action-btn {
+  font-weight: normal;
+}
+
+.ao3h-inline-btn:not(.ao3h-inline-btn--red):not(.ao3h-inline-btn--danger):hover {
+  border-top-color: #999;
+  border-left-color: #999;
+  box-shadow: inset 2px 2px 2px #bbb;
+}
+
+.ao3h-footer-close,
+.ao3h-config-save-btn,
+.ao3h-config-reset-btn {
+  background: #eee;
+  background-image: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+  border: 1px solid #bbb;
+  border-bottom-color: #aaa;
+  border-radius: 0.25em;
+  color: #444;
+  box-shadow: none;
+}
+
+.ao3h-config-save-btn {
+  color: #900;
+  font-weight: 600;
+}
+
+.ao3h-footer-close:hover,
+.ao3h-config-save-btn:hover,
+.ao3h-config-reset-btn:hover {
+  color: #900;
+  border-top-color: #999;
+  border-left-color: #999;
+  box-shadow: inset 2px 2px 2px #bbb;
+}
+
+.ao3h-footer-close:hover {
+  color: #900;
+}
+
+
+/*?
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 12 — Petit écran
+  ───────────────────────────────────────────────────────────────────────
+    Adaptations pour les écrans étroits (< 700px).
+    La grille 2 colonnes des zones de config passe en 1 colonne.
+
+    ⚠️ AO3 est majoritairement utilisé sur desktop. Cette section
+       couvre les cas limites (fenêtre réduite, tablette portrait).
+
+    ⚠️ Navigateurs sans subgrid : la grille héritée des ao3h-config-section
+       et ao3h-setting-group récupère automatiquement le nouveau 1fr
+       du parent — aucune règle supplémentaire nécessaire.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+@media (max-width: 700px) {
+
+  /*- Grille config : 1 colonne au lieu de 2 */
+  .ao3h-module-config-area.ao3h-expanded {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  /*- div[id] auto-grid dans la config : 1 colonne */
+  :where(.ao3h-module-config-area.ao3h-expanded > div[id]:not(.ao3h-setting-item),
+         .ao3h-config-section > div[id]:not(.ao3h-setting-item)):has(> .ao3h-setting-item) {
+    grid-template-columns: 1fr;
+  }
+
+  /*- Radios/checkboxes 2 colonnes : 1 colonne */
+  .ao3h-setting-control.ao3h-radios-cols {
+    grid-template-columns: 1fr;
+  }
+
+}

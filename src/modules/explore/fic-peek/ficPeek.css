@@ -1,0 +1,201 @@
+/*: ═══════════════════════════════════════════════════════════════
+      FIC PEEK — Injected UI Styles
+        Contrôle l'apparence du bouton de preview et de la boîte
+        de contenu injectés dans les blurbs (listings).
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ──────────────────────────────────────────────────────────────
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence.
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ──────────────────────────────────────────────────────────────
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🔲 Les coins arrondis du bouton
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-fp-btn-radius
+
+        ├─  📐 La hauteur max de la boîte de preview
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-fp-box-max-height
+
+        ├─  🎨 La couleur du bouton (fond, bordure)
+        │     → SECTION 02 — BOUTON PREVIEW
+
+        ├─  👁 La boîte de preview (taille, fond, bordure)
+        │     → SECTION 03 — BOÎTE DE PREVIEW
+
+        ├─  🌫 L'effet de flou spoiler
+        │     → SECTION 04 — MODE SPOILER
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Conteneur des contrôles                   */
+/*#        |                                                 */
+/*####     ├─  02. Bouton preview                            */
+/*#        |                                                 */
+/*=        ├─  03. Boîte de preview                          */
+/*#        |                                                 */
+/*==       ├─  04. Mode spoiler                              */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    Modifie ici les valeurs globales sans chercher dans tout le fichier.
+    Tu peux changer :
+      - L'arrondi du bouton preview et du bouton reveal spoiler
+      - La hauteur maximale de la boîte de preview avant scroll
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+:root {
+  /*- 🔲 Arrondi du bouton preview et du bouton reveal */
+  --ao3h-fp-btn-radius: 999px;
+
+  /*- 📐 Hauteur maximale de la boîte de preview avant scroll */
+  --ao3h-fp-box-max-height: 8.5em;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — CONTENEUR DES CONTRÔLES
+  ───────────────────────────────────────────────────────────────────────
+    Le wrapper flex qui contient le bouton preview, aligné à droite
+    sous le titre du blurb.
+    ⚠️ Ce div est injecté par JS — ne pas modifier le nom de classe.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+html.ao3h-fic-sampler-enabled .ao3h-fic-preview-controls {
+  margin-top: 0.25em;
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+/*####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — BOUTON PREVIEW
+  ───────────────────────────────────────────────────────────────────────
+    Le bouton "Preview" / "Hide preview" affiché sur chaque blurb.
+    ⚠️ Les classes .is-open et .is-loading sont ajoutées/retirées par JS.
+    ⚠️ La classe .ao3h-fic-preview-button est utilisée comme clé JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+/*+ ─────────────────────────────────────────────────────────────
+    État de base
+  ────────────────────────────────────────────────────────────── */
+
+html.ao3h-fic-sampler-enabled .ao3h-fic-preview-button {
+  font-size: 0.8em;
+  border-radius: var(--ao3h-fp-btn-radius);
+  padding: 0.15em 0.9em;
+  border: 1px solid rgba(107, 114, 128, 0.7);
+  background: rgba(243, 244, 246, 0.7);
+  color: #111827;
+  cursor: pointer;
+}
+
+/*+ ─────────────────────────────────────────────────────────────
+    État ouvert (.is-open)
+  ────────────────────────────────────────────────────────────── */
+
+html.ao3h-fic-sampler-enabled .ao3h-fic-preview-button.is-open {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(37, 99, 235, 0.8);
+  font-weight: 600;
+}
+
+/*+ ─────────────────────────────────────────────────────────────
+    État chargement (.is-loading)
+  ────────────────────────────────────────────────────────────── */
+
+html.ao3h-fic-sampler-enabled .ao3h-fic-preview-button.is-loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — BOÎTE DE PREVIEW
+  ───────────────────────────────────────────────────────────────────────
+    Le conteneur qui affiche l'extrait de texte sous le blurb.
+    ⚠️ L'attribut [hidden] est posé/retiré par JS (show/hide).
+    ⚠️ Le mode hover (.hover-mode sur html) positionne la boîte en absolu.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+html.ao3h-fic-sampler-enabled .ao3h-fic-preview-box {
+  margin-top: 0.35em;
+  padding: 0.6em 0.75em;
+  border-radius: 0.5em;
+  border: 1px solid rgba(156, 163, 175, 0.6);
+  background: rgba(249, 250, 251, 0.95);
+  font-size: 0.9em;
+  max-height: var(--ao3h-fp-box-max-height);
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+html.ao3h-fic-sampler-enabled .ao3h-fic-preview-box[hidden] {
+  /*- ⚠️ Masquage forcé — l'attribut [hidden] est posé par JS */
+  display: none !important;
+}
+
+html.ao3h-fic-sampler-enabled.hover-mode .ao3h-fic-preview-box {
+  /*- ⚠️ Hover mode — positionnement absolu, classe .hover-mode gérée par JS */
+  position: absolute;
+  z-index: 9999;
+  max-width: 32em;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — MODE SPOILER
+  ───────────────────────────────────────────────────────────────────────
+    Flou sur le texte et bouton "Reveal spoilers" quand
+    spoilerFreeMode est activé dans les settings.
+    ⚠️ La classe .revealed est ajoutée par JS au clic sur le bouton reveal.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+html.ao3h-fic-sampler-enabled .ao3h-fic-preview-spoiler-blur {
+  filter: blur(4px);
+  user-select: none;
+  transition: filter 0.25s ease;
+}
+
+html.ao3h-fic-sampler-enabled .ao3h-fic-preview-spoiler-blur.revealed {
+  filter: none;
+  user-select: auto;
+}
+
+html.ao3h-fic-sampler-enabled .ao3h-fic-preview-spoiler-reveal {
+  display: block;
+  margin: 0.4em auto 0;
+  font-size: 0.8em;
+  padding: 0.2em 0.8em;
+  border-radius: var(--ao3h-fp-btn-radius);
+  border: 1px solid rgba(180, 83, 9, 0.7);
+  background: rgba(254, 243, 199, 0.9);
+  color: #92400e;
+  cursor: pointer;
+}

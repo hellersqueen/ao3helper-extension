@@ -1,0 +1,370 @@
+/*: ═══════════════════════════════════════════════════════════════
+      NOTIFICATION CENTER — Injected Styles
+        Contrôle l'apparence du badge, du panneau flottant
+        et des éléments injectés par le module Notification Center.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ────────────────────────────────────────────────────────────── 
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ────────────────────────────────────────────────────────────── 
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🔔 Le badge de notification dans le header
+        │     → SECTION 01 — BADGE
+        │     → variable : --ao3h-nc-badge-bg / --ao3h-nc-badge-active-bg
+
+        ├─  📋 Le panneau flottant (taille, position, ombre)
+        │     → SECTION 02 — PANNEAU FLOTTANT
+
+        ├─  🔧 La barre de filtres/tri
+        │     → SECTION 03 — TOOLBAR
+
+        ├─  📄 Les items de la liste (vu, terminé, titre, méta)
+        │     → SECTION 04 — LISTE DES NOTIFICATIONS
+
+        ├─  🎉 L'animation confetti (œuvre terminée)
+        │     → SECTION 05 — CONFETTI
+        │     → variable : --ao3h-nc-fin-badge-bg
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Badge                                     */
+/*#        |                                                 */
+/*####     ├─  02. Panneau flottant                          */
+/*#        |                                                 */
+/*=        ├─  03. Toolbar                                   */
+/*#        |                                                 */
+/*==       ├─  04. Liste des notifications                   */
+/*#        |                                                 */
+/*===      ├─  05. Confetti                                  */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##    
+  ═══════════════════════════════════════════════════════════════════════   
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - La couleur du badge (normal et actif)
+      - Les couleurs de bordure et de fond du panneau
+      - La couleur des items terminés / du badge "Terminé"
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🔔 Fond du badge (état normal — gris) */
+  --ao3h-nc-badge-bg: #6b7280;
+
+  /*- 🔔 Fond du badge (état actif — rouge) */
+  --ao3h-nc-badge-active-bg: #dc2626;
+
+  /*- 🔲 Bordure du panneau et des champs */
+  --ao3h-nc-border: #d1d5db;
+
+  /*- 🔲 Séparateur interne (header/toolbar) */
+  --ao3h-nc-divider: #e5e7eb;
+
+  /*- 🎨 Fond du header et de la toolbar */
+  --ao3h-nc-panel-bg: #f9fafb;
+
+  /*- 🎨 Fond des en-têtes de groupe et bordure des items */
+  --ao3h-nc-group-bg: #f3f4f6;
+
+  /*- 📝 Couleur des titres d'items */
+  --ao3h-nc-title-color: #1f2937;
+
+  /*- 📝 Couleur des métadonnées (texte secondaire) */
+  --ao3h-nc-meta-color: #9ca3af;
+
+  /*- ✅ Fond d'un item "Terminé" */
+  --ao3h-nc-finished-bg: #fef9c3;
+
+  /*- ✅ Fond du badge "Terminé" (amber) */
+  --ao3h-nc-fin-badge-bg: #f59e0b;
+}
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — BADGE
+  ───────────────────────────────────────────────────────────────────────
+    Badge affiché dans le header AO3, à droite du lien utilisateur.
+    Indique le nombre de nouvelles notifications.
+    À l'écran :
+      ┌─────────────────────────────────┐
+      │  username  [🔔 3]               │  ← badge actif (rouge)
+      │  username  [🔔]                 │  ← badge inactif (gris)
+      └─────────────────────────────────┘
+    ⚠️ La classe .ao3h-nc-badge-active est toggleée par le JS
+       selon la présence de notifications non lues.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-nc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 2px 8px;
+  font-size: .8em;
+  font-weight: 600;
+  border-radius: 999px;
+  text-decoration: none;
+  background: var(--ao3h-nc-badge-bg);
+  color: #fff;
+  cursor: pointer;
+}
+
+.ao3h-nc-badge-active {
+  background: var(--ao3h-nc-badge-active-bg);
+}
+
+.ao3h-nc-badge:hover {
+  opacity: .85;
+  text-decoration: none;
+  color: #fff;
+}
+
+
+/*####   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — PANNEAU FLOTTANT
+  ───────────────────────────────────────────────────────────────────────
+    Panneau qui s'ouvre au clic sur le badge.
+    Contient le header (titre + bouton fermer) et la liste.
+    À l'écran :
+      ┌────────────────────────────────────────┐
+      │  Notifications               [✕]       │
+      │  ─────────────────────────────────── │
+      │  [Filtrer ▾] [Tout marquer lu]        │
+      │  ─────────────────────────────────── │
+      │  ... liste des notifications ...      │
+      └────────────────────────────────────────┘
+    ⚠️ z-index: 99999 — doit rester au-dessus des éléments AO3.
+    ⚠️ #ao3h-nc-close est utilisé par le JS pour fermer le panneau.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-nc-panel {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  width: 360px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--ao3h-nc-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .15);
+  z-index: 99999;
+  font-size: .88em;
+  overflow: hidden;
+}
+
+.ao3h-nc-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--ao3h-nc-panel-bg);
+  border-bottom: 1px solid var(--ao3h-nc-divider);
+}
+
+#ao3h-nc-close {
+  border: none;
+  background: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0 4px;
+  color: var(--ao3h-nc-badge-bg);
+}
+
+
+/*=   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — TOOLBAR
+  ───────────────────────────────────────────────────────────────────────
+    Barre de filtres et d'actions affichée sous le header du panneau.
+    À l'écran :
+      ┌────────────────────────────────────────┐
+      │  [Type ▾] [Tout marquer lu] ☑ Non lus │
+      └────────────────────────────────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-nc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--ao3h-nc-divider);
+  background: var(--ao3h-nc-panel-bg);
+}
+
+.ao3h-nc-toolbar select,
+.ao3h-nc-toolbar button {
+  font-size: .8em;
+  padding: 2px 6px;
+  border: 1px solid var(--ao3h-nc-border);
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.ao3h-nc-toolbar label {
+  font-size: .8em;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+
+/*==   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — LISTE DES NOTIFICATIONS
+  ───────────────────────────────────────────────────────────────────────
+    Liste scrollable des notifications avec groupes, états et actions.
+    À l'écran :
+      ┌────────────────────────────────────────┐
+      │  AUJOURD'HUI                           │  ← group-hdr
+      │  Titre de la fic       [Lu] [✓]        │  ← item normal
+      │  Titre terminée 🏅     [Lu] [✓]        │  ← item finished (jaune)
+      │  Titre déjà vu         [Lu]            │  ← item seen (opacité)
+      └────────────────────────────────────────┘
+    ⚠️ #ao3h-nc-list est utilisé par le JS pour vider/rerendre la liste.
+    ⚠️ Les classes .ao3h-nc-seen et .ao3h-nc-finished sont
+       togglées dynamiquement par le JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+#ao3h-nc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ao3h-nc-group-hdr {
+  padding: 4px 10px;
+  background: var(--ao3h-nc-group-bg);
+  font-weight: 600;
+  font-size: .78em;
+  color: var(--ao3h-nc-badge-bg);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.ao3h-nc-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--ao3h-nc-group-bg);
+}
+
+/*- Item déjà vu : légèrement transparent */
+.ao3h-nc-item.ao3h-nc-seen {
+  opacity: .55;
+}
+
+/*- Item d'une œuvre terminée : fond jaune pâle */
+.ao3h-nc-item.ao3h-nc-finished {
+  background: var(--ao3h-nc-finished-bg);
+}
+
+.ao3h-nc-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  color: var(--ao3h-nc-title-color);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ao3h-nc-meta {
+  width: 100%;
+  font-size: .78em;
+  color: var(--ao3h-nc-meta-color);
+}
+
+/*- Badge "Terminé" affiché sur les items d'œuvres terminées */
+.ao3h-nc-fin-badge {
+  font-size: .75em;
+  background: var(--ao3h-nc-fin-badge-bg);
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+/*- Bouton "Marquer comme lu" sur chaque item */
+.ao3h-nc-seen-btn {
+  font-size: .75em;
+  padding: 1px 6px;
+  border: 1px solid var(--ao3h-nc-border);
+  border-radius: 4px;
+  background: var(--ao3h-nc-panel-bg);
+  cursor: pointer;
+}
+
+/*- Message affiché quand la liste est vide */
+.ao3h-nc-empty {
+  padding: 16px;
+  color: var(--ao3h-nc-meta-color);
+  text-align: center;
+}
+
+
+/*===   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — CONFETTI
+  ───────────────────────────────────────────────────────────────────────
+    Overlay d'animation affiché quand une œuvre suivie est terminée.
+    Disparaît automatiquement après 3 secondes.
+    ⚠️ z-index: 999999 — au-dessus de tout, y compris le panneau.
+    ⚠️ #ao3h-nc-confetti et @keyframes ao3h-confetti-fade sont
+       référencés par le JS pour créer/supprimer l'élément.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+#ao3h-nc-confetti {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999999;
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, .2) 0%, transparent 70%);
+  animation: ao3h-confetti-fade 3s ease-out forwards;
+}
+
+@keyframes ao3h-confetti-fade {
+  0%   { opacity: 1; }
+  70%  { opacity: .6; }
+  100% { opacity: 0; }
+}
