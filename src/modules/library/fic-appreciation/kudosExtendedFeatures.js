@@ -24,6 +24,8 @@ AO3 Helper — Fic Appreciation › KudosExtendedFeatures sub-module
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { downloadFile } from '../../../../lib/utils/json-file.js';
+
 export class KudosExtendedFeatures {
   /** @param {{ storeGet: function }} opts */
   constructor ({ storeGet }) {
@@ -97,12 +99,7 @@ export class KudosExtendedFeatures {
       filename = `ao3h_kudos_${today}.json`;
     }
 
-    const a  = document.createElement('a');
-    a.href   = URL.createObjectURL(blob);
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    downloadFile(blob, filename);
   }
 
   // ── Stats HTML ──────────────────────────────────────────────────────────────────

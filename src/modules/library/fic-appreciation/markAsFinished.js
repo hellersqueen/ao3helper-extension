@@ -8,6 +8,7 @@ AO3 Helper — Fic Appreciation › MarkAsFinished sub-module
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
 
 const W = getGlobalWindow();
 
@@ -30,7 +31,7 @@ export class MarkAsFinished {
     const map = this._load();
     map[workId] = { date: new Date().toISOString().slice(0, 10), ...(note ? { note } : {}) };
     this._save(map);
-    W.dispatchEvent?.(new CustomEvent('ao3h:workFinished', { detail: { workId } }));
+    W.dispatchEvent?.(new CustomEvent(EV_WORK_FINISHED, { detail: { workId } }));
   }
 
   unmarkFinished (workId) {

@@ -18,6 +18,7 @@ AO3 Helper - Trope Roulette Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -38,10 +39,6 @@ function pickRandom (n) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a.slice(0, n);
-}
-
-function escapeHtml (str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function buildSearchUrl (tropes) {

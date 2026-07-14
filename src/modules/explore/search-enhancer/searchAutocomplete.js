@@ -39,6 +39,7 @@ AO3 Helper - Search Autocomplete Submodule
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 const NS   = 'ao3h';
 const MOD  = 'searchAutocomplete';
@@ -84,10 +85,6 @@ function historyPush (query) {
 }
 
 function historyClear () { historySave([]); }
-
-function escapeHtml (str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
 
 function formatTs (ts) {
   const diff = Date.now() - ts;

@@ -8,6 +8,7 @@ AO3 Helper — Fic Appreciation › KudosTracker sub-module
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { EV_KUDOS_GIVEN } from '../../../../lib/utils/event-names.js';
 
 const W = getGlobalWindow();
 
@@ -33,7 +34,7 @@ export class KudosTracker {
     if (map[workId]) return;
     map[workId] = { date: new Date().toISOString().slice(0, 10) };
     this._save(map);
-    W.dispatchEvent?.(new CustomEvent('ao3h:kudosGiven', { detail: { workId } }));
+    W.dispatchEvent?.(new CustomEvent(EV_KUDOS_GIVEN, { detail: { workId } }));
   }
 
   /** Detect kudos given on the current work page (by checking the kudos list). */

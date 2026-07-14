@@ -27,6 +27,7 @@ AO3 Helper - Trope Horoscope Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -62,10 +63,6 @@ function dayOfYear () {
   const n = new Date();
   const start = new Date(n.getFullYear(), 0, 0);
   return Math.floor((n - start) / 86400000);
-}
-
-function escapeHtml (str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 const TAGLINES = [

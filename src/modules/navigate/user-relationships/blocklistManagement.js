@@ -31,6 +31,7 @@ AO3 Helper - Blocklist Management Submodule
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
 
 const MOD  = 'blocklistManagement';
 const NS   = 'ao3h';
@@ -105,13 +106,7 @@ function buildPanel () {
     });
 
     wrap.querySelector(`#${NS}-bl-export`).addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(getList(), null, 2)], { type: 'application/json' });
-      const url  = URL.createObjectURL(blob);
-      const a    = Object.assign(document.createElement('a'), {
-        href: url, download: 'ao3h-blocklist.json',
-      });
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadJSON(getList(), 'ao3h-blocklist.json');
     });
 
     wrap.querySelector(`#${NS}-bl-import`).addEventListener('change', function (e) {

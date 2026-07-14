@@ -20,6 +20,7 @@ AO3 Helper - Trope Achievements Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -42,10 +43,6 @@ function lsSet (key, val) {
   const s = getShared();
   if (s) return s.lsSet(key, val);
   try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
-
-function escapeHtml (str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function schedule (callback, delay) {

@@ -8,6 +8,7 @@ AO3 Helper — Reading Timeline › HistoryAnalytics sub-module
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
 
 const W = getGlobalWindow();
 
@@ -231,13 +232,6 @@ export class HistoryAnalytics {
   }
 
   exportJSON () {
-    const data = JSON.stringify(this.heatmapData, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `ao3-timeline-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadJSON(this.heatmapData, `ao3-timeline-${new Date().toISOString().split('T')[0]}.json`);
   }
 }

@@ -25,6 +25,7 @@ AO3 Helper - Related Searches Submodule
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 const NS   = 'ao3h';
 const MOD  = 'relatedSearches';
@@ -80,10 +81,6 @@ function cacheSet (tagKey, tags) {
 function isSearchPage () {
   return /^\/works\/search|^\/tags\/.*\/works/.test(location.pathname) ||
          location.search.includes('work_search');
-}
-
-function escapeHtml (str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // ── Extract active tag filters from page ──────────────────────────────────

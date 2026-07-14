@@ -2,6 +2,7 @@
 // Submodule of: readingTracker
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
 
 const W = getGlobalWindow();
 
@@ -39,14 +40,7 @@ export class ViewHistory {
   }
 
   exportHistory () {
-    const history = this.getHistory();
-    const blob    = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
-    const url     = URL.createObjectURL(blob);
-    const a       = document.createElement('a');
-    a.href        = url;
-    a.download    = 'ao3h-reading-history.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadJSON(this.getHistory(), 'ao3h-reading-history.json');
   }
 
   async importAO3History () {

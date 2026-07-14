@@ -15,6 +15,7 @@ AO3 Helper - Pronunciation Manager Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
 
 const W   = getGlobalWindow();
 const NS  = 'ao3h';
@@ -71,15 +72,7 @@ register(MOD, { title: 'Pronunciation Manager', parent: 'textToSpeech', enabledB
   }
 
   function exportDict () {
-    const blob = new Blob(
-      [JSON.stringify(loadDict(), null, 2)],
-      { type: 'application/json' }
-    );
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'ao3h-tts-pronunciations.json';
-    a.click();
-    URL.revokeObjectURL(a.href);
+    downloadJSON(loadDict(), 'ao3h-tts-pronunciations.json');
   }
 
   function importDict (jsonStr) {

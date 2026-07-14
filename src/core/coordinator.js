@@ -7,6 +7,7 @@
 
 import { getGlobalWindow } from '../../lib/utils/globals.js';
 import { getLogger } from '../../lib/utils/logger.js';
+import { EV_SETTINGS_CHANGED, EV_OPEN_HIDE_MANAGER, EV_OPEN_TEXTREPLACER_MANAGER } from '../../lib/utils/event-names.js';
 import { AO3H, Modules } from './lifecycle.js';
 
 // W at module level (used inside initCoordinator and its nested functions)
@@ -150,7 +151,7 @@ function initCoordinator() {
         label: 'Hidden tags…',
         hint: '',
         handler: () => {
-          document.dispatchEvent(new CustomEvent(`${NS}:open-hide-manager`));
+          document.dispatchEvent(new CustomEvent(EV_OPEN_HIDE_MANAGER));
         }
       },
       {
@@ -164,7 +165,7 @@ function initCoordinator() {
         label: 'Text Replacer…',
         hint: '',
         handler: () => {
-          document.dispatchEvent(new CustomEvent(`${NS}:open-textreplacer-manager`));
+          document.dispatchEvent(new CustomEvent(EV_OPEN_TEXTREPLACER_MANAGER));
         }
       }
     ];
@@ -193,7 +194,7 @@ function initCoordinator() {
   function wireSettingsChanged() {
     const _timers = new Map();
 
-    document.addEventListener('ao3h:settingsChanged', function(e) {
+    document.addEventListener(EV_SETTINGS_CHANGED, function(e) {
       const moduleId = e.detail?.moduleId;
       if (!moduleId) return;
 

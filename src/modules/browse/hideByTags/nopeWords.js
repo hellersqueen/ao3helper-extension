@@ -6,6 +6,8 @@
      • NOPE Words Manager panel (open/close UI, export/import)
 ───────────────────────────────────────────────────────────────────────── */
 
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
+
 const LS_MIRROR   = true;
 const TM_KEY_NOPE = 'hideTagsNope';
 const LS_KEY_NOPE = 'hideTagsNope';
@@ -276,12 +278,7 @@ export class NopeWords {
 
     box.querySelector(`.${NS}-ul-export`).addEventListener('click', async () => {
       const list = await self.getNopeWords();
-      const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json' });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href = url; a.download = 'ao3h-nope-words.json';
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
+      downloadJSON(list, 'ao3h-nope-words.json');
     });
 
     box.querySelector(`.${NS}-ul-import`).addEventListener('click', async () => {

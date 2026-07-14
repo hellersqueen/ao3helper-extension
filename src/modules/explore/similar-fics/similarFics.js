@@ -15,6 +15,7 @@ AO3 Helper - Similar Fics Module
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
+import { getHistoryWorkIdSet } from '../../../../lib/storage/keys.js';
 import styles from './similarFics.css?inline';
 
 css(styles, 'ao3h-similarFics');
@@ -35,9 +36,6 @@ const MAX_TAGS = 4;
 const MAX_PER_SECTION = 5;
 // Minimum similarity score (0–100) to include a result.
 const MIN_SCORE = 70;
-// Storage key used by readingTracker/seenTracking.
-const SEEN_WORKS_KEY = 'ao3h_seen_works_v1';
-
 // Word count bucket sizes (rough, for "similar length" search).
 const WORD_BUCKET_SIZES = [2_000, 5_000, 10_000, 20_000, 50_000, 100_000];
 
@@ -233,17 +231,6 @@ function collectSimilarityInfo() {
     wordsFrom: from, wordsTo: to,
     authorName, authorUsername,
   };
-}
-
-// Read seen work IDs from readingTracker's storage (ao3h_seen_works_v1).
-function getSeenWorkIds() {
-  try {
-    const raw = localStorage.getItem(SEEN_WORKS_KEY);
-    if (!raw) return new Set();
-    return new Set(Object.keys(JSON.parse(raw)));
-  } catch (_) {
-    return new Set();
-  }
 }
 
 // Extract the current work ID from the URL.
@@ -547,7 +534,7 @@ async function loadAndRenderResults(panel, info) {
     ]);
     if (!active || !panel.isConnected) return;
 
-    const seenIds = getSeenWorkIds();
+    const seenIds = getHistoryWorkIdSet();
     const curId   = getCurrentWorkId();
     if (curId) seenIds.add(curId);
 

@@ -42,6 +42,7 @@ AO3 Helper - Notification Center
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
+import { KEY_RT_HISTORY, KEY_BOOKMARK_VAULT_DATA, KEY_LATER_SHELF_ITEMS } from '../../../../lib/storage/keys.js';
 import styles from './notificationCenter.css?inline';
 
 css(styles, 'ao3h-notificationCenter');
@@ -118,18 +119,18 @@ register(MOD, {
   function getTrackedWorks () {
     var wids = new Map();
     try {
-      var bvData = JSON.parse(localStorage.getItem('ao3h:bookmarkVault:data') || '{}');
+      var bvData = JSON.parse(localStorage.getItem(KEY_BOOKMARK_VAULT_DATA) || '{}');
       Object.keys(bvData).forEach(function (w) { if (wids.has(w) === false) wids.set(w, 'bookmark'); });
     } catch (_) {}
     try {
-      var mfl = JSON.parse(localStorage.getItem('ao3h:laterShelf:items') || '[]');
+      var mfl = JSON.parse(localStorage.getItem(KEY_LATER_SHELF_ITEMS) || '[]');
       mfl.forEach(function (item) {
         var id = String(item.wid || item.id || item || '');
         if (id && wids.has(id) === false) wids.set(id, 'mfl');
       });
     } catch (_) {}
     try {
-      var hist = JSON.parse(localStorage.getItem('ao3h:rt:history') || '[]');
+      var hist = JSON.parse(localStorage.getItem(KEY_RT_HISTORY) || '[]');
       hist.forEach(function (item) {
         var id = String(item.wid || item.workId || item.id || '');
         if (id && wids.has(id) === false) wids.set(id, 'history');

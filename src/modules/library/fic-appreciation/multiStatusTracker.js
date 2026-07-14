@@ -41,6 +41,8 @@ AO3 Helper — Fic Appreciation › MultiStatusTracker sub-module
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { downloadFile } from '../../../../lib/utils/json-file.js';
+import { EV_STATUS_CHANGED } from '../../../../lib/utils/event-names.js';
 
 const W = getGlobalWindow();
 
@@ -83,14 +85,14 @@ export class MultiStatusTracker {
       ...(note ? { note } : {}),
     };
     this._save(map);
-    W.dispatchEvent?.(new CustomEvent('ao3h:statusChanged', { detail: { workId, status } }));
+    W.dispatchEvent?.(new CustomEvent(EV_STATUS_CHANGED, { detail: { workId, status } }));
   }
 
   clearStatus (workId) {
     const map = this._load();
     delete map[workId];
     this._save(map);
-    W.dispatchEvent?.(new CustomEvent('ao3h:statusChanged', { detail: { workId, status: null } }));
+    W.dispatchEvent?.(new CustomEvent(EV_STATUS_CHANGED, { detail: { workId, status: null } }));
   }
 
   // ── Blurb badge ───────────────────────────────────────────────────────────
@@ -294,12 +296,7 @@ export class MultiStatusTracker {
       filename  = `ao3h_statuses_${today}.json`;
     }
 
-    const a    = document.createElement('a');
-    a.href     = URL.createObjectURL(blob);
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    downloadFile(blob, filename);
   }
 }
 

@@ -29,6 +29,7 @@ AO3 Helper - Word Swap
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import styles from './wordSwap.css?inline';
 
 css(styles, 'ao3h-wordSwap');
@@ -306,15 +307,7 @@ function wirePanelIO(panelArea, signal, fileReaders, renderedContainers) {
     const exportBtn = panelArea.querySelector('[data-action="export-rules"]');
     if (exportBtn) {
         exportBtn.addEventListener('click', () => {
-            const blob = new Blob(
-                [JSON.stringify(loadRules(), null, 2)],
-                { type: 'application/json' }
-            );
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'ao3h-wordswap-rules.json';
-            a.click();
-            URL.revokeObjectURL(a.href);
+            downloadJSON(loadRules(), 'ao3h-wordswap-rules.json');
         }, { signal });
     }
 

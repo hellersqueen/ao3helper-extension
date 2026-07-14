@@ -24,6 +24,8 @@ import { onReady, observe, debounce, css } from '../../../../lib/utils/index.js'
 import { Storage } from '../../../../lib/storage/index.js';
 import { wrapStorageForUser, UserLocalStorage } from '../../../../lib/storage/user.js';
 import { Flags } from '../../../../lib/utils/config.js';
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { EV_SETTINGS_CHANGED, EV_OPEN_HIDE_MANAGER } from '../../../../lib/utils/event-names.js';
 import styles from './hideByTags.css?inline';
 
 import { HiddenTags } from './hiddenTags.js';
@@ -378,7 +380,7 @@ function onOpenNopeManager(e) { try { e?.preventDefault?.(); } catch {} openNope
 function onOpenWhitelistManager(e) { try { e?.preventDefault?.(); } catch {} openWhitelistManager(); }
 
 function installManagerBridge () {
-  document.addEventListener(`${NS}:open-hide-manager`, onOpenManager);
+  document.addEventListener(EV_OPEN_HIDE_MANAGER, onOpenManager);
   document.addEventListener(`${NS}:open-nope-manager`, onOpenNopeManager);
   document.addEventListener(`${NS}:open-whitelist-manager`, onOpenWhitelistManager);
   W.ao3hOpenHiddenTagsManager = openManager;
@@ -387,7 +389,7 @@ function installManagerBridge () {
 }
 
 function removeManagerBridge () {
-  document.removeEventListener(`${NS}:open-hide-manager`, onOpenManager);
+  document.removeEventListener(EV_OPEN_HIDE_MANAGER, onOpenManager);
   document.removeEventListener(`${NS}:open-nope-manager`, onOpenNopeManager);
   document.removeEventListener(`${NS}:open-whitelist-manager`, onOpenWhitelistManager);
   if (W.ao3hOpenHiddenTagsManager === openManager) delete W.ao3hOpenHiddenTagsManager;
@@ -412,7 +414,7 @@ register('hideByTags', { title: 'Hide By Tags', enabledByDefault: true }, async 
   installManagerBridge();
   document.addEventListener(`${NS}:notes-hidden`, onNotesHidden);
   document.addEventListener(`${NS}:notes-visible`, onNotesVisible);
-  document.addEventListener('ao3h:settingsChanged', onSettingsChanged);
+  document.addEventListener(EV_SETTINGS_CHANGED, onSettingsChanged);
 
   const ENABLE_KEY = 'mod:hideByTags:enabled';
   enabled = !!Flags.get(ENABLE_KEY, true);
@@ -432,12 +434,7 @@ register('hideByTags', { title: 'Hide By Tags', enabledByDefault: true }, async 
       });
       GM_registerMenuCommand('AO3 Helper: Export hidden tags (JSON)', async () => {
         const list = await hiddenTagsInst.getHidden();
-        const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json' });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href = url; a.download = 'ao3h-hidden-tags.json';
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
+        downloadJSON(list, 'ao3h-hidden-tags.json');
       });
       GM_registerMenuCommand('AO3 Helper: Import hidden tags (JSON)…', openManager);
     }
@@ -486,7 +483,7 @@ function cleanup () {
   unwatchEnabled = null;
   document.removeEventListener(`${NS}:notes-hidden`, onNotesHidden);
   document.removeEventListener(`${NS}:notes-visible`, onNotesVisible);
-  document.removeEventListener('ao3h:settingsChanged', onSettingsChanged);
+  document.removeEventListener(EV_SETTINGS_CHANGED, onSettingsChanged);
   removeManagerBridge();
 
   hiddenTagsInst?.getWorkBlurbs().forEach(blurb => {

@@ -9,6 +9,7 @@
 ───────────────────────────────────────────────────────────────────────── */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
 
 const W = getGlobalWindow();
 
@@ -451,12 +452,7 @@ export class HiddenTags {
     // Export / import buttons
     box.querySelector(`.${NS}-ul-export`).addEventListener('click', async () => {
       const list = await self.getHidden();
-      const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json' });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href = url; a.download = 'ao3h-hidden-tags.json';
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
+      downloadJSON(list, 'ao3h-hidden-tags.json');
     });
 
     box.querySelector(`.${NS}-ul-import`).addEventListener('click', async () => {
@@ -484,12 +480,7 @@ export class HiddenTags {
 
     box.querySelector(`.${NS}-ul-exportg`).addEventListener('click', async () => {
       const map  = await self.getGroupsMap();
-      const blob = new Blob([JSON.stringify(map, null, 2)], { type: 'application/json' });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href = url; a.download = 'ao3h-hidden-tags-groups.json';
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
+      downloadJSON(map, 'ao3h-hidden-tags-groups.json');
     });
 
     box.querySelector(`.${NS}-ul-importg`).addEventListener('click', async () => {

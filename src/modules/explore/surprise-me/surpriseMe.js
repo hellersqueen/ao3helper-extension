@@ -14,6 +14,8 @@
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { getHistoryWorkIdSet } from '../../../../lib/storage/keys.js';
 import styles from './surpriseMe.css?inline';
 
 css(styles, 'ao3h-surpriseMe');
@@ -49,18 +51,6 @@ function isListingPage () {
 }
 
 // ── Collect eligible blurbs ───────────────────────────────────────────────
-const SEEN_WORKS_KEY = 'ao3h_seen_works_v1';
-
-function getSeenWorkIds () {
-  try {
-    const raw = localStorage.getItem(SEEN_WORKS_KEY);
-    if (!raw) return new Set();
-    return new Set(Object.keys(JSON.parse(raw)));
-  } catch (_) {
-    return new Set();
-  }
-}
-
 function getWorkId (blurb) {
   const a = blurb.querySelector('.heading a[href*="/works/"]');
   const m = a?.getAttribute('href')?.match(/\/works\/(\d+)/);
@@ -74,7 +64,7 @@ function isVisible (el) {
 }
 
 function getBlurbs () {
-  const seenIds = getSeenWorkIds();
+  const seenIds = getHistoryWorkIdSet();
   let all = Array.from(document.querySelectorAll(
     'li.work.blurb, li.bookmark.blurb, li.blurb.group'
   ));
@@ -157,10 +147,6 @@ function showPreview (blurb, container) {
 function removePreview () {
   previewEl?.remove();
   previewEl = null;
-}
-
-function escapeHtml (s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // ── No-results feedback ──────────────────────────────────────────────────

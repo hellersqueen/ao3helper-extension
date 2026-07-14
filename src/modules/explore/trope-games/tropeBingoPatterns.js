@@ -28,6 +28,7 @@ AO3 Helper - Trope Bingo Patterns Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -137,10 +138,6 @@ function autoCheckFromTags (state) {
 let wrapEl = null;
 let toggleBtn = null;
 let isOpen = false;
-
-function escapeHtml (str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
 
 function renderCard (state) {
   // Build set of all cell indices that belong to any completed pattern

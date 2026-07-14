@@ -47,6 +47,8 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { observe, debounce, css } from '../../../../lib/utils/index.js';
 import { detectUser } from '../../../../lib/utils/user-detector.js';
 import { UserLocalStorage } from '../../../../lib/storage/user.js';
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { EV_SETTINGS_CHANGED } from '../../../../lib/utils/event-names.js';
 import styles from './skipWorks.css?inline';
 
 css(styles, 'ao3h-skipWorks');
@@ -352,15 +354,7 @@ async function exportHiddenWorks() {
   try {
     if (!db) await openDB();
     const all = await getAllWorks();
-    const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ao3-hidden-works-${new Date().toISOString().slice(0,10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    downloadJSON(all, `ao3-hidden-works-${new Date().toISOString().slice(0,10)}.json`);
     alert('Exported ' + all.length + ' hidden works.');
   } catch (e) {
     console.error(LOG, 'export failed', e);
@@ -667,7 +661,7 @@ async function init() {
   wireDelegatesOnce();
   await initialPass();
   installBridge();
-  document.addEventListener('ao3h:settingsChanged', onSettingsChanged);
+  document.addEventListener(EV_SETTINGS_CHANGED, onSettingsChanged);
   observeList();
 
   return stop;
@@ -678,7 +672,7 @@ register(MOD, { title: 'Skip Works', enabledByDefault: true }, init);
 // Optional cleanup hook if you wire enable/disable later
 function stop(){
   clearTempShow();
-  document.removeEventListener('ao3h:settingsChanged', onSettingsChanged);
+  document.removeEventListener(EV_SETTINGS_CHANGED, onSettingsChanged);
   removeBridge();
   if (W.jQuery || W.$) (W.jQuery || W.$)(document).off('.skipWorks');
   delegatesWired = false;

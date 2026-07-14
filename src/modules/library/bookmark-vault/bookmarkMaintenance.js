@@ -1,4 +1,5 @@
 import { register } from '../../../core/lifecycle.js';
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
 
 const MOD = 'bookmarkMaintenance';
 const NS  = 'ao3h';
@@ -45,18 +46,10 @@ function doExport () {
     try { return JSON.parse(localStorage.getItem(BM_DATA_KEY) || '{}'); }
     catch (_) { return {}; }
   })();
-  const blob = new Blob(
-    [JSON.stringify({ exported: new Date().toISOString(), bookmarks: data }, null, 2)],
-    { type: 'application/json' }
+  downloadJSON(
+    { exported: new Date().toISOString(), bookmarks: data },
+    `ao3h-bookmarks-${new Date().toISOString().slice(0, 10)}.json`
   );
-  const url = URL.createObjectURL(blob);
-  const a   = document.createElement('a');
-  a.href     = url;
-  a.download = `ao3h-bookmarks-${new Date().toISOString().slice(0, 10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
   localStorage.setItem(EXPORT_KEY, String(Date.now()));
 }
 

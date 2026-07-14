@@ -20,6 +20,8 @@ AO3 Helper - Trope Statistics Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { downloadJSON, downloadFile } from '../../../../lib/utils/json-file.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -42,10 +44,6 @@ function lsSet (key, val) {
 
 function isWorkPage () {
   return /^\/works\/\d+/.test(location.pathname);
-}
-
-function escapeHtml (str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 const SK_SEEN = `${NS}:tg:stats:seen`;
@@ -158,22 +156,12 @@ function openPanel () {
     panelEl.style.display = 'none';
   });
   panelEl.querySelector(`.${NS}-tg-stats-export-json`).addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(stats, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'ao3h-trope-stats.json';
-    a.click();
-    URL.revokeObjectURL(a.href);
+    downloadJSON(stats, 'ao3h-trope-stats.json');
   });
   panelEl.querySelector(`.${NS}-tg-stats-export-csv`).addEventListener('click', () => {
     const rows = [['Trope', 'Count'], ...Object.entries(stats).sort((a, b) => b[1] - a[1])];
     const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'ao3h-trope-stats.csv';
-    a.click();
-    URL.revokeObjectURL(a.href);
+    downloadFile(csv, 'ao3h-trope-stats.csv', 'text/csv');
   });
 }
 

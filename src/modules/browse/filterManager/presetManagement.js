@@ -45,6 +45,8 @@ AO3 Helper - Preset Management Submodule
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 const W = getGlobalWindow();
 
@@ -121,13 +123,6 @@ export class PresetManagement {
   }
 
   /* ── Private utilities ──────────────────────────────────────────── */
-  _escapeHtml (str) {
-    return String(str)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-  _escapeAttr (str) { return String(str).replace(/"/g, '&quot;'); }
-
   _mergeById (existing, incoming) {
     const map = new Map(existing.map(x => [x.id, x]));
     for (const item of incoming) map.set(item.id, item);
@@ -135,14 +130,7 @@ export class PresetManagement {
   }
 
   _downloadJson (data, filename) {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadJSON(data, filename);
   }
 
   _friendlyFieldName (field) {
@@ -228,16 +216,16 @@ export class PresetManagement {
         for (const tag of tags) {
           const bundleTags = this.cfg('tagBundlesEnabled') ? this.getBundleFor(tag) : [tag];
           const bundleHint = bundleTags.length > 1
-            ? ` <span class="${NS}-chip-bundle" title="In bundle: ${this._escapeAttr(bundleTags.join(', '))}">🔗</span>`
+            ? ` <span class="${NS}-chip-bundle" title="In bundle: ${escapeHtml(bundleTags.join(', '))}">🔗</span>`
             : '';
           const chip = document.createElement('span');
           chip.className = `${NS}-filter-chip`;
           chip.innerHTML =
-            `<span class="${NS}-chip-label">${this._escapeHtml(chipLabel)}: <em>${this._escapeHtml(tag)}</em>${bundleHint}</span>`
+            `<span class="${NS}-chip-label">${escapeHtml(chipLabel)}: <em>${escapeHtml(tag)}</em>${bundleHint}</span>`
             + `<button type="button" class="${NS}-chip-remove"`
-            + ` data-field="${this._escapeAttr(field)}"`
-            + ` data-tag-value="${this._escapeAttr(tag)}"`
-            + ` aria-label="Remove tag: ${this._escapeAttr(tag)}">✕</button>`;
+            + ` data-field="${escapeHtml(field)}"`
+            + ` data-tag-value="${escapeHtml(tag)}"`
+            + ` aria-label="Remove tag: ${escapeHtml(tag)}">✕</button>`;
           container.appendChild(chip);
         }
       } else {
@@ -246,13 +234,13 @@ export class PresetManagement {
           const chip = document.createElement('span');
           chip.className = `${NS}-filter-chip`;
           const arrayAttr = Array.isArray(value)
-            ? ` data-array-value="${this._escapeAttr(item)}"`
+            ? ` data-array-value="${escapeHtml(item)}"`
             : '';
           chip.innerHTML =
-            `<span class="${NS}-chip-label">${this._escapeHtml(chipLabel)}: <em>${this._escapeHtml(item)}</em></span>`
+            `<span class="${NS}-chip-label">${escapeHtml(chipLabel)}: <em>${escapeHtml(item)}</em></span>`
             + `<button type="button" class="${NS}-chip-remove"`
-            + ` data-field="${this._escapeAttr(field)}"${arrayAttr}`
-            + ` aria-label="Remove filter: ${this._escapeAttr(chipLabel)}">✕</button>`;
+            + ` data-field="${escapeHtml(field)}"${arrayAttr}`
+            + ` aria-label="Remove filter: ${escapeHtml(chipLabel)}">✕</button>`;
           container.appendChild(chip);
         }
       }
@@ -313,7 +301,7 @@ export class PresetManagement {
               ${sorted.map(p => `
                 <li class="${NS}-preset-item${lastId === p.id ? ` ${NS}-last-used` : ''}"
                     role="option"
-                    data-id="${this._escapeAttr(p.id)}"
+                    data-id="${escapeHtml(p.id)}"
                     title="${this.cfg('presetHoverPreview') && p.filters
                       ? Object.entries(p.filters)
                           .filter(([, v]) => v && String(v).trim())
@@ -321,14 +309,14 @@ export class PresetManagement {
                           .join('\n')
                       : ''}">
                   <span class="${NS}-preset-star${p.starred ? ` ${NS}-starred` : ''}"
-                        data-star="${this._escapeAttr(p.id)}"
+                        data-star="${escapeHtml(p.id)}"
                         aria-label="${p.starred ? 'Unstar' : 'Star'} preset"
                         role="button"
                         tabindex="0">★</span>
-                  <span class="${NS}-preset-name">${this._escapeHtml(p.name)}</span>
+                  <span class="${NS}-preset-name">${escapeHtml(p.name)}</span>
                   <button type="button" class="${NS}-preset-delete"
-                          data-del="${this._escapeAttr(p.id)}"
-                          aria-label="Delete preset ${this._escapeAttr(p.name)}">✕</button>
+                          data-del="${escapeHtml(p.id)}"
+                          aria-label="Delete preset ${escapeHtml(p.name)}">✕</button>
                 </li>
               `).join('')}
               ${sorted.length === 0

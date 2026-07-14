@@ -25,6 +25,8 @@ AO3 Helper - Filter Warnings Submodule
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { escapeHtml } from '../../../../lib/utils/dom.js';
+
 const ARCHIVE_WARNINGS = [
   'Graphic Depictions of Violence',
   'Major Character Death',
@@ -38,12 +40,6 @@ export class FilterWarnings {
   constructor ({ NS, cfg }) {
     this.NS  = NS;
     this.cfg = cfg;
-  }
-
-  _escapeHtml (str) {
-    return String(str)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   /** Returns the list of Archive Warnings excluded by the current URL. */
@@ -61,7 +57,7 @@ export class FilterWarnings {
     if (!excluded.length) return null;
     if (document.getElementById(`${NS}-fm-warning-banner`)) return null;
 
-    const labels = excluded.map(w => `"${this._escapeHtml(w)}"`).join(', ');
+    const labels = excluded.map(w => `"${escapeHtml(w)}"`).join(', ');
     const banner = document.createElement('div');
     banner.id        = `${NS}-fm-warning-banner`;
     banner.className = `${NS}-fm-warning-banner`;

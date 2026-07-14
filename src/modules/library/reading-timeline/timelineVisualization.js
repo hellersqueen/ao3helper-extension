@@ -6,6 +6,8 @@ AO3 Helper — Reading Timeline › TimelineVisualization sub-module
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { downloadFile } from '../../../../lib/utils/json-file.js';
+
 const HEATMAP_PALETTES = {
   green:  ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
   purple: ['#ebedf0', '#c9b8e8', '#a47bcd', '#7c4ea1', '#5a2d82'],
@@ -498,13 +500,7 @@ export class TimelineVisualization {
       });
     });
     const csv  = rows.map(r => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `ao3-timeline-filtered-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadFile(csv, `ao3-timeline-filtered-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
   }
 
   // ── Panel scaffold (moved from coordinator) ───────────────────────────────
