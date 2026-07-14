@@ -7,7 +7,8 @@
 
 import { getGlobalWindow } from '../../lib/utils/globals.js';
 import { getLogger } from '../../lib/utils/logger.js';
-import { EV_SETTINGS_CHANGED, EV_OPEN_HIDE_MANAGER, EV_OPEN_TEXTREPLACER_MANAGER } from '../../lib/utils/event-names.js';
+import { EV_SETTINGS_CHANGED, EV_OPEN_HIDE_MANAGER } from '../../lib/utils/event-names.js';
+import { openAO3HPanel } from '../../lib/ui/panel/panel-index.js';
 import { AO3H, Modules } from './lifecycle.js';
 
 // W at module level (used inside initCoordinator and its nested functions)
@@ -165,7 +166,7 @@ function initCoordinator() {
         label: 'Text Replacer…',
         hint: '',
         handler: () => {
-          document.dispatchEvent(new CustomEvent(EV_OPEN_TEXTREPLACER_MANAGER));
+          openAO3HPanel('wordSwap');
         }
       }
     ];

@@ -1,6 +1,9 @@
+import { KEY_LATER_SHELF_ITEMS } from '../../../../lib/storage/keys.js';
+import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
+
 const MOD = 'laterShelf';
 
-export const SK_ITEMS = 'ao3h:laterShelf:items';
+export const SK_ITEMS = KEY_LATER_SHELF_ITEMS;
 
 const DEFAULTS = {
   showQuickButton: true,
@@ -31,5 +34,6 @@ export function markCurrent () {
   const title = document.querySelector('h2.title.heading, .title.heading')?.textContent?.trim() || `Work ${wid}`;
   items.push({ wid, title, addedAt: Date.now() });
   saveItems(items);
+  document.dispatchEvent(new CustomEvent(EV_MARKED_FOR_LATER, { detail: { workId: wid, title } }));
   return true;
 }

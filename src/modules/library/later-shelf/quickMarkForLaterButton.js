@@ -17,6 +17,7 @@ AO3 Helper - Quick Mark for Later Button Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { loadItems, saveItems, cfg } from './laterShelfStore.js';
+import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
 
 const MOD = 'quickMarkForLaterButton';
 const D   = document;
@@ -51,6 +52,7 @@ register(MOD, {
     if (items.some(function (i) { return String(i.wid || i) === String(wid); })) return;
     items.push({ wid: wid, title: title, addedAt: Date.now() });
     saveItems(items);
+    document.dispatchEvent(new CustomEvent(EV_MARKED_FOR_LATER, { detail: { workId: wid, title: title } }));
   }
 
   function removeFromShelf (wid) {
