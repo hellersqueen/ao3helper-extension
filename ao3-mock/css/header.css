@@ -1,0 +1,542 @@
+/* ============================================================
+   header.css — All CSS rules related to #header, #greeting,
+   and .ao3h-* components, extracted from ao3.css
+   ============================================================ */
+
+/* --- CSS Variables (ao3h) ---------------------------------- */
+
+:root {
+    --ao3h-fg: #0b1220;
+    --ao3h-item-bg: rgba(255,255,255,.75);
+    --ao3h-item-hover: rgba(255,255,255,.54);
+    --ao3h-group-fg: #a12020;
+    --ao3h-switch-on: #0bbf6a;
+    --ao3h-switch-off: rgba(15,23,42,.35);
+    --ao3h-radius-md: 12px;
+    --ao3h-pad-y: .55em;
+    --ao3h-pad-x: .9em;
+    --ao3h-gap: .75rem;
+}
+
+/* --- #header base ------------------------------------------ */
+
+#header {
+    font-size: 0.875em;
+    margin: 0 0 1em;
+    padding: 0;
+    position: relative;
+}
+
+#header h1 {
+    background: transparent;
+    font-size: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#header .heading {
+    float: left;
+    padding: 0.375em;
+}
+
+#header .heading sup {
+    font-size: 0.583em;
+    font-style: italic;
+}
+
+#header .logo {
+    float: left;
+    height: 42px;
+}
+
+/* --- #header links ----------------------------------------- */
+
+#header a {
+    background: transparent;
+    font-size: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#header a,
+#header a:visited {
+    color: #111;
+}
+
+#header .heading a {
+    color: #900;
+    font-size: 1.714em;
+    line-height: 1.75em;
+}
+
+#header a,
+#header a:visited,
+#header .primary .open a,
+#header .primary .dropdown:hover a,
+#header .primary .dropdown a:focus {
+    color: #111;
+}
+
+/* --- #header layout elements ------------------------------- */
+
+#header p {
+    background: transparent;
+    font-size: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#header li {
+    background: transparent;
+    font-size: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#header li {
+    display: block;
+    float: left;
+    position: relative;
+}
+
+#header form {
+    background: transparent;
+    font-size: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#header fieldset {
+    background: transparent;
+    font-size: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#header #search > * {
+    display: inline;
+    float: none;
+}
+
+/* --- #header .user nav ------------------------------------- */
+
+#header .user {
+    padding: 0.429em 0 0;
+    position: relative;
+    z-index: 20;
+}
+
+#header .user a {
+    padding: 0.25em 0.75em;
+}
+
+#header .user a:hover,
+#header .user a:focus {
+    color: #900;
+    border-radius: 0.25em;
+}
+
+/* --- #header .primary nav ---------------------------------- */
+
+#header .primary {
+    background: #900 url(https://archiveofourown.org/images/skins/textures/tiles/red-ao3.png);
+    padding: 0;
+    width: 100%;
+    box-shadow: inset 0 -6px 10px rgba(0, 0, 0, 0.35),
+                1px 1px 3px -1px rgba(0, 0, 0, 0.25),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.85);
+}
+
+#header .primary a {
+    padding: 0.429em 0.75em;
+}
+
+#header .primary a {
+    color: #fff;
+}
+
+#header .primary.navigation > li > a,
+#header .primary.navigation.actions > li > a {
+    transition: background-color 0.2s ease,
+                transform 0.12s ease,
+                color 0.2s ease !important;
+}
+
+#header .primary > li:first-of-type {
+    margin-left: 2em;
+}
+
+#header .primary .menu a {
+    color: #111;
+    padding: 0.75em 0.5em 0.5em;
+}
+
+/* --- #header .actions -------------------------------------- */
+
+#header .actions a:hover,
+#header .actions a:focus,
+#header .dropdown:hover a,
+#header .open a {
+    background: #ddd;
+}
+
+/* --- #header .search --------------------------------------- */
+
+#header .search {
+    float: right;
+    color: #2a2a2a;
+    margin-right: 0.25em;
+}
+
+li.search fieldset {
+    margin: auto;
+    padding: 0.15em;
+    font-size: 87.5%;
+    overflow: visible;
+    width: auto;
+}
+
+/* --- #header dropdown menus -------------------------------- */
+
+#header .menu {
+    background: #ddd;
+    display: none;
+    padding: 0.25em 0;
+    position: absolute;
+    width: 20em;
+    z-index: 55;
+    box-shadow: 1px 1px 3px -1px #444;
+    background-image: -moz-linear-gradient(top, rgba(221,221,221,0.98) 0%, rgba(204,204,204,0.98) 100%);
+    background-image: -webkit-linear-gradient(top, rgba(221,221,221,0.98) 0%, rgba(204,204,204,0.98) 100%);
+    background-image: -o-linear-gradient(top, rgba(221,221,221,0.98) 0%, rgba(204,204,204,0.98) 100%);
+    background-image: linear-gradient(to bottom, rgba(221,221,221,0.98) 0%, rgba(204,204,204,0.98) 100%);
+}
+
+#header .menu li {
+    display: block;
+    float: none;
+}
+
+#header .menu li {
+    border-bottom: 1px solid #888;
+    margin: 0 0.25em;
+    text-align: left;
+}
+
+#header .menu > li {
+    margin: 0 !important;
+}
+
+#header .menu li:last-child {
+    border-bottom: none;
+}
+
+#header .dropdown .menu a {
+    background: transparent;
+    display: block;
+    padding: 0.75em 0.5em 0.5em;
+}
+
+#header .dropdown .menu a:hover,
+#header .dropdown .menu a:focus {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* --- #greeting --------------------------------------------- */
+
+#greeting {
+    float: right;
+    margin-right: 0.375em;
+}
+
+#greeting .user > li {
+    margin: 0 0.125em;
+}
+
+#greeting p.icon {
+    float: right;
+    height: auto;
+    padding: 0.429em 0.125em 0;
+    line-height: 1;
+    width: auto;
+}
+
+#greeting p.icon a {
+    display: block;
+    padding: 0;
+}
+
+#greeting .menu {
+    right: 0;
+    box-shadow: -1px 1px 3px -1px #444;
+}
+
+#greeting .dropdown .menu a {
+    border-radius: 0;
+}
+
+#greeting .open a,
+#greeting .dropdown:hover a {
+    border-radius: 0.25em 0.25em 0 0;
+}
+
+#greeting img.icon {
+    height: 1.786em;
+    width: 1.786em;
+    background-size: 100%;
+}
+
+.icon a {
+    border: 0;
+}
+
+/* --- .dropdown base ---------------------------------------- */
+
+.dropdown {
+    background: #fff;
+    color: #2a2a2a;
+    font: 100%/1.125 'Lucida Grande', 'Lucida Sans Unicode', Verdana, Helvetica, sans-serif, 'GNU Unifont';
+    margin: 0;
+    padding: 0;
+}
+
+/* --- .ao3h-root -------------------------------------------- */
+
+.ao3h-root {
+    position: relative;
+    transition: opacity 0.2s ease;
+}
+
+.ao3h-root:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -20px;
+    bottom: -20px;
+    left: -20px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* --- .ao3h-navlink ----------------------------------------- */
+
+.ao3h-navlink {
+    color: #fff;
+    text-decoration: none;
+    padding: var(--ao3h-pad-y) var(--ao3h-pad-x);
+    display: inline-block;
+    transition: background-color .2s, transform .12s;
+    border-radius: 10px;
+}
+
+.ao3h-root:hover .ao3h-navlink {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateY(-1px);
+}
+
+/* --- .ao3h-menu -------------------------------------------- */
+
+.ao3h-menu {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: auto;
+    scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.08);
+    scroll-behavior: smooth;
+    position: relative;
+}
+
+ul.ao3h-menu,
+.ao3h-menu.dropdown-menu {
+    color: var(--ao3h-fg) !important;
+    max-width: 280px;
+    padding: .5rem .5rem;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.35),
+                0 6px 18px rgba(0,0,0,.25),
+                0 18px 40px rgba(0,0,0,.15);
+}
+
+.ao3h-menu:before {
+    content: "";
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.ao3h-menu:after {
+    content: "";
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    pointer-events: none;
+    background: linear-gradient(to top, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease, height 0.3s ease;
+}
+
+.ao3h-menu::-webkit-scrollbar {
+    width: 14px;
+    background: transparent;
+}
+
+.ao3h-menu::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 7px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+    transition: background 0.2s ease;
+}
+
+.ao3h-menu::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 7px;
+    margin: 8px 0;
+}
+
+.ao3h-menu li {
+    position: static;
+}
+
+ul.ao3h-menu > li[data-ao3h-grouped-original="1"] {
+    display: none !important;
+}
+
+ul.ao3h-menu > li:not([data-ao3h-submenu="1"]):not([data-ao3h-manager-btn="1"]):not(.ao3h-divider) {
+    display: none !important;
+}
+
+.ao3h-divider {
+    display: none !important;
+}
+
+.ao3h-menu > li.ao3h-divider[data-ao3h-manager-btn="1"] {
+    display: none !important;
+}
+
+/* --- .ao3h-menu item links --------------------------------- */
+
+.ao3h-menu a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ao3h-gap);
+    padding: .5rem .75rem;
+    font-size: 13px;
+    line-height: 1.15;
+    color: inherit !important;
+    text-decoration: none;
+    white-space: nowrap;
+    background: var(--ao3h-item-bg);
+    border-radius: var(--ao3h-radius-md);
+    transition: background .18s ease, transform .12s ease, box-shadow .18s ease;
+    box-shadow: 0 1px 0 rgba(2,6,23,.05);
+    margin: 6px 4px;
+}
+
+.ao3h-menu > li > a {
+    background: transparent !important;
+    color: var(--ao3h-group-fg) !important;
+    text-transform: uppercase;
+    letter-spacing: .25px;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    margin: 4px 6px 2px;
+    padding: .35rem .5rem;
+    border-radius: 6px;
+    box-shadow: none !important;
+}
+
+.ao3h-menu [role="menuitemcheckbox"] {
+    position: relative;
+}
+
+.ao3h-menu a:hover {
+    background: var(--ao3h-item-hover) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(2,6,23,.10);
+}
+
+/* --- .ao3h-submenu ----------------------------------------- */
+
+ul.ao3h-submenu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: none !important;
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.ao3h-submenu.dropdown-menu {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* --- .ao3h-manager-panel-btn ------------------------------- */
+
+.ao3h-menu > li.ao3h-manager-panel-btn > a {
+    background: transparent !important;
+    border: none !important;
+    color: var(--ao3h-group-fg) !important;
+    text-transform: uppercase;
+    letter-spacing: .25px;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    margin: 4px 6px 2px;
+    padding: .35rem .5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.ao3h-menu > li.ao3h-manager-panel-btn > a:hover,
+.ao3h-menu > li.ao3h-manager-panel-btn > a:active {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}

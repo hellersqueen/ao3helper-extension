@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Search Bookmarks | Archive of Our Own</title>
+  <link rel="stylesheet" type="text/css" href="css/ao3.css" />
+  <script src="js/ao3-header.js"></script>
+  <script src="js/ao3-mock.js"></script>
+</head>
+<body class="logged-in javascript">
+
+<div id="ao3-header-placeholder"></div>
+
+<div id="inner" class="wrapper">
+  <div id="main" class="bookmarks-search region" role="main">
+
+    <h2 class="heading">Bookmark Search</h2>
+
+    <ul class="navigation actions" role="navigation">
+      <li><a href="search-works.html">Work Search</a></li>
+      <li><a href="search-people.html">People Search</a></li>
+      <li><span class="current">Bookmark Search</span></li>
+      <li><a href="search-tags.html">Tag Search</a></li>
+    </ul>
+
+    <form class="search" id="new_bookmark_search" action="#" accept-charset="UTF-8" method="get">
+      <fieldset>
+        <legend>Bookmarked Item</legend>
+        <h3 class="landmark heading">Bookmarked Item</h3>
+        <dl>
+          <dt><label for="bookmark_search_bookmarkable_query">Any field on work</label>  <a class="help symbol question modal" title="Bookmark search text help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="bookmark_search[bookmarkable_query]" id="bookmark_search_bookmarkable_query" /></dd>
+          <dt><label for="bookmark_search_other_tag_names">Work tags</label>  <a class="help symbol question modal" title="Bookmark search work tag" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input class="autocomplete" type="text" name="bookmark_search[other_tag_names]" id="bookmark_search_other_tag_names" /></dd>
+          <dt><label for="bookmark_search_bookmarkable_type">Type</label>  <a class="help symbol question modal" title="Bookmark search type help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd>
+            <select name="bookmark_search[bookmarkable_type]" id="bookmark_search_bookmarkable_type">
+              <option value=""></option>
+              <option value="Work">Work</option>
+              <option value="Series">Series</option>
+              <option value="External Work">External Work</option>
+            </select>
+          </dd>
+          <dt><label for="bookmark_search_word_count">Word count</label></dt>
+          <dd><input type="text" name="bookmark_search[word_count]" id="bookmark_search_word_count" /></dd>
+          <dt><label for="bookmark_search_language_id">Work language</label></dt>
+          <dd><select name="bookmark_search[language_id]" id="bookmark_search_language_id">
+              <option value="" label=" "></option>
+              <option lang="en" value="en">English</option>
+              <option lang="zh" value="zh">中文-普通话 國語</option>
+              <option lang="fr" value="fr">Français</option>
+              <option lang="de" value="de">Deutsch</option>
+              <option lang="es" value="es">Español</option>
+              <option lang="ru" value="ru">Русский</option>
+              <option lang="ja" value="ja">日本語</option>
+              <option lang="ko" value="ko">한국어</option>
+              <option lang="ptBR" value="ptBR">Português brasileiro</option>
+              <option lang="it" value="it">Italiano</option>
+              <option lang="pl" value="pl">Polski</option>
+              <option lang="tr" value="tr">Türkçe</option>
+              <option lang="uk" value="uk">Українська</option>
+              <option lang="ar" value="ar">العربية</option>
+            </select></dd>
+          <dt><label for="bookmark_search_bookmarkable_date">Date updated</label>  <a class="help symbol question modal" title="Bookmark search date updated help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="bookmark_search[bookmarkable_date]" id="bookmark_search_bookmarkable_date" /></dd>
+        </dl>
+      </fieldset>
+
+      <fieldset>
+        <legend>Bookmark</legend>
+        <h3 class="landmark heading">Bookmark</h3>
+        <dl>
+          <dt><label for="bookmark_search_bookmark_query">Any field on bookmark</label>  <a class="help symbol question modal" title="Bookmark search text help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="bookmark_search[bookmark_query]" id="bookmark_search_bookmark_query" /></dd>
+          <dt><label for="bookmark_search_other_bookmark_tag_names">Bookmarker's tags</label>  <a class="help symbol question modal" title="Bookmark search bookmarker tag" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input class="autocomplete" type="text" name="bookmark_search[other_bookmark_tag_names]" id="bookmark_search_other_bookmark_tag_names" /></dd>
+          <dt><label for="bookmark_search_bookmarker">Bookmarker</label>  <a class="help symbol question modal" title="Bookmark search text help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="bookmark_search[bookmarker]" id="bookmark_search_bookmarker" /></dd>
+          <dt><label for="bookmark_search_bookmark_notes">Notes</label>  <a class="help symbol question modal" title="Bookmark search text help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="bookmark_search[bookmark_notes]" id="bookmark_search_bookmark_notes" /></dd>
+          <dt>Bookmark type</dt>
+          <dd>
+            <ul>
+              <li><input name="bookmark_search[rec]" type="hidden" value="0" autocomplete="off" /><input type="checkbox" value="1" name="bookmark_search[rec]" id="bookmark_search_rec" /><label for="bookmark_search_rec">Rec</label>  <a class="help symbol question modal" title="Bookmark search rec help" href="#"><span class="symbol question"><span>?</span></span></a></li>
+              <li><input name="bookmark_search[with_notes]" type="hidden" value="0" autocomplete="off" /><input type="checkbox" value="1" name="bookmark_search[with_notes]" id="bookmark_search_with_notes" /><label for="bookmark_search_with_notes">With notes</label>  <a class="help symbol question modal" title="Bookmark search notes help" href="#"><span class="symbol question"><span>?</span></span></a></li>
+            </ul>
+          </dd>
+          <dt><label for="bookmark_search_date">Date bookmarked</label>  <a class="help symbol question modal" title="Bookmark search date bookmarked help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="bookmark_search[date]" id="bookmark_search_date" /></dd>
+        </dl>
+      </fieldset>
+
+      <fieldset>
+        <legend>Search</legend>
+        <h3 class="landmark heading">Search</h3>
+        <dl>
+          <dt><label for="bookmark_search_sort_column">Sort by</label></dt>
+          <dd>
+            <select name="bookmark_search[sort_column]" id="bookmark_search_sort_column">
+              <option value="">Best Match</option>
+              <option value="created_at">Date Bookmarked</option>
+              <option value="bookmarkable_date">Date Updated</option>
+              <option value="word_count">Word Count</option>
+            </select>
+          </dd>
+        </dl>
+        <p class="submit"><input type="submit" name="commit" value="Search Bookmarks" /></p>
+      </fieldset>
+    </form>
+
+  </div>
+  <div class="clear"></div>
+</div>
+
+<div id="footer" role="contentinfo" class="region">
+  <h3 class="landmark heading">Footer</h3>
+  <ul class="navigation actions">
+    <li class="module group">
+      <h4 class="heading">About the Archive</h4>
+      <ul class="menu">
+        <li><a href="#">Site Map</a></li>
+        <li><a href="#">Diversity Statement</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Content Policy</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">DMCA Policy</a></li>
+        <li><a href="#">Site Status</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Contact Us</h4>
+      <ul class="menu">
+        <li><a href="#">Policy Questions &amp; Abuse Reports</a></li>
+        <li><a href="#">Technical Support &amp; Feedback</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Development</h4>
+      <ul class="menu">
+        <li><a href="#">otwarchive v0.9.463.1</a></li>
+        <li><a href="#">Known Issues</a></li>
+        <li><a href="#">GPL-2.0-or-later</a> by the <a href="#">OTW</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+</body>
+</html>

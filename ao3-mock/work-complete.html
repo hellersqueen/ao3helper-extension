@@ -1,0 +1,1094 @@
+<!-- WORK COMPLETE -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="keywords" content="fanfiction, transformative works, otw, fair use, archive" />
+    <meta name="language" content="en-US" />
+    <meta name="subject" content="fandom" />
+    <meta name="description" content="An Archive of Our Own, a project of the Organization for Transformative Works" />
+    <meta name="distribution" content="GLOBAL" />
+    <meta name="classification" content="transformative works" />
+    <meta name="author" content="Organization for Transformative Works" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bye, Bye Miss American Pie - arcane_avenger - The Avengers (Marvel Movies) [Archive of Our Own]</title>
+    <link rel="stylesheet" type="text/css" href="css/work-complete.css" />
+    <style>
+        #ao3h-mock-stars { display: inline-flex; align-items: baseline; gap: 0; }
+        #ao3h-mock-stars .ao3h-mock-label { margin-right: 4px; }
+        #ao3h-mock-stars button {
+            appearance: none; -webkit-appearance: none;
+            background: none !important;
+            background-image: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 0 1px;
+            font-size: 1.2em; line-height: 1;
+            color: #900; cursor: pointer;
+            transition: color 0.1s;
+        }
+        #ao3h-mock-stars button:focus,
+        #ao3h-mock-stars button:focus-visible { outline: none; }
+        #ao3h-mock-stars button:hover { color: #c00; }
+
+        /* ─── AO3 Helper — Tab 2 : Explore ──────────────────────────────── */
+
+        /* ── SIMILAR FICS ──────────────────────────────────────────────── */
+        .ao3h-similar-fics-panel {
+            border: 1px solid #bad0ea; border-radius: 6px;
+            padding: 14px 18px; margin: 16px 0; background: #f5faff;
+        }
+        .ao3h-similar-fics-title {
+            font-size: 1em; font-weight: bold; margin: 0 0 6px; color: #1a5f8a;
+        }
+        .ao3h-similar-fics-desc {
+            font-size: .84em; color: #555; margin: 0 0 10px; line-height: 1.4;
+        }
+        .ao3h-similar-fics-links { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ao3h-similar-fics-link {
+            display: inline-block; padding: 4px 14px;
+            background: #2c5f8a; color: #fff !important; border-radius: 4px;
+            font-size: .83em; text-decoration: none;
+        }
+        .ao3h-similar-fics-link.secondary {
+            background: #fff; color: #2c5f8a !important;
+            border: 1px solid #2c5f8a;
+        }
+
+        /* ── TROPE BINGO ────────────────────────────────────────────────── */
+        .ao3h-tg-bingo-wrap {
+            position: fixed; bottom: 60px; right: 16px; z-index: 8000;
+            background: #fff; border: 2px solid #900;
+            border-radius: 10px; padding: 10px 10px 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,.2); width: 262px;
+        }
+        .ao3h-tg-bingo-title {
+            font-weight: bold; font-size: .82em; color: #900;
+            margin-bottom: 6px; text-align: center; letter-spacing: .04em;
+            padding-right: 16px;
+        }
+        .ao3h-tg-bingo-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px;
+        }
+        .ao3h-tg-bingo-cell {
+            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+            font-size: 0.5em; text-align: center; background: #f8f8f8;
+            border: 1px solid #ddd; border-radius: 3px; padding: 2px;
+            line-height: 1.15; word-break: break-word; hyphens: auto; overflow: hidden;
+        }
+        .ao3h-tg-checked {
+            background: #e0ffe0 !important; border-color: #080 !important; color: #040 !important;
+        }
+        .ao3h-tg-free {
+            background: #f0e0ff !important; border-color: #800080 !important;
+            font-weight: bold; font-size: 0.62em !important;
+        }
+        .ao3h-tg-bingo-actions {
+            display: flex; gap: 6px; margin-top: 8px; justify-content: center;
+        }
+        .ao3h-tg-btn {
+            font-size: .75em; padding: 3px 10px; border-radius: 10px;
+            border: 1px solid #900; color: #900; background: transparent; cursor: pointer;
+        }
+        .ao3h-tg-bingo-close {
+            position: absolute; top: 6px; right: 8px;
+            background: none; border: none; font-size: .85em;
+            color: #999; cursor: pointer; padding: 0; line-height: 1;
+        }
+        .ao3h-tg-bingo-toggle {
+            position: fixed; bottom: 16px; right: 16px; z-index: 8001;
+            background: #900; color: #fff; border: none; border-radius: 20px;
+            padding: 6px 14px; font-size: .8em; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,.2);
+        }
+        .ao3h-tg-roulette-trigger {
+            position: fixed; bottom: 52px; right: 90px; z-index: 8002;
+            font-size: .75em; padding: 6px 12px; border-radius: 18px;
+            border: 1px solid #900; color: #900; background: #fff; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,.15);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           Tab 3 : Reading
+           8 modules : chapterNavigation · readingTracker · readingFormatter
+                        textToSpeech · wordSwap · instantFootnotes
+                        collapseAuthorNotes · ficActions
+        ═══════════════════════════════════════════════════════════════════════ */
+
+        /* ── READING TRACKER ────────────────────────────────────────────── */
+        .ao3h-rt-resume-banner {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #e8f5e9; border: 1px solid #81c784; border-radius: 4px;
+            padding: 8px 14px; margin-bottom: 12px; font-size: .88em; color: #2e7d32;
+        }
+        .ao3h-rt-resume-btn {
+            padding: 4px 14px; background: #2e7d32; color: #fff;
+            border: none; border-radius: 4px; cursor: pointer; font-size: .82em; white-space: nowrap;
+        }
+        .ao3h-rt-progress-badge {
+            position: fixed; bottom: 105px; right: 16px; z-index: 7900;
+            background: #2e7d32; color: #fff; border-radius: 20px;
+            padding: 5px 12px; font-size: .78em; font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,.2);
+        }
+        .ao3h-rt-marker { border: none; border-top: 2.5px solid #27ae60; margin: 14px 0 4px; }
+        .ao3h-rt-marker-label { font-size: .74em; color: #27ae60; margin: 0 0 10px; font-style: italic; }
+
+        /* ── READING FORMATTER ─────────────────────────────────────────── */
+        .ao3h-rf-panel {
+            position: fixed; top: 60px; right: 16px; z-index: 7800;
+            background: #fff; border: 1px solid #ccc; border-radius: 8px;
+            padding: 10px 12px; width: 170px; box-shadow: 0 4px 12px rgba(0,0,0,.12);
+            font-size: .82em;
+        }
+        .ao3h-rf-title { font-weight: 700; font-size: 1em; text-align: center; margin-bottom: 8px; color: #333; }
+        .ao3h-rf-row { margin-bottom: 6px; }
+        .ao3h-rf-row-label { font-size: .8em; color: #555; margin-bottom: 3px; }
+        .ao3h-rf-btns { display: flex; gap: 3px; flex-wrap: wrap; }
+        .ao3h-rf-btn {
+            padding: 2px 7px; background: #f0f0f0; border: 1px solid #ccc;
+            border-radius: 3px; font-size: .72em; cursor: pointer;
+        }
+        .ao3h-rf-btn.active { background: #2c5f8a; color: #fff; border-color: #2c5f8a; }
+
+        /* ── TEXT TO SPEECH ───────────────────────────────────────────────── */
+        .ao3h-tts-panel {
+            position: fixed; bottom: 175px; right: 16px; z-index: 7700;
+            background: #fff; border: 1px solid #d0d0d0; border-radius: 8px;
+            padding: 10px 12px; width: 210px; box-shadow: 0 4px 12px rgba(0,0,0,.12);
+            font-size: .82em;
+        }
+        .ao3h-tts-title { font-weight: 700; font-size: .88em; margin-bottom: 6px; }
+        .ao3h-tts-row { display: flex; align-items: center; gap: 5px; font-size: .78em; margin-bottom: 4px; }
+        .ao3h-tts-controls { display: flex; gap: 4px; margin-bottom: 5px; }
+        .ao3h-tts-btn { padding: 3px 7px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 3px; font-size: .85em; cursor: pointer; }
+        .ao3h-tts-btn.play { background: #27ae60; color: #fff; border-color: #27ae60; }
+        .ao3h-tts-progress { height: 4px; background: #eee; border-radius: 4px; margin: 4px 0; overflow: hidden; }
+        .ao3h-tts-progress-fill { height: 100%; background: #27ae60; width: 35%; }
+        .ao3h-tts-highlight { background: #fff3b0; border-radius: 2px; padding: 0 1px; }
+        .ao3h-tts-sleep-btn { padding: 2px 6px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 3px; font-size: .72em; cursor: pointer; margin-right: 3px; }
+        .ao3h-tts-sleep-btn.on { background: #e74c3c; color: #fff; border-color: #e74c3c; }
+
+        /* ── WORD SWAP ────────────────────────────────────────────────────── */
+        .ao3h-ws-replaced {
+            background: #e8f0fe; padding: 0 3px; border-radius: 2px;
+            font-weight: 700; color: #2c5f8a;
+        }
+        .ao3h-ws-banner {
+            font-size: .78em; color: #2c5f8a; background: #f0f4ff;
+            border: 1px solid #b3dfff; border-radius: 4px;
+            padding: 4px 10px; margin-bottom: 8px;
+        }
+
+        /* ── INSTANT FOOTNOTES ───────────────────────────────────────────── */
+        .ao3h-fn-ref { color: #900; }
+        .ao3h-fn-tooltip-wrap { position: relative; }
+        .ao3h-fn-tooltip {
+            position: absolute; top: calc(100% + 6px); left: 0; z-index: 9000;
+            background: #333; color: #fff; border-radius: 6px;
+            padding: 8px 10px; width: 270px; font-size: .8em;
+            box-shadow: 0 2px 8px rgba(0,0,0,.3); line-height: 1.45; pointer-events: none;
+        }
+        .ao3h-fn-tooltip-arrow {
+            position: absolute; bottom: 100%; left: 12px;
+            border-left: 6px solid transparent; border-right: 6px solid transparent;
+            border-bottom: 6px solid #333; width: 0; height: 0;
+        }
+        .ao3h-fn-tooltip a { color: #7bb3ff; font-size: .85em; }
+
+        /* ── COLLAPSE AUTHOR NOTES ───────────────────────────────────────── */
+        .ao3h-can-header { display: flex; justify-content: space-between; align-items: center; }
+        .ao3h-can-toggle {
+            background: none; border: none; cursor: pointer;
+            color: #666; font-size: .95em; padding: 0 4px; line-height: 1; flex-shrink: 0;
+        }
+        .ao3h-can-collapsed { font-size: .82em; color: #999; display: block; margin: 4px 0; }
+
+        /* ── FIC ACTIONS ──────────────────────────────────────────────────────── */
+        .ao3h-fa-hidden { opacity: .3; text-decoration: line-through; }
+        .ao3h-fa-hidden-label { font-size: .7em; color: #999; margin-left: 4px; font-style: italic; }
+        .ao3h-fa-subscribe-dupe {
+            background: linear-gradient(#fff, #ddd); border: 1px solid #bbb;
+            border-radius: 3px; padding: 4px 16px; font-size: .85em; cursor: pointer;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           Tab 4 : Library
+           ficAppreciation · bookmarkVault
+        ═══════════════════════════════════════════════════════════════════════ */
+
+        /* ── FIC APPRECIATION — finish button ─────────────────────────── */
+        .ao3h-fa-finish-btn {
+            background: #d4edda; border: 1px solid #c3e6cb; color: #155724;
+            padding: 3px 10px; border-radius: 4px; font-size: .82em; cursor: pointer;
+        }
+        .ao3h-fa-finish-btn:hover { background: #c3e6cb; }
+
+        /* ── BOOKMARK VAULT ────────────────────────────────────────────── */
+        .ao3h-bv-auto-banner {
+            font-size: .78em; background: #e8f0fe; border: 1px solid #b3d1ff;
+            border-radius: 4px; padding: 5px 8px; margin-bottom: 6px; color: #1a237e;
+        }
+        .ao3h-bv-auto-banner strong { font-size: .85em; text-transform: uppercase; letter-spacing: .5px; }
+        .ao3h-bv-auto-tag {
+            display: inline-block; background: #d0e8ff; border: 1px solid #90c4f4;
+            border-radius: 10px; padding: 1px 8px; font-size: .85em; margin: 2px;
+            color: #1a4a8f; cursor: default;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           AO3 HELPER — Module Visual Preview  (Tab 5 : Navigate & Interact)
+        ═══════════════════════════════════════════════════════════════════ */
+
+        /* ── MAIN NAVIGATION — back button ───────────────────────────── */
+        .ao3h-mn-back-btn {
+            display: inline-block; padding: 4px 14px; border-radius: 4px;
+            border: 1px solid #b0c4de; background: #e8f0fe; color: #1a56a8;
+            font-size: .82em; cursor: pointer; text-decoration: none;
+            margin-bottom: 10px;
+        }
+        .ao3h-mn-back-btn:hover { background: #cfe2ff; }
+
+        /* ── COMMENT KIT ─────────────────────────────────────────────── */
+        .ao3h-ck-toolbar {
+            display: flex; gap: 5px; align-items: center; flex-wrap: wrap;
+            padding: 5px 6px; background: #f8f9fa; border: 1px solid #dee2e6;
+            border-bottom: none; border-radius: 4px 4px 0 0; font-size: .8em;
+        }
+        .ao3h-ck-btn {
+            padding: 2px 9px; border: 1px solid #ccc; border-radius: 3px;
+            background: #fff; color: #333; cursor: pointer; font-size: .78em;
+            font-weight: 600;
+        }
+        .ao3h-ck-btn:hover { background: #e9ecef; }
+        .ao3h-ck-sep { color: #ccc; margin: 0 2px; }
+        .ao3h-ck-draft {
+            margin-left: auto; font-size: .72em; color: #3a7d44;
+            font-style: italic;
+        }
+        .ao3h-ck-author-reply {
+            background: #fff8e1 !important; border: 1px solid #ffe082 !important;
+            border-radius: 4px;
+        }
+        .ao3h-ck-author-reply-badge {
+            display: inline-block; background: #ffd54f; color: #5d4037;
+            border-radius: 3px; padding: 1px 7px; font-size: .7em;
+            font-weight: 700; margin-left: 6px; vertical-align: middle;
+        }
+
+        /* ── FIC DOWNLOADER (work page) ──────────────────────────────── */
+        .ao3h-fd-work-row {
+            display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+            padding: 4px 0 2px;
+        }
+        .ao3h-fd-work-btn {
+            background: #2c5f8a; color: #fff; border: none; border-radius: 4px;
+            padding: 4px 13px; font-size: .8em; cursor: pointer; font-weight: 600;
+        }
+        .ao3h-fd-work-fmt-sel {
+            font-size: .78em; padding: 2px 5px; border: 1px solid #ccc; border-radius: 3px;
+        }
+    </style>
+  </head>
+  <body class="logged-in">
+<div id="outer" class="wrapper">
+    <ul id="skiplinks">
+        <li><a href="#main">Main Content</a></li>
+    </ul>
+    <noscript>
+        <p id="javascript-warning">While we&#39;ve done our best to make the core functionality of this site accessible without JavaScript, it will work better with it enabled. Please consider turning it on!</p>
+    </noscript>
+    <header id="header" class="region">
+        <h1 class="heading">
+            <a href="/"><span>Archive of Our Own</span><sup> beta</sup><img alt="Archive of Our Own" class="logo" src="https://archiveofourown.org/images/ao3_logos/logo_42.png"></a>
+        </h1>
+        <nav id="greeting" aria-label="User">
+            <ul class="user navigation actions">
+                <li class="dropdown" aria-haspopup="true">
+                    <a href="/users/coracutiehale" class="dropdown-toggle" data-toggle="dropdown" data-target="#">Hi, coracutiehale!</a>
+                    <ul class="menu dropdown-menu">
+                        <li><a href="/users/coracutiehale">My Dashboard</a></li>
+                        <li><a href="/users/coracutiehale/subscriptions">My Subscriptions</a></li>
+                        <li><a href="/users/coracutiehale/bookmarks">My Bookmarks</a></li>
+                        <li><a href="/users/coracutiehale/readings">My History</a></li>
+                        <li><a href="/users/coracutiehale/preferences">My Preferences</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown" aria-haspopup="true">
+                    <a href="/works/new" class="dropdown-toggle" data-toggle="dropdown" data-target="#">Post</a>
+                    <ul class="menu dropdown-menu">
+                        <li><a href="/works/new">New Work</a></li>
+                        <li><a href="/works/new?import=true">Import Work</a></li>
+                    </ul>
+                </li>
+                <li><a rel="nofollow" data-method="delete" href="/users/logout?return_to=%2Fworks%2F77009551">Log Out</a></li>
+            </ul>
+            <p class="icon"><a href="/users/coracutiehale"><img alt class="icon" src="https://archiveofourown.org/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsiZGF0YSI6NjE0NjQ2NCwicHVyIjoiYmxvYl9pZCJ9fQ==--0d1daf655aafc10d691c2172b98ab4e448b44286/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAsMTAwXSwibG9hZGVyIjp7Im4iOi0xfX0sInB1ciI6InZhcmlhdGlvbiJ9fQ==--fb1da3623781351fb36c743584da71645585f6c4/original.jpg"></a></p>
+        </nav>
+        <nav aria-label="Site">
+            <ul class="primary navigation actions">
+                <li class="dropdown" aria-haspopup="true">
+                    <a href="/menu/fandoms" class="dropdown-toggle" data-toggle="dropdown" data-target="#">Fandoms</a>
+                    <ul class="menu dropdown-menu">
+                        <li><a href="/media">All Fandoms</a></li>
+                        <li id="medium_5"><a href="/media/Anime%20*a*%20Manga/fandoms">Anime &amp; Manga</a></li>
+                        <li id="medium_3"><a href="/media/Books%20*a*%20Literature/fandoms">Books &amp; Literature</a></li>
+                        <li id="medium_4"><a href="/media/Cartoons%20*a*%20Comics%20*a*%20Graphic%20Novels/fandoms">Cartoons &amp; Comics &amp; Graphic Novels</a></li>
+                        <li id="medium_7"><a href="/media/Celebrities%20*a*%20Real%20People/fandoms">Celebrities &amp; Real People</a></li>
+                        <li id="medium_2"><a href="/media/Movies/fandoms">Movies</a></li>
+                        <li id="medium_6"><a href="/media/Music%20*a*%20Bands/fandoms">Music &amp; Bands</a></li>
+                        <li id="medium_8"><a href="/media/Other%20Media/fandoms">Other Media</a></li>
+                        <li id="medium_30198"><a href="/media/Theater/fandoms">Theater</a></li>
+                        <li id="medium_1"><a href="/media/TV%20Shows/fandoms">TV Shows</a></li>
+                        <li id="medium_476"><a href="/media/Video%20Games/fandoms">Video Games</a></li>
+                        <li id="medium_9971"><a href="/media/Uncategorized%20Fandoms/fandoms">Uncategorized Fandoms</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown" aria-haspopup="true">
+                    <a href="/menu/browse" class="dropdown-toggle" data-toggle="dropdown" data-target="#">Browse</a>
+                    <ul class="menu dropdown-menu">
+                        <li><a href="/works">Works</a></li>
+                        <li><a href="/bookmarks">Bookmarks</a></li>
+                        <li><a href="/tags">Tags</a></li>
+                        <li><a href="/collections">Collections</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown" aria-haspopup="true">
+                    <a href="/menu/search" class="dropdown-toggle" data-toggle="dropdown" data-target="#">Search</a>
+                    <ul class="menu dropdown-menu">
+                        <li><a href="/works/search">Works</a></li>
+                        <li><a href="/bookmarks/search">Bookmarks</a></li>
+                        <li><a href="/tags/search">Tags</a></li>
+                        <li><a href="/people/search">People</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown" aria-haspopup="true">
+                    <a href="/menu/about" class="dropdown-toggle" data-toggle="dropdown" data-target="#">About</a>
+                    <ul class="menu dropdown-menu">
+                        <li><a href="/about">About Us</a></li>
+                        <li><a href="/admin_posts">News</a></li>
+                        <li><a href="/faq">FAQ</a></li>
+                        <li><a href="/wrangling_guidelines">Wrangling Guidelines</a></li>
+                        <li><a href="/donate">Donate or Volunteer</a></li>
+                    </ul>
+                </li>
+                <li class="search">
+                    <form class="search" id="search" role="search" aria-label="Work" action="/works/search" accept-charset="UTF-8" method="get">
+                        <fieldset>
+                            <p>
+                                <label class="landmark" for="site_search">Work Search</label>
+                                <input class="text" id="site_search" aria-describedby="site_search_tooltip" type="text" name="work_search[query]">
+                                <span class="tip" role="tooltip" id="site_search_tooltip">tip: arthur merlin words&gt;1000 sort:hits</span>
+                                <span class="submit actions"><input type="submit" value="Search" class="button"></span>
+                            </p>
+                        </fieldset>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+        <div class="clear"></div>
+    </header>
+    <div id="inner" class="wrapper">
+        <div id="main" class="works-show region" role="main">
+            <div class="flash"></div>
+            <!-- ★ AO3H mainNavigation — back to search results button (mock) -->
+            <a class="ao3h-mn-back-btn" href="#">← Back to Search Results</a>
+            <!-- ★ end mainNavigation back button -->
+            <ul class="landmark skip">
+                <li><a name="top">&nbsp;</a></li>
+                <li><a href="#work">Skip header</a></li>
+            </ul>
+            <div class="work">
+                <h3 class="landmark heading">Actions</h3>
+                <ul class="work navigation actions">
+                    <li class="chapter bychapter"><a href="/works/77009551/chapters/201559361">Chapter by Chapter</a></li>
+                    <li class="bookmark">
+                        <a class="bookmark_form_placement_open" href="#bookmark-form">Bookmark</a>
+                        <a class="hidden bookmark_form_placement_close style-HXYV7" href="#" id="style-HXYV7">Cancel Bookmark</a>
+                    </li>
+                    <li class="mark">
+                        <form class="button_to" method="post" action="/works/77009551/mark_for_later"><input type="hidden" name="_method" value="patch" autocomplete="off"><button type="submit">Mark for Later</button><input type="hidden" name="authenticity_token" value="0_UIOihtIUOpOpfEV0Lbv7asF4_iKudEOYfPSwtpfzCYl_etPhtPWnYplCoeLfDBjMIcIqLafSKOjyjCV3BxvA" autocomplete="off"></form>
+                    </li>
+                    <li class="comments" id="show_comments_link_top">
+                        <a data-remote="true" href="/comments/show_comments?work_id=77009551">Comments </a>
+                    </li>
+                    <li class="share">
+                        <a class="modal modal-attached ao3h-fa-hidden" title="Share Work" href="/works/77009551/share" aria-controls="modal">Share</a>
+                        <span class="ao3h-fa-hidden-label">← hidden by ficActions</span>
+                    </li>
+                    <li class="subscribe">
+                        <form class="ajax-create-destroy" id="new_subscription" data-create-value="Subscribe" data-destroy-value="Unsubscribe" action="/users/coracutiehale/subscriptions" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="0_UIOihtIUOpOpfEV0Lbv7asF4_iKudEOYfPSwtpfzCYl_etPhtPWnYplCoeLfDBjMIcIqLafSKOjyjCV3BxvA" autocomplete="off">
+                            <input autocomplete="off" type="hidden" value="77009551" name="subscription[subscribable_id]" id="subscription_subscribable_id">
+                            <input autocomplete="off" type="hidden" value="Work" name="subscription[subscribable_type]" id="subscription_subscribable_type">
+                            <input type="submit" name="commit" value="Subscribe">
+                        </form>
+                    </li>
+                    <li class="download"><noscript>
+                            <h4 class="heading">Download</h4>
+                        </noscript><button class="collapsed">Download</button>
+                        <ul class="expandable secondary hidden">
+                            <li><a href="/downloads/77009551/Bye_Bye_Miss_American.azw3?updated_at=1773613293">AZW3</a></li>
+                            <li><a href="/downloads/77009551/Bye_Bye_Miss_American.epub?updated_at=1773613293">EPUB</a></li>
+                            <li><a href="/downloads/77009551/Bye_Bye_Miss_American.mobi?updated_at=1773613293">MOBI</a></li>
+                            <li><a href="/downloads/77009551/Bye_Bye_Miss_American.pdf?updated_at=1773613293">PDF</a></li>
+                            <li><a href="/downloads/77009551/Bye_Bye_Miss_American.html?updated_at=1773613293">HTML</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <h3 class="landmark heading">Work Header</h3>
+                <div class="wrapper">
+                    <dl class="work meta group">
+                        <dt class="rating tags"> Rating: </dt>
+                        <dd class="rating tags">
+                            <ul class="commas">
+                                <li><a class="tag" href="/tags/Teen%20And%20Up%20Audiences/works">Teen And Up Audiences</a></li>
+                            </ul>
+                        </dd>
+                        <dt class="warning tags">
+                            <a href="/tos_faq#tags">Archive Warning</a>:
+                        </dt>
+                        <dd class="warning tags">
+                            <ul class="commas">
+                                <li><a class="tag" href="/tags/Major%20Character%20Death/works">Major Character Death</a></li>
+                            </ul>
+                        </dd>
+                        <dt class="category tags"> Category: </dt>
+                        <dd class="category tags">
+                            <ul class="commas">
+                                <li><a class="tag" href="/tags/F*s*M/works">F/M</a></li>
+                            </ul>
+                        </dd>
+                        <dt class="fandom tags"> Fandoms: </dt>
+                        <dd class="fandom tags">
+                            <ul class="commas">
+                                <li><a class="tag" href="/tags/The%20Avengers%20(Marvel%20Movies)/works">The Avengers (Marvel Movies)</a></li>
+                                <li><a class="tag" href="/tags/Marvel/works">Marvel</a></li>
+                            </ul>
+                        </dd>
+                        <dt class="relationship tags"> Relationships: </dt>
+                        <dd class="relationship tags">
+                            <ul class="commas">
+                                <li><a class="tag" href="/tags/James%20%22Bucky%22%20Barnes*s*Natasha%20Romanov/works">James "Bucky" Barnes/Natasha Romanov</a></li>
+                                <li><a class="tag" href="/tags/Clint%20Barton%20*a*%20Natasha%20Romanov/works">Clint Barton &amp; Natasha Romanov</a></li>
+                                <li><a class="tag" href="/tags/Avengers%20Team%20Members%20*a*%20Natasha%20Romanov%20(Marvel)/works">Avengers Team Members &amp; Natasha Romanov (Marvel)</a></li>
+                                <li><a class="tag" href="/tags/Bruce%20Banner%20*a*%20Natasha%20Romanov/works">Bruce Banner &amp; Natasha Romanov</a></li>
+                            </ul>
+                        </dd>
+                        <dt class="character tags"> Characters: </dt>
+                        <dd class="character tags">
+                            <ul class="commas">
+                                <li><a class="tag" href="/tags/Natasha%20Romanov%20(Marvel)/works">Natasha Romanov (Marvel)</a></li>
+                                <li><a class="tag" href="/tags/James%20%22Bucky%22%20Barnes/works">James "Bucky" Barnes</a></li>
+                                <li><a class="tag" href="/tags/Clint%20Barton/works">Clint Barton</a></li>
+                                <li><a class="tag" href="/tags/Bruce%20Banner/works">Bruce Banner</a></li>
+                                <li><a class="tag" href="/tags/Avengers%20Team%20Members%20(Marvel)/works">Avengers Team Members (Marvel)</a></li>
+                                <li><a class="tag" href="/tags/Helen%20Cho%20(Marvel)/works">Helen Cho (Marvel)</a></li>
+                            </ul>
+                        </dd>
+                        <dt class="freeform tags"> Additional Tags: </dt>
+                        <dd class="freeform tags">
+                            <ul class="commas">
+                                <li><a class="tag" href="/tags/Cancer/works">Cancer</a></li>
+                                <li><a class="tag" href="/tags/Natasha%20Romanov%20Needs%20a%20Hug%20(Marvel)/works">Natasha Romanov Needs a Hug (Marvel)</a></li>
+                                <li><a class="tag" href="/tags/Hurt*s*Comfort/works">Hurt/Comfort</a></li>
+                                <li><a class="tag" href="/tags/Angst/works">Angst</a></li>
+                                <li><a class="tag" href="/tags/Whump/works">Whump</a></li>
+                                <li><a class="tag" href="/tags/Hugs/works">Hugs</a></li>
+                                <li><a class="tag" href="/tags/Avengers%20Team%20Members%20as%20Family%20(Marvel)/works">Avengers Team Members as Family (Marvel)</a></li>
+                                <li><a class="tag" href="/tags/Avengers%20Team%20Members%20Live%20in%20Avengers%20Tower%20(Marvel)/works">Avengers Team Members Live in Avengers Tower (Marvel)</a></li>
+                                <li><a class="tag" href="/tags/Sick%20Character/works">Sick Character</a></li>
+                                <li><a class="tag" href="/tags/Surgery/works">Surgery</a></li>
+                                <li><a class="tag" href="/tags/Natasha%20Romanov%20Has%20Feelings%20(Marvel)/works">Natasha Romanov Has Feelings (Marvel)</a></li>
+                            </ul>
+                        </dd>
+                        <dt class="language"> Language: </dt>
+                        <dd class="language" lang="en"> English </dd>
+                        <dt class="stats">Stats:</dt>
+                        <dd class="stats">
+                            <dl class="stats">
+                                <dt class="published">Published:</dt>
+                                <dd class="published">2026-01-03</dd>
+                                <dt class="status">Updated:</dt>
+                                <dd class="status">2026-03-15</dd>
+                                <dt class="words">Words:</dt>
+                                <dd class="words">2,412</dd>
+                                <dt class="chapters">Chapters:</dt>
+                                <dd class="chapters">2/8</dd>
+                                <dt class="comments">Comments:</dt>
+                                <dd class="comments">4</dd>
+                                <dt class="kudos">Kudos:</dt>
+                                <dd class="kudos">7</dd>
+                                <dt class="hits">Hits:</dt>
+                                <dd class="hits">167</dd>
+                            </dl>
+                        </dd>
+                    </dl>
+                </div>
+
+                <!-- ★ AO3H similarFics — similar works panel (mock) -->
+                <section class="ao3h-similar-fics-panel">
+                    <h3 class="ao3h-similar-fics-title">🔍 Similar works</h3>
+                    <p class="ao3h-similar-fics-desc">Using · Fandom: The Avengers (Marvel Movies) · Rating: Teen And Up Audiences · Length: ~2,412 words · Tags: Hurt/Comfort, Angst, Whump</p>
+                    <div class="ao3h-similar-fics-links">
+                        <a class="ao3h-similar-fics-link" href="#">Open similar works ↗</a>
+                        <a class="ao3h-similar-fics-link secondary" href="#">More by arcane_avenger ↗</a>
+                        <a class="ao3h-similar-fics-link secondary" href="#">More in this fandom ↗</a>
+                    </div>
+                </section>
+                <!-- ★ end similarFics mock -->
+
+                <!-- ★ AO3H readingTracker — resume banner (mock: last read 45% through Ch 2) -->
+                <div class="ao3h-rt-resume-banner">
+                    <span>📖 You were at <strong>45%</strong> — Chapter 2</span>
+                    <button type="button" class="ao3h-rt-resume-btn">↩ Resume reading</button>
+                </div>
+                <!-- ★ end readingTracker resume banner -->
+
+                <div id="workskin">
+                    <div class="preface group">
+                        <h2 class="title heading"> Bye, Bye Miss American Pie </h2>
+                        <h3 class="byline heading">
+                            <a rel="author" href="/users/arcane_avenger/pseuds/arcane_avenger">arcane_avenger</a>
+                        </h3>
+                        <div class="summary module">
+                            <h3 class="heading">Summary:</h3>
+                            <blockquote class="userstuff">
+                                <p>Natasha Romanoff is faced with her greatest battle yet, cancer. Unable to fight it alone, she grows closer with Bucky.</p>
+                            </blockquote>
+                        </div>
+                    </div>
+
+                    <!-- ★ AO3H collapseAuthorNotes — beginning notes (mock: expanded because TW keyword detected) -->
+                    <div class="notes module">
+                        <div class="ao3h-can-header">
+                            <h3 class="heading">Notes:</h3>
+                            <button type="button" class="ao3h-can-toggle" aria-label="Collapse notes">▼</button>
+                        </div>
+                        <blockquote class="userstuff">
+                            <p>This fic deals with a cancer diagnosis. <strong>TW: medical content, chronic illness.</strong> Take care of yourselves. ❤</p>
+                            <p style="font-size:.8em;color:#999;margin-top:4px;">↑ Auto-expanded by collapseAuthorNotes (TW keyword detected)</p>
+                        </blockquote>
+                    </div>
+                    <!-- ★ end collapseAuthorNotes beginning notes -->
+
+                    <div id="chapters" role="article">
+                        <div class="chapter" id="chapter-1">
+                            <div class="chapter preface group">
+                                <h3 class="title">
+                                    <a href="/works/77009551/chapters/201559361">Chapter 1</a>: Chapter 1
+                                </h3>
+                            </div>
+                            <div class="userstuff module" role="article">
+                                <h3 class="landmark heading" id="work">Chapter Text</h3>
+                                <p>She’d noticed the signs a few weeks ago. A few small lumps and a distant pain. She was sure it was nothing - things change as you age. Then she started feeling sick, and she began to be too tired to simply get out of bed. The pain increased, so much so that it began to hurt to simply wear her bra, and more lumps had appeared on her breasts. She bit the bullet and pulled a baggy hoody over her bare chest, pain shooting through her as her body grazed the fabric. She took the elevator to 4 floors below her room, where Bruce’s office and the medical bay were situated. Bruce’s door was open and she entered the office, leaning against the wall as Bruce looked up from his computer.</p>
+                                <p>“Morning, Nat. Can I help you?” He asked with a gentle smile, his fingers still tapping away on the keyboard.</p>
+                                <p>“I have a.. problem. I’m sure it’s nothing, but I thought it best to get it checked out.” She kept her gaze locked on the floor below her.</p>
+                                <p>Bruce frowned. “What is it?”</p>
+                                <p>“My breasts,” she replied before a beat had passed. “They hurt constantly and I’ve noticed some lumps appearing.”</p>
+                                <p>Bruce nodded slowly. “Sounds like you need a check up. Would you prefer to have it done by a female doctor?”</p>
+                                <p>Natasha shrugged. “Whatever will make it be done quicker,” she said, finally looking up.</p>
+                                <p>Bruce guided her into one of the medical rooms and instructed her to take a seat then reached for her chart from one of the cupboards. After a quick glance he pulled on some gloves and cleared his throat.</p>
+                                <p>“Can you remove your hoody for me, please?” Bruce asked, moving closer.</p>
+                                <p>Natasha obliged, placing the grey top next to her and shivering slightly as the cold air hit her bare skin.</p>
+                                <p>Bruce’s hand cupped her breasts as he inspected the numerous lumps scattered across her chest. She winced as his hand moved slightly, the pain ever-increasing.</p>
+                                <p>“Have you had any more symptoms?” Bruce asked, removing his gloves and documenting the size and location of the lumps.</p>
+                                <p>“Uh,” Natasha pulled on her hoody. “Nausea, fatigue, I guess.”</p>
+                                <p>Bruce let out a sigh. “I think it’s best if you have a mammogram - essentially a breast X-Ray. It’ll be performed by one of my colleagues, Dr Cho. She’s here at the minute, if you want to get it done with?”</p>
+                                <p>Natasha stood up and nodded, walking with Bruce as he guided her to a separate room. He left her with Helen, who talked her through the procedure, took a blood sample, and before she knew it, it was done with.</p>
+                                <p>She retreated to her room, her head pounding as her body ached for a lie down. She stifled a yawn and collapsed onto her bed, pulling her thick duvet over her body as a wave of nausea hit her.
+                                <div class="ao3h-fn-tooltip-wrap">Dr Cho had assured her she'd get the results to Bruce within a day - being an Avenger had many perks<sup><a href="#ao3h-fn1" class="ao3h-fn-ref">[1]</a></sup>.
+                                    <!-- ★ AO3H instantFootnotes — tooltip (open/hover state) -->
+                                    <div class="ao3h-fn-tooltip">
+                                        <div class="ao3h-fn-tooltip-arrow"></div>
+                                        <strong>[1]</strong> Avengers operatives receive priority access to SHIELD-affiliated facilities. Dr. Cho's biometric lab can turn around diagnostics in under 24 hours.
+                                        <br><a href="#ao3h-fn1">⇓ Jump to note</a>
+                                    </div>
+                                </div></p>
+                                <p>“Mr. Stark would like me to alert you that dinner is ready,” Friday said, the AIs voice echoing through her room hours later.</p>
+                                <p>Letting out a groan, Natasha forced herself out of bed and changed into some more suitable clothes - skin-tight jeans, a black t-shirt and a leather jacket. The group dinners were hosted on the floor above their rooms, and one below Stark's private floor. Rather than waiting for the elevator, she dashed up the stairs and was greeted by the loud voices of the rest of the Avengers chatting at the table. She took her seat between Clint and Bucky and glanced around, noticing Bruce wasn’t present. Pepper too wasn’t there, but she was on one of her business trips in Tokyo.</p>
+                                <p>Tonight was Friday - pizza night. When Steve had the time, he’d make the team their own pizzas from scratch, but when the team had been swamped with missions and Steve just wanted to relax, they’d order them from their local fine dining restaurant. 20 pizzas, 15 boxes of fries, 15 salads and 30 gooey chocolate cookies. Enough to feed a village, but it would all be gone within an hour.</p>
+                                <p>“Tuck in!” Tony exclaimed from the chair at the end of the table, clasping his hands together.</p>
+                                <p>“Shouldn’t we wait for Bruce?” Steve asked as the others began to fill up their plates.</p>
+                                <p>Tony shook his head. “He’s not joining us tonight, you know how busy he gets.”</p>
+                                <p>Steve nodded, thinking nothing more of it.</p>
+                                <p>Natasha, like the rest of the Avengers, loaded her plate up with food and tucked in. It wasn’t long until the only food left were crumbs in the pizza boxes and Nat felt as if she were ready for a nap. She stood up, keeping a strong grip on the table as a wave of dizziness hit her suddenly.</p>
+                                <p>“I’m off. I need an early night for once. I’ll leave you boys to it,” she said with a small smile and walked back upstairs to her room, resisting the urge to collapse onto her bed.</p>
+                                <p>She peeled off her clothes and changed into some soft pyjamas - black silk bottoms with a matching top. After brushing her teeth, she finally gave into her fatigue and crawled into bed, falling asleep only moments later.</p>
+                                <p>She was awoken at 1am by a knock on her door. Groaning and rubbing her eyes, Nat forced herself upright and paused, listening to see if someone was still outside. Then the knock came again.</p>
+                                <p>With a frown, she climbed out of bed and opened her door.</p>
+                                <p>“Can I come in?” Bruce asked quietly.</p>
+                                <p>She nodded, beckoning him inside and closing the door behind him. He perched on the end of her bed, keeping his hands clasped together.</p>
+                                <p>Natasha flicked on her light and sat down next to him. “Bruce, it’s the middle of the night. You should be in bed.” Her eyes flickered across his face, his eyes red and swollen.</p>
+                                <p>“It couldn’t wait,” He replied, taking a deep breath. “Natasha, you have breast cancer.”</p>
+                                <p>Cancer. The word echoed through Natasha's head. Was this some kind of twisted karma for her actions whilst she was in the red room? Her punishment for being an assassin?</p>
+                                <p><span class="ao3h-ws-replaced">Natasha</span> took a deep breath and tried her best to smile. "I appreciate you telling me, Bruce. Good night." She stood up and opened the door for him.</p>
+                                <p>Bruce, slightly taken aback by her calm manner, left the room with a small sigh. “Come to my office tomorrow, Dr Cho can talk you through what happens next.”</p>
+                                <p>Nat closed the door on him without replying and flicked off the lights. Leaning against the door, she slid to the floor and broke down. She pulled her knees to her head, allowing herself to sob for the first time in a long time. Trying to control her shaky breaths, she ran her hands through her disheveled hair. A gurgle in her stomach made her dash to the bathroom, throwing the lid up just in time for her to give in to the wave of nausea that had hit her for the seemingly millionth time. She heaved up everything she’d consumed that day until all that was left was watery bile.</p>
+                                <p>Groaning, she flushed the toilet and forced herself upright. Is that what her life would be like from now on? Fighting cancer rather than super villains?</p>
+                                <p>Natasha splashed her pale face with cold water before returning to her bed. She was still exhausted, but unable to sleep. Would she still be able to go on missions? How would the other Avengers react? Bruce’s sympathetic tone made her want to punch something, there was no way she could deal with it from everyone else.</p>
+                                <p>Clint. Her best friend. She knew he’d try to act like he was fine, like he wasn’t worried about her, but they were close. Closer to each other than the others. He’d be scared of losing her. At least he’d still have Bucky.</p>
+                            </div>
+                        </div>
+                        <!-- ★ AO3H readingTracker — last read position marker (mock: paused here) -->
+                        <hr class="ao3h-rt-marker" aria-label="Last read position">
+                        <p class="ao3h-rt-marker-label">📍 Last read position — click to continue</p>
+                        <!-- ★ end readingTracker marker -->
+
+                        <!-- ★ AO3H wordSwap — active substitutions banner (mock) -->
+                        <div class="ao3h-ws-banner">👤 Word Swap: <strong>Y/N</strong> → <strong class="ao3h-ws-replaced">Natasha</strong> &nbsp;·&nbsp; 4 occurrences replaced</div>
+                        <!-- ★ end wordSwap -->
+                        <div class="chapter" id="chapter-2">
+                            <div class="chapter preface group">
+                                <h3 class="title">
+                                    <a href="/works/77009551/chapters/213650991">Chapter 2</a>: Chapter 2
+                                </h3>
+                                <div id="summary" class="summary module">
+                                    <h3 class="heading">Summary:</h3>
+                                    <blockquote class="userstuff">
+                                        <p>Natasha meets with Dr. Helen Cho and has a tiring training session.</p>
+                                    </blockquote>
+                                </div>
+                            </div>
+                            <div class="userstuff module" role="article">
+                                <h3 class="landmark heading" id="work">Chapter Text</h3>
+                                <p>The rest of the night passed painfully slowly, and before she’d been able to fall asleep, the rising sun crept between the gap in her curtains. She stared at the dark bags underneath her eyes in the mirror as she got ready, a painful reminder of last night's events.</p>
+                                <p>Begrudgingly, she trudged to Bruce’s office, which she found to be empty.</p>
+                                <p>“Friday, where’s Bruce?” She asked the AI.</p>
+                                <p>“Dr Banner is asleep in his bedroom. Would you like me to wake him up?” The AI replied.</p>
+                                <p>“No, never mind,” she replied with a sigh. As she turned on her heel to leave the room, she was met with Dr Cho standing in the doorway.</p>
+                                <p>“Good morning, Natasha. It’s good to see you. How are you feeling?” Helen entered the room and sat down in Bruce’s chair, pointing for Natasha to sit in the seat opposite.</p>
+                                <p>“Fine,” Nat replied coolly, sliding into the black leather chair.</p>
+                                <p>“Let’s start then, shall we?” She asked with a smile. “First things first, we’ll need to do a CT scan to check how far your cancer has spread. That’ll help us assess what stage you have and what treatment is needed. How does that sound?”</p>
+                                <p>Natasha nodded. “Let’s get it done with.”</p>
+                                <p>Helen guided Nat to the CT room and made her remove any metal she was wearing. She drank a small amount of contrast medium to help make the cancer appear clearer in the scans, then settled into the scanner. Once the scan was over, Helen told Natasha that she would find her later to discuss her findings.</p>
+                                <p>Today was a training day. Natasha changed into her matching red tracksuit and forced down a granola bar, then took the elevator to the training floor. It wasn’t long before the team were (nearly) all gathered in a circle, Steve briefing them on their plan for the session.</p>
+                                <p>“We’ll be focusing on hand-to-hand combat today, getting close up and learning not to rely on our suits or weapons. Some of us will find it easier,” he said, glancing at Bucky and his metal arm. “Others will find it tougher. We don’t all have superserum in our blood.”</p>
+                                <p>Clint scoffed. “No fair. Give me my bow and arrow, and I'll take you down, America's ass.”</p>
+                                <p>“That’s the point, Clint,” Steve raised his eyebrows. “There’ll come a time when you’ll only be able to rely on your body. You need to be strong enough to protect yourself and any civilians around you.”</p>
+                                <p>Clint rolled his eyes and heaved a loud sigh.</p>
+                                <p>“Tony, you can go with Clint. Sam and Bucky pair up, and I’ll go with Natasha.”</p>
+                                <p>Steve led Natasha to the far right of the room, and the pair positioned themselves on the mats with their guards up.</p>
+                                <p>“Ready?” Steve asked to the room. “Go.”</p>
+                                <p>Natasha threw the first punch, but Steve dodged it and threw one in retaliation. Uppercut, jab, hook. Natasha avoided them all.</p>
+                                <p>“You need to work on your aim,” she said with a smirk.</p>
+                                <p>“Uh-huh,” he replied, keeping his eyes fixed on her arms.</p>
+                                <p>He saw it too late when she did a turning kick, landing her foot into his ribcage. He groaned in pain, trying to catch his breath.</p>
+                                <p>“Good move,” he said in between his shaky breaths. “Let’s go again.”</p>
+                                <p>The following round went on for longer, both Avengers being able to anticipate each other's every move. She dodged his punches, moving her body as elegantly as a ballerina, and he avoided her kicks. After 15 minutes of continuous fighting, Natasha began to feel herself slow down. Her kicks got weaker, and she found herself struggling to avoid Steve's attacks. Her stomach churned, and her head started to spin.</p>
+                                <p>She tried a half-hearted turn kick, but he swiftly moved out of the way, causing her to wobble slightly. Steve took advantage of this and threw a series of punches towards her. 2 jabs, then a hook, then another jab. Natasha was unable to avoid them, and instead groaned in pain and stepped backwards with a sigh.</p>
+                                <p>“Fine, you win, whatever,” she said, trying to catch her breath.</p>
+                                <p>“The best man always wins,” he replied with a smirk.</p>
+                                <p>Natasha trudged to the side of the room, letting herself fall onto one of the benches. She grabbed a bottle of water and took a few sips, then realised she was going to struggle to keep it down. She rested her head against the wall behind her and focused on her breathing. In and out, in and out. The other pairs slowly began to finish their fights, and eventually, Bucky came and sat down next to her.</p>
+                                <p>“You okay?” he asked with a frown.</p>
+                                <p>She nodded slightly, the movement making her even more dizzy.</p>
+                                <p>“Are you ill?” he asked.</p>
+                                <p>“I’m fine,” she grumbled.</p>
+                                <p>Bucky sighed and accepted defeat. He grabbed a banana from the snack box and offered one to Natasha, but she shook her head.</p>
+                                <p>“You need to eat, Nat, you look tired.”</p>
+                                <p>“I’m going for a shower,” Natasha said, pushing herself up from the bench and using all her strength to remain upright, then walking to the elevator and retreating to her bedroom. She collapsed onto her bed and, even though she was still wearing her sweaty training clothes, she crawled under her duvet and swiftly fell asleep.</p>
+                                <p>Natasha awoke a few hours later to a gentle knock on the door.</p>
+                                <p>“One minute!” she shouted, jumping out of bed and changing into a fresh pair of clothes from her wardrobe. She opened her door with a small smile.</p>
+                                <p>“Can I come in?” Bucky asked.</p>
+                                <p>“Sure,” Natasha replied, opening the door wider and closing it once he’d entered and taken a seat on her bed. Natasha sat down next to him and tapped her fingers against her thighs.</p>
+                                <p>“Um, I just wanted to check if you were okay. You just seemed a bit, um, ill,” Bucky said, trying not to sound intrusive.</p>
+                                <p>“I’m fine, Buck,” she said reassuringly.</p>
+                                <p>“Good, well, I just thought I’d better check.” Bucky cleared his throat and stood back up. “Well, I’d better leave you to it then. Y’know, I’m always here if you, um, need anything.”</p>
+                                <p>“Yeah, I know, Buck,” she said, “Thanks.”</p>
+                                <p>Bucky left her bedroom, closing the door behind him, leaving Natasha alone again. She crawled back into bed and rested her head on her pillow. Maybe she should have been honest with Bucky. She was starting to realise she couldn’t do it alone.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ★ AO3H collapseAuthorNotes — end notes (mock: collapsed state) -->
+                    <div class="end notes module">
+                        <div class="ao3h-can-header">
+                            <h3 class="heading">End Notes:</h3>
+                            <button type="button" class="ao3h-can-toggle" aria-label="Expand end notes">▶</button>
+                        </div>
+                        <em class="ao3h-can-collapsed">— collapsed —</em>
+                    </div>
+                    <!-- ★ end collapseAuthorNotes end notes -->
+
+                    <!-- ★ AO3H instantFootnotes — footnote anchor -->
+                    <div id="ao3h-fn1" class="notes module" style="background:#f5f5f5;font-size:.85em">
+                        <h3 class="heading">Notes:</h3>
+                        <p>[1] Avengers operatives receive priority access to SHIELD-affiliated facilities. Dr. Cho's biometric lab can turn around diagnostics in under 24 hours.</p>
+                    </div>
+                    <!-- ★ end instantFootnotes -->
+                </div>
+            </div>
+            <div id="feedback" class="feedback">
+                <h3 class="landmark heading">Actions</h3>
+                <ul class="actions">
+                    <!-- ★ AO3H ficAppreciation — star rating (mock) -->
+                    <li style="display:block; width:100%; margin-bottom:4px;">
+                        <span id="ao3h-mock-stars">
+                            <span class="ao3h-mock-label">Rate:</span>
+                            <button type="button" data-star="1">☆</button>
+                            <button type="button" data-star="2">☆</button>
+                            <button type="button" data-star="3">☆</button>
+                            <button type="button" data-star="4">☆</button>
+                            <button type="button" data-star="5">☆</button>
+                        </span>
+                    </li>
+                    <!-- ★ end mock -->
+                    <!-- ★ AO3H ficAppreciation — Mark Finished button (mock) -->
+                    <li style="margin-bottom:4px;">
+                        <button type="button" class="ao3h-fa-finish-btn">✅ Mark as Finished</button>
+                    </li>
+                    <!-- ★ end ficAppreciation finish btn -->
+                    <!-- ★ AO3H ficActions — duplicate Subscribe button at bottom (mock) -->
+                    <li>
+                        <button type="button" class="ao3h-fa-subscribe-dupe">Subscribe (duplicated at bottom by ficActions)</button>
+                    </li>
+                    <!-- ★ end ficActions subscribe dupe -->
+                    <!-- ★ AO3H ficDownloader — download button on work page (mock) -->
+                    <li>
+                        <div class="ao3h-fd-work-row">
+                            <button type="button" class="ao3h-fd-work-btn">⬇️ Download</button>
+                            <select class="ao3h-fd-work-fmt-sel" aria-label="Download format">
+                                <option>ePub</option><option>PDF</option><option>MOBI</option><option>TXT</option><option>HTML</option>
+                            </select>
+                        </div>
+                    </li>
+                    <!-- ★ end ficDownloader download button -->
+                    <li><a href="#main">↑ Top</a></li>
+                    <li>
+                        <form id="new_kudo" action="/kudos" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="0_UIOihtIUOpOpfEV0Lbv7asF4_iKudEOYfPSwtpfzCYl_etPhtPWnYplCoeLfDBjMIcIqLafSKOjyjCV3BxvA" autocomplete="off">
+                            <input value="77009551" autocomplete="off" type="hidden" name="kudo[commentable_id]" id="kudo_commentable_id">
+                            <input value="Work" autocomplete="off" type="hidden" name="kudo[commentable_type]" id="kudo_commentable_type">
+                            <input type="submit" name="commit" value="Kudos ♥" id="kudo_submit">
+                        </form>
+                    </li>
+                    <li>
+                        <a class="bookmark_form_placement_open" href="#bookmark-form">Bookmark</a>
+                    </li>
+                    <li id="show_comments_link"><a data-remote="true" href="/comments/show_comments?work_id=77009551">Comments (4)</a></li>
+                </ul>
+                <div id="kudos_message"></div>
+                <h3 class="landmark heading">Kudos</h3>
+                <div id="kudos">
+                    <p class="kudos">
+                        <a href="/users/crocostilletos">crocostilletos</a>, <a href="/users/Master_Of_Wind">Master_Of_Wind</a>, <a href="/users/stardust_daughter">stardust_daughter</a>, <a href="/users/Katie_Destiny436">Katie_Destiny436</a>, and <a href="/users/HiuDarat05">HiuDarat05</a> as well as 2 guests left kudos on this work!
+                    </p>
+                </div>
+
+
+
+                <h3 class="landmark heading"><a id="comments">Comments</a></h3>
+                <div id="add_comment_placeholder" title="top level comment">
+                    <div id="add_comment">
+                        <div class="post comment" id="comment_form_for_77009551">
+                            <form class="new_comment" id="comment_for_77009551" action="/works/77009551/comments" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="0_UIOihtIUOpOpfEV0Lbv7asF4_iKudEOYfPSwtpfzCYl_etPhtPWnYplCoeLfDBjMIcIqLafSKOjyjCV3BxvA" autocomplete="off">
+                                <fieldset>
+                                    <legend>Post Comment</legend>
+                                    <h4 class="heading">Comment as <span class="byline">coracutiehale</span>
+                                        <input value="243477" id="comment_pseud_id_for_77009551" autocomplete="off" type="hidden" name="comment[pseud_id]">
+                                    </h4>
+                                    <p class="footnote">Plain text with limited HTML <a class="help symbol question modal modal-attached" title="Html help" href="/help/html-help.html" aria-controls="modal"><span class="symbol question"><span>?</span></span></a></p>
+                                    <!-- ★ AO3H commentKit — formatting toolbar (mock) -->
+                                    <div class="ao3h-ck-toolbar">
+                                        <button type="button" class="ao3h-ck-btn" title="Bold"><b>B</b></button>
+                                        <button type="button" class="ao3h-ck-btn" title="Italic"><i>I</i></button>
+                                        <button type="button" class="ao3h-ck-btn" title="Insert link">🔗</button>
+                                        <span class="ao3h-ck-sep">|</span>
+                                        <button type="button" class="ao3h-ck-btn" title="Comment templates">📝 Templates</button>
+                                        <span class="ao3h-ck-draft">✓ Draft saved</span>
+                                    </div>
+                                    <!-- ★ end commentKit toolbar -->
+                                    <p>
+                                        <label for="comment_content_for_77009551" class="landmark">Comment</label>
+                                        <textarea id="comment_content_for_77009551" class="comment_form observe_textlength" title="Enter Comment" name="comment[comment_content]"></textarea><span role="alert" id="comment_content_for_77009551_LV_validation_message" class=" LV_validation_message LV_valid"></span>
+                                        <input type="hidden" id="controller_name_for_77009551" name="controller_name" value="works">
+                                    </p>
+                                    <p class="character_counter" tabindex="0"><span id="comment_content_for_77009551_counter" class="value" data-maxlength="10000" aria-valuenow="10000">10000</span> characters left</p>
+                                    <p class="submit actions">
+                                        <input type="submit" name="commit" value="Comment" id="comment_submit_for_77009551" data-disable-with="Please wait...">
+                                    </p>
+                                </fieldset>
+                            </form>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <div id="comments_placeholder" class="style-FnDdD">
+                    <!-- ★ AO3H commentKit — author reply highlight (mock) -->
+                    <ol class="thread">
+                        <li class="comment group" id="comment_reader">
+                            <div class="header module">
+                                <h4 class="heading">
+                                    <a href="/users/stardust_daughter">stardust_daughter</a> on 20 Mar 2026
+                                </h4>
+                            </div>
+                            <blockquote class="userstuff">
+                                <p>This was absolutely beautiful, I cried reading this chapter. The way you wrote the reconciliation scene felt so real!</p>
+                            </blockquote>
+                        </li>
+                        <li class="comment group ao3h-ck-author-reply" id="comment_author">
+                            <div class="header module">
+                                <h4 class="heading">
+                                    <a href="/users/brighteyedwriter">brighteyedwriter</a>
+                                    <span class="ao3h-ck-author-reply-badge">Author reply</span>
+                                    on 21 Mar 2026
+                                </h4>
+                            </div>
+                            <blockquote class="userstuff">
+                                <p>Thank you so much — that scene took me forever to get right! Your kind words really made my day 💙</p>
+                            </blockquote>
+                        </li>
+                    </ol>
+                    <!-- ★ end commentKit author reply -->
+                </div>
+                <div id="bookmark_form_placement" class="wrapper toggled style-9i9j6">
+                    <div class="post bookmark" id="bookmark-form">
+                        <h3 class="landmark heading">Bookmark</h3>
+                        <form action="/works/77009551/bookmarks" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="0_UIOihtIUOpOpfEV0Lbv7asF4_iKudEOYfPSwtpfzCYl_etPhtPWnYplCoeLfDBjMIcIqLafSKOjyjCV3BxvA" autocomplete="off">
+                            <fieldset>
+                                <legend>Bookmark</legend>
+                                <p class="close actions">
+                                    <a class="bookmark_form_placement_close style-OdCAl" href="#comments" aria-label="cancel" id="style-OdCAl">×</a>
+                                </p>
+                                <h4 class="heading">
+                                    <span class="byline"> coracutiehale, <input value="243477" autocomplete="off" type="hidden" name="bookmark[pseud_id]" id="bookmark_pseud_id">
+                                    </span> save a bookmark!
+                                </h4>
+                                <fieldset>
+                                    <legend>Write Comments</legend>
+                                    <dl>
+                                        <dt><label for="bookmark_notes">Notes</label></dt>
+                                        <dd>
+                                            <p class="footnote" id="notes-field-description-summary"> The creator's summary is added automatically. </p>
+                                            <p class="footnote" id="notes-field-description-html"> Plain text with limited HTML <a class="help symbol question modal modal-attached" title="Html help" href="/help/html-help.html" aria-controls="modal"><span class="symbol question"><span>?</span></span></a> Embedded images (&lt;img&gt; tags) will be displayed as HTML, including the image's source link and any alt text. </p>
+                                            <!-- ★ AO3H bookmarkVault — auto-fill banner (mock) -->
+                                            <div class="ao3h-bv-auto-banner">
+                                                <strong>📌 BookmarkVault auto-filled:</strong><br>
+                                                <span class="ao3h-bv-auto-tag">Avengers</span>
+                                                <span class="ao3h-bv-auto-tag">Cancer</span>
+                                                <span class="ao3h-bv-auto-tag">Angst</span>
+                                            </div>
+                                            <!-- ★ end bookmarkVault banner -->
+                                            <textarea rows="4" id="bookmark_notes" class="observe_textlength" aria-describedby="notes-field-description-summary notes-field-description-html" name="bookmark[bookmarker_notes]">📖 Avengers · Natasha/Bucky · 2 chapters
+Tags: Cancer, Hurt/Comfort
+Read on: Mar 22, 2026</textarea>
+                                            <p class="character_counter" tabindex="0"><span id="bookmark_notes_counter" class="value" data-maxlength="5000" aria-valuenow="5000">5000</span> characters left</p>
+                                        </dd>
+                                        <dt><label for="bookmark_tag_string_autocomplete">Your tags</label></dt>
+                                        <dd>
+                                            <p class="footnote" id="tag-string-description"> The creator's tags are added automatically. </p>
+                                            <ul class="autocomplete">
+                                                <li class="input"><input type="text" class="text" autocomplete="off" role="combobox" aria-expanded="true" aria-autocomplete="list" id="bookmark_tag_string_autocomplete">
+                                                    <div class="autocomplete dropdown style-mdwUw" id="style-mdwUw"></div>
+                                                </li>
+                                            </ul><input class="autocomplete style-MKOPn" data-autocomplete-method="/autocomplete/tag?type=all" data-autocomplete-hint-text="Start typing for suggestions!" data-autocomplete-no-results-text="(No suggestions found)" data-autocomplete-min-chars="1" data-autocomplete-searching-text="Searching..." size="60" aria-describedby="tag-string-description" type="text" name="bookmark[tag_string]" id="bookmark_tag_string">
+                                            <p class="character_counter"> Comma separated, 150 characters per tag </p>
+                                        </dd>
+                                        <dt><label for="bookmark_collection_names_autocomplete">Add to collections</label></dt>
+                                        <dd>
+                                            <ul class="autocomplete">
+                                                <li class="input"><input type="text" class="text" autocomplete="off" role="combobox" aria-expanded="true" aria-autocomplete="list" id="bookmark_collection_names_autocomplete">
+                                                    <div class="autocomplete dropdown style-kNMwp" id="style-kNMwp"></div>
+                                                </li>
+                                            </ul><input class="autocomplete style-wpBxM" data-autocomplete-method="/autocomplete/open_collection_names" data-autocomplete-hint-text="Start typing for suggestions!" data-autocomplete-no-results-text="(No suggestions found)" data-autocomplete-min-chars="1" data-autocomplete-searching-text="Searching..." size="60" type="text" name="bookmark[collection_names]" id="bookmark_collection_names">
+                                        </dd>
+                                    </dl>
+                                </fieldset>
+                                <fieldset>
+                                    <legend>Choose Type and Post</legend>
+                                    <p>
+                                        <input name="bookmark[private]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="bookmark[private]" id="bookmark_private"> <label for="bookmark_private">Private bookmark</label>
+                                        <input name="bookmark[rec]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="bookmark[rec]" id="bookmark_rec"> <label for="bookmark_rec">Rec</label>
+                                    </p>
+                                    <p class="submit actions">
+                                        <input type="submit" name="commit" value="Create">
+                                    </p>
+                                </fieldset>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="clear"></div>
+        </div>
+    </div>
+    <div id="footer" role="contentinfo" class="region">
+        <h3 class="landmark heading">Footer</h3>
+        <ul class="navigation actions">
+            <li class="module group">
+                <h4 class="heading">Customize</h4>
+                <ul class="menu">
+                    <li>
+                        <form class="button_to" method="post" action="/skins/unset"><button type="submit">Default</button><input type="hidden" name="authenticity_token" value="0_UIOihtIUOpOpfEV0Lbv7asF4_iKudEOYfPSwtpfzCYl_etPhtPWnYplCoeLfDBjMIcIqLafSKOjyjCV3BxvA" autocomplete="off"></form>
+                    </li>
+                    <li>
+                        <form class="button_to" method="post" action="/skins/891/set"><button type="submit">Low Vision Default</button><input type="hidden" name="authenticity_token" value="0_UIOihtIUOpOpfEV0Lbv7asF4_iKudEOYfPSwtpfzCYl_etPhtPWnYplCoeLfDBjMIcIqLafSKOjyjCV3BxvA" autocomplete="off"></form>
+                    </li>
+                    <li>
+                        <form class="button_to" method="post" action="/skins/929/set"><button type="submit">Reversi</button><input type="hidden" name="authenticity_token" value="0_UIOihtIUOpOpfEV0Lbv7asF4_iKudEOYfPSwtpfzCYl_etPhtPWnYplCoeLfDBjMIcIqLafSKOjyjCV3BxvA" autocomplete="off"></form>
+                    </li>
+                    <li>
+                        <form class="button_to" method="post" action="/skins/932/set"><button type="submit">Snow Blue</button><input type="hidden" name="authenticity_token" value="0_UIOihtIUOpOpfEV0Lbv7asF4_iKudEOYfPSwtpfzCYl_etPhtPWnYplCoeLfDBjMIcIqLafSKOjyjCV3BxvA" autocomplete="off"></form>
+                    </li>
+                </ul>
+            </li>
+            <li class="module group">
+                <h4 class="heading">About the Archive</h4>
+                <ul class="menu">
+                    <li><a href="/site_map">Site Map</a></li>
+                    <li><a href="/diversity">Diversity Statement</a></li>
+                    <li><a href="/tos">Terms of Service</a></li>
+                    <li><a href="/content">Content Policy</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/dmca">DMCA Policy</a> </li>
+                    <li><a href="https://www.otwstatus.org">Site Status</a></li>
+                </ul>
+            </li>
+            <li class="module group">
+                <h4 class="heading">Contact Us</h4>
+                <ul class="menu">
+                    <li><a href="/abuse_reports/new">Policy Questions &amp; Abuse Reports</a></li>
+                    <li><a href="/support">Technical Support &amp; Feedback</a></li>
+                </ul>
+            </li>
+            <li class="module group">
+                <h4 class="heading">Development</h4>
+                <ul class="menu">
+                    <li>
+                        <a href="https://github.com/otwcode/otwarchive/commits/v0.9.464.2">otwarchive v0.9.464.2</a>
+                    </li>
+                    <li><a href="/known_issues">Known Issues</a></li>
+                    <li>
+                        <a title="View License" href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GPL-2.0-or-later</a> by the <a title="Organization for Transformative Works" href="https://transformativeworks.org/">OTW</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+  <script>
+  (function(){
+      const wrap = document.getElementById('ao3h-mock-stars');
+      if (!wrap) return;
+      const btns = Array.from(wrap.querySelectorAll('button'));
+      let current = 0;
+      btns.forEach(btn => {
+          btn.addEventListener('mouseenter', () => {
+              const n = +btn.dataset.star;
+              btns.forEach(b => b.textContent = +b.dataset.star <= n ? '★' : '☆');
+          });
+          btn.addEventListener('mouseleave', () => {
+              btns.forEach(b => b.textContent = +b.dataset.star <= current ? '★' : '☆');
+          });
+          btn.addEventListener('click', () => {
+              current = +btn.dataset.star;
+              btns.forEach(b => b.textContent = +b.dataset.star <= current ? '★' : '☆');
+          });
+      });
+  })();
+  </script>
+
+  <!-- ★ AO3H readingTracker — floating progress badge (mock: 45%) -->
+  <div class="ao3h-rt-progress-badge" aria-label="Reading progress">45%</div>
+  <!-- ★ end readingTracker progress badge -->
+
+  <!-- ★ AO3H readingFormatter — floating "Aa" panel (mock: Book width + Spacious spacing active) -->
+  <div class="ao3h-rf-panel">
+    <div class="ao3h-rf-title">Aa</div>
+    <div class="ao3h-rf-row">
+      <div class="ao3h-rf-row-label">Font size:</div>
+      <div class="ao3h-rf-btns">
+        <button type="button" class="ao3h-rf-btn">A−</button>
+        <button type="button" class="ao3h-rf-btn">A+</button>
+      </div>
+    </div>
+    <div class="ao3h-rf-row">
+      <div class="ao3h-rf-row-label">Width:</div>
+      <div class="ao3h-rf-btns">
+        <button type="button" class="ao3h-rf-btn">Default</button>
+        <button type="button" class="ao3h-rf-btn active">Book</button>
+        <button type="button" class="ao3h-rf-btn">Wide</button>
+      </div>
+    </div>
+    <div class="ao3h-rf-row">
+      <div class="ao3h-rf-row-label">Spacing:</div>
+      <div class="ao3h-rf-btns">
+        <button type="button" class="ao3h-rf-btn">Compact</button>
+        <button type="button" class="ao3h-rf-btn">Normal</button>
+        <button type="button" class="ao3h-rf-btn active">Spacious</button>
+      </div>
+    </div>
+  </div>
+  <!-- ★ end readingFormatter panel -->
+
+  <!-- ★ AO3H textToSpeech — floating "Read Aloud" panel (mock: playing sentence 7/20 at 1×) -->
+  <div class="ao3h-tts-panel">
+    <div class="ao3h-tts-title">🔊 Read Aloud</div>
+    <div class="ao3h-tts-controls">
+      <button type="button" class="ao3h-tts-btn">⏮</button>
+      <button type="button" class="ao3h-tts-btn play">▶ Play</button>
+      <button type="button" class="ao3h-tts-btn">⏭</button>
+      <button type="button" class="ao3h-tts-btn">⏹</button>
+    </div>
+    <div class="ao3h-tts-row">
+      Speed: <input type="range" min="0.5" max="2" step="0.1" value="1" style="width:75px;vertical-align:middle"> 1.0×
+    </div>
+    <div class="ao3h-tts-row">
+      Voice: <select style="font-size:.75em;flex:1"><option>en-US Samantha</option></select>
+    </div>
+    <div class="ao3h-tts-progress"><div class="ao3h-tts-progress-fill"></div></div>
+    <div style="font-size:.7em;color:#888;text-align:center;margin-bottom:4px">Sentence 7 / 20</div>
+    <div class="ao3h-tts-row" style="margin-top:2px">
+      Sleep:
+      <button type="button" class="ao3h-tts-sleep-btn">15m</button>
+      <button type="button" class="ao3h-tts-sleep-btn">30m</button>
+      <button type="button" class="ao3h-tts-sleep-btn on">60m</button>
+    </div>
+  </div>
+  <!-- ★ end textToSpeech panel -->
+
+  <!-- ★ AO3H tropeBingo — 5×5 bingo card widget (mock, open state) -->
+  <div class="ao3h-tg-bingo-wrap" role="region" aria-label="Trope Bingo card">
+    <button type="button" class="ao3h-tg-bingo-close" aria-label="Close bingo card">✕</button>
+    <div class="ao3h-tg-bingo-title">TROPE BINGO 🂠</div>
+    <div class="ao3h-tg-bingo-grid">
+      <div class="ao3h-tg-bingo-cell">Slow Burn</div>
+      <div class="ao3h-tg-bingo-cell">Enemies to Lovers</div>
+      <div class="ao3h-tg-bingo-cell ao3h-tg-checked" title="Auto-checked from work tags">Hurt/ Comfort</div>
+      <div class="ao3h-tg-bingo-cell">Fake Dating</div>
+      <div class="ao3h-tg-bingo-cell">Soulmates</div>
+      <div class="ao3h-tg-bingo-cell">Found Family</div>
+      <div class="ao3h-tg-bingo-cell">Angst H.E.</div>
+      <div class="ao3h-tg-bingo-cell">Coffee Shop AU</div>
+      <div class="ao3h-tg-bingo-cell">Road Trip</div>
+      <div class="ao3h-tg-bingo-cell">Mutual Pining</div>
+      <div class="ao3h-tg-bingo-cell">Idiots in Love</div>
+      <div class="ao3h-tg-bingo-cell">Amnesia</div>
+      <div class="ao3h-tg-bingo-cell ao3h-tg-free">FREE</div>
+      <div class="ao3h-tg-bingo-cell">Time Travel</div>
+      <div class="ao3h-tg-bingo-cell">Bodyswap</div>
+      <div class="ao3h-tg-bingo-cell">Roommates</div>
+      <div class="ao3h-tg-bingo-cell">2nd Chance</div>
+      <div class="ao3h-tg-bingo-cell">Forbidden Love</div>
+      <div class="ao3h-tg-bingo-cell">Secret Identity</div>
+      <div class="ao3h-tg-bingo-cell">Stranded</div>
+      <div class="ao3h-tg-bingo-cell">Undercover</div>
+      <div class="ao3h-tg-bingo-cell">Hanahaki</div>
+      <div class="ao3h-tg-bingo-cell">Reincarnation</div>
+      <div class="ao3h-tg-bingo-cell">Canon Div.</div>
+      <div class="ao3h-tg-bingo-cell ao3h-tg-checked" title="Auto-checked from work tags">Whump</div>
+    </div>
+    <div class="ao3h-tg-bingo-actions">
+      <button type="button" class="ao3h-tg-btn">New card</button>
+      <button type="button" class="ao3h-tg-btn">Reset</button>
+    </div>
+  </div>
+  <!-- ★ AO3H tropeRoulette — floating trigger button (mock) -->
+  <button type="button" class="ao3h-tg-roulette-trigger" aria-label="Open Trope Roulette">🎲 Roulette</button>
+  <!-- ★ AO3H tropeBingo — toggle button -->
+  <button type="button" class="ao3h-tg-bingo-toggle">Trope Bingo 🂠</button>
+  <!-- ★ end tropeGames mock -->
+
+  </body>
+</html>

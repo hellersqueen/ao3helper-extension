@@ -1,0 +1,560 @@
+/* ============================================================
+   filter-panel.css — All CSS rules related to the AO3 filter
+   panel (form.filters / #work-filters), extracted from ao3.css
+   ============================================================ */
+
+/* --- Layout: filtered index + sidebar ---------------------- */
+
+.filtered .index {
+    width: 75%;
+    float: left;
+}
+
+form.filters {
+    width: 23%;
+    float: right;
+}
+
+/* --- form base reset --------------------------------------- */
+
+form {
+    border: 0;
+    outline: 0;
+    font-weight: inherit;
+    font-style: inherit;
+    font-size: 100%;
+    font-family: inherit;
+    vertical-align: baseline;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+form {
+    clear: right;
+}
+
+/* --- fieldset / dl base ------------------------------------ */
+
+fieldset dl {
+    background: transparent;
+    border: none;
+    clear: right;
+    box-shadow: none;
+}
+
+dl,
+fieldset dl dl {
+    display: block;
+    background: #ddd;
+    border: 2px solid #f3efec;
+    margin: 0.643em;
+    padding: 0.643em;
+    box-shadow: inset 1px 0 5px #999;
+}
+
+fieldset dl dl {
+    background: #fff;
+    clear: right;
+}
+
+fieldset dd dl {
+    margin: 0.643em 0;
+}
+
+.filters dl {
+    padding: 0;
+}
+
+.filters dl dl {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+}
+
+/* --- dt / dd base ------------------------------------------ */
+
+dt {
+    border: 0;
+    outline: 0;
+    font-weight: inherit;
+    font-style: inherit;
+    font-size: 100%;
+    font-family: inherit;
+    vertical-align: baseline;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+dd {
+    border: 0;
+    outline: 0;
+    font-weight: inherit;
+    font-style: inherit;
+    font-size: 100%;
+    font-family: inherit;
+    vertical-align: baseline;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+dd {
+    margin: 0.643em 0;
+}
+
+form dt {
+    float: left;
+    clear: left;
+    min-width: 10.5em;
+    width: 25%;
+    padding: 0.25em 0.5625em 0 0;
+    border-bottom: 1px solid #f3efec;
+}
+
+.filters dt {
+    padding: 0;
+}
+
+.filters dt {
+    width: 100%;
+}
+
+form dd {
+    float: left;
+    width: 72.5%;
+}
+
+dd.actions {
+    padding: 0.429em 0.25em 0.25em 0;
+    float: right;
+    text-align: center;
+}
+
+dd.submit {
+    text-align: right;
+}
+
+.filters dd {
+    width: 100%;
+}
+
+.filters .submit {
+    margin: 0;
+    padding: 0;
+}
+
+.filters dt.heading {
+    margin-top: 1.929em;
+}
+
+.filters .sort + .heading {
+    margin-top: 1.286em;
+}
+
+.filters .group {
+    margin: 0;
+    padding: 0;
+}
+
+/* --- headings ---------------------------------------------- */
+
+.heading {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    word-wrap: break-word;
+}
+
+.filters h4 {
+    display: inline;
+    font-weight: 700;
+}
+
+/* --- inputs ------------------------------------------------ */
+
+input {
+    font: 100% 'Lucida Grande', 'Lucida Sans Unicode', Verdana, Helvetica, sans-serif, 'GNU Unifont';
+    width: 100%;
+    border: 1px solid #bbb;
+    box-shadow: inset 0 1px 2px #ccc;
+}
+
+input[type="hidden"] {
+    display: none !important;
+}
+
+form.filters input {
+    display: inline;
+    float: none;
+}
+
+form.filters .text {
+    border: none;
+}
+
+form.filters .text {
+    margin: 0.2857em 0.429em;
+}
+
+form.filters input[type="text"] {
+    border-top-color: #999;
+    padding: 0.15em 0.25em;
+    border-radius: 1em;
+}
+
+form.filters li input {
+    margin: 0.375em auto;
+}
+
+.filters input[type="submit"] {
+    width: 100%;
+}
+
+.filters .submit input {
+    height: 100%;
+    margin: 1em 0;
+    min-height: 1.286em;
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center;
+    white-space: normal;
+}
+
+input[type="radio"] {
+    box-shadow: none;
+}
+
+input[type="radio"] {
+    width: auto;
+    margin-right: 0.375em;
+}
+
+.filters [type="radio"] {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    left: auto;
+}
+
+input[type="checkbox"] {
+    box-shadow: none;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.375em;
+}
+
+.filters [type="checkbox"] {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    left: auto;
+}
+
+/* --- label ------------------------------------------------- */
+
+label {
+    border: 0;
+    outline: 0;
+    font-weight: inherit;
+    font-style: inherit;
+    font-size: 100%;
+    font-family: inherit;
+    vertical-align: baseline;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+label {
+    margin-right: 0.375em;
+}
+
+li label {
+    margin: 0.375em auto;
+}
+
+form.filters label {
+    background: #eee;
+    color: #444;
+    width: auto;
+    font-weight: 400;
+    font-size: 100%;
+    line-height: 1.286;
+    height: 1.286em;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 0.25em 0.75em;
+    white-space: nowrap;
+    overflow: visible;
+    position: relative;
+    text-decoration: none;
+    border: 1px solid #bbb;
+    border-bottom: 1px solid #aaa;
+    background-image: -moz-linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+    background-image: -webkit-linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+    background-image: -o-linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+    background-image: -ms-linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+    background-image: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+    border-radius: 0.25em;
+    box-shadow: none;
+}
+
+/* --- select ------------------------------------------------ */
+
+select {
+    vertical-align: text-top;
+    width: 100%;
+    min-width: 10.5em;
+}
+
+/* --- button / expander ------------------------------------- */
+
+button {
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', Verdana, Helvetica, sans-serif, 'GNU Unifont';
+    box-sizing: content-box;
+}
+
+button {
+    background: #eee;
+    color: #444;
+    width: auto;
+    font-weight: 400;
+    font-size: 100%;
+    line-height: 1.286;
+    height: 1.286em;
+    vertical-align: middle;
+    display: inline-block;
+    padding: 0.25em 0.75em;
+    white-space: nowrap;
+    overflow: visible;
+    position: relative;
+    text-decoration: none;
+    border: 1px solid #bbb;
+    border-bottom: 1px solid #aaa;
+    background-image: -moz-linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+    background-image: -webkit-linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+    background-image: -o-linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+    background-image: -ms-linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+    background-image: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+    border-radius: 0.25em;
+    box-shadow: none;
+}
+
+.filters .expander {
+    width: 100%;
+}
+
+.filters .expander {
+    background: url("https://archiveofourown.org/images/arrow-right.gif") left center no-repeat;
+    border: none;
+    color: #2a2a2a;
+    height: 100%;
+    min-height: 1.786em;
+    outline: none;
+    padding: 0.25em 0 0.25em 14px;
+    text-align: left;
+    white-space: normal;
+    border-radius: 0;
+    box-sizing: border-box;
+}
+
+/* --- collapsed / expanded arrows --------------------------- */
+
+.collapsed:after {
+    content: " \2193";
+}
+
+.filters .collapsed::after,
+.filters .expanded::after {
+    content: none;
+}
+
+/* --- expandable / hidden ----------------------------------- */
+
+.filters .expandable {
+    margin: 0;
+}
+
+/* --- tags list layout -------------------------------------- */
+
+.filters .tags li {
+    display: block;
+}
+
+/* --- warning ----------------------------------------------- */
+
+.warning {
+    font-weight: bold;
+}
+
+.filters .warning {
+    font-weight: 500;
+}
+
+/* --- group sections ---------------------------------------- */
+
+.filters .group dt.search {
+    border-bottom: none;
+    padding: 0.25em 0;
+}
+
+.filters .group dd.autocomplete {
+    margin: 0;
+}
+
+.filters .more dt.search {
+    margin-top: 0;
+}
+
+.filters .more dd.search {
+    margin-top: 0;
+}
+
+/* --- range (word count / dates) ---------------------------- */
+
+.filters .range dt {
+    border-bottom: none;
+    padding: 0.25em 0;
+}
+
+.filters .range dd {
+    margin-top: 0;
+}
+
+/* --- autocomplete ------------------------------------------ */
+
+.autocomplete input {
+    display: block;
+    min-width: 10em;
+}
+
+.autocomplete ul li {
+    padding: 0.125em;
+    margin: 0.25em auto auto;
+}
+
+dd.autocomplete li.input {
+    margin: 0;
+    padding: 0;
+}
+
+/* --- indicator (custom radio/checkbox visuals) ------------- */
+
+.filters .indicator::before {
+    background: #eee;
+    color: #aaa;
+    display: inline-block;
+    border: 1px solid;
+    margin-right: 0.25em;
+    text-align: center;
+    background-image: -moz-linear-gradient(top, #fff 2%, #ddd 95%, #bbb 100%);
+    background-image: -webkit-linear-gradient(top, #fff 2%, #ddd 95%, #bbb 100%);
+    background-image: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
+}
+
+.filters [type="radio"] + .indicator::before {
+    content: "";
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+    border-radius: 1em;
+}
+
+.filters input:checked + .indicator::before {
+    border-color: #2a2a2a;
+}
+
+.filters [type="radio"]:checked + .indicator::before {
+    background: #fff;
+    background-image: -moz-radial-gradient(center, ellipse cover, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.8) 11%, rgba(0,0,0,0) 23%),
+                      -moz-linear-gradient(top, #bbb 0%, #ddd 5%, #fff 100%);
+    background-image: -webkit-radial-gradient(center, ellipse cover, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.8) 11%, rgba(0,0,0,0) 23%),
+                      -webkit-linear-gradient(top, #bbb 0%, #ddd 5%, #fff 100%);
+    background-image: radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.8) 11%, rgba(0,0,0,0) 23%),
+                      linear-gradient(to bottom, #bbb 0%, #ddd 5%, #fff 100%);
+}
+
+.filters input:checked + .indicator + span {
+    font-weight: 700;
+}
+
+.filters [type="checkbox"] + .indicator::before {
+    content: " \2713";
+    padding: 0 0.25em;
+    border-radius: 0.25em;
+}
+
+.filters [type="checkbox"]:checked + .indicator::before {
+    background: #deffde;
+    color: #008000;
+    background-image: -moz-linear-gradient(top, #fff 2%, #d1f0d1 95%, #b3ccb3 100%);
+    background-image: -webkit-linear-gradient(top, #fff 2%, #d1f0d1 95%, #b3ccb3 100%);
+    background-image: linear-gradient(#fff 2%, #d1f0d1 95%, #b3ccb3 100%);
+}
+
+.filters .exclude [type="checkbox"] + .indicator::before {
+    content: " \2715";
+}
+
+.filters .exclude [type="checkbox"]:checked + .indicator::before {
+    background: #fedede;
+    color: #f00;
+    background-image: -moz-linear-gradient(top, #fff 2%, #efd1d1 95%, #d8bebe 100%);
+    background-image: -webkit-linear-gradient(top, #fff 2%, #efd1d1 95%, #d8bebe 100%);
+    background-image: linear-gradient(#fff 2%, #efd1d1 95%, #d8bebe 100%);
+}
+
+/* --- footnote (Clear Filters link) ------------------------- */
+
+.footnote {
+    font-size: 0.75em;
+    float: right;
+}
+
+/* --- symbol / question mark help link ---------------------- */
+
+span.symbol {
+    color: #2a547c;
+    font-family: Georgia, serif;
+    border: 1px solid;
+    vertical-align: super;
+    border-radius: 0.75em;
+}
+
+span.question {
+    background: #d1e1ef;
+    border-color: #2a547c;
+    box-shadow: -1px -1px 2px rgba(0,0,0,0.25);
+}
+
+span.symbol span {
+    padding: 0.425em;
+}
+
+a.question {
+    border: 0;
+    font-weight: bold;
+}
+
+a.modal.help {
+    cursor: help;
+}
+
+.heading a.question {
+    font-size: 0.75em;
+}

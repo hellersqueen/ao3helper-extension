@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Search People | Archive of Our Own</title>
+  <link rel="stylesheet" type="text/css" href="css/ao3.css" />
+  <script src="js/ao3-header.js"></script>
+  <script src="js/ao3-mock.js"></script>
+</head>
+<body class="logged-in javascript">
+
+<div id="ao3-header-placeholder"></div>
+
+<div id="inner" class="wrapper">
+  <div id="main" class="people-search region" role="main">
+
+    <h2 class="heading">People Search</h2>
+
+    <ul class="navigation actions" role="navigation">
+      <li><a href="search-works.html">Work Search</a></li>
+      <li><span class="current">People Search</span></li>
+      <li><a href="search-bookmarks.html">Bookmark Search</a></li>
+      <li><a href="search-tags.html">Tag Search</a></li>
+    </ul>
+
+    <form class="search" id="new_people_search" action="#" accept-charset="UTF-8" method="get">
+      <fieldset>
+        <legend>Search people</legend>
+        <dl>
+          <dt><label for="people_search_query">Search all fields</label>  <a class="help symbol question modal" title="People search all fields" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="people_search[query]" id="people_search_query" /></dd>
+          <dt><label for="people_search_name">Name</label></dt>
+          <dd><input class="autocomplete" type="text" name="people_search[name]" id="people_search_name" /></dd>
+          <dt><label for="people_search_fandom">Fandom</label></dt>
+          <dd><input class="autocomplete" type="text" name="people_search[fandom]" id="people_search_fandom" /></dd>
+        </dl>
+        <p class="submit actions"><input type="submit" name="commit" value="Search People" /></p>
+      </fieldset>
+    </form>
+
+  </div>
+  <div class="clear"></div>
+</div>
+
+<div id="footer" role="contentinfo" class="region">
+  <h3 class="landmark heading">Footer</h3>
+  <ul class="navigation actions">
+    <li class="module group">
+      <h4 class="heading">About the Archive</h4>
+      <ul class="menu">
+        <li><a href="#">Site Map</a></li>
+        <li><a href="#">Diversity Statement</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Content Policy</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">DMCA Policy</a></li>
+        <li><a href="#">Site Status</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Contact Us</h4>
+      <ul class="menu">
+        <li><a href="#">Policy Questions &amp; Abuse Reports</a></li>
+        <li><a href="#">Technical Support &amp; Feedback</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Development</h4>
+      <ul class="menu">
+        <li><a href="#">otwarchive v0.9.463.1</a></li>
+        <li><a href="#">Known Issues</a></li>
+        <li><a href="#">GPL-2.0-or-later</a> by the <a href="#">OTW</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+</body>
+</html>

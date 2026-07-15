@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Skins | Archive of Our Own</title>
+  <link rel="stylesheet" type="text/css" href="css/ao3.css" />
+  <script src="js/ao3-header.js"></script>
+  <script src="js/ao3-dashboard.js"></script>
+  <script src="js/ao3-mock.js"></script>
+  <style>
+    /* ★ AO3H — themeBuilder (mock) */
+    .ao3h-tb-panel { position:fixed; top:80px; right:20px; z-index:9990; background:#1e1e2e; color:#cdd6f4; border-radius:8px; box-shadow:0 4px 18px rgba(0,0,0,.45); padding:14px 16px; min-width:200px; font-size:.78em; }
+    .ao3h-tb-panel h4 { margin:0 0 10px; font-size:.95em; color:#cba6f7; border-bottom:1px solid #45475a; padding-bottom:6px; }
+    .ao3h-tb-presets { display:flex; gap:4px; margin-bottom:10px; flex-wrap:wrap; }
+    .ao3h-tb-preset-btn { padding:2px 9px; border-radius:4px; font-size:.72em; cursor:pointer; border:1px solid #45475a; background:#1e1e2e; color:#cdd6f4; }
+    .ao3h-tb-preset-btn.active { border-color:#cba6f7; background:#313244; }
+    .ao3h-tb-row { display:flex; align-items:center; gap:6px; margin-bottom:7px; font-size:.72em; color:#a6adc8; }
+    .ao3h-tb-row label { width:52px; flex-shrink:0; }
+  </style>
+</head>
+<body class="logged-in javascript">
+
+<div id="ao3-header-placeholder"></div>
+
+<div id="inner" class="wrapper">
+
+  <div id="ao3-dashboard-placeholder" data-current="skins"></div>
+
+  <div id="main" class="skins-index dashboard region" role="main">
+
+    <h2 class="heading">My Site Skins</h2>
+
+    <h3 class="landmark heading">Navigation</h3>
+    <ul class="navigation actions" role="navigation">
+      <li><a href="#">Create Site Skin</a></li>
+    </ul>
+
+    <p class="notes">
+      A site skin lets you change the way the Archive is presented when you are logged in to your account. You can use work skins to customize the way your own works are shown to others.
+      <a class="help symbol question modal" title="Skins basics" href="#"><span class="symbol question"><span>?</span></span></a>
+    </p>
+
+    <h3 class="landmark heading">Skin Type Navigation</h3>
+    <ul class="actions" role="navigation">
+      <li><span class="current">My Site Skins</span></li>
+      <li><a href="#">My Work Skins</a></li>
+      <li><a href="#">Public Site Skins</a></li>
+      <li><a href="#">Public Work Skins</a></li>
+    </ul>
+
+    <h4 class="landmark heading">List of Skins</h4>
+    <p>
+      No site skins here yet!
+      <a href="#">Why not try making one?</a>
+    </p>
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+
+<div id="footer" role="contentinfo" class="region">
+  <h3 class="landmark heading">Footer</h3>
+  <ul class="navigation actions">
+    <li class="module group">
+      <h4 class="heading">About the Archive</h4>
+      <ul class="menu">
+        <li><a href="#">Site Map</a></li>
+        <li><a href="#">Diversity Statement</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Content Policy</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">DMCA Policy</a></li>
+        <li><a href="#">Site Status</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Contact Us</h4>
+      <ul class="menu">
+        <li><a href="#">Policy Questions &amp; Abuse Reports</a></li>
+        <li><a href="#">Technical Support &amp; Feedback</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Development</h4>
+      <ul class="menu">
+        <li><a href="#">otwarchive v0.9.463.1</a></li>
+        <li><a href="#">Known Issues</a></li>
+        <li><a href="#">GPL-2.0-or-later</a> by the <a href="#">OTW</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+<!-- ★ AO3H themeBuilder — floating panel (mock) -->
+<div class="ao3h-tb-panel">
+  <h4>🎨 Theme Builder</h4>
+  <div class="ao3h-tb-presets">
+    <button class="ao3h-tb-preset-btn active">Catppuccin</button>
+    <button class="ao3h-tb-preset-btn">Dracula</button>
+    <button class="ao3h-tb-preset-btn">Light</button>
+    <button class="ao3h-tb-preset-btn">AO3 Red</button>
+  </div>
+  <div class="ao3h-tb-row"><label>BG</label><input type="color" value="#1e1e2e" style="width:38px;height:20px;border:none"></div>
+  <div class="ao3h-tb-row"><label>Text</label><input type="color" value="#cdd6f4" style="width:38px;height:20px;border:none"></div>
+  <div class="ao3h-tb-row"><label>Font</label><select style="font-size:.72em;"><option>Georgia</option><option>Lato</option><option>Merriweather</option></select></div>
+</div>
+
+</body>
+</html>

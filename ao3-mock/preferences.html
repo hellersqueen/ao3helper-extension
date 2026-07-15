@@ -1,0 +1,713 @@
+<!-- PREFERENCES -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="keywords" content="fanfiction, transformative works, otw, fair use, archive" />
+    <meta name="language" content="en-US" />
+    <meta name="subject" content="fandom" />
+    <meta name="description" content="An Archive of Our Own, a project of the Organization for Transformative Works" />
+    <meta name="distribution" content="GLOBAL" />
+    <meta name="classification" content="transformative works" />
+    <meta name="author" content="Organization for Transformative Works" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>coracutiehale - Preferences | Archive of Our Own</title>
+    <link rel="stylesheet" type="text/css" href="css/preferences.css" />
+    <style>
+        /* ═══════════════════════════════════════════════════════════════════
+           AO3 HELPER — Module Visual Preview  (Tab 6 : Appearance & Tools)
+           backupAndSync — Automatic backup and optional cloud sync
+        ═══════════════════════════════════════════════════════════════════ */
+
+        /* ── BACKUP AND SYNC ─────────────────────────────────────────── */
+        .ao3h-bas-panel {
+            background: #f9fffe; border: 1px solid #b2dfdb; border-radius: 7px;
+            padding: 16px 18px; margin-bottom: 20px; font-size: .87em;
+        }
+        .ao3h-bas-panel h4 {
+            margin: 0 0 10px; font-size: .95em; color: #00695c;
+        }
+        .ao3h-bas-btn-row {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;
+        }
+        .ao3h-bas-btn {
+            padding: 4px 13px; border: none; border-radius: 4px;
+            font-size: .82em; cursor: pointer; font-weight: 600;
+        }
+        .ao3h-bas-btn.export { background: #27ae60; color: #fff; }
+        .ao3h-bas-btn.import { background: #2c5f8a; color: #fff; }
+        .ao3h-bas-btn.sync   { background: #7b4fc4; color: #fff; }
+        .ao3h-bas-meta { font-size: .74em; color: #888; line-height: 1.7; }
+        .ao3h-bas-toast {
+            position: fixed; top: 18px; right: 18px; z-index: 9999;
+            background: #fff; border: 1px solid #b2dfdb; border-radius: 6px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.15); padding: 12px 16px;
+            font-size: .82em; max-width: 240px;
+        }
+        .ao3h-bas-toast-title { font-weight: 700; color: #27ae60; margin-bottom: 4px; }
+        .ao3h-bas-toast-sub { font-size: .75em; color: #888; }
+    </style>
+  </head>
+  <body class="logged-in">
+    <div id="outer" class="wrapper">
+      <ul id="skiplinks">
+        <li><a href="#main">Main Content</a></li>
+      </ul>
+      <noscript>
+        <p id="javascript-warning">While we&#39;ve done our best to make the core functionality of this site accessible without JavaScript, it will work better with it enabled. Please consider turning it on!</p>
+      </noscript>
+      <header id="header" class="region">
+        <h1 class="heading">
+          <a href="/"><span>Archive of Our Own</span><sup> beta</sup><img alt="Archive of Our Own" class="logo" src="https://archiveofourown.org/images/ao3_logos/logo_42.png"></a>
+        </h1>
+        <nav id="greeting" aria-label="User">
+          <ul class="user navigation actions">
+            <li class="dropdown" aria-haspopup="true">
+              <a href="/users/coracutiehale" class="dropdown-toggle" data-toggle="dropdown" data-target="#">Hi, coracutiehale!</a>
+              <ul class="menu dropdown-menu">
+                <li><a href="/users/coracutiehale">My Dashboard</a></li>
+                <li><a href="/users/coracutiehale/subscriptions">My Subscriptions</a></li>
+                <li><a href="/users/coracutiehale/bookmarks">My Bookmarks</a></li>
+                <li><a href="/users/coracutiehale/readings">My History</a></li>
+                <li><a href="/users/coracutiehale/preferences">My Preferences</a></li>
+              </ul>
+            </li>
+            <li class="dropdown" aria-haspopup="true">
+              <a href="/works/new" class="dropdown-toggle" data-toggle="dropdown" data-target="#">Post</a>
+              <ul class="menu dropdown-menu">
+                <li><a href="/works/new">New Work</a></li>
+                <li><a href="/works/new?import=true">Import Work</a></li>
+              </ul>
+            </li>
+            <li><a rel="nofollow" data-method="delete" href="/users/logout?return_to=%2Fusers%2Fcoracutiehale%2Fpreferences">Log Out</a></li>
+          </ul>
+          <p class="icon"><a href="/users/coracutiehale"><img alt class="icon" src="https://archiveofourown.org/rails/active_storage/representations/proxy/eyJfcmFpbHMiOnsiZGF0YSI6NjE0NjQ2NCwicHVyIjoiYmxvYl9pZCJ9fQ==--0d1daf655aafc10d691c2172b98ab4e448b44286/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlsxMDAsMTAwXSwibG9hZGVyIjp7Im4iOi0xfX0sInB1ciI6InZhcmlhdGlvbiJ9fQ==--fb1da3623781351fb36c743584da71645585f6c4/original.jpg"></a></p>
+        </nav>
+        <nav aria-label="Site">
+          <ul class="primary navigation actions">
+            <li class="dropdown" aria-haspopup="true">
+              <a href="/menu/fandoms" class="dropdown-toggle" data-toggle="dropdown" data-target="#">Fandoms</a>
+              <ul class="menu dropdown-menu">
+                <li><a href="/media">All Fandoms</a></li>
+                <li id="medium_5"><a href="/media/Anime%20*a*%20Manga/fandoms">Anime &amp; Manga</a></li>
+                <li id="medium_3"><a href="/media/Books%20*a*%20Literature/fandoms">Books &amp; Literature</a></li>
+                <li id="medium_4"><a href="/media/Cartoons%20*a*%20Comics%20*a*%20Graphic%20Novels/fandoms">Cartoons &amp; Comics &amp; Graphic Novels</a></li>
+                <li id="medium_7"><a href="/media/Celebrities%20*a*%20Real%20People/fandoms">Celebrities &amp; Real People</a></li>
+                <li id="medium_2"><a href="/media/Movies/fandoms">Movies</a></li>
+                <li id="medium_6"><a href="/media/Music%20*a*%20Bands/fandoms">Music &amp; Bands</a></li>
+                <li id="medium_8"><a href="/media/Other%20Media/fandoms">Other Media</a></li>
+                <li id="medium_30198"><a href="/media/Theater/fandoms">Theater</a></li>
+                <li id="medium_1"><a href="/media/TV%20Shows/fandoms">TV Shows</a></li>
+                <li id="medium_476"><a href="/media/Video%20Games/fandoms">Video Games</a></li>
+                <li id="medium_9971"><a href="/media/Uncategorized%20Fandoms/fandoms">Uncategorized Fandoms</a></li>
+              </ul>
+            </li>
+            <li class="dropdown" aria-haspopup="true">
+              <a href="/menu/browse" class="dropdown-toggle" data-toggle="dropdown" data-target="#">Browse</a>
+              <ul class="menu dropdown-menu">
+                <li><a href="/works">Works</a></li>
+                <li><a href="/bookmarks">Bookmarks</a></li>
+                <li><a href="/tags">Tags</a></li>
+                <li><a href="/collections">Collections</a></li>
+              </ul>
+            </li>
+            <li class="dropdown" aria-haspopup="true">
+              <a href="/menu/search" class="dropdown-toggle" data-toggle="dropdown" data-target="#">Search</a>
+              <ul class="menu dropdown-menu">
+                <li><a href="/works/search">Works</a></li>
+                <li><a href="/bookmarks/search">Bookmarks</a></li>
+                <li><a href="/tags/search">Tags</a></li>
+                <li><a href="/people/search">People</a></li>
+              </ul>
+            </li>
+            <li class="dropdown" aria-haspopup="true">
+              <a href="/menu/about" class="dropdown-toggle" data-toggle="dropdown" data-target="#">About</a>
+              <ul class="menu dropdown-menu">
+                <li><a href="/about">About Us</a></li>
+                <li><a href="/admin_posts">News</a></li>
+                <li><a href="/faq">FAQ</a></li>
+                <li><a href="/wrangling_guidelines">Wrangling Guidelines</a></li>
+                <li><a href="/donate">Donate or Volunteer</a></li>
+              </ul>
+            </li>
+            <li class="search">
+              <form class="search" id="search" role="search" aria-label="Work" action="/works/search" accept-charset="UTF-8" method="get">
+                <fieldset>
+                  <p>
+                    <label class="landmark" for="site_search">Work Search</label>
+                    <input class="text" id="site_search" aria-describedby="site_search_tooltip" type="text" name="work_search[query]">
+                    <span class="tip" role="tooltip" id="site_search_tooltip">tip: katekyou "alternate universe" sort:&gt;words</span>
+                    <span class="submit actions"><input type="submit" value="Search" class="button"></span>
+                  </p>
+                </fieldset>
+              </form>
+            </li>
+          </ul>
+        </nav>
+        <div class="clear"></div>
+      </header>
+      <div id="inner" class="wrapper">
+        <div id="dashboard" class="region own" role="navigation region">
+          <h4 class="landmark heading">Choices</h4>
+          <ul class="navigation actions">
+            <li><a href="/users/coracutiehale">Dashboard</a></li>
+            <li><a href="/users/coracutiehale/profile">Profile</a></li>
+            <li><span class="current">Preferences</span></li>
+            <li><a href="/users/coracutiehale/skins">Skins</a></li>
+          </ul>
+          <h4 class="landmark heading">Pitch</h4>
+          <ul class="navigation actions">
+            <li><a href="/users/coracutiehale/works">Works (0)</a></li>
+            <li><a href="/users/coracutiehale/works/drafts">Drafts (0)</a></li>
+            <li><a href="/users/coracutiehale/series">Series (0)</a></li>
+            <li><a href="/users/coracutiehale/bookmarks">Bookmarks (217)</a></li>
+            <li><a href="/users/coracutiehale/collections">Collections (0)</a></li>
+          </ul>
+          <h4 class="landmark heading">Catch</h4>
+          <ul class="navigation actions">
+            <li><a href="/users/coracutiehale/inbox">Inbox (6)</a></li>
+            <li><a href="/users/coracutiehale/stats">Statistics</a></li>
+            <li><a href="/users/coracutiehale/readings">History</a></li>
+            <li><a href="/users/coracutiehale/subscriptions">Subscriptions</a></li>
+          </ul>
+          <h4 class="landmark heading">Switch</h4>
+          <ul class="navigation actions">
+            <li><a href="/users/coracutiehale/signups">Sign-ups (0)</a></li>
+            <li><a href="/users/coracutiehale/assignments">Assignments (0)</a></li>
+            <li><a href="/users/coracutiehale/claims">Claims (0)</a></li>
+            <li><a href="/users/coracutiehale/related_works">Related Works (0)</a></li>
+            <li><a href="/users/coracutiehale/gifts">Gifts (0)</a></li>
+          </ul>
+        </div>
+        <div id="main" class="preferences-index dashboard region" role="main">
+          <div class="flash"></div>
+          <h2 class="heading">Set My Preferences</h2>
+
+          <!-- ★ AO3H backupAndSync — backup panel (mock) -->
+          <div class="ao3h-bas-panel">
+              <h4>💾 Backup &amp; Sync</h4>
+              <div class="ao3h-bas-btn-row">
+                  <button type="button" class="ao3h-bas-btn export">Export All Settings</button>
+                  <button type="button" class="ao3h-bas-btn import">Import</button>
+                  <button type="button" class="ao3h-bas-btn sync">☁️ Sync to Gist</button>
+              </div>
+              <div class="ao3h-bas-meta">
+                  <div>Last backup: <strong>Mar 22, 2026 14:30</strong></div>
+                  <div>Cloud: <strong>GitHub Gist</strong> — connected ✅</div>
+                  <div>45 settings saved across 12 modules</div>
+              </div>
+          </div>
+          <!-- ★ end backupAndSync panel -->
+
+          <h3 class="landmark heading">Navigation</h3>
+          <ul class="navigation actions">
+            <li><a href="/users/coracutiehale/profile/edit">Edit My Profile</a></li>
+            <li><a href="/users/coracutiehale/pseuds">Manage My Pseuds</a></li>
+            <li><a href="/users/coracutiehale/blocked/users">Blocked Users</a></li>
+            <li><a href="/users/coracutiehale/muted/users">Muted Users</a></li>
+            <li><a href="/users/coracutiehale/change_username">Change Username</a></li>
+            <li><a href="/users/coracutiehale/change_password">Change Password</a></li>
+            <li><a href="/users/coracutiehale/change_email">Change Email</a></li>
+          </ul>
+          <form class="edit_preference" id="edit_preference_223539" action="/users/coracutiehale/preferences/223539" accept-charset="UTF-8" method="post"><input type="hidden" name="_method" value="patch" autocomplete="off"><input type="hidden" name="authenticity_token" value="2YuPXjznrEy6KooCXnXfI7ORiqDR2J9WFYkoxBehhjOS6XDJKpHCVWU5iewXGvRdif-BDZEoBTCigc9NS7iIvw" autocomplete="off">
+            <fieldset>
+              <legend>Privacy</legend>
+              <h4 class="heading">Privacy <a class="help symbol question modal modal-attached" title="Privacy preferences" href="/help/privacy-preferences.html" aria-controls="modal"><span class="symbol question"><span>?</span></span></a></h4>
+              <ul>
+                <li>
+                  <input name="preference[minimize_search_engines]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[minimize_search_engines]" id="preference_minimize_search_engines">
+                  <label for="preference_minimize_search_engines">Hide my work from search engines when possible.</label>
+                </li>
+                <li>
+                  <input name="preference[disable_share_links]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[disable_share_links]" id="preference_disable_share_links">
+                  <label for="preference_disable_share_links">Hide the share buttons on my work.</label>
+                </li>
+                <li>
+                  <input name="preference[allow_cocreator]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[allow_cocreator]" id="preference_allow_cocreator">
+                  <label for="preference_allow_cocreator">Allow others to invite me to be a co-creator.</label>
+                </li>
+              </ul>
+            </fieldset>
+            <fieldset>
+              <legend>Display</legend>
+              <h4 class="heading">Display <a class="help symbol question modal modal-attached" title="Display preferences" href="/help/display-preferences.html" aria-controls="modal"><span class="symbol question"><span>?</span></span></a></h4>
+              <ul>
+                <li>
+                  <input name="preference[adult]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" checked="checked" name="preference[adult]" id="preference_adult">
+                  <label for="preference_adult">Show me adult content without checking.</label>
+                </li>
+                <li>
+                  <input name="preference[view_full_works]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" checked="checked" name="preference[view_full_works]" id="preference_view_full_works">
+                  <label for="preference_view_full_works">Show the whole work by default.</label>
+                </li>
+                <li>
+                  <input name="preference[hide_warnings]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[hide_warnings]" id="preference_hide_warnings">
+                  <label for="preference_hide_warnings">Hide warnings (you can still choose to show them).</label>
+                </li>
+                <li>
+                  <input name="preference[hide_freeform]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[hide_freeform]" id="preference_hide_freeform">
+                  <label for="preference_hide_freeform">Hide additional tags (you can still choose to show them).</label>
+                </li>
+                <li>
+                  <input name="preference[disable_work_skins]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[disable_work_skins]" id="preference_disable_work_skins">
+                  <label for="preference_disable_work_skins">Hide work skins (you can still choose to show them).</label> <a class="help symbol question modal modal-attached" title="Skins basics" href="/help/skins_basics" aria-controls="modal"><span class="symbol question"><span>?</span></span></a>
+                </li>
+              </ul>
+            </fieldset>
+            <fieldset>
+              <dl>
+                <dt><label for="preference_skin_id">Your site skin</label> <a class="help symbol question modal modal-attached" title="Skins basics" href="/help/skins_basics" aria-controls="modal"><span class="symbol question"><span>?</span></span></a></dt>
+                <dd>
+                  <span class="actions"><a href="/skins">Public Site Skins</a></span>
+                  <select name="preference[skin_id]" id="preference_skin_id">
+                    <option selected="selected" value="1">Default</option>
+                    <option value="2">Plain Text</option>
+                    <option value="431">ByLine</option>
+                    <option value="827">Archive 1.0: (1) archive core</option>
+                    <option value="828">Archive 1.0: (2) system messages</option>
+                    <option value="829">Archive 1.0: (3) site chrome</option>
+                    <option value="830">Archive 1.0: (4) forms</option>
+                    <option value="831">Archive 1.0: (5) live validation</option>
+                    <option value="832">Archive 1.0: (6) auto complete</option>
+                    <option value="833">Archive 1.0: (7) userstuff</option>
+                    <option value="834">Archive 1.0: (8) handheld</option>
+                    <option value="835">Archive 1.0: (9) aural</option>
+                    <option value="836">Archive 1.0: (10) print</option>
+                    <option value="837">Archive 1.0: (11) ie overrides</option>
+                    <option value="838">Archive 1.0: (12) ie6 overrides</option>
+                    <option value="839">Archive 1.0: (13) ie7 overrides</option>
+                    <option value="840">Archive 1.0: (14) ie8 overrides</option>
+                    <option value="842">Archive 2.0: (1) core</option>
+                    <option value="843">Archive 2.0: (2) elements</option>
+                    <option value="844">Archive 2.0: (3) region header</option>
+                    <option value="845">Archive 2.0: (4) region dashboard</option>
+                    <option value="846">Archive 2.0: (5) region main</option>
+                    <option value="847">Archive 2.0: (6) region footer</option>
+                    <option value="848">Archive 2.0: (7) interactions</option>
+                    <option value="849">Archive 2.0: (8) actions</option>
+                    <option value="850">Archive 2.0: (9) roles states</option>
+                    <option value="851">Archive 2.0: (10) types groups</option>
+                    <option value="852">Archive 2.0: (11) group listbox</option>
+                    <option value="853">Archive 2.0: (12) group meta</option>
+                    <option value="854">Archive 2.0: (13) group blurb</option>
+                    <option value="855">Archive 2.0: (14) group preface</option>
+                    <option value="856">Archive 2.0: (15) group comments</option>
+                    <option value="857">Archive 2.0: (16) zone system</option>
+                    <option value="858">Archive 2.0: (17) zone home</option>
+                    <option value="859">Archive 2.0: (18) zone searchbrowse</option>
+                    <option value="860">Archive 2.0: (19) zone tags</option>
+                    <option value="861">Archive 2.0: (20) zone translation</option>
+                    <option value="862">Archive 2.0: (21) userstuff</option>
+                    <option value="863">Archive 2.0: (22) system messages</option>
+                    <option value="864">Archive 2.0: (23) role translator</option>
+                    <option value="865">Archive 2.0: (24) role admin</option>
+                    <option value="866">Archive 2.0: (25) role handheld</option>
+                    <option value="867">Archive 2.0: (26) role aural</option>
+                    <option value="868">Archive 2.0: (27) role print</option>
+                    <option value="869">Archive 2.0: (28) role ie8 or lower</option>
+                    <option value="870">Archive 2.0: (29) role ie5</option>
+                    <option value="871">Archive 2.0: (30) role ie6</option>
+                    <option value="872">Archive 2.0: (31) role ie7</option>
+                    <option value="873">Archive 2.0</option>
+                    <option value="882">The Screeny Exposure!</option>
+                    <option value="883">The Screeny Oppression!</option>
+                    <option value="884">The Screeny Drop It</option>
+                    <option value="885">The Screeny She's Got Form</option>
+                    <option value="886">The Screeny Shut It</option>
+                    <option value="887">Simply Twilling</option>
+                    <option value="888">Threw Twill Out</option>
+                    <option value="889">The Hustings</option>
+                    <option value="890">Panda Madness</option>
+                    <option value="891">Low Vision Default</option>
+                    <option value="892">Don't Care A Button</option>
+                    <option value="893">Aqua Buttons</option>
+                    <option value="894">Gel Buttons</option>
+                    <option value="895">Massive Buttons</option>
+                    <option value="896">Scribble Buttons</option>
+                    <option value="897">Dusted Buttons</option>
+                    <option value="898">Wide Horizon</option>
+                    <option value="899">Dash Line</option>
+                    <option value="900">Eyes To The Right</option>
+                    <option value="901">Full width filters</option>
+                    <option value="902">Stick It</option>
+                    <option value="903">Mark my words</option>
+                    <option value="904">Two Point No</option>
+                    <option value="905">Look and Read</option>
+                    <option value="906">Imago</option>
+                    <option value="907">Fixie Fix</option>
+                    <option value="908">Fixie Icons</option>
+                    <option value="909">Fixie Buttons</option>
+                    <option value="910">Fixie Groups</option>
+                    <option value="911">Fixie</option>
+                    <option value="912">Workings Hide meta</option>
+                    <option value="913">Workings Big margin</option>
+                    <option value="914">Workings Max Width</option>
+                    <option value="915">Workings Fix Actions Right</option>
+                    <option value="916">Workings Fix Actions Left</option>
+                    <option value="917">Workings Hide feedback</option>
+                    <option value="918">Workings Hide author notes</option>
+                    <option value="919">Workings Hide author summary</option>
+                    <option value="920">Workings Hide kudos</option>
+                    <option value="921">One Point Faux</option>
+                    <option value="922">Snow</option>
+                    <option value="923">Get the Backers</option>
+                    <option value="924">Dusted Off</option>
+                    <option value="925">Zebra Mono</option>
+                    <option value="926">For The Trees</option>
+                    <option value="927">Mono</option>
+                    <option value="928">The Blues</option>
+                    <option value="929">Reversi</option>
+                    <option value="930">Slim Shaded</option>
+                    <option value="931">Nonnery</option>
+                    <option value="932">Snow Blue</option>
+                    <option value="933">Head Buoy</option>
+                    <option value="934">Sliders</option>
+                    <option value="935">The Bubbler</option>
+                    <option value="936">Chained Buttons</option>
+                    <option value="937">Chained Head</option>
+                    <option value="938">Chained Groups</option>
+                    <option value="939">Chained Quotes</option>
+                    <option value="940">Chained Icons</option>
+                    <option value="941">Chained Key</option>
+                    <option value="942">Chained Melody</option>
+                    <option value="943">Exploded Worker</option>
+                    <option value="944">Colour Flip Combos</option>
+                    <option value="945">Trouble O'Head</option>
+                    <option value="946">Key Colour</option>
+                    <option value="947">Region Drop</option>
+                    <option value="948">Blurblings Shipper</option>
+                    <option value="949">Blurblings Faint Warning</option>
+                    <option value="950">Blurblings Hide fandom</option>
+                    <option value="951">Blurblings Hide datetime</option>
+                    <option value="952">Blurblings Hide tags</option>
+                    <option value="953">Blurblings Hide warnings</option>
+                    <option value="954">Blurblings Hide relationships</option>
+                    <option value="955">Blurblings Hide characters</option>
+                    <option value="956">Blurblings Hide freeform tags</option>
+                    <option value="957">Blurblings Hide summary</option>
+                    <option value="958">Blurblings Hide stats</option>
+                    <option value="959">Blurblings chain example</option>
+                    <option value="960">Blurblings Hide nearly everything</option>
+                    <option value="961">Blurblings title author list</option>
+                    <option value="962">Blurblings Header Only</option>
+                    <option value="963">Blurblings Landmarks</option>
+                    <option value="964">Blurblings Blurb Drop</option>
+                    <option value="965">Typeset In My Ways</option>
+                    <option value="966">Incommodious</option>
+                    <option value="982">Blue and Low</option>
+                    <option value="1196">Mobile Test</option>
+                    <option value="3574">Freeform Tag Truncation for Blurbs</option>
+                    <option value="3756">Shortening long tag fields</option>
+                    <option value="6736">Hide user icons</option>
+                    <option value="70135">Archive 2.0: (25) media midsize</option>
+                    <option value="70138">Archive 2.0: (26) media narrow</option>
+                    <option value="70141">Archive 2.0: (27) media aural</option>
+                    <option value="70144">Archive 2.0: (28) media print</option>
+                    <option value="70147">Archive 2.0: (29) role ie8 or lower</option>
+                    <option value="70150">Archive 2.0: (30) role ie5</option>
+                    <option value="70153">Archive 2.0: (31) role ie6</option>
+                    <option value="70156">Archive 2.0: (32) role ie7</option>
+                  </select>
+                </dd>
+                <dt><label for="preference_time_zone">Your time zone</label></dt>
+                <dd><select name="preference[time_zone]" id="preference_time_zone">
+                    <option value="International Date Line West">(GMT-12:00) International Date Line West</option>
+                    <option value="American Samoa">(GMT-11:00) American Samoa</option>
+                    <option value="Midway Island">(GMT-11:00) Midway Island</option>
+                    <option value="Hawaii">(GMT-10:00) Hawaii</option>
+                    <option value="Alaska">(GMT-09:00) Alaska</option>
+                    <option value="Pacific Time (US &amp; Canada)">(GMT-08:00) Pacific Time (US &amp; Canada)</option>
+                    <option value="Tijuana">(GMT-08:00) Tijuana</option>
+                    <option value="Arizona">(GMT-07:00) Arizona</option>
+                    <option value="Mazatlan">(GMT-07:00) Mazatlan</option>
+                    <option value="Mountain Time (US &amp; Canada)">(GMT-07:00) Mountain Time (US &amp; Canada)</option>
+                    <option value="Central America">(GMT-06:00) Central America</option>
+                    <option value="Central Time (US &amp; Canada)">(GMT-06:00) Central Time (US &amp; Canada)</option>
+                    <option value="Chihuahua">(GMT-06:00) Chihuahua</option>
+                    <option value="Guadalajara">(GMT-06:00) Guadalajara</option>
+                    <option value="Mexico City">(GMT-06:00) Mexico City</option>
+                    <option value="Monterrey">(GMT-06:00) Monterrey</option>
+                    <option value="Saskatchewan">(GMT-06:00) Saskatchewan</option>
+                    <option value="Bogota">(GMT-05:00) Bogota</option>
+                    <option selected="selected" value="Eastern Time (US &amp; Canada)">(GMT-05:00) Eastern Time (US &amp; Canada)</option>
+                    <option value="Indiana (East)">(GMT-05:00) Indiana (East)</option>
+                    <option value="Lima">(GMT-05:00) Lima</option>
+                    <option value="Quito">(GMT-05:00) Quito</option>
+                    <option value="Atlantic Time (Canada)">(GMT-04:00) Atlantic Time (Canada)</option>
+                    <option value="Caracas">(GMT-04:00) Caracas</option>
+                    <option value="Georgetown">(GMT-04:00) Georgetown</option>
+                    <option value="La Paz">(GMT-04:00) La Paz</option>
+                    <option value="Puerto Rico">(GMT-04:00) Puerto Rico</option>
+                    <option value="Santiago">(GMT-04:00) Santiago</option>
+                    <option value="Newfoundland">(GMT-03:30) Newfoundland</option>
+                    <option value="Brasilia">(GMT-03:00) Brasilia</option>
+                    <option value="Buenos Aires">(GMT-03:00) Buenos Aires</option>
+                    <option value="Montevideo">(GMT-03:00) Montevideo</option>
+                    <option value="Greenland">(GMT-02:00) Greenland</option>
+                    <option value="Mid-Atlantic">(GMT-02:00) Mid-Atlantic</option>
+                    <option value="Azores">(GMT-01:00) Azores</option>
+                    <option value="Cape Verde Is.">(GMT-01:00) Cape Verde Is.</option>
+                    <option value="Edinburgh">(GMT+00:00) Edinburgh</option>
+                    <option value="Lisbon">(GMT+00:00) Lisbon</option>
+                    <option value="London">(GMT+00:00) London</option>
+                    <option value="Monrovia">(GMT+00:00) Monrovia</option>
+                    <option value="UTC">(GMT+00:00) UTC</option>
+                    <option value="Amsterdam">(GMT+01:00) Amsterdam</option>
+                    <option value="Belgrade">(GMT+01:00) Belgrade</option>
+                    <option value="Berlin">(GMT+01:00) Berlin</option>
+                    <option value="Bern">(GMT+01:00) Bern</option>
+                    <option value="Bratislava">(GMT+01:00) Bratislava</option>
+                    <option value="Brussels">(GMT+01:00) Brussels</option>
+                    <option value="Budapest">(GMT+01:00) Budapest</option>
+                    <option value="Casablanca">(GMT+01:00) Casablanca</option>
+                    <option value="Copenhagen">(GMT+01:00) Copenhagen</option>
+                    <option value="Dublin">(GMT+01:00) Dublin</option>
+                    <option value="Ljubljana">(GMT+01:00) Ljubljana</option>
+                    <option value="Madrid">(GMT+01:00) Madrid</option>
+                    <option value="Paris">(GMT+01:00) Paris</option>
+                    <option value="Prague">(GMT+01:00) Prague</option>
+                    <option value="Rome">(GMT+01:00) Rome</option>
+                    <option value="Sarajevo">(GMT+01:00) Sarajevo</option>
+                    <option value="Skopje">(GMT+01:00) Skopje</option>
+                    <option value="Stockholm">(GMT+01:00) Stockholm</option>
+                    <option value="Vienna">(GMT+01:00) Vienna</option>
+                    <option value="Warsaw">(GMT+01:00) Warsaw</option>
+                    <option value="West Central Africa">(GMT+01:00) West Central Africa</option>
+                    <option value="Zagreb">(GMT+01:00) Zagreb</option>
+                    <option value="Zurich">(GMT+01:00) Zurich</option>
+                    <option value="Athens">(GMT+02:00) Athens</option>
+                    <option value="Bucharest">(GMT+02:00) Bucharest</option>
+                    <option value="Cairo">(GMT+02:00) Cairo</option>
+                    <option value="Harare">(GMT+02:00) Harare</option>
+                    <option value="Helsinki">(GMT+02:00) Helsinki</option>
+                    <option value="Jerusalem">(GMT+02:00) Jerusalem</option>
+                    <option value="Kaliningrad">(GMT+02:00) Kaliningrad</option>
+                    <option value="Kyiv">(GMT+02:00) Kyiv</option>
+                    <option value="Pretoria">(GMT+02:00) Pretoria</option>
+                    <option value="Riga">(GMT+02:00) Riga</option>
+                    <option value="Sofia">(GMT+02:00) Sofia</option>
+                    <option value="Tallinn">(GMT+02:00) Tallinn</option>
+                    <option value="Vilnius">(GMT+02:00) Vilnius</option>
+                    <option value="Baghdad">(GMT+03:00) Baghdad</option>
+                    <option value="Istanbul">(GMT+03:00) Istanbul</option>
+                    <option value="Kuwait">(GMT+03:00) Kuwait</option>
+                    <option value="Minsk">(GMT+03:00) Minsk</option>
+                    <option value="Moscow">(GMT+03:00) Moscow</option>
+                    <option value="Nairobi">(GMT+03:00) Nairobi</option>
+                    <option value="Riyadh">(GMT+03:00) Riyadh</option>
+                    <option value="St. Petersburg">(GMT+03:00) St. Petersburg</option>
+                    <option value="Volgograd">(GMT+03:00) Volgograd</option>
+                    <option value="Tehran">(GMT+03:30) Tehran</option>
+                    <option value="Abu Dhabi">(GMT+04:00) Abu Dhabi</option>
+                    <option value="Baku">(GMT+04:00) Baku</option>
+                    <option value="Muscat">(GMT+04:00) Muscat</option>
+                    <option value="Samara">(GMT+04:00) Samara</option>
+                    <option value="Tbilisi">(GMT+04:00) Tbilisi</option>
+                    <option value="Yerevan">(GMT+04:00) Yerevan</option>
+                    <option value="Kabul">(GMT+04:30) Kabul</option>
+                    <option value="Almaty">(GMT+05:00) Almaty</option>
+                    <option value="Astana">(GMT+05:00) Astana</option>
+                    <option value="Ekaterinburg">(GMT+05:00) Ekaterinburg</option>
+                    <option value="Islamabad">(GMT+05:00) Islamabad</option>
+                    <option value="Karachi">(GMT+05:00) Karachi</option>
+                    <option value="Tashkent">(GMT+05:00) Tashkent</option>
+                    <option value="Chennai">(GMT+05:30) Chennai</option>
+                    <option value="Kolkata">(GMT+05:30) Kolkata</option>
+                    <option value="Mumbai">(GMT+05:30) Mumbai</option>
+                    <option value="New Delhi">(GMT+05:30) New Delhi</option>
+                    <option value="Sri Jayawardenepura">(GMT+05:30) Sri Jayawardenepura</option>
+                    <option value="Kathmandu">(GMT+05:45) Kathmandu</option>
+                    <option value="Dhaka">(GMT+06:00) Dhaka</option>
+                    <option value="Urumqi">(GMT+06:00) Urumqi</option>
+                    <option value="Rangoon">(GMT+06:30) Rangoon</option>
+                    <option value="Bangkok">(GMT+07:00) Bangkok</option>
+                    <option value="Hanoi">(GMT+07:00) Hanoi</option>
+                    <option value="Jakarta">(GMT+07:00) Jakarta</option>
+                    <option value="Krasnoyarsk">(GMT+07:00) Krasnoyarsk</option>
+                    <option value="Novosibirsk">(GMT+07:00) Novosibirsk</option>
+                    <option value="Beijing">(GMT+08:00) Beijing</option>
+                    <option value="Chongqing">(GMT+08:00) Chongqing</option>
+                    <option value="Hong Kong">(GMT+08:00) Hong Kong</option>
+                    <option value="Irkutsk">(GMT+08:00) Irkutsk</option>
+                    <option value="Kuala Lumpur">(GMT+08:00) Kuala Lumpur</option>
+                    <option value="Perth">(GMT+08:00) Perth</option>
+                    <option value="Singapore">(GMT+08:00) Singapore</option>
+                    <option value="Taipei">(GMT+08:00) Taipei</option>
+                    <option value="Ulaanbaatar">(GMT+08:00) Ulaanbaatar</option>
+                    <option value="Osaka">(GMT+09:00) Osaka</option>
+                    <option value="Sapporo">(GMT+09:00) Sapporo</option>
+                    <option value="Seoul">(GMT+09:00) Seoul</option>
+                    <option value="Tokyo">(GMT+09:00) Tokyo</option>
+                    <option value="Yakutsk">(GMT+09:00) Yakutsk</option>
+                    <option value="Adelaide">(GMT+09:30) Adelaide</option>
+                    <option value="Darwin">(GMT+09:30) Darwin</option>
+                    <option value="Brisbane">(GMT+10:00) Brisbane</option>
+                    <option value="Canberra">(GMT+10:00) Canberra</option>
+                    <option value="Guam">(GMT+10:00) Guam</option>
+                    <option value="Hobart">(GMT+10:00) Hobart</option>
+                    <option value="Melbourne">(GMT+10:00) Melbourne</option>
+                    <option value="Port Moresby">(GMT+10:00) Port Moresby</option>
+                    <option value="Sydney">(GMT+10:00) Sydney</option>
+                    <option value="Vladivostok">(GMT+10:00) Vladivostok</option>
+                    <option value="Magadan">(GMT+11:00) Magadan</option>
+                    <option value="New Caledonia">(GMT+11:00) New Caledonia</option>
+                    <option value="Solomon Is.">(GMT+11:00) Solomon Is.</option>
+                    <option value="Srednekolymsk">(GMT+11:00) Srednekolymsk</option>
+                    <option value="Auckland">(GMT+12:00) Auckland</option>
+                    <option value="Fiji">(GMT+12:00) Fiji</option>
+                    <option value="Kamchatka">(GMT+12:00) Kamchatka</option>
+                    <option value="Marshall Is.">(GMT+12:00) Marshall Is.</option>
+                    <option value="Wellington">(GMT+12:00) Wellington</option>
+                    <option value="Chatham Is.">(GMT+12:45) Chatham Is.</option>
+                    <option value="Nuku'alofa">(GMT+13:00) Nuku'alofa</option>
+                    <option value="Samoa">(GMT+13:00) Samoa</option>
+                    <option value="Tokelau Is.">(GMT+13:00) Tokelau Is.</option>
+                  </select></dd>
+                <dt><label for="preference_work_title_format">Browser page title format</label> <a class="help symbol question modal modal-attached" title="Work_title_format" href="/help/work_title_format.html" aria-controls="modal"><span class="symbol question"><span>?</span></span></a></dt>
+                <dd><input type="text" value="TITLE - AUTHOR - FANDOM" name="preference[work_title_format]" id="preference_work_title_format"></dd>
+              </dl>
+            </fieldset>
+            <fieldset>
+              <legend>Comments</legend>
+              <h4 class="heading">Comments <a class="help symbol question modal modal-attached" title="Comment preferences" href="/help/comment-preferences.html" aria-controls="modal"><span class="symbol question"><span>?</span></span></a></h4>
+              <ul>
+                <li>
+                  <input name="preference[comment_emails_off]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[comment_emails_off]" id="preference_comment_emails_off">
+                  <label for="preference_comment_emails_off">Turn off emails about comments.</label>
+                </li>
+                <li>
+                  <input name="preference[comment_inbox_off]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[comment_inbox_off]" id="preference_comment_inbox_off">
+                  <label for="preference_comment_inbox_off">Turn off messages to your inbox about comments.</label>
+                </li>
+                <li>
+                  <input name="preference[comment_copy_to_self_off]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" checked="checked" name="preference[comment_copy_to_self_off]" id="preference_comment_copy_to_self_off">
+                  <label for="preference_comment_copy_to_self_off">Turn off copies of your own comments.</label>
+                </li>
+                <li>
+                  <input name="preference[kudos_emails_off]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[kudos_emails_off]" id="preference_kudos_emails_off">
+                  <label for="preference_kudos_emails_off">Turn off emails about kudos.</label>
+                </li>
+                <li>
+                  <input name="preference[guest_replies_off]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[guest_replies_off]" id="preference_guest_replies_off">
+                  <label for="preference_guest_replies_off">Do not allow guests to reply to my comments on news posts or other users' works (you can still control the comment settings for your works separately).</label>
+                </li>
+              </ul>
+            </fieldset>
+            <fieldset>
+              <legend>Collections, Challenges and Gifts</legend>
+              <h4 class="heading">Collections, Challenges and Gifts <a class="help symbol question modal modal-attached" title="Collection preferences" href="/help/collection-preferences.html" aria-controls="modal"><span class="symbol question"><span>?</span></span></a></h4>
+              <ul>
+                <li>
+                  <input name="preference[allow_collection_invitation]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[allow_collection_invitation]" id="preference_allow_collection_invitation">
+                  <label for="preference_allow_collection_invitation">Allow others to invite my works to collections.</label>
+                </li>
+                <li>
+                  <input name="preference[allow_gifts]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" checked="checked" name="preference[allow_gifts]" id="preference_allow_gifts">
+                  <label for="preference_allow_gifts">Allow anyone to gift me works.</label>
+                </li>
+                <li>
+                  <input name="preference[collection_emails_off]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[collection_emails_off]" id="preference_collection_emails_off">
+                  <label for="preference_collection_emails_off">Turn off emails from collections.</label>
+                </li>
+                <li>
+                  <input name="preference[collection_inbox_off]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[collection_inbox_off]" id="preference_collection_inbox_off">
+                  <label for="preference_collection_inbox_off">Turn off inbox messages from collections.</label>
+                </li>
+                <li>
+                  <input name="preference[recipient_emails_off]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[recipient_emails_off]" id="preference_recipient_emails_off">
+                  <label for="preference_recipient_emails_off">Turn off emails about gift works.</label>
+                </li>
+              </ul>
+            </fieldset>
+            <fieldset>
+              <legend>Misc</legend>
+              <h4 class="heading">Misc <a class="help symbol question modal modal-attached" title="Misc preferences" href="/help/misc-preferences.html" aria-controls="modal"><span class="symbol question"><span>?</span></span></a></h4>
+              <ul>
+                <li>
+                  <input name="preference[history_enabled]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" checked="checked" name="preference[history_enabled]" id="preference_history_enabled">
+                  <label for="preference_history_enabled">Turn on History.</label>
+                </li>
+                <li>
+                  <input name="preference[first_login]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[first_login]" id="preference_first_login">
+                  <label for="preference_first_login">Turn the new user help banner back on.</label>
+                </li>
+                <li>
+                  <input name="preference[banner_seen]" type="hidden" value="0" autocomplete="off"><input type="checkbox" value="1" name="preference[banner_seen]" id="preference_banner_seen">
+                  <label for="preference_banner_seen">Turn off the banner showing on every page.</label>
+                </li>
+              </ul>
+            </fieldset>
+            <fieldset>
+              <legend>Actions</legend>
+              <p class="submit"><input type="submit" name="commit" value="Update"></p>
+            </fieldset>
+          </form>
+          <div class="clear"></div>
+        </div>
+      </div>
+      <div id="footer" role="contentinfo" class="region">
+        <h3 class="landmark heading">Footer</h3>
+        <ul class="navigation actions">
+          <li class="module group">
+            <h4 class="heading">Customize</h4>
+            <ul class="menu">
+              <li>
+                <form class="button_to" method="post" action="/skins/unset"><button type="submit">Default</button><input type="hidden" name="authenticity_token" value="2YuPXjznrEy6KooCXnXfI7ORiqDR2J9WFYkoxBehhjOS6XDJKpHCVWU5iewXGvRdif-BDZEoBTCigc9NS7iIvw" autocomplete="off"></form>
+              </li>
+              <li>
+                <form class="button_to" method="post" action="/skins/891/set"><button type="submit">Low Vision Default</button><input type="hidden" name="authenticity_token" value="2YuPXjznrEy6KooCXnXfI7ORiqDR2J9WFYkoxBehhjOS6XDJKpHCVWU5iewXGvRdif-BDZEoBTCigc9NS7iIvw" autocomplete="off"></form>
+              </li>
+              <li>
+                <form class="button_to" method="post" action="/skins/929/set"><button type="submit">Reversi</button><input type="hidden" name="authenticity_token" value="2YuPXjznrEy6KooCXnXfI7ORiqDR2J9WFYkoxBehhjOS6XDJKpHCVWU5iewXGvRdif-BDZEoBTCigc9NS7iIvw" autocomplete="off"></form>
+              </li>
+              <li>
+                <form class="button_to" method="post" action="/skins/932/set"><button type="submit">Snow Blue</button><input type="hidden" name="authenticity_token" value="2YuPXjznrEy6KooCXnXfI7ORiqDR2J9WFYkoxBehhjOS6XDJKpHCVWU5iewXGvRdif-BDZEoBTCigc9NS7iIvw" autocomplete="off"></form>
+              </li>
+            </ul>
+          </li>
+          <li class="module group">
+            <h4 class="heading">About the Archive</h4>
+            <ul class="menu">
+              <li><a href="/site_map">Site Map</a></li>
+              <li><a href="/diversity">Diversity Statement</a></li>
+              <li><a href="/tos">Terms of Service</a></li>
+              <li><a href="/content">Content Policy</a></li>
+              <li><a href="/privacy">Privacy Policy</a></li>
+              <li><a href="/dmca">DMCA Policy</a></li>
+              <li><a href="https://www.otwstatus.org">Site Status</a></li>
+            </ul>
+          </li>
+          <li class="module group">
+            <h4 class="heading">Contact Us</h4>
+            <ul class="menu">
+              <li><a href="/abuse_reports/new">Policy Questions &amp; Abuse Reports</a></li>
+              <li><a href="/support">Technical Support &amp; Feedback</a></li>
+            </ul>
+          </li>
+          <li class="module group">
+            <h4 class="heading">Development</h4>
+            <ul class="menu">
+              <li>
+                <a href="https://github.com/otwcode/otwarchive/commits/v0.9.464.2">otwarchive v0.9.464.2</a>
+              </li>
+              <li><a href="/known_issues">Known Issues</a></li>
+              <li>
+                <a title="View License" href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GPL-2.0-or-later</a> by the <a title="Organization for Transformative Works" href="https://transformativeworks.org/">OTW</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ★ AO3H backupAndSync — export success toast (mock) -->
+    <div class="ao3h-bas-toast" role="status">
+        <div class="ao3h-bas-toast-title">✅ Export successful</div>
+        <div>45 settings exported</div>
+        <div class="ao3h-bas-toast-sub">ao3helper-backup-2026-04-01.json</div>
+    </div>
+    <!-- ★ end backupAndSync toast -->
+  </body>
+</html>

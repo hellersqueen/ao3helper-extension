@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Search Tags | Archive of Our Own</title>
+  <link rel="stylesheet" type="text/css" href="css/ao3.css" />
+  <script src="js/ao3-header.js"></script>
+  <script src="js/ao3-mock.js"></script>
+</head>
+<body class="logged-in javascript">
+
+<div id="ao3-header-placeholder"></div>
+
+<div id="inner" class="wrapper">
+  <div id="main" class="tags-search region" role="main">
+
+    <h2 class="heading">Tag Search</h2>
+
+    <ul class="navigation actions" role="navigation">
+      <li><a href="search-works.html">Work Search</a></li>
+      <li><a href="search-people.html">People Search</a></li>
+      <li><a href="search-bookmarks.html">Bookmark Search</a></li>
+      <li><span class="current">Tag Search</span></li>
+    </ul>
+
+    <form class="search" id="new_tag_search" action="#" accept-charset="UTF-8" method="get">
+      <fieldset>
+        <dl>
+          <dt><label for="tag_search_name">Tag name</label>  <a class="help symbol question modal" title="Tag search text help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="tag_search[name]" id="tag_search_name" /></dd>
+          <dt><label for="tag_search_fandoms">Fandoms</label></dt>
+          <dd>
+            <input class="autocomplete" type="text" name="tag_search[fandoms]" id="tag_search_fandoms" aria-describedby="fandom-field-description" />
+            <p class="footnote" id="fandom-field-description">Find tags wrangled to specific canonical fandoms.</p>
+          </dd>
+          <dt>Type</dt>
+          <dd>
+            <fieldset>
+              <ul>
+                <li><input type="radio" value="Fandom" name="tag_search[type]" id="tag_search_type_fandom" /><label for="tag_search_type_fandom">Fandom</label></li>
+                <li><input type="radio" value="Character" name="tag_search[type]" id="tag_search_type_character" /><label for="tag_search_type_character">Character</label></li>
+                <li><input type="radio" value="Relationship" name="tag_search[type]" id="tag_search_type_relationship" /><label for="tag_search_type_relationship">Relationship</label></li>
+                <li><input type="radio" value="Freeform" name="tag_search[type]" id="tag_search_type_freeform" /><label for="tag_search_type_freeform">Freeform</label></li>
+                <li><input type="radio" value="" checked="checked" name="tag_search[type]" id="tag_search_type_" /><label for="tag_search_type_">Any type</label></li>
+              </ul>
+            </fieldset>
+          </dd>
+          <dt>Wrangling status</dt>
+          <dd>
+            <fieldset>
+              <ul>
+                <li><input type="radio" value="canonical" name="tag_search[wrangling_status]" id="tag_search_wrangling_status_canonical" /><label for="tag_search_wrangling_status_canonical">Canonical</label></li>
+                <li><input type="radio" value="noncanonical" name="tag_search[wrangling_status]" id="tag_search_wrangling_status_noncanonical" /><label for="tag_search_wrangling_status_noncanonical">Non-canonical</label></li>
+                <li><input type="radio" value="synonymous" name="tag_search[wrangling_status]" id="tag_search_wrangling_status_synonymous" /><label for="tag_search_wrangling_status_synonymous">Synonymous</label></li>
+                <li><input type="radio" value="canonical_synonymous" name="tag_search[wrangling_status]" id="tag_search_wrangling_status_canonical_synonymous" /><label for="tag_search_wrangling_status_canonical_synonymous">Canonical or synonymous</label></li>
+                <li><input type="radio" value="noncanonical_nonsynonymous" name="tag_search[wrangling_status]" id="tag_search_wrangling_status_noncanonical_nonsynonymous" /><label for="tag_search_wrangling_status_noncanonical_nonsynonymous">Non-canonical and non-synonymous</label></li>
+                <li><input type="radio" value="" checked="checked" name="tag_search[wrangling_status]" id="tag_search_wrangling_status_" /><label for="tag_search_wrangling_status_">Any status</label></li>
+              </ul>
+            </fieldset>
+          </dd>
+          <dt><label for="tag_search_sort_column">Sort by</label></dt>
+          <dd>
+            <select name="tag_search[sort_column]" id="tag_search_sort_column">
+              <option value="name">Name</option>
+              <option value="created_at">Date Created</option>
+              <option value="uses">Uses</option>
+            </select>
+          </dd>
+          <dt><label for="tag_search_sort_direction">Sort direction</label></dt>
+          <dd>
+            <select name="tag_search[sort_direction]" id="tag_search_sort_direction">
+              <option selected="selected" value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </dd>
+        </dl>
+        <p class="submit actions"><input type="submit" name="commit" value="Search Tags" /></p>
+      </fieldset>
+    </form>
+
+  </div>
+  <div class="clear"></div>
+</div>
+
+<div id="footer" role="contentinfo" class="region">
+  <h3 class="landmark heading">Footer</h3>
+  <ul class="navigation actions">
+    <li class="module group">
+      <h4 class="heading">About the Archive</h4>
+      <ul class="menu">
+        <li><a href="#">Site Map</a></li>
+        <li><a href="#">Diversity Statement</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Content Policy</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">DMCA Policy</a></li>
+        <li><a href="#">Site Status</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Contact Us</h4>
+      <ul class="menu">
+        <li><a href="#">Policy Questions &amp; Abuse Reports</a></li>
+        <li><a href="#">Technical Support &amp; Feedback</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Development</h4>
+      <ul class="menu">
+        <li><a href="#">otwarchive v0.9.463.1</a></li>
+        <li><a href="#">Known Issues</a></li>
+        <li><a href="#">GPL-2.0-or-later</a> by the <a href="#">OTW</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+</body>
+</html>

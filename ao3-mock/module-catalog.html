@@ -1,0 +1,2154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AO3 Helper — Module Visual Catalog (36 modules)</title>
+<style>
+/* ── Reset & Base ─────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f4f4;color:#333;line-height:1.5}
+a{color:#900;text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Layout ───────────────────────────────────────────────── */
+.catalog-header{background:linear-gradient(135deg,#900 0%,#600 100%);color:#fff;padding:32px 24px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.catalog-header h1{font-size:1.8rem;margin-bottom:4px}
+.catalog-header p{opacity:.85;font-size:.95rem}
+.catalog-nav{background:#fff;border-bottom:1px solid #ddd;padding:12px 24px;position:sticky;top:90px;z-index:99;overflow-x:auto;white-space:nowrap}
+.catalog-nav a{display:inline-block;padding:4px 12px;margin:2px 4px;border-radius:12px;font-size:.8rem;color:#333;background:#f0f0f0;transition:all .15s}
+.catalog-nav a:hover,.catalog-nav a.active{background:#900;color:#fff;text-decoration:none}
+.catalog-nav .nav-sep{display:inline-block;width:1px;height:16px;background:#ccc;margin:0 8px;vertical-align:middle}
+
+.catalog-body{max-width:1100px;margin:24px auto;padding:0 16px}
+
+/* ── Page Group ───────────────────────────────────────────── */
+.page-group{margin-bottom:48px}
+.page-group-header{background:#2c5f8a;color:#fff;padding:12px 20px;border-radius:8px 8px 0 0;font-size:1.1rem;display:flex;align-items:center;gap:12px}
+.page-group-header .page-icon{font-size:1.4rem}
+
+/* ── Module Card ──────────────────────────────────────────── */
+.module-card{background:#fff;border:1px solid #ddd;border-radius:0 0 8px 8px;margin-bottom:24px;overflow:hidden}
+.module-card+.module-card{border-radius:8px}
+.module-card-header{background:#fafafa;border-bottom:1px solid #eee;padding:16px 20px;display:flex;align-items:center;gap:16px}
+.module-card-header h3{font-size:1.1rem;color:#333}
+.module-card-header h3 code{background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:.85rem;color:#900}
+.module-card-header .tab-badge{font-size:.7rem;background:#2c5f8a;color:#fff;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.module-card-body{display:flex;gap:0;min-height:200px}
+
+/* ── Page Mock (left) ─────────────────────────────────────── */
+.page-mock{flex:1;padding:16px;border-right:1px solid #eee;background:#fff;position:relative;min-width:0}
+.page-mock .mock-label{position:absolute;top:8px;right:8px;background:#2c5f8a;color:#fff;font-size:.65rem;padding:2px 8px;border-radius:10px;opacity:.7}
+
+/* AO3 mini-mock styles */
+.ao3-header-mock{background:#900;color:#fff;padding:6px 12px;border-radius:4px;font-size:.75rem;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.ao3-header-mock .logo{font-weight:700}
+.ao3-header-mock .nav{font-size:.65rem;opacity:.8}
+
+.ao3-blurb{border:1px solid #ddd;border-radius:4px;padding:10px 12px;margin-bottom:8px;font-size:.8rem;position:relative;background:#fff}
+.ao3-blurb .blurb-title{font-weight:700;color:#900;margin-bottom:2px}
+.ao3-blurb .blurb-author{font-size:.7rem;color:#666;margin-bottom:4px}
+.ao3-blurb .blurb-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.ao3-blurb .blurb-tags span{background:#f0f0f0;padding:1px 6px;border-radius:3px;font-size:.65rem;color:#555}
+.ao3-blurb .blurb-stats{display:flex;gap:8px;font-size:.65rem;color:#888}
+.ao3-blurb .blurb-stats dt{font-weight:600}
+.ao3-blurb .blurb-summary{font-size:.7rem;color:#666;margin-top:4px;font-style:italic}
+
+.ao3-work-meta{padding:8px 12px;border:1px solid #ddd;border-radius:4px;margin-bottom:8px;font-size:.75rem}
+.ao3-work-meta h2{color:#900;font-size:1rem;margin-bottom:2px}
+.ao3-work-meta .byline{color:#666;font-size:.7rem}
+.ao3-work-text{padding:8px 12px;font-size:.8rem;line-height:1.6;color:#333;border-left:3px solid #eee;margin-bottom:8px}
+.ao3-work-actions{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.ao3-work-actions button,.ao3-work-actions a{background:linear-gradient(#fff,#ddd);border:1px solid #bbb;padding:3px 10px;border-radius:3px;font-size:.7rem;cursor:default;color:#333}
+
+.ao3-search-form{border:1px solid #ddd;padding:10px;border-radius:4px;margin-bottom:8px;font-size:.75rem}
+.ao3-search-form input,.ao3-search-form select{border:1px solid #ccc;padding:3px 6px;font-size:.7rem;border-radius:3px;margin:2px}
+
+.ao3-chapter-nav{background:#f5f5f5;border:1px solid #ddd;padding:6px 10px;border-radius:4px;font-size:.7rem;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.ao3-chapter-nav select{font-size:.65rem;padding:2px 4px}
+
+.ao3-notes{background:#fdf8e8;border:1px solid #e8deb5;border-radius:4px;padding:8px 12px;font-size:.75rem;margin-bottom:8px}
+.ao3-notes h4{font-size:.7rem;font-weight:700;margin-bottom:4px;color:#666}
+
+.ao3-comment-area{border:1px solid #ddd;border-radius:4px;padding:8px;font-size:.75rem;margin-bottom:8px}
+.ao3-comment-area textarea{width:100%;height:40px;border:1px solid #ccc;border-radius:3px;font-size:.7rem;padding:4px;resize:none}
+
+.ao3-dashboard{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.ao3-dashboard .widget{border:1px solid #ddd;border-radius:4px;padding:8px;font-size:.7rem}
+.ao3-dashboard .widget h5{font-size:.65rem;color:#888;margin-bottom:4px;text-transform:uppercase}
+
+.ao3-pagination{text-align:center;font-size:.7rem;padding:6px;color:#666}
+.ao3-pagination span{padding:2px 6px;margin:0 2px;border-radius:3px}
+.ao3-pagination .current{background:#900;color:#fff}
+
+/* ── Injection Highlight ──────────────────────────────────── */
+.inject-zone{position:relative;border:2px dashed #e74c3c !important;border-radius:4px;background:rgba(231,76,60,.06) !important}
+.inject-zone::after{content:attr(data-inject);position:absolute;top:-10px;right:4px;background:#e74c3c;color:#fff;font-size:.55rem;padding:1px 6px;border-radius:3px;white-space:nowrap;z-index:2}
+
+.inject-inline{background:rgba(231,76,60,.12);border:1.5px dashed #e74c3c;border-radius:3px;padding:1px 4px;display:inline-block;position:relative}
+.inject-inline::after{content:attr(data-inject);position:absolute;bottom:100%;left:0;background:#e74c3c;color:#fff;font-size:.5rem;padding:0 4px;border-radius:2px;white-space:nowrap}
+
+/* Module-injected mock UI */
+.mock-injected{border:2px solid #27ae60;border-radius:4px;padding:6px 10px;margin:6px 0;background:rgba(39,174,96,.08);font-size:.75rem;position:relative}
+.mock-injected::before{content:"⚡ MODULE";position:absolute;top:-9px;left:8px;background:#27ae60;color:#fff;font-size:.5rem;padding:0 5px;border-radius:2px;letter-spacing:.5px}
+.mock-injected.floating{position:absolute;border-color:#2980b9;background:rgba(41,128,185,.08)}
+.mock-injected.floating::before{background:#2980b9;content:"⚡ FLOATING"}
+
+/* ── Description (right) ──────────────────────────────────── */
+.module-desc{width:320px;min-width:320px;padding:16px;background:#fafafa;font-size:.8rem}
+.module-desc h4{font-size:.85rem;color:#900;margin-bottom:8px;border-bottom:1px solid #eee;padding-bottom:4px}
+.module-desc ul{list-style:none;padding:0}
+.module-desc li{padding:3px 0;font-size:.75rem;border-bottom:1px dotted #eee}
+.module-desc li::before{content:"→ ";color:#900;font-weight:700}
+.module-desc .inject-list{margin-top:8px}
+.module-desc .inject-list dt{font-weight:700;color:#e74c3c;font-size:.7rem}
+.module-desc .inject-list dd{color:#555;font-size:.7rem;margin-bottom:4px;padding-left:12px}
+.module-desc .config-note{margin-top:8px;padding:6px 8px;background:#fff3cd;border-radius:4px;font-size:.7rem;color:#856404}
+
+/* ── Star rating mock ─────────────────────────────────────── */
+.mock-stars{display:inline-flex;gap:1px}
+.mock-stars span{color:#900;font-size:1rem;cursor:pointer}
+.mock-stars span:hover{color:#c00}
+
+/* ── Badges ───────────────────────────────────────────────── */
+.mock-badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:.6rem;font-weight:600;margin:0 2px;white-space:nowrap}
+.mock-badge.green{background:#d4edda;color:#155724}
+.mock-badge.blue{background:#cce5ff;color:#004085}
+.mock-badge.orange{background:#fff3cd;color:#856404}
+.mock-badge.purple{background:#e8d5f5;color:#5b2d8e}
+.mock-badge.red{background:#f8d7da;color:#721c24}
+.mock-badge.grey{background:#e2e3e5;color:#383d41}
+
+/* ── TTS mock ─────────────────────────────────────────────── */
+.mock-tts-panel{background:#fff;border:2px solid #2c5f8a;border-radius:8px;padding:8px;font-size:.65rem;width:180px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.mock-tts-panel .tts-controls{display:flex;gap:4px;margin-bottom:4px}
+.mock-tts-panel button{background:#2c5f8a;color:#fff;border:none;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default}
+.mock-tts-highlight{background:#fff3b0;padding:0 2px;border-radius:2px}
+
+/* ── Filter chips ─────────────────────────────────────────── */
+.mock-chip{display:inline-flex;align-items:center;gap:4px;background:#e8f0fe;border:1px solid #b3d7ff;border-radius:12px;padding:2px 8px;font-size:.6rem;margin:2px}
+.mock-chip .chip-x{color:#900;font-weight:700;cursor:pointer}
+
+/* ── Progress bar ─────────────────────────────────────────── */
+.mock-progress{height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden;margin:4px 0}
+.mock-progress .fill{height:100%;border-radius:3px}
+.mock-progress .fill.green{background:linear-gradient(90deg,#27ae60,#2ecc71)}
+.mock-progress .fill.blue{background:linear-gradient(90deg,#2c5f8a,#3498db)}
+
+/* ── Color swatches ───────────────────────────────────────── */
+.mock-swatches{display:flex;gap:6px}
+.mock-swatch{width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer}
+.mock-swatch.selected{border-color:#333;box-shadow:0 0 0 2px rgba(0,0,0,.2)}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media(max-width:900px){
+  .module-card-body{flex-direction:column}
+  .module-desc{width:100%;min-width:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- HEADER                                                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="catalog-header">
+  <h1>AO3 Helper — Module Visual Catalog</h1>
+  <p>36 modules × zones d'injection DOM × aperçu visuel</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- NAV                                                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<nav class="catalog-nav">
+  <strong style="font-size:.75rem;color:#666;margin-right:8px">Jump to:</strong>
+  <a href="#hideByTags">hideByTags</a>
+  <a href="#skipWorks">skipWorks</a>
+  <a href="#tagsDisplay">tagsDisplay</a>
+  <a href="#ficEngagement">ficEngagement</a>
+  <a href="#workLength">workLength</a>
+  <a href="#filterManager">filterManager</a>
+  <span class="nav-sep"></span>
+  <a href="#ficPeek">ficPeek</a>
+  <a href="#searchEnhancer">searchEnhancer</a>
+  <a href="#similarFics">similarFics</a>
+  <a href="#surpriseMe">surpriseMe</a>
+  <a href="#tropeGames">tropeGames</a>
+  <span class="nav-sep"></span>
+  <a href="#chapterNavigation">chapterNavigation</a>
+  <a href="#readingTracker">readingTracker</a>
+  <a href="#readingFormatter">readingFormatter</a>
+  <a href="#textToSpeech">textToSpeech</a>
+  <a href="#wordSwap">wordSwap</a>
+  <a href="#instantFootnotes">instantFootnotes</a>
+  <a href="#collapseAuthorNotes">collapseAuthorNotes</a>
+  <a href="#ficActions">ficActions</a>
+  <span class="nav-sep"></span>
+  <a href="#ficAppreciation">ficAppreciation</a>
+  <a href="#bookmarkVault">bookmarkVault</a>
+  <a href="#laterShelf">laterShelf</a>
+  <a href="#readingDashboard">readingDashboard</a>
+  <a href="#activityPanel">activityPanel</a>
+  <a href="#readingTimeline">readingTimeline</a>
+  <a href="#notificationCenter">notificationCenter</a>
+  <span class="nav-sep"></span>
+  <a href="#pageControls">pageControls</a>
+  <a href="#mainNavigation">mainNavigation</a>
+  <a href="#keyboardShortcuts">keyboardShortcuts</a>
+  <a href="#userRelationships">userRelationships</a>
+  <a href="#seriesHelper">seriesHelper</a>
+  <a href="#commentKit">commentKit</a>
+  <span class="nav-sep"></span>
+  <a href="#visualPreferences">visualPreferences</a>
+  <a href="#themeBuilder">themeBuilder</a>
+  <a href="#ficDownloader">ficDownloader</a>
+  <a href="#backupAndSync">backupAndSync</a>
+</nav>
+
+<div class="catalog-body">
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  BROWSE — LISTINGS PAGE                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page-group">
+  <div class="page-group-header">
+    <span class="page-icon">📋</span>
+    <span><strong>Browse</strong> — Listings page (listings.html)</span>
+  </div>
+
+  <!-- ─── hideByTags ──────────────────────────────────────────── -->
+  <div class="module-card" id="hideByTags">
+    <div class="module-card-header">
+      <h3><code>hideByTags</code> — Hide By Tags</h3>
+      <span class="tab-badge">Browse</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search · AO3 Helper</span></div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">Must Love Dogs</div>
+          <div class="blurb-author">by petalsonparchment</div>
+          <div class="blurb-tags">
+            <span>Jily</span><span>AU - Modern</span><span>Meet-Cute</span><span>Dogs</span>
+          </div>
+          <div class="blurb-stats">Words: 10,873 · Kudos: 26 · Hits: 262</div>
+        </div>
+
+        <div class="ao3-blurb inject-zone" data-inject="hideByTags → fold/dim blurb" style="opacity:.5">
+          <div class="blurb-title" style="color:#999">A Dream of Drowning</div>
+          <div class="blurb-author" style="color:#bbb">by GardenSaint</div>
+          <div class="mock-injected" style="margin-top:6px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="color:#888;font-size:.7rem">🚫 Hidden — contains: <strong>Major Character Death</strong></span>
+              <button style="background:#ddd;border:1px solid #bbb;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Show</button>
+              <button style="background:#ddd;border:1px solid #bbb;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Unhide</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">The Seventh Year</div>
+          <div class="blurb-author">by quicksilverquill</div>
+          <div class="blurb-tags"><span>Slow Burn</span><span>Angst</span></div>
+          <div class="blurb-stats">Words: 45,200 · Kudos: 312 · Hits: 4,100</div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Fold/dim les blurbs contenant des tags blacklistés</li>
+          <li>Bannière avec raison + boutons Show/Edit/Unhide</li>
+          <li>Mode "dim" (opacity 60%) ou "fold" (contenu caché)</li>
+          <li>Badge compteur dans le menu</li>
+          <li>Icône 🚫 sur les tags au hover</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>li.blurb</code> — chaque work</dd>
+          <dd><code>.header.module</code> — bannière fold</dd>
+          <dd><code>#main</code> — racine DOM</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── skipWorks ───────────────────────────────────────────── -->
+  <div class="module-card" id="skipWorks">
+    <div class="module-card-header">
+      <h3><code>skipWorks</code> — Skip Works</h3>
+      <span class="tab-badge">Browse</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="ao3-blurb" style="position:relative">
+          <div class="blurb-title">Must Love Dogs</div>
+          <div class="blurb-author">by petalsonparchment</div>
+          <div class="blurb-tags"><span>Jily</span><span>AU</span></div>
+          <div class="blurb-stats">Words: 10,873 · Kudos: 26</div>
+          <div class="inject-inline" data-inject="Hide btn" style="position:absolute;top:8px;right:8px">
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Hide</button>
+          </div>
+        </div>
+
+        <div class="ao3-blurb inject-zone" data-inject="skipWorks → grey replacement" style="background:#f0f0f0 !important">
+          <div style="color:#888;font-size:.75rem">
+            <strong style="color:#999">A Dream of Drowning</strong>
+            <span class="mock-badge grey" style="margin-left:6px">skipped</span>
+          </div>
+          <div style="font-size:.7rem;color:#aaa;margin-top:4px">Note: "Already read, too dark"</div>
+          <div style="margin-top:6px;display:flex;gap:6px">
+            <button style="background:#ddd;border:1px solid #bbb;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Show</button>
+            <button style="background:#ddd;border:1px solid #bbb;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Edit</button>
+            <button style="background:#ddd;border:1px solid #bbb;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Unhide</button>
+          </div>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">The Seventh Year</div>
+          <div class="blurb-stats">Words: 45,200 · Kudos: 312</div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Bouton "Hide" sur chaque blurb</li>
+          <li>Remplace le blurb par un bloc gris avec note</li>
+          <li>Modal pour entrer la raison du skip</li>
+          <li>Quick note presets</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>li.blurb[id^="work_"]</code></dd>
+          <dd><code>.header.module</code> — bloc de remplacement</dd>
+          <dd><code>body</code> — modal picker</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── tagsDisplay ─────────────────────────────────────────── -->
+  <div class="module-card" id="tagsDisplay">
+    <div class="module-card-header">
+      <h3><code>tagsDisplay</code> — Tags Display</h3>
+      <span class="tab-badge">Browse</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="mock-injected" style="margin-bottom:8px" data-inject="">
+          <div style="display:flex;gap:8px;font-size:.7rem;align-items:center">
+            <label><input type="checkbox" checked> Compact tags</label>
+            <label><input type="checkbox"> Noise filter</label>
+            <label><input type="checkbox" checked> Archive warnings as icons</label>
+            <span style="margin-left:auto">Highlight:</span>
+            <div class="mock-swatches">
+              <div class="mock-swatch selected" style="background:#ffe066"></div>
+              <div class="mock-swatch" style="background:#b3f0b3"></div>
+              <div class="mock-swatch" style="background:#b3d9ff"></div>
+              <div class="mock-swatch" style="background:#ffb3d9"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">Must Love Dogs</div>
+          <div class="blurb-tags inject-zone" data-inject="tagsDisplay → compact/highlight" style="padding:4px">
+            <span style="font-size:.55rem">💀</span>
+            <span style="background:#ffe066;padding:1px 6px;border-radius:3px;font-size:.6rem">Jily</span>
+            <span style="font-size:.6rem;padding:1px 6px;background:#f0f0f0;border-radius:3px">AU</span>
+            <span style="font-size:.6rem;padding:1px 6px;background:#f0f0f0;border-radius:3px">Meet-Cute</span>
+            <span style="font-size:.55rem;color:#999">+5 more…</span>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Panneau de contrôle (noise filter, compact mode)</li>
+          <li>Tags compacts (3-5x plus dense, hover to expand)</li>
+          <li>Highlighting avec couleur swatch personnalisable</li>
+          <li>Archive warnings transformées en icônes (💀⚠️⛔)</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>.tags ul</code> — container de tags</dd>
+          <dd><code>.index.group</code> — panneau de contrôle</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ficEngagement ───────────────────────────────────────── -->
+  <div class="module-card" id="ficEngagement">
+    <div class="module-card-header">
+      <h3><code>ficEngagement</code> — Fic Engagement</h3>
+      <span class="tab-badge">Browse</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">Must Love Dogs
+            <span class="inject-inline" data-inject="engagement badge" style="vertical-align:middle">
+              <span class="mock-badge green">9.9% ❤️/👁️</span>
+            </span>
+          </div>
+          <div class="blurb-author">by petalsonparchment</div>
+          <div class="blurb-stats">Words: 10,873 · <strong style="color:#27ae60">Kudos: 26</strong> · Hits: 262</div>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">A Dream of Drowning
+            <span class="inject-inline" data-inject="💎 hidden gem" style="vertical-align:middle">
+              <span class="mock-badge purple">💎 Hidden Gem</span>
+            </span>
+          </div>
+          <div class="blurb-author">by GardenSaint</div>
+          <div class="blurb-stats">Words: 120,000 · <strong style="color:#e74c3c">Kudos: 4,200</strong> · Hits: 18,000</div>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">The Seventh Year
+            <span class="inject-inline" data-inject="ratio" style="vertical-align:middle">
+              <span class="mock-badge orange">7.6% ❤️/👁️</span>
+            </span>
+          </div>
+          <div class="blurb-stats">Words: 45,200 · Kudos: 312 · Hits: 4,100</div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Badge ratio kudos/hits coloré (vert/orange/rouge)</li>
+          <li>💎 Badge "Hidden Gem" sur les works sous-exposés</li>
+          <li>Tooltip avec stats raw au hover</li>
+          <li>Sticky chip sur les work pages</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>dl.stats dd.kudos/hits/bookmarks</code></dd>
+          <dd><code>h4.heading</code> — badges inline</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── workLength ──────────────────────────────────────────── -->
+  <div class="module-card" id="workLength">
+    <div class="module-card-header">
+      <h3><code>workLength</code> — Work Length</h3>
+      <span class="tab-badge">Browse</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">Must Love Dogs</div>
+          <div class="blurb-stats">
+            Words: 10,873
+            <span class="inject-inline" data-inject="length badges" style="margin-left:4px">
+              <span class="mock-badge green">⚡ Short</span>
+              <span class="mock-badge blue">📄 ~40 pages</span>
+              <span class="mock-badge purple">⏱ ~43 min</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">A Dream of Drowning</div>
+          <div class="blurb-stats">
+            Words: 120,000
+            <span class="inject-inline" data-inject="length badges" style="margin-left:4px">
+              <span class="mock-badge purple">📚 Epic</span>
+              <span class="mock-badge blue">📄 ~436 pages</span>
+              <span class="mock-badge purple">⏱ ~8h</span>
+            </span>
+          </div>
+          <div style="font-size:.6rem;color:#888;margin-top:2px">
+            <span class="inject-inline" data-inject="book comparison">≈ Similar to: <em>Harry Potter & the Order of the Phoenix</em></span>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Badges catégorie : ⚡ Short / 📄 Medium / 📖 Long / 📚 Epic</li>
+          <li>Comparaison avec un livre connu (18 titres)</li>
+          <li>Estimation temps de lecture (configurable WPM)</li>
+          <li>Équivalent pages (275 mots/page)</li>
+          <li>Temps par chapitre sur les work pages</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>.stats dd.words</code> — nombre de mots</dd>
+          <dd><code>h4.heading</code> — badges</dd>
+          <dd><code>#chapters > .chapter h3</code> — par chapitre</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ficPeek ─────────────────────────────────────────────── -->
+  <div class="module-card" id="ficPeek">
+    <div class="module-card-header">
+      <h3><code>ficPeek</code> — Fic Peek</h3>
+      <span class="tab-badge">Explore</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">
+            Must Love Dogs
+            <span class="inject-inline" data-inject="Preview btn" style="vertical-align:middle">
+              <button style="background:#2c5f8a;color:#fff;border:none;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">👁️ Preview</button>
+            </span>
+          </div>
+          <div class="blurb-tags"><span>Jily</span><span>AU</span></div>
+          <div class="mock-injected">
+            <div style="font-size:.7rem;color:#555;line-height:1.5;max-height:80px;overflow:hidden">
+              <p>Before heading off to a lecture at university, James Potter leaves his Labrador retriever, Padfoot, locked inside the flat. Unfortunately for James, Padfoot soon grows dreadfully bored and teaches himself how to slide open the front bolt…</p>
+            </div>
+            <div style="text-align:center;font-size:.6rem;color:#999;margin-top:4px">— Preview loaded from work page —</div>
+          </div>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">The Seventh Year
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">👁️ Preview</button>
+          </div>
+          <div class="blurb-stats">Words: 45,200</div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Bouton "👁️ Preview" sur chaque blurb heading</li>
+          <li>Charge le premier paragraphe de la fic via fetch</li>
+          <li>Box preview inline sous le blurb</li>
+          <li>Loading indicator + fallback erreur</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>li.blurb h4.heading</code> — bouton</dd>
+          <dd><code>.blurb</code> — box preview</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── surpriseMe ──────────────────────────────────────────── -->
+  <div class="module-card" id="surpriseMe">
+    <div class="module-card-header">
+      <h3><code>surpriseMe</code> — Surprise Me</h3>
+      <span class="tab-badge">Explore</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+        <div class="mock-injected" style="text-align:center;padding:8px">
+          <button style="background:#2c5f8a;color:#fff;border:none;padding:6px 16px;border-radius:4px;font-size:.8rem;cursor:default">🎲 Random Work</button>
+          <div style="font-size:.6rem;color:#888;margin-top:3px">Click to open a random work from this page</div>
+        </div>
+        <div class="ao3-blurb"><div class="blurb-title">Must Love Dogs</div><div class="blurb-stats">Words: 10,873</div></div>
+        <div class="ao3-blurb"><div class="blurb-title">A Dream of Drowning</div><div class="blurb-stats">Words: 120,000</div></div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Bouton "🎲 Random Work" avant la liste</li>
+          <li>Sélectionne un blurb au hasard</li>
+          <li>Navigue directement vers le work</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#main</code> ou <code>.blurb</code> container</dd>
+          <dd><code>li.blurb</code> — sélection random</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── readingTracker (listings) ───────────────────────────── -->
+  <div class="module-card" id="readingTracker">
+    <div class="module-card-header">
+      <h3><code>readingTracker</code> — Reading Tracker</h3>
+      <span class="tab-badge">Reading</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html + work page</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="ao3-blurb" style="opacity:.4">
+          <div class="blurb-title" style="color:#999">
+            Must Love Dogs
+            <span class="inject-inline" data-inject="seen badge" style="vertical-align:middle">
+              <span style="font-size:.7rem">👁️</span>
+            </span>
+          </div>
+          <div class="blurb-author" style="color:#bbb">by petalsonparchment</div>
+          <div class="blurb-stats" style="color:#ccc">Words: 10,873</div>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">A Dream of Drowning
+            <span class="inject-inline" data-inject="chapter badge">
+              <span class="mock-badge blue">Ch 3/12</span>
+            </span>
+          </div>
+          <div class="blurb-stats">Words: 120,000</div>
+        </div>
+
+        <div style="margin-top:12px;padding:8px;border:1px dashed #aaa;border-radius:4px;font-size:.7rem;color:#666;text-align:center">
+          <strong>Sur work page :</strong> resume banner ("You were at 45%") + floating badge bottom-right + position marker line
+        </div>
+
+        <div style="position:relative;margin-top:8px">
+          <div class="ao3-work-text" style="font-size:.7rem">
+            <p>She'd noticed the signs a few weeks ago…</p>
+            <hr style="border:2px solid #27ae60;margin:6px 0">
+            <p style="opacity:.5">Then she started feeling sick…</p>
+          </div>
+          <div class="mock-injected floating" style="bottom:4px;right:4px;padding:3px 8px;font-size:.65rem;border-radius:12px">
+            45%
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Dim/hide les works déjà lus (opacity 40%)</li>
+          <li>👁️ badge œil sur les titres</li>
+          <li>"Ch 3/12" badge sur les works en cours</li>
+          <li>Resume banner au retour sur un work</li>
+          <li>Floating badge de progression (bottom-right)</li>
+          <li>Ligne horizontale à la dernière position de lecture</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>li.blurb</code> — dim/hide</dd>
+          <dd><code>h4.heading a</code> — 👁️ badge</dd>
+          <dd><code>#workskin</code> — floating badge + marker</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── userRelationships ───────────────────────────────────── -->
+  <div class="module-card" id="userRelationships">
+    <div class="module-card-header">
+      <h3><code>userRelationships</code> — User Relationships</h3>
+      <span class="tab-badge">Navigate & Interact</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">Must Love Dogs</div>
+          <div class="blurb-author">
+            by petalsonparchment
+            <span class="inject-inline" data-inject="author controls" style="margin-left:6px">
+              <button style="background:#d4edda;border:1px solid #c3e6cb;padding:1px 6px;border-radius:10px;font-size:.55rem;cursor:default">⭐ Fav</button>
+              <button style="background:#f8d7da;border:1px solid #f5c6cb;padding:1px 6px;border-radius:10px;font-size:.55rem;cursor:default">🚫 Block</button>
+            </span>
+          </div>
+          <div class="blurb-stats">Words: 10,873</div>
+        </div>
+
+        <div class="ao3-blurb" style="opacity:.3">
+          <div style="color:#999;font-size:.75rem">
+            <span class="inject-inline" data-inject="blocked placeholder">[Author blocked] — GardenSaint</span>
+            <button style="background:#eee;border:1px solid #ccc;padding:1px 6px;border-radius:3px;font-size:.55rem;cursor:default;margin-left:4px">Reveal</button>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Boutons ⭐ Favorite / 🚫 Block sur chaque blurb</li>
+          <li>Works d'auteurs bloqués cachés ou dimmés</li>
+          <li>Placeholder "[Author blocked]" avec révélation temporaire</li>
+          <li>Statistiques par auteur</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>.byline a[rel="author"]</code></dd>
+          <dd><code>li.blurb</code> — hide/modify</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── laterShelf (listings) ───────────────────────────────── -->
+  <div class="module-card" id="laterShelf">
+    <div class="module-card-header">
+      <h3><code>laterShelf</code> — Later Shelf</h3>
+      <span class="tab-badge">Library</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html / marked-later.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="mock-injected" style="margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.7rem">
+          <select style="font-size:.65rem;padding:2px 4px"><option>All fandoms</option></select>
+          <select style="font-size:.65rem;padding:2px 4px"><option>Sort by: Date marked</option></select>
+          <button style="background:#e8f0fe;border:1px solid #b3d7ff;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">📌 Bulk Actions</button>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">Must Love Dogs
+            <span class="mock-badge blue">📌 Marked 3 days ago</span>
+          </div>
+          <div class="blurb-stats">Words: 10,873</div>
+          <div class="inject-inline" data-inject="MFL toggle" style="margin-top:4px">
+            <button style="background:#fff3cd;border:1px solid #ffc107;padding:2px 10px;border-radius:12px;font-size:.6rem;cursor:default">📌 Unmark</button>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Toggle "Mark for Later" / "Unmark" sur chaque blurb</li>
+          <li>Barre de filtres (fandom, statut, tri)</li>
+          <li>Badge "📌 Marked X days ago"</li>
+          <li>Bulk actions (remove, read, bookmark)</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#main</code> — barre de filtres</dd>
+          <dd><code>li.blurb</code> — toggle + badge</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── pageControls ────────────────────────────────────────── -->
+  <div class="module-card" id="pageControls">
+    <div class="module-card-header">
+      <h3><code>pageControls</code> — Page Controls</h3>
+      <span class="tab-badge">Navigate & Interact</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+        <div class="ao3-blurb"><div class="blurb-title">Must Love Dogs</div><div class="blurb-stats">Words: 10,873</div></div>
+        <div class="ao3-blurb"><div class="blurb-title">A Dream of Drowning</div><div class="blurb-stats">Words: 120,000</div></div>
+
+        <div class="ao3-pagination">
+          <span class="current">1</span><span>2</span><span>3</span><span>…</span><span>47</span>
+        </div>
+
+        <div class="mock-injected" style="text-align:center;font-size:.7rem;margin-top:4px">
+          <div style="display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap">
+            <span>Jump to page:</span>
+            <input type="text" style="width:40px;border:1px solid #ccc;border-radius:3px;padding:2px 4px;font-size:.65rem;text-align:center" value="12">
+            <button style="background:#2c5f8a;color:#fff;border:none;padding:2px 8px;border-radius:3px;font-size:.65rem;cursor:default">Go</button>
+            <span style="color:#999">|</span>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 6px;border-radius:3px;font-size:.6rem;cursor:default">First</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 6px;border-radius:3px;font-size:.6rem;cursor:default">+10</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 6px;border-radius:3px;font-size:.6rem;cursor:default">+50</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 6px;border-radius:3px;font-size:.6rem;cursor:default">Last</button>
+          </div>
+          <div style="margin-top:4px;font-size:.6rem;color:#888">
+            Works per page: <select style="font-size:.6rem"><option>20 (AO3 default)</option><option>50</option><option>100</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>"Jump to page" input + bouton Go</li>
+          <li>Quick buttons: First / Last / +10 / +50</li>
+          <li>Works per page selector dropdown</li>
+          <li>Pagination dupliquée en bas</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>.pagination</code> — champ jump</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ficDownloader (listings) ────────────────────────────── -->
+  <div class="module-card" id="ficDownloader">
+    <div class="module-card-header">
+      <h3><code>ficDownloader</code> — Fic Downloader</h3>
+      <span class="tab-badge">Appearance & Tools</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">listings.html + work page</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="mock-injected" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:.7rem">
+            <label><input type="checkbox"> Batch mode</label>
+            <span style="margin-left:8px;color:#888">0/20 selected</span>
+          </div>
+          <button style="background:#2c5f8a;color:#fff;border:none;padding:3px 10px;border-radius:3px;font-size:.65rem;cursor:default">⬇️ Download All on This Page</button>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">
+            Must Love Dogs
+            <span class="inject-inline" data-inject="download icon" style="vertical-align:middle">
+              <span style="font-size:.7rem;cursor:pointer">⬇️</span>
+            </span>
+          </div>
+          <div class="blurb-stats">Words: 10,873 · <select style="font-size:.55rem;padding:1px"><option>ePub</option><option>PDF</option><option>MOBI</option><option>TXT</option><option>HTML</option></select></div>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title">A Dream of Drowning <span style="font-size:.7rem">⬇️</span></div>
+          <div class="blurb-stats">Words: 120,000</div>
+        </div>
+
+        <div class="mock-injected" style="margin-top:8px;font-size:.7rem">
+          <div class="mock-progress"><div class="fill blue" style="width:40%"></div></div>
+          <div style="text-align:center;font-size:.6rem;color:#888">Downloading 4/10… (ePub)</div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>⬇️ icône download sur chaque blurb</li>
+          <li>Batch mode avec sélection + progress bar</li>
+          <li>"Download All on This Page" button</li>
+          <li>Format selector (ePub/PDF/MOBI/TXT/HTML)</li>
+          <li>"Send to Kindle" + "Save Offline" buttons</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>li.blurb h4.heading</code> — icône ⬇️</dd>
+          <dd><code>#main</code> — toolbar flottante</dd>
+          <dd><code>.download</code> — work page format selector</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-group listings -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  BROWSE — SEARCH PAGE                                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page-group">
+  <div class="page-group-header">
+    <span class="page-icon">🔍</span>
+    <span><strong>Browse/Search</strong> — Search page (search-works.html)</span>
+  </div>
+
+  <!-- ─── filterManager ───────────────────────────────────────── -->
+  <div class="module-card" id="filterManager">
+    <div class="module-card-header">
+      <h3><code>filterManager</code> — Filter Manager</h3>
+      <span class="tab-badge">Browse</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">search-works.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="ao3-search-form inject-zone" data-inject="filterManager → preset + quick filters">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+            <span style="font-size:.7rem;font-weight:700">Preset:</span>
+            <select style="font-size:.65rem;flex:1"><option>My Jily Filters ⭐</option><option>No Crossovers</option><option>English Only</option></select>
+            <button style="background:#2c5f8a;color:#fff;border:none;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Apply</button>
+            <button style="background:#fff;border:1px solid #2c5f8a;color:#2c5f8a;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Expand</button>
+          </div>
+          <div style="display:flex;gap:8px;font-size:.65rem;margin-bottom:6px">
+            <label><input type="radio" name="os" checked> All</label>
+            <label><input type="radio" name="os"> One-shots only</label>
+            <label><input type="radio" name="os"> Multi-chapter</label>
+            <span style="margin-left:auto">
+              <label><input type="radio" name="xo" checked> All</label>
+              <label><input type="radio" name="xo"> No crossovers</label>
+            </span>
+          </div>
+          <div style="font-size:.6rem;color:#666">Freeform: <input style="font-size:.6rem;padding:2px 4px;width:200px" placeholder="Start typing a tag…"></div>
+        </div>
+
+        <div class="mock-injected" style="margin-top:6px">
+          <div style="font-size:.65rem;color:#666;margin-bottom:4px">Active filters (expanded):</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            <span class="mock-chip">F/M <span class="chip-x">✕</span></span>
+            <span class="mock-chip">English <span class="chip-x">✕</span></span>
+            <span class="mock-chip">Complete <span class="chip-x">✕</span></span>
+            <span class="mock-chip">No MCD <span class="chip-x">✕</span></span>
+          </div>
+        </div>
+
+        <div class="ao3-blurb" style="margin-top:8px">
+          <div class="blurb-title">Must Love Dogs <span class="mock-badge blue" style="font-size:.5rem">EN</span></div>
+          <div class="blurb-stats">Words: 10,873</div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Preset dropdown avec ⭐ favoris</li>
+          <li>Quick filters : one-shot/multi, crossovers</li>
+          <li>Bouton "Expand" → strips de chips retirables</li>
+          <li>Language badges sur les blurbs</li>
+          <li>Tag bundle autocomplete</li>
+          <li>Archive Warning exclusion banner</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#work_search_form</code> — form controls</dd>
+          <dd><code>.blurb</code> — language badges</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── searchEnhancer ──────────────────────────────────────── -->
+  <div class="module-card" id="searchEnhancer">
+    <div class="module-card-header">
+      <h3><code>searchEnhancer</code> — Search Enhancer</h3>
+      <span class="tab-badge">Explore</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">search-works.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="ao3-search-form">
+          <div style="position:relative">
+            <input style="width:100%;font-size:.7rem;padding:4px 6px" placeholder="Search works…" value="Jily slow burn">
+            <div class="mock-injected" style="position:absolute;top:100%;left:0;right:0;z-index:5;background:#fff;border:1px solid #ddd;border-radius:0 0 4px 4px;padding:4px;box-shadow:0 2px 6px rgba(0,0,0,.1)">
+              <div style="font-size:.6rem;color:#888;margin-bottom:2px">Recent searches:</div>
+              <div style="font-size:.65rem;padding:2px 4px;background:#f5f5f5;border-radius:3px;margin-bottom:2px;cursor:default">🕐 Jily enemies to lovers</div>
+              <div style="font-size:.65rem;padding:2px 4px;background:#f5f5f5;border-radius:3px;margin-bottom:2px;cursor:default">🕐 Marauders era angst</div>
+              <div style="font-size:.65rem;padding:2px 4px;background:#e8f0fe;border-radius:3px;cursor:default">🏷️ Slow Burn (tag suggestion)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mock-injected" style="margin-top:8px">
+          <div style="font-size:.65rem;font-weight:700;margin-bottom:4px">Sort by engagement:</div>
+          <div style="display:flex;gap:4px">
+            <button style="background:#2c5f8a;color:#fff;border:none;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Kudos Ratio</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Save Rate</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Kudos</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Hits</button>
+          </div>
+        </div>
+
+        <div class="mock-injected" style="margin-top:8px">
+          <div style="font-size:.65rem;font-weight:700;margin-bottom:4px">You might also like:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            <span class="mock-chip">Friends to Lovers</span>
+            <span class="mock-chip">Hogwarts Era</span>
+            <span class="mock-chip">Pining</span>
+            <span class="mock-chip">Mutual Pining</span>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Autocomplete dropdown (historique + tag suggestions)</li>
+          <li>"Sort by Engagement" button bar (kudos ratio, save rate…)</li>
+          <li>"You might also like" related tags panel</li>
+          <li>Navigation clavier (↑↓/Enter/Escape)</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>.search_text</code> — autocomplete</dd>
+          <dd><code>#main .work</code> — sort bar + badges</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-group search -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  WORK PAGE                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page-group">
+  <div class="page-group-header">
+    <span class="page-icon">📖</span>
+    <span><strong>Reading / Library / Explore</strong> — Work page (work-complete.html)</span>
+  </div>
+
+  <!-- ─── ficAppreciation ─────────────────────────────────────── -->
+  <div class="module-card" id="ficAppreciation">
+    <div class="module-card-header">
+      <h3><code>ficAppreciation</code> — Fic Appreciation</h3>
+      <span class="tab-badge">Library</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">work-complete.html</span>
+        <div class="ao3-work-meta">
+          <h2>Bye, Bye Miss American Pie</h2>
+          <div class="byline">by arcane_avenger</div>
+        </div>
+        <div class="ao3-work-text">
+          <p>She'd noticed the signs a few weeks ago. A few small lumps and a distant pain…</p>
+        </div>
+        <div class="ao3-work-actions inject-zone" data-inject="ficAppreciation → star rating + finish btn">
+          <span class="inject-inline" data-inject="Rate widget" style="margin-right:8px">
+            <span style="font-size:.7rem;color:#666">Rate:</span>
+            <span class="mock-stars"><span>★</span><span>★</span><span>★</span><span>★</span><span style="color:#ccc">★</span></span>
+          </span>
+          <button style="background:#d4edda;border:1px solid #c3e6cb;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">✅ Mark Finished</button>
+          <a>Kudos ♥</a>
+          <a>Bookmark</a>
+          <a>Subscribe</a>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>⭐⭐⭐⭐⭐ étoiles interactives (couleur #900, hover #c00)</li>
+          <li>Bouton "✅ Mark Finished"</li>
+          <li>Position: premier <code>&lt;li&gt;</code> dans <code>#feedback ul.actions</code></li>
+          <li>Étoiles compactes sur les blurbs (optionnel)</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#feedback ul.actions li:first-child</code></dd>
+          <dd><code>h4.heading</code> — étoiles blurbs</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── readingFormatter ────────────────────────────────────── -->
+  <div class="module-card" id="readingFormatter">
+    <div class="module-card-header">
+      <h3><code>readingFormatter</code> — Reading Formatter</h3>
+      <span class="tab-badge">Reading</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock" style="position:relative">
+        <span class="mock-label">work-complete.html</span>
+        <div class="ao3-work-meta"><h2>Bye, Bye Miss American Pie</h2></div>
+        <div class="ao3-work-text" style="max-width:500px;margin:0 auto;font-size:.85rem;line-height:1.8">
+          <p>She'd noticed the signs a few weeks ago. A few small lumps and a distant pain. She was sure it was nothing…</p>
+          <p>Then she started feeling sick, and she began to be too tired to simply get out of bed.</p>
+        </div>
+
+        <div class="mock-injected floating" style="top:8px;right:8px;width:160px;padding:8px;font-size:.65rem">
+          <div style="font-weight:700;margin-bottom:6px;text-align:center">Aa</div>
+          <div style="margin-bottom:4px">
+            <span>Font size:</span>
+            <div style="display:flex;gap:4px;margin-top:2px">
+              <button style="background:#eee;border:1px solid #ccc;padding:1px 6px;border-radius:3px;font-size:.6rem;cursor:default">A-</button>
+              <button style="background:#eee;border:1px solid #ccc;padding:1px 6px;border-radius:3px;font-size:.6rem;cursor:default">A+</button>
+            </div>
+          </div>
+          <div style="margin-bottom:4px">
+            <span>Width:</span>
+            <div style="display:flex;gap:2px;margin-top:2px;flex-wrap:wrap">
+              <button style="background:#eee;border:1px solid #ccc;padding:1px 4px;border-radius:3px;font-size:.5rem;cursor:default">Default</button>
+              <button style="background:#2c5f8a;color:#fff;border:none;padding:1px 4px;border-radius:3px;font-size:.5rem;cursor:default">Book</button>
+              <button style="background:#eee;border:1px solid #ccc;padding:1px 4px;border-radius:3px;font-size:.5rem;cursor:default">Wide</button>
+            </div>
+          </div>
+          <div>
+            <span>Spacing:</span>
+            <div style="display:flex;gap:2px;margin-top:2px">
+              <button style="background:#eee;border:1px solid #ccc;padding:1px 4px;border-radius:3px;font-size:.5rem;cursor:default">Compact</button>
+              <button style="background:#eee;border:1px solid #ccc;padding:1px 4px;border-radius:3px;font-size:.5rem;cursor:default">Normal</button>
+              <button style="background:#2c5f8a;color:#fff;border:none;padding:1px 4px;border-radius:3px;font-size:.5rem;cursor:default">Spacious</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Panel flottant "Aa" (font size, width, spacing)</li>
+          <li>Width: Default / Narrow / Book / Medium / Wide</li>
+          <li>Spacing: Compact / Normal / Spacious</li>
+          <li>Font scale A- / A+</li>
+          <li>Indent removal toggle</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#workskin .userstuff</code> — text transform</dd>
+          <dd><code>#workskin</code> — CSS width override</dd>
+          <dd><code>body</code> — floating panel</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── textToSpeech ────────────────────────────────────────── -->
+  <div class="module-card" id="textToSpeech">
+    <div class="module-card-header">
+      <h3><code>textToSpeech</code> — Text To Speech</h3>
+      <span class="tab-badge">Reading</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock" style="position:relative">
+        <span class="mock-label">work-complete.html</span>
+        <div class="ao3-work-meta"><h2>Bye, Bye Miss American Pie</h2></div>
+        <div class="ao3-work-text">
+          <p>She'd noticed the signs a few weeks ago.</p>
+          <p><span class="mock-tts-highlight">A few small lumps and a distant pain.</span> She was sure it was nothing…</p>
+          <p>Then she started feeling sick.</p>
+        </div>
+
+        <div style="position:relative;height:120px">
+          <div class="mock-injected floating" style="bottom:8px;right:8px;width:200px">
+            <div class="mock-tts-panel">
+              <div style="font-weight:700;font-size:.7rem;margin-bottom:4px">🔊 Read Aloud</div>
+              <div class="tts-controls">
+                <button>⏮</button><button style="background:#27ae60">▶ Play</button><button>⏭</button><button>⏹</button>
+              </div>
+              <div style="font-size:.6rem;margin:4px 0">
+                Speed: <input type="range" style="width:80px;vertical-align:middle"> 1.0×
+              </div>
+              <div style="font-size:.6rem">
+                Voice: <select style="font-size:.55rem"><option>en-US Samantha</option></select>
+              </div>
+              <div class="mock-progress" style="margin-top:4px"><div class="fill green" style="width:35%"></div></div>
+              <div style="font-size:.55rem;color:#888;text-align:center">Sentence 7/20</div>
+              <div style="font-size:.6rem;margin-top:3px">
+                Sleep: <button style="font-size:.5rem">15m</button> <button style="font-size:.5rem">30m</button> <button style="font-size:.5rem;background:#e74c3c">60m</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>FAB flottant "Read Aloud" (bottom-right)</li>
+          <li>Play/Pause/Stop + navigation phrase</li>
+          <li>Speed slider 0.5× – 2×</li>
+          <li>Voice selector (en-* uniquement)</li>
+          <li>Sleep timer (15/30/60 min)</li>
+          <li>Highlighting phrase en cours (#fff3b0)</li>
+          <li>Auto-scroll + progress bar</li>
+          <li>Auto-chapitre suivant</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#workskin .userstuff</code> — extraction</dd>
+          <dd><code>body</code> — panel flottant</dd>
+          <dd><code>&lt;mark&gt;</code> — highlight inline</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── wordSwap ────────────────────────────────────────────── -->
+  <div class="module-card" id="wordSwap">
+    <div class="module-card-header">
+      <h3><code>wordSwap</code> — Word Swap</h3>
+      <span class="tab-badge">Reading</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">work-complete.html</span>
+        <div class="ao3-work-meta"><h2>Bye, Bye Miss American Pie</h2></div>
+        <div class="ao3-work-text inject-zone" data-inject="wordSwap → text replacement">
+          <p>"Good morning, <span style="background:#e8f0fe;padding:0 3px;border-radius:2px;font-weight:700;color:#2c5f8a">Sarah</span>," he said with a smile.</p>
+          <p><span style="background:#e8f0fe;padding:0 3px;border-radius:2px;font-weight:700;color:#2c5f8a">Sarah</span> looked up from her coffee.</p>
+          <p style="font-size:.65rem;color:#999;margin-top:6px">(Original text had "Y/N" — replaced by configured name)</p>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Remplacement silencieux de texte (pas d'UI visible)</li>
+          <li>"Y/N" → nom configuré (reader-insert)</li>
+          <li>Règles custom : find → replace avec regex/wholeWord</li>
+          <li>Snapshot pour restauration au cleanup</li>
+          <li>MutationObserver pour chapitres dynamiques</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#workskin .userstuff</code> — TreeWalker sur text nodes</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── instantFootnotes ────────────────────────────────────── -->
+  <div class="module-card" id="instantFootnotes">
+    <div class="module-card-header">
+      <h3><code>instantFootnotes</code> — Instant Footnotes</h3>
+      <span class="tab-badge">Reading</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock" style="position:relative">
+        <span class="mock-label">work-complete.html</span>
+        <div class="ao3-work-text">
+          <p>The ancient ritual required three components<sup><a href="#fn1" style="color:#900">[1]</a></sup> to be completed.</p>
+          <p>She wondered about the implications of the spell<sup><a href="#fn2" style="color:#900">[2]</a></sup>.</p>
+        </div>
+
+        <div class="mock-injected" style="position:absolute;top:20px;left:260px;width:200px;background:#333;color:#fff;padding:8px;border-radius:6px;font-size:.65rem;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:5">
+          <div style="margin-bottom:4px;font-weight:700">[1] Footnote</div>
+          <div>According to "Magical Theory" by Adalbort Waffling, the three components are: a vessel, a catalyst, and a binding agent.</div>
+          <div style="text-align:right;margin-top:4px"><a href="#fn1" style="color:#7bb3ff;font-size:.55rem">permalink ↗</a></div>
+          <div style="position:absolute;left:12px;top:-6px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid #333"></div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Tooltip hover sur les liens footnote</li>
+          <li>Contenu de la note inline (dark overlay)</li>
+          <li>Permalink button dans le tooltip</li>
+          <li>Dismissible (click outside)</li>
+          <li>Module zéro-option (pas de config)</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#workskin .userstuff a[href^="#"]</code></dd>
+          <dd><code>#notes, .end.notes</code> — extraction</dd>
+          <dd><code>body</code> — tooltip popup</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── collapseAuthorNotes ─────────────────────────────────── -->
+  <div class="module-card" id="collapseAuthorNotes">
+    <div class="module-card-header">
+      <h3><code>collapseAuthorNotes</code> — Collapse Author Notes</h3>
+      <span class="tab-badge">Reading</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">work-complete.html</span>
+        <div class="ao3-notes inject-zone" data-inject="collapseAuthorNotes → chevron toggle">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h4>Notes:</h4>
+            <span class="inject-inline" data-inject="toggle">
+              <button style="background:none;border:none;font-size:.9rem;cursor:default;color:#666">▼</button>
+            </span>
+          </div>
+          <div style="font-size:.7rem;color:#666;margin-top:4px">
+            <p>Thank you so much for reading! This chapter contains a <strong>TW: medical content</strong>.</p>
+            <p style="font-size:.6rem;color:#999;margin-top:4px">↑ Auto-expanded because note contains TW/CW keyword</p>
+          </div>
+        </div>
+
+        <div class="ao3-work-text">
+          <p>She'd noticed the signs a few weeks ago…</p>
+        </div>
+
+        <div class="ao3-notes" style="background:#f0f0f0;border-color:#ddd">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h4>End Notes:</h4>
+            <span class="inject-inline" data-inject="toggle">
+              <button style="background:none;border:none;font-size:.9rem;cursor:default;color:#666">▶</button>
+            </span>
+          </div>
+          <div style="font-size:.6rem;color:#999;font-style:italic">— collapsed —</div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>▶/▼ chevron toggle sur heading des notes</li>
+          <li>Auto-collapse début / fin (indépendamment)</li>
+          <li>Auto-expand si TW/CW/trigger warning détecté</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>div.notes.module</code> — beginning notes</dd>
+          <dd><code>div.end.notes.module</code> — end notes</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── ficActions ──────────────────────────────────────────── -->
+  <div class="module-card" id="ficActions">
+    <div class="module-card-header">
+      <h3><code>ficActions</code> — Fic Actions</h3>
+      <span class="tab-badge">Reading</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">work-complete.html</span>
+        <div class="ao3-work-meta"><h2>Bye, Bye Miss American Pie</h2></div>
+        <div class="ao3-work-text">
+          <p>She'd noticed the signs a few weeks ago…</p>
+        </div>
+        <div class="ao3-work-actions inject-zone" data-inject="ficActions → reorder + hide Share">
+          <a>Kudos ♥</a>
+          <a>Bookmark</a>
+          <a>Subscribe</a>
+          <a style="opacity:.3;text-decoration:line-through">Share</a>
+          <span style="font-size:.55rem;color:#999;margin-left:4px">← hidden</span>
+        </div>
+        <div style="text-align:center;margin-top:8px">
+          <div class="mock-injected" style="display:inline-block">
+            <button style="background:linear-gradient(#fff,#ddd);border:1px solid #bbb;padding:4px 12px;border-radius:3px;font-size:.7rem;cursor:default">Subscribe (duplicated at bottom)</button>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Réordonne les boutons d'action (flexbox)</li>
+          <li>Cache le bouton Share</li>
+          <li>Duplique Subscribe en bas de page</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#main .share</code> — hide</dd>
+          <dd><code>.work.navigation</code> — reorder</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── similarFics ─────────────────────────────────────────── -->
+  <div class="module-card" id="similarFics">
+    <div class="module-card-header">
+      <h3><code>similarFics</code> — Similar Fics</h3>
+      <span class="tab-badge">Explore</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock" style="position:relative">
+        <span class="mock-label">work-complete.html</span>
+        <div class="ao3-work-meta"><h2>Bye, Bye Miss American Pie</h2></div>
+        <div class="ao3-work-text">
+          <p>She'd noticed the signs a few weeks ago…</p>
+        </div>
+
+        <div class="mock-injected floating" style="top:8px;right:8px;width:180px;padding:8px;font-size:.65rem">
+          <div style="font-weight:700;margin-bottom:6px">Similar Stories</div>
+          <div style="margin-bottom:4px;padding:3px;background:#f5f5f5;border-radius:3px">
+            <div style="font-weight:600;color:#900">More by arcane_avenger →</div>
+          </div>
+          <div style="margin-bottom:4px;padding:3px;background:#f5f5f5;border-radius:3px">
+            <div style="font-weight:600">Same fandom →</div>
+            <div style="font-size:.55rem;color:#888">The Avengers</div>
+          </div>
+          <div style="padding:3px;background:#f5f5f5;border-radius:3px">
+            <div style="font-weight:600">Similar tags →</div>
+            <div style="font-size:.55rem;color:#888">Cancer, Hurt/Comfort</div>
+            <div class="mock-progress"><div class="fill green" style="width:72%"></div></div>
+            <div style="font-size:.5rem;color:#888">72% match</div>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Panel latéral fixe "Similar Stories"</li>
+          <li>Liens "More by author" / "Same fandom" / "Similar tags"</li>
+          <li>% Match indicator bar</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#workskin dl.stats</code> — metadata</dd>
+          <dd><code>#main</code> — panel fixe</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── bookmarkVault ───────────────────────────────────────── -->
+  <div class="module-card" id="bookmarkVault">
+    <div class="module-card-header">
+      <h3><code>bookmarkVault</code> — Bookmark Vault</h3>
+      <span class="tab-badge">Library</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">work-complete.html</span>
+        <div class="ao3-work-meta"><h2>Bye, Bye Miss American Pie</h2></div>
+        <div style="border:1px solid #ddd;border-radius:4px;padding:10px;font-size:.75rem">
+          <div style="font-weight:700;margin-bottom:6px">Bookmark this work</div>
+          <div style="margin-bottom:4px">
+            <label style="font-size:.65rem">Tags:</label>
+            <div class="inject-inline" data-inject="auto-tags">
+              <span class="mock-chip">Avengers</span>
+              <span class="mock-chip">Cancer</span>
+              <span class="mock-chip">Angst</span>
+            </div>
+          </div>
+          <div>
+            <label style="font-size:.65rem">Notes:</label>
+            <div class="inject-zone" data-inject="bookmarkVault → auto-fill notes" style="padding:4px">
+              <textarea style="width:100%;height:40px;font-size:.65rem;border:1px solid #ccc;border-radius:3px;padding:4px" readonly>📖 Avengers · Natasha/Bucky · 2 chapters
+Tags: Cancer, Hurt/Comfort
+Read on: Mar 22, 2026</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Auto-remplissage formulaire bookmark</li>
+          <li>Auto-tags basés sur les metadata</li>
+          <li>Note preview/edit (collapse >200 chars)</li>
+          <li>Rich text formatting toolbar (optionnel)</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#bookmark_notes</code> — textarea</dd>
+          <dd><code>#bookmark_tag_string_autocomplete</code></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── commentKit ──────────────────────────────────────────── -->
+  <div class="module-card" id="commentKit">
+    <div class="module-card-header">
+      <h3><code>commentKit</code> — Comment Kit</h3>
+      <span class="tab-badge">Navigate & Interact</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">work-complete.html</span>
+        <div class="ao3-comment-area inject-zone" data-inject="commentKit → toolbar + templates + auto-save">
+          <div style="font-weight:700;font-size:.7rem;margin-bottom:4px">Add Comment</div>
+          <div class="mock-injected" style="margin-bottom:4px;display:flex;gap:4px;padding:3px">
+            <button style="background:#eee;border:1px solid #ccc;padding:1px 6px;border-radius:3px;font-size:.6rem;cursor:default;font-weight:700">B</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:1px 6px;border-radius:3px;font-size:.6rem;cursor:default;font-style:italic">I</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:1px 6px;border-radius:3px;font-size:.6rem;cursor:default">🔗</button>
+            <span style="color:#ccc">|</span>
+            <button style="background:#e8f0fe;border:1px solid #b3d7ff;padding:1px 6px;border-radius:3px;font-size:.6rem;cursor:default">📝 Templates</button>
+            <span style="margin-left:auto;font-size:.55rem;color:#27ae60">✓ Draft saved</span>
+          </div>
+          <textarea placeholder="Your comment here…"></textarea>
+        </div>
+        <div style="font-size:.7rem;margin-top:4px;padding:4px;background:#fff8e1;border-radius:3px;border:1px solid #ffe082">
+          <span style="background:#fff3cd;padding:1px 4px;border-radius:2px;font-size:.6rem">Author reply</span>
+          <span style="font-size:.65rem;color:#666"> — highlighted in yellow</span>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Formatting toolbar (Bold, Italic, Link)</li>
+          <li>Templates panel (quick-insert)</li>
+          <li>Auto-save drafts</li>
+          <li>Author reply highlighting (gold bg)</li>
+          <li>Collapsible threads</li>
+          <li>Reply counter sur headers</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>textarea#comment_comment_text</code></dd>
+          <dd><code>.comment.module</code></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── tropeGames ──────────────────────────────────────────── -->
+  <div class="module-card" id="tropeGames">
+    <div class="module-card-header">
+      <h3><code>tropeGames</code> — Trope Games</h3>
+      <span class="tab-badge">Explore</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">work-complete.html + home.html</span>
+
+        <div class="mock-injected" style="background:linear-gradient(135deg,#6b46c1,#9f7aea);color:#fff;padding:10px;border-radius:6px;margin-bottom:8px;font-size:.75rem;border-color:#6b46c1">
+          <div style="font-size:.85rem;font-weight:700">🎮 Today's Trope: Slow Burn</div>
+          <div style="font-size:.65rem;opacity:.8;margin-top:2px">+ "Enemies to Friends to Lovers"</div>
+          <button style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default;margin-top:4px">✕ Dismiss</button>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <div class="mock-injected" style="flex:1;font-size:.6rem;padding:6px">
+            <div style="font-weight:700;font-size:.7rem;margin-bottom:4px">🎰 Roulette</div>
+            <div style="display:flex;gap:4px;margin-bottom:4px">
+              <span class="mock-badge purple">Slow Burn</span>
+              <span class="mock-badge purple">Royalty AU</span>
+              <span class="mock-badge purple">Pining</span>
+            </div>
+            <button style="background:#6b46c1;color:#fff;border:none;padding:2px 8px;border-radius:3px;font-size:.55rem;cursor:default">🔍 Search AO3</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 8px;border-radius:3px;font-size:.55rem;cursor:default">🔄 Spin Again</button>
+          </div>
+
+          <div class="mock-injected" style="flex:1;font-size:.55rem;padding:6px">
+            <div style="font-weight:700;font-size:.7rem;margin-bottom:4px">📋 Bingo</div>
+            <table style="border-collapse:collapse;width:100%">
+              <tr>
+                <td style="border:1px solid #ddd;padding:2px;text-align:center;background:#d4edda;font-size:.5rem">Slow Burn ✓</td>
+                <td style="border:1px solid #ddd;padding:2px;text-align:center;font-size:.5rem">Royalty</td>
+                <td style="border:1px solid #ddd;padding:2px;text-align:center;background:#d4edda;font-size:.5rem">Angst ✓</td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #ddd;padding:2px;text-align:center;font-size:.5rem">Coffee Shop</td>
+                <td style="border:1px solid #ddd;padding:2px;text-align:center;background:#fff3cd;font-size:.5rem">FREE</td>
+                <td style="border:1px solid #ddd;padding:2px;text-align:center;background:#d4edda;font-size:.5rem">Pining ✓</td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #ddd;padding:2px;text-align:center;font-size:.5rem">Time Travel</td>
+                <td style="border:1px solid #ddd;padding:2px;text-align:center;background:#d4edda;font-size:.5rem">H/C ✓</td>
+                <td style="border:1px solid #ddd;padding:2px;text-align:center;font-size:.5rem">Fix-it</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="mock-injected" style="font-size:.6rem;text-align:center;padding:4px">
+          🏆 Achievements: <span class="mock-badge green">Bingo Beginner</span> <span class="mock-badge purple">Trope Explorer</span>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Horoscope banner (homepage, dismissable)</li>
+          <li>Bingo 5×5 (auto-check depuis freeform tags)</li>
+          <li>Roulette 3 tropes + Search AO3 link</li>
+          <li>Statistics (top-10 tropes, barres, export)</li>
+          <li>9 achievements avec toast notifications</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#dashboard</code> — bannière horoscope</dd>
+          <dd><code>#workskin .tags</code> — détection tropes</dd>
+          <dd><code>body</code> — modals</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-group work -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  CHAPTER PAGE                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page-group">
+  <div class="page-group-header">
+    <span class="page-icon">📑</span>
+    <span><strong>Reading</strong> — Chapter page (work-chapter.by.chapter.html)</span>
+  </div>
+
+  <!-- ─── chapterNavigation ───────────────────────────────────── -->
+  <div class="module-card" id="chapterNavigation">
+    <div class="module-card-header">
+      <h3><code>chapterNavigation</code> — Chapter Navigation</h3>
+      <span class="tab-badge">Reading</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">work-chapter.by.chapter.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="mock-injected" style="position:sticky;top:0;z-index:5;background:#fff;border-bottom:2px solid #900;padding:4px 8px;font-size:.7rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span>← Prev</span>
+          <select style="font-size:.65rem"><option>Chapter 5 of 12</option></select>
+          <span>Next →</span>
+        </div>
+
+        <div class="ao3-chapter-nav">
+          <span>Chapter 5: The Diagnosis</span>
+          <span class="inject-inline" data-inject="word count badge">
+            <span class="mock-badge blue">4.2k words</span>
+          </span>
+        </div>
+
+        <div class="ao3-work-text">
+          <p>She'd noticed the signs a few weeks ago…</p>
+        </div>
+
+        <div style="padding:8px;border:1px dashed #aaa;border-radius:4px;font-size:.7rem;color:#666;text-align:center;margin-top:8px">
+          <strong>Sur listings :</strong> boutons "Continue (Ch 5)" et "Last (Ch 12)" sur les blurbs
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Sticky nav bar en haut de page (chapter dropdown)</li>
+          <li>"X.Xk words" badge par chapitre</li>
+          <li>"Continue (Ch X)" button sur les blurbs</li>
+          <li>"Last (Ch X)" button sur les blurbs</li>
+          <li>"2 new" indicator</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#selected_id</code> — sticky nav</dd>
+          <dd><code>.chapter.preface h3.title</code> — word count</dd>
+          <dd><code>li.blurb h4.heading</code> — resume/last btns</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-group chapter -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  SERIES PAGE                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page-group">
+  <div class="page-group-header">
+    <span class="page-icon">📚</span>
+    <span><strong>Navigate & Interact</strong> — Series page (series.html)</span>
+  </div>
+
+  <!-- ─── seriesHelper ────────────────────────────────────────── -->
+  <div class="module-card" id="seriesHelper">
+    <div class="module-card-header">
+      <h3><code>seriesHelper</code> — Series Helper</h3>
+      <span class="tab-badge">Navigate & Interact</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">series.html</span>
+
+        <div class="mock-injected" style="background:#2c5f8a;color:#fff;padding:8px 12px;border-radius:4px;margin-bottom:8px;font-size:.75rem;display:flex;justify-content:space-between;align-items:center;border-color:#2c5f8a">
+          <span>← Back</span>
+          <span style="font-weight:700">📚 Series Navigator — Modern AUs</span>
+          <span>5/12 works</span>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Part 1: First Light</span>
+            <span class="mock-badge green">✅ Complete</span>
+          </div>
+          <div class="inject-inline" data-inject="progress bar" style="margin-top:4px;width:100%">
+            <div class="mock-progress"><div class="fill green" style="width:100%"></div></div>
+          </div>
+        </div>
+
+        <div class="ao3-blurb">
+          <div class="blurb-title" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Part 5: Must Love Dogs</span>
+            <span class="mock-badge orange">🔖 In Progress</span>
+          </div>
+          <div class="inject-inline" data-inject="progress bar" style="margin-top:4px;width:100%">
+            <div class="mock-progress"><div class="fill blue" style="width:45%"></div></div>
+            <div style="font-size:.55rem;color:#888">Ch 3/7 — 45%</div>
+          </div>
+        </div>
+
+        <div class="ao3-blurb" style="opacity:.6">
+          <div class="blurb-title" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Part 12: The Last Dance</span>
+            <span class="mock-badge grey">Not started</span>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Series navigator banner (blue)</li>
+          <li>Progress bar par work (gradient vert→gris)</li>
+          <li>Badges: ✅ Complete / 🔖 In Progress / Epic / Subscribed</li>
+          <li>Groups collapsibles (2+ works même série)</li>
+          <li>"Read Series" / "Skip All" buttons</li>
+          <li>Prev/Next navigation sur work pages</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>dd.series a</code> — "Part X of Y"</dd>
+          <dd><code>ol.series.group</code> — grouping</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-group series -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  HOME / DASHBOARD / HISTORY                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page-group">
+  <div class="page-group-header">
+    <span class="page-icon">🏠</span>
+    <span><strong>Library / Navigate</strong> — Home, Dashboard, History</span>
+  </div>
+
+  <!-- ─── readingDashboard ────────────────────────────────────── -->
+  <div class="module-card" id="readingDashboard">
+    <div class="module-card-header">
+      <h3><code>readingDashboard</code> — Reading Dashboard</h3>
+      <span class="tab-badge">Library</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">dashboard.html / home.html</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span><span class="nav">Browse · Search</span></div>
+
+        <div class="mock-injected" style="padding:8px;border-color:#2c5f8a">
+          <div style="font-weight:700;font-size:.8rem;margin-bottom:6px">📊 Reading Dashboard</div>
+          <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+            <span class="mock-badge blue">📖 142 works read</span>
+            <span class="mock-badge purple">⏱ 87h reading time</span>
+            <span class="mock-badge green">❤️ 45 kudos given</span>
+          </div>
+          <div class="ao3-dashboard">
+            <div class="widget">
+              <h5>Recent Works</h5>
+              <div style="font-size:.6rem;color:#666">Must Love Dogs (2h ago)<br>A Dream of Drowning (yesterday)</div>
+            </div>
+            <div class="widget">
+              <h5>Top Fandoms</h5>
+              <div style="font-size:.6rem;color:#666">1. Harry Potter (42)<br>2. Marvel (28)<br>3. Star Wars (15)</div>
+            </div>
+            <div class="widget">
+              <h5>WIP Tracking</h5>
+              <div style="font-size:.6rem;color:#666">3 works in progress<br>12 chapters behind</div>
+            </div>
+            <div class="widget">
+              <h5>Quick Links</h5>
+              <div style="font-size:.6rem"><a>Bookmarks</a> · <a>History</a> · <a>MFL</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Widget cards: Recent, WIP, Top Fandoms, Top Tags</li>
+          <li>Quick links (Bookmarks, History, MFL, Subscriptions)</li>
+          <li>Total statistics badges</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#main</code> — dashboard panel</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── activityPanel ───────────────────────────────────────── -->
+  <div class="module-card" id="activityPanel">
+    <div class="module-card-header">
+      <h3><code>activityPanel</code> — Activity Panel</h3>
+      <span class="tab-badge">Library</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">dashboard.html</span>
+
+        <div class="mock-injected" style="padding:8px">
+          <div style="font-weight:700;font-size:.8rem;margin-bottom:6px">📈 Activity Panel</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px;font-size:.65rem;border-bottom:1px solid #ddd;padding-bottom:4px">
+            <button style="background:#2c5f8a;color:#fff;border:none;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Fandoms</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Tags</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Authors</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">Habits</button>
+            <button style="background:#eee;border:1px solid #ccc;padding:2px 8px;border-radius:3px;font-size:.6rem;cursor:default">🏆</button>
+          </div>
+          <table style="width:100%;font-size:.6rem;border-collapse:collapse">
+            <tr><td style="padding:2px 4px">Harry Potter</td><td style="padding:2px 4px"><div class="mock-progress" style="display:inline-block;width:80px"><div class="fill blue" style="width:85%"></div></div></td><td style="padding:2px 4px;color:#888">42 works</td></tr>
+            <tr><td style="padding:2px 4px">Marvel</td><td style="padding:2px 4px"><div class="mock-progress" style="display:inline-block;width:80px"><div class="fill blue" style="width:56%"></div></div></td><td style="padding:2px 4px;color:#888">28 works</td></tr>
+            <tr><td style="padding:2px 4px">Star Wars</td><td style="padding:2px 4px"><div class="mock-progress" style="display:inline-block;width:80px"><div class="fill blue" style="width:30%"></div></div></td><td style="padding:2px 4px;color:#888">15 works</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Interface à onglets (Fandoms/Tags/Authors/Habits/Achievements)</li>
+          <li>Quick stat badges</li>
+          <li>Tag word cloud</li>
+          <li>Fréquences fandoms/auteurs/tags</li>
+          <li>Achievement badges grid</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#main</code> — panels injection</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── readingTimeline ─────────────────────────────────────── -->
+  <div class="module-card" id="readingTimeline">
+    <div class="module-card-header">
+      <h3><code>readingTimeline</code> — Reading Timeline</h3>
+      <span class="tab-badge">Library</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">history.html</span>
+
+        <div class="mock-injected" style="padding:8px">
+          <div style="font-weight:700;font-size:.8rem;margin-bottom:6px">📅 Reading Timeline</div>
+          <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-bottom:8px">
+            <div style="height:14px;background:#d4edda;border-radius:2px" title="Jan: 12 works"></div>
+            <div style="height:14px;background:#a3d9a5;border-radius:2px" title="Feb: 18 works"></div>
+            <div style="height:14px;background:#27ae60;border-radius:2px" title="Mar: 25 works"></div>
+            <div style="height:14px;background:#d4edda;border-radius:2px" title="Apr: 8 works"></div>
+            <div style="height:14px;background:#a3d9a5;border-radius:2px" title="May: 15 works"></div>
+            <div style="height:14px;background:#27ae60;border-radius:2px" title="Jun: 22 works"></div>
+            <div style="height:14px;background:#d4edda;border-radius:2px" title="Jul: 10 works"></div>
+            <div style="height:14px;background:#a3d9a5;border-radius:2px" title="Aug: 16 works"></div>
+            <div style="height:14px;background:#eee;border-radius:2px" title="Sep: 3 works"></div>
+            <div style="height:14px;background:#d4edda;border-radius:2px" title="Oct: 11 works"></div>
+            <div style="height:14px;background:#a3d9a5;border-radius:2px" title="Nov: 19 works"></div>
+            <div style="height:14px;background:#27ae60;border-radius:2px" title="Dec: 24 works"></div>
+          </div>
+          <div style="font-size:.6rem;color:#888;text-align:center">
+            Total: 183 works · Busiest: March (25) · Top: Harry Potter
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Calendar heatmap (365 jours, couleur par intensité)</li>
+          <li>Toggle year/month view</li>
+          <li>Click sur date → works lus ce jour</li>
+          <li>Stats panel (total reads, busiest day, top fandom)</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#main</code> — heatmap grid</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── mainNavigation ──────────────────────────────────────── -->
+  <div class="module-card" id="mainNavigation">
+    <div class="module-card-header">
+      <h3><code>mainNavigation</code> — Main Navigation</h3>
+      <span class="tab-badge">Navigate & Interact</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">home.html / toutes pages</span>
+        <div class="ao3-header-mock inject-zone" data-inject="mainNavigation → nav enhancements" style="padding:8px">
+          <span class="logo">Archive of Our Own</span>
+          <span class="nav" style="display:flex;gap:6px;align-items:center">
+            <span>Browse</span>
+            <span>Search</span>
+            <span class="inject-inline" data-inject="quick links" style="font-size:.6rem">
+              <a style="color:#fff">📕 Bookmarks</a>
+              <a style="color:#fff">📌 MFL</a>
+              <a style="color:#fff">📜 History</a>
+            </span>
+          </span>
+        </div>
+        <div style="margin-top:8px">
+          <div class="mock-injected" style="display:inline-flex;align-items:center;gap:4px;font-size:.7rem;padding:4px 8px">
+            <span>← Back to Search Results</span>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>"← Back to Search" button (work pages)</li>
+          <li>Quick links navbar (Bookmarks, MFL, History)</li>
+          <li>Homepage action buttons</li>
+          <li>Keyboard shortcut badges</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#main_nav</code> — liens</dd>
+          <dd><code>work header</code> — back button</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── keyboardShortcuts ───────────────────────────────────── -->
+  <div class="module-card" id="keyboardShortcuts">
+    <div class="module-card-header">
+      <h3><code>keyboardShortcuts</code> — Keyboard Shortcuts</h3>
+      <span class="tab-badge">Navigate & Interact</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">toutes pages</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span></div>
+
+        <div class="mock-injected" style="margin-top:8px;padding:10px;background:#fff;border-color:#ddd;max-width:300px;margin-left:auto;margin-right:auto">
+          <div style="font-weight:700;font-size:.8rem;margin-bottom:6px;text-align:center">⌨️ Keyboard Shortcuts</div>
+          <table style="width:100%;font-size:.65rem;border-collapse:collapse">
+            <tr><td style="padding:3px"><kbd style="background:#f0f0f0;padding:1px 4px;border:1px solid #ccc;border-radius:2px;font-size:.6rem">?</kbd></td><td>Show this overlay</td></tr>
+            <tr><td style="padding:3px"><kbd style="background:#f0f0f0;padding:1px 4px;border:1px solid #ccc;border-radius:2px;font-size:.6rem">j</kbd> / <kbd style="background:#f0f0f0;padding:1px 4px;border:1px solid #ccc;border-radius:2px;font-size:.6rem">k</kbd></td><td>Next / Previous work</td></tr>
+            <tr><td style="padding:3px"><kbd style="background:#f0f0f0;padding:1px 4px;border:1px solid #ccc;border-radius:2px;font-size:.6rem">o</kbd></td><td>Open work</td></tr>
+            <tr><td style="padding:3px"><kbd style="background:#f0f0f0;padding:1px 4px;border:1px solid #ccc;border-radius:2px;font-size:.6rem">b</kbd></td><td>Bookmark</td></tr>
+            <tr><td style="padding:3px"><kbd style="background:#f0f0f0;padding:1px 4px;border:1px solid #ccc;border-radius:2px;font-size:.6rem">h</kbd></td><td>Hide current work</td></tr>
+          </table>
+          <div style="text-align:center;margin-top:4px;font-size:.55rem;color:#999">Press <kbd style="background:#f0f0f0;padding:1px 4px;border:1px solid #ccc;border-radius:2px;font-size:.55rem">Esc</kbd> to close</div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Raccourcis clavier globaux (j/k navigate, o open…)</li>
+          <li>Overlay "?" avec cheat sheet</li>
+          <li>Pas d'UI persistante (events seuls)</li>
+          <li>Cheat sheet searchable</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>body</code> — keydown listener</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── notificationCenter ──────────────────────────────────── -->
+  <div class="module-card" id="notificationCenter">
+    <div class="module-card-header">
+      <h3><code>notificationCenter</code> — Notification Center</h3>
+      <span class="tab-badge">Library</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">home.html / toutes pages</span>
+        <div class="ao3-header-mock" style="position:relative">
+          <span class="logo">Archive of Our Own</span>
+          <span class="inject-inline" data-inject="notification badge" style="position:absolute;top:-4px;right:12px">
+            <span style="background:#e74c3c;color:#fff;padding:1px 5px;border-radius:8px;font-size:.55rem;font-weight:700">3</span>
+          </span>
+        </div>
+
+        <div class="mock-injected floating" style="top:36px;right:8px;width:220px;padding:0;overflow:hidden">
+          <div style="background:#2c5f8a;color:#fff;padding:6px 10px;font-size:.7rem;font-weight:700">🔔 Notifications</div>
+          <div style="padding:6px;font-size:.6rem">
+            <div style="padding:4px;border-bottom:1px solid #eee">💬 New comment on "Must Love Dogs"</div>
+            <div style="padding:4px;border-bottom:1px solid #eee">❤️ 5 new kudos on your works</div>
+            <div style="padding:4px">📖 Chapter update: A Dream of Drowning Ch 13</div>
+          </div>
+        </div>
+
+        <div class="mock-injected floating" style="top:8px;right:240px;width:200px;font-size:.65rem;padding:8px;border-color:#27ae60;background:rgba(39,174,96,.08)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span>📖 Chapter update available!</span>
+            <button style="background:none;border:none;font-size:.8rem;cursor:default">✕</button>
+          </div>
+          <div style="font-size:.55rem;color:#888;margin-top:2px">Toast notification (auto-dismiss)</div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Badge rouge compteur dans le header</li>
+          <li>Toast notifications (top-right, auto-dismiss)</li>
+          <li>Browser desktop notifications</li>
+          <li>Notification center modal (historique)</li>
+          <li>Quiet hours (configurable)</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>#header</code> — badge</dd>
+          <dd><code>body</code> — toast delivery</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-group home/dashboard -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  GLOBAL / ALL PAGES                                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page-group">
+  <div class="page-group-header">
+    <span class="page-icon">🌐</span>
+    <span><strong>Appearance & Tools</strong> — All pages (global)</span>
+  </div>
+
+  <!-- ─── visualPreferences ───────────────────────────────────── -->
+  <div class="module-card" id="visualPreferences">
+    <div class="module-card-header">
+      <h3><code>visualPreferences</code> — Visual Preferences</h3>
+      <span class="tab-badge">Appearance & Tools</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">toutes pages</span>
+        <div class="ao3-blurb">
+          <div class="blurb-title">Must Love Dogs</div>
+          <div class="blurb-stats inject-zone" data-inject="visualPreferences → hide/icon stats">
+            Words: 10,873 ·
+            <span style="opacity:.3;text-decoration:line-through">Kudos: 26</span>
+            <span style="opacity:.3;text-decoration:line-through">Hits: 262</span>
+            <span style="font-size:.55rem;color:#999;margin-left:4px">← hidden</span>
+          </div>
+          <div style="font-size:.6rem;color:#888;margin-top:4px">
+            <em>Ou mode "Stats as Icons" :</em>
+            Words: 10,873 · ❤️ 26 · 👁️ 262 · 📕 7
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Cache les stats d'engagement (kudos, hits, comments…)</li>
+          <li>Mode "Stats as Icons" (❤️ 👁️ 📕)</li>
+          <li>Hover-to-reveal (opacity transition)</li>
+          <li>Minimal header variant</li>
+          <li>Pas d'UI visible (CSS silencieux)</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>dl.stats dd.kudos/hits/comments</code></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── themeBuilder ────────────────────────────────────────── -->
+  <div class="module-card" id="themeBuilder">
+    <div class="module-card-header">
+      <h3><code>themeBuilder</code> — Theme Builder</h3>
+      <span class="tab-badge">Appearance & Tools</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock" style="position:relative">
+        <span class="mock-label">toutes pages</span>
+        <div style="background:#1a1a2e;color:#e0e0e0;padding:10px;border-radius:4px;margin-bottom:8px">
+          <div class="ao3-header-mock" style="background:#16213e"><span class="logo" style="color:#e0e0e0">Archive of Our Own</span></div>
+          <div style="padding:8px;font-size:.75rem">
+            <p style="color:#c9c9c9">Dark theme applied — all page colors transformed</p>
+          </div>
+        </div>
+
+        <div class="mock-injected floating" style="top:4px;right:4px;width:170px;font-size:.6rem;padding:8px">
+          <div style="font-weight:700;margin-bottom:4px">🎨 Theme Builder</div>
+          <div style="margin-bottom:4px">
+            <span>Preset:</span>
+            <div style="display:flex;gap:3px;margin-top:2px">
+              <button style="background:#1a1a2e;color:#fff;border:1px solid #444;padding:1px 6px;border-radius:3px;font-size:.5rem;cursor:default">Dark</button>
+              <button style="background:#fdf6e3;color:#333;border:1px solid #ddd;padding:1px 6px;border-radius:3px;font-size:.5rem;cursor:default">Cream</button>
+              <button style="background:#000;color:#ff0;border:1px solid #666;padding:1px 6px;border-radius:3px;font-size:.5rem;cursor:default">Hi-C</button>
+            </div>
+          </div>
+          <div style="margin-bottom:4px">
+            Accent: <input type="color" value="#e94560" style="width:20px;height:14px;border:none;padding:0;vertical-align:middle">
+            BG: <input type="color" value="#1a1a2e" style="width:20px;height:14px;border:none;padding:0;vertical-align:middle">
+          </div>
+          <div>
+            Font: <select style="font-size:.5rem;width:80px"><option>Georgia</option><option>Verdana</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>3 thèmes intégrés (Dark, Soft Cream, High Contrast)</li>
+          <li>CRUD thèmes utilisateur + import/export JSON</li>
+          <li>Color pickers (accent, bg, text, links, header)</li>
+          <li>Typography presets (font, size, line-height)</li>
+          <li>Custom CSS textarea + snippets</li>
+          <li>Visual builder avec live preview</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>&lt;head&gt;</code> — theme CSS injection</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── backupAndSync ───────────────────────────────────────── -->
+  <div class="module-card" id="backupAndSync">
+    <div class="module-card-header">
+      <h3><code>backupAndSync</code> — Backup And Sync</h3>
+      <span class="tab-badge">Appearance & Tools</span>
+    </div>
+    <div class="module-card-body">
+      <div class="page-mock">
+        <span class="mock-label">preferences.html (background)</span>
+        <div class="ao3-header-mock"><span class="logo">Archive of Our Own</span></div>
+
+        <div style="text-align:center;padding:20px;color:#999;font-size:.75rem">
+          <p>Ce module n'a pas d'UI visible sur la page AO3.</p>
+          <p>Actions dans le panel config uniquement :</p>
+        </div>
+
+        <div class="mock-injected" style="max-width:300px;margin:0 auto;padding:10px;font-size:.7rem">
+          <div style="font-weight:700;margin-bottom:6px">💾 Backup & Sync</div>
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <button style="background:#27ae60;color:#fff;border:none;padding:3px 10px;border-radius:3px;font-size:.65rem;cursor:default">Export All Settings</button>
+            <button style="background:#2c5f8a;color:#fff;border:none;padding:3px 10px;border-radius:3px;font-size:.65rem;cursor:default">Import</button>
+          </div>
+          <div style="font-size:.6rem;color:#888">Last backup: Mar 22, 2026 14:30</div>
+          <div style="font-size:.6rem;color:#888;margin-top:2px">Cloud: GitHub Gist (connected)</div>
+        </div>
+
+        <div class="mock-injected floating" style="top:50px;right:8px;width:180px;font-size:.65rem;padding:6px;border-color:#27ae60;background:rgba(39,174,96,.08)">
+          ✅ Exported 45 settings successfully
+          <div style="font-size:.55rem;color:#888">Toast notification</div>
+        </div>
+      </div>
+      <div class="module-desc">
+        <h4>Ce que fait le module</h4>
+        <ul>
+          <li>Export/Import toutes les settings (JSON)</li>
+          <li>Cloud sync via GitHub Gist API</li>
+          <li>Auto-backup schedule</li>
+          <li>Toast notifications (succès/erreur)</li>
+          <li>Pas d'UI persistante sur les pages AO3</li>
+        </ul>
+        <dl class="inject-list">
+          <dt>Sélecteurs</dt>
+          <dd><code>body</code> — toast notifications</dd>
+          <dd><code>createElement('a')</code> — download link</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-group global -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  LEGEND                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:20px;margin-top:32px;margin-bottom:48px">
+  <h2 style="font-size:1rem;margin-bottom:12px;color:#333">Légende</h2>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:.8rem">
+    <div>
+      <span class="inject-zone" data-inject="zone d'injection" style="display:inline-block;padding:4px 12px;font-size:.7rem">Zone d'injection DOM</span>
+      <div style="font-size:.65rem;color:#888;margin-top:2px">Border rouge tiretée = où le module cible dans le HTML natif d'AO3</div>
+    </div>
+    <div>
+      <span class="mock-injected" style="display:inline-block;padding:4px 12px;font-size:.7rem">UI injectée par le module</span>
+      <div style="font-size:.65rem;color:#888;margin-top:2px">Border verte = éléments HTML ajoutés par le module</div>
+    </div>
+    <div>
+      <span class="mock-injected floating" style="display:inline-block;padding:4px 12px;font-size:.7rem;position:relative">Panel flottant</span>
+      <div style="font-size:.65rem;color:#888;margin-top:2px">Border bleue = élément position:fixed ajouté par le module</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /catalog-body -->
+
+<footer style="text-align:center;padding:24px;color:#999;font-size:.75rem;border-top:1px solid #eee">
+  AO3 Helper — 36 modules · Generated for visual reference · March 2026
+</footer>
+
+</body>
+</html>

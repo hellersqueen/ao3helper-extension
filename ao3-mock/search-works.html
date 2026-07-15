@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Search Works | Archive of Our Own</title>
+  <link rel="stylesheet" type="text/css" href="css/ao3.css" />
+  <script src="js/ao3-header.js"></script>
+  <script src="js/ao3-mock.js"></script>
+  <style>
+    /* ★ AO3H — filterManager (mock) */
+    .ao3h-fm-preset-bar { background:#f0f7ff; border:1px solid #b3d7ff; border-radius:6px; padding:8px 10px; margin-bottom:12px; }
+    .ao3h-fm-preset-bar h4 { margin:0 0 6px; font-size:.85em; color:#1a237e; }
+    .ao3h-fm-chip { display:inline-block; background:#fff; border:1px solid #90c4f4; border-radius:12px; padding:3px 10px; font-size:.8em; margin:2px; color:#1a4a8f; cursor:pointer; }
+    .ao3h-fm-chip.active { background:#d0e8ff; border-color:#1a4a8f; font-weight:bold; }
+    /* ★ AO3H — searchEnhancer (mock) */
+    .ao3h-se-tip-row { background:#fffbf0; border-left:3px solid #ffc107; padding:6px 10px; margin:8px 0; font-size:.82em; color:#856404; border-radius:0 4px 4px 0; }
+  </style>
+</head>
+<body class="logged-in javascript">
+
+<div id="ao3-header-placeholder"></div>
+
+<div id="inner" class="wrapper">
+  <div id="main" class="works-search region" role="main">
+
+    <h2 class="heading">Work Search</h2>
+
+    <ul class="navigation actions" role="navigation">
+      <li><span class="current">Work Search</span></li>
+      <li><a href="search-people.html">People Search</a></li>
+      <li><a href="search-bookmarks.html">Bookmark Search</a></li>
+      <li><a href="search-tags.html">Tag Search</a></li>
+    </ul>
+
+    <!-- ★ AO3H filterManager — saved search presets (mock) -->
+    <div class="ao3h-fm-preset-bar">
+      <h4>📁 Saved Search Presets</h4>
+      <span class="ao3h-fm-chip active">TW-free M/M</span>
+      <span class="ao3h-fm-chip">Long Fics (100k+)</span>
+      <span class="ao3h-fm-chip">Slow Burn</span>
+      <span class="ao3h-fm-chip">Teen+ Complete</span>
+      <span class="ao3h-fm-chip">+ Save current</span>
+    </div>
+
+    <form class="verbose search" id="new_work_search" action="#" accept-charset="UTF-8" method="get">
+      <fieldset>
+        <legend>Work Info</legend>
+        <h3 class="landmark heading">Work Info</h3>
+        <p class="submit"><input type="submit" name="commit" value="Search" /></p>
+        <dl>
+          <dt><label for="work_search_query">Any field</label>  <a class="help symbol question modal" title="Work search text help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="work_search[query]" id="work_search_query" /></dd>
+          <dt><label for="work_search_title">Title</label></dt>
+          <dd><input type="text" name="work_search[title]" id="work_search_title" /></dd>
+          <dt><label for="work_search_creators">Creator</label></dt>
+          <dd><input type="text" name="work_search[creators]" id="work_search_creators" /></dd>
+          <dt><label for="work_search_revised_at">Date</label>  <a class="help symbol question modal" title="Work search date help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="work_search[revised_at]" id="work_search_revised_at" /></dd>
+          <dt>Completion status</dt>
+          <dd>
+            <ul>
+              <li><input type="radio" value="" checked="checked" name="work_search[complete]" id="work_search_complete_" /><label for="work_search_complete_">All works</label></li>
+              <li><input type="radio" value="T" name="work_search[complete]" id="work_search_complete_t" /><label for="work_search_complete_t">Complete works only</label></li>
+              <li><input type="radio" value="F" name="work_search[complete]" id="work_search_complete_f" /><label for="work_search_complete_f">Works in progress only</label></li>
+            </ul>
+          </dd>
+          <dt>Crossovers  <a class="help symbol question modal" title="Work search crossover help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd>
+            <ul>
+              <li><input type="radio" value="" checked="checked" name="work_search[crossover]" id="work_search_crossover_" /><label for="work_search_crossover_">Include crossovers</label></li>
+              <li><input type="radio" value="F" name="work_search[crossover]" id="work_search_crossover_f" /><label for="work_search_crossover_f">Exclude crossovers</label></li>
+              <li><input type="radio" value="T" name="work_search[crossover]" id="work_search_crossover_t" /><label for="work_search_crossover_t">Only crossovers</label></li>
+            </ul>
+          </dd>
+          <dt><label for="work_search_single_chapter">Single Chapter</label></dt>
+          <dd><input name="work_search[single_chapter]" type="hidden" value="0" autocomplete="off" /><input type="checkbox" value="1" name="work_search[single_chapter]" id="work_search_single_chapter" /></dd>
+          <dt><label for="work_search_word_count">Word Count</label>  <a class="help symbol question modal" title="Work search numerical help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><input type="text" name="work_search[word_count]" id="work_search_word_count" /></dd>
+          <dt><label for="work_search_language_id">Language</label>  <a class="help symbol question modal" title="Work search language help" href="#"><span class="symbol question"><span>?</span></span></a></dt>
+          <dd><select name="work_search[language_id]" id="work_search_language_id">
+              <option value="" label=" "></option>
+              <option lang="so" value="so">af Soomaali</option>
+              <option lang="afr" value="afr">Afrikaans</option>
+              <option lang="ain" value="ain">Aynu itak | アイヌ イタク</option>
+              <option lang="akk" value="akk">𒀙𒅗𒅺𒌋</option>
+              <option lang="ar" value="ar">العربية</option>
+              <option lang="amh" value="amh">አማርኛ</option>
+              <option lang="egy" value="egy">𓂉𓁺𓀖 𓆎𓅣𓄏𓇐</option>
+              <option lang="oji" value="oji">Anishinaabemowin</option>
+              <option lang="arc" value="arc">ܪܡܝܐ | ארמיא</option>
+              <option lang="hy" value="hy">Հայerén</option>
+              <option lang="ase" value="ase">American Sign Language</option>
+              <option lang="ast" value="ast">asturianu</option>
+              <option lang="azj" value="azj">Azərbaycan dili | آذربایجان دیلی</option>
+              <option lang="id" value="id">Bahasa Indonesia</option>
+              <option lang="ms" value="ms">Bahasa Malaysia</option>
+              <option lang="bg" value="bg">Български</option>
+              <option lang="bn" value="bn">বাংলা</option>
+              <option lang="jv" value="jv">Basa Jawa</option>
+              <option lang="ba" value="ba">Башҡорт теле</option>
+              <option lang="be" value="be">беларуская</option>
+              <option lang="bar" value="bar">Boarisch</option>
+              <option lang="bos" value="bos">Bosanski</option>
+              <option lang="br" value="br">Brezhoneg</option>
+              <option lang="bfi" value="bfi">British Sign Language</option>
+              <option lang="bua" value="bua">Буряад хэлэн | ᠪᠤᠷᠢᠶᠠᠳ ᠮᠣᠩᠭᠣᠯ ᠬᠡᠯᠡᠨ</option>
+              <option lang="ca" value="ca">Català</option>
+              <option lang="ceb" value="ceb">Cebuano</option>
+              <option lang="cs" value="cs">Čeština</option>
+              <option lang="chn" value="chn">Chinuk Wawa</option>
+              <option lang="crh" value="crh">қырымтатар тили | qırımtatar tili</option>
+              <option lang="cy" value="cy">Cymraeg</option>
+              <option lang="da" value="da">Dansk</option>
+              <option lang="de" value="de">Deutsch</option>
+              <option lang="et" value="et">eesti keel</option>
+              <option lang="el" value="el">Ελληνικά</option>
+              <option lang="sux" value="sux">𒅴𒀀</option>
+              <option lang="en" value="en">English</option>
+              <option lang="ang" value="ang">Eald Englisċ</option>
+              <option lang="es" value="es">Español</option>
+              <option lang="eo" value="eo">Esperanto</option>
+              <option lang="eu" value="eu">Euskara</option>
+              <option lang="fa" value="fa">فارسی</option>
+              <option lang="fil" value="fil">Filipino</option>
+              <option lang="cha" value="cha">Finuʻ Chamorro</option>
+              <option lang="fr" value="fr">Français</option>
+              <option lang="frr" value="frr">Friisk</option>
+              <option lang="fry" value="fry">Frysk</option>
+              <option lang="fur" value="fur">Furlan</option>
+              <option lang="ga" value="ga">Gaeilge</option>
+              <option lang="gd" value="gd">Gàidhlig</option>
+              <option lang="gl" value="gl">Galego</option>
+              <option lang="got" value="got">𐄲𐅿𐅄𐄹𐅃𐄺𐄰</option>
+              <option lang="gyn" value="gyn">Creolese</option>
+              <option lang="hak" value="hak">中文-客家话</option>
+              <option lang="ko" value="ko">한국어</option>
+              <option lang="hau" value="hau">Hausa | هَرشَن هَوْسَ</option>
+              <option lang="hi" value="hi">हिन्दी</option>
+              <option lang="hr" value="hr">Hrvatski</option>
+              <option lang="haw" value="haw">ʻōLelo Hawaiʻi</option>
+              <option lang="ia" value="ia">Interlingua</option>
+              <option lang="zu" value="zu">isiZulu</option>
+              <option lang="is" value="is">Íslenska</option>
+              <option lang="it" value="it">Italiano</option>
+              <option lang="he" value="he">עברית</option>
+              <option lang="kal" value="kal">Kalaallisut</option>
+              <option lang="xal" value="xal">Хальмг Өөрдин келн</option>
+              <option lang="kan" value="kan">ಕನ್ನಡ</option>
+              <option lang="kat" value="kat">ქართული</option>
+              <option lang="cor" value="cor">Kernewek</option>
+              <option lang="khm" value="khm">ភាសាខ្មែរ</option>
+              <option lang="qkz" value="qkz">Khuzdul</option>
+              <option lang="sw" value="sw">Kiswahili</option>
+              <option lang="ht" value="ht">kreyòl ayisyen</option>
+              <option lang="ku" value="ku">Kurdî | کوردی</option>
+              <option lang="kir" value="kir">Кыргызча</option>
+              <option lang="fcs" value="fcs">Langue des signes québécoise</option>
+              <option lang="lv" value="lv">Latviešu valoda</option>
+              <option lang="lb" value="lb">Lëtzebuergesch</option>
+              <option lang="lt" value="lt">Lietuvių kalba</option>
+              <option lang="la" value="la">Lingua latina</option>
+              <option lang="hu" value="hu">Magyar</option>
+              <option lang="mk" value="mk">македонски</option>
+              <option lang="ml" value="ml">മലയാളം</option>
+              <option lang="mt" value="mt">Malti</option>
+              <option lang="mnc" value="mnc">ᠮᠠᠨᠵᡠ ᡤᡳᠰᡠᠨ</option>
+              <option lang="qmd" value="qmd">Mando'a</option>
+              <option lang="mr" value="mr">मराठी</option>
+              <option lang="mik" value="mik">Mikisúkî</option>
+              <option lang="mon" value="mon">ᠮᠣᠩᠭᠣᠯ ᠪᠢᠴᠢᠭ ᠬᠡᠯᠡ | Монгол Кирилл үсэг</option>
+              <option lang="my" value="my">မြန်မာဘာသာ</option>
+              <option lang="myv" value="myv">Эрзянь кель</option>
+              <option lang="nah" value="nah">Nāhuatl</option>
+              <option lang="nan" value="nan">中文-閩南話 臺語</option>
+              <option lang="ppl" value="ppl">Nawat</option>
+              <option lang="nl" value="nl">Nederlands</option>
+              <option lang="ja" value="ja">日本語</option>
+              <option lang="no" value="no">Norsk</option>
+              <option lang="ce" value="ce">Нохчийн мотт</option>
+              <option lang="ood" value="ood">O'odham Ñiok</option>
+              <option lang="ota" value="ota">لسان عثمانی</option>
+              <option lang="ps" value="ps">پښتو</option>
+              <option lang="nds" value="nds">Plattdüütsch</option>
+              <option lang="pl" value="pl">Polski</option>
+              <option lang="ptBR" value="ptBR">Português brasileiro</option>
+              <option lang="ptPT" value="ptPT">Português europeu</option>
+              <option lang="fuc" value="fuc">Pulaar</option>
+              <option lang="pa" value="pa">ਪੰਜਾਬੀ</option>
+              <option lang="kaz" value="kaz">qazaqşa | қазақша</option>
+              <option lang="qlq" value="qlq">Uncategorized Constructed Languages</option>
+              <option lang="qya" value="qya">Quenya</option>
+              <option lang="ro" value="ro">Română</option>
+              <option lang="rom" value="rom">RRomani Ćhib</option>
+              <option lang="ru" value="ru">Русский</option>
+              <option lang="smi" value="smi">Sámi</option>
+              <option lang="sah" value="sah">саха тыла</option>
+              <option lang="sco" value="sco">Scots</option>
+              <option lang="sq" value="sq">Shqip</option>
+              <option lang="sjn" value="sjn">Sindarin</option>
+              <option lang="si" value="si">සිංහල</option>
+              <option lang="sk" value="sk">Slovenčina</option>
+              <option lang="slv" value="slv">Slovenščina</option>
+              <option lang="sla" value="sla">Slovenъskъ Ѩzykъ</option>
+              <option lang="gem" value="gem">Sprēkō Þiudiskō</option>
+              <option lang="sr" value="sr">Српски</option>
+              <option lang="fi" value="fi">suomi</option>
+              <option lang="sv" value="sv">Svenska</option>
+              <option lang="ta" value="ta">தமிழ்</option>
+              <option lang="tat" value="tat">татар теле</option>
+              <option lang="mri" value="mri">te reo Māori</option>
+              <option lang="tel" value="tel">తెలుగు</option>
+              <option lang="tir" value="tir">ትግርኛ</option>
+              <option lang="th" value="th">ไทย</option>
+              <option lang="tqx" value="tqx">Thermian</option>
+              <option lang="bod" value="bod">བོད་སྐད་</option>
+              <option lang="vi" value="vi">Tiếng Việt</option>
+              <option lang="cop" value="cop">ⳏ⶙ⶇ⶛⶙ⶏⶓ̀⶙ⶡ</option>
+              <option lang="tlh" value="tlh">tlhIngan-Hol</option>
+              <option lang="tok" value="tok">toki pona</option>
+              <option lang="trf" value="trf">Trinidadian Creole</option>
+              <option lang="tsd" value="tsd">τσακώνικα</option>
+              <option lang="chr" value="chr">ᏣᎳᎩ ᎡᏯᎫ ᎠᏘᏍᏙᏗ</option>
+              <option lang="tr" value="tr">Türkçe</option>
+              <option lang="uk" value="uk">Українська</option>
+              <option lang="ale" value="ale">Unangam Tunuu</option>
+              <option lang="urd" value="urd">اُردُو</option>
+              <option lang="uig" value="uig">ئۇيغۇر تىلى</option>
+              <option lang="vol" value="vol">Volapük</option>
+              <option lang="wuu" value="wuu">中文-吴语</option>
+              <option lang="yi" value="yi">ייִדיש</option>
+              <option lang="yua" value="yua">maayaʼ tʼaaan</option>
+              <option lang="yue" value="yue">中文-广东话 粵語</option>
+              <option lang="zh" value="zh">中文-普通话 國語</option>
+            </select></dd>
+        </dl>
+      </fieldset>
+
+      <fieldset>
+        <legend>Work Tags  <a class="help symbol question modal" title="Work search tags help" href="#"><span class="symbol question"><span>?</span></span></a></legend>
+        <h3 class="landmark heading">Work Tags</h3>
+        <dl>
+          <dt><label for="work_search_fandom_names">Fandoms</label></dt>
+          <dd><input class="autocomplete" type="text" name="work_search[fandom_names]" id="work_search_fandom_names" /></dd>
+          <dt><label for="work_search_rating_ids">Rating</label></dt>
+          <dd>
+            <select name="work_search[rating_ids]" id="work_search_rating_ids">
+              <option value="" label=" "></option>
+              <option value="9">Not Rated</option>
+              <option value="10">General Audiences</option>
+              <option value="11">Teen And Up Audiences</option>
+              <option value="12">Mature</option>
+              <option value="13">Explicit</option>
+            </select>
+          </dd>
+          <dt>Warnings</dt>
+          <dd>
+            <ul>
+              <li><input type="checkbox" name="work_search[archive_warning_ids][]" id="warning_14" value="14" /><label for="warning_14">Creator Chose Not To Use Archive Warnings</label></li>
+              <li><input type="checkbox" name="work_search[archive_warning_ids][]" id="warning_17" value="17" /><label for="warning_17">Graphic Depictions Of Violence</label></li>
+              <li><input type="checkbox" name="work_search[archive_warning_ids][]" id="warning_18" value="18" /><label for="warning_18">Major Character Death</label></li>
+              <li><input type="checkbox" name="work_search[archive_warning_ids][]" id="warning_16" value="16" /><label for="warning_16">No Archive Warnings Apply</label></li>
+              <li><input type="checkbox" name="work_search[archive_warning_ids][]" id="warning_19" value="19" /><label for="warning_19">Rape/Non-Con</label></li>
+              <li><input type="checkbox" name="work_search[archive_warning_ids][]" id="warning_20" value="20" /><label for="warning_20">Underage Sex</label></li>
+            </ul>
+          </dd>
+          <dt>Categories</dt>
+          <dd>
+            <ul>
+              <li><input type="checkbox" name="work_search[category_ids][]" id="category_116" value="116" /><label for="category_116">F/F</label></li>
+              <li><input type="checkbox" name="work_search[category_ids][]" id="category_22" value="22" /><label for="category_22">F/M</label></li>
+              <li><input type="checkbox" name="work_search[category_ids][]" id="category_21" value="21" /><label for="category_21">Gen</label></li>
+              <li><input type="checkbox" name="work_search[category_ids][]" id="category_23" value="23" /><label for="category_23">M/M</label></li>
+              <li><input type="checkbox" name="work_search[category_ids][]" id="category_2246" value="2246" /><label for="category_2246">Multi</label></li>
+              <li><input type="checkbox" name="work_search[category_ids][]" id="category_24" value="24" /><label for="category_24">Other</label></li>
+            </ul>
+          </dd>
+          <dt><label for="work_search_character_names">Characters</label></dt>
+          <dd><input class="autocomplete" type="text" name="work_search[character_names]" id="work_search_character_names" /></dd>
+          <dt><label for="work_search_relationship_names">Relationships</label></dt>
+          <dd><input class="autocomplete" type="text" name="work_search[relationship_names]" id="work_search_relationship_names" /></dd>
+          <dt><label for="work_search_freeform_names">Additional Tags</label></dt>
+          <dd><input class="autocomplete" type="text" name="work_search[freeform_names]" id="work_search_freeform_names" /></dd>
+        </dl>
+      </fieldset>
+
+      <fieldset>
+        <legend>Work Stats  <a class="help symbol question modal" title="Work search numerical help" href="#"><span class="symbol question"><span>?</span></span></a></legend>
+        <h3 class="landmark heading">Work Stats</h3>
+        <dl>
+          <dt><label for="work_search_hits">Hits</label></dt>
+          <dd><input type="text" name="work_search[hits]" id="work_search_hits" /></dd>
+          <dt><label for="work_search_kudos_count">Kudos</label></dt>
+          <dd><input type="text" name="work_search[kudos_count]" id="work_search_kudos_count" /></dd>
+          <dt><label for="work_search_comments_count">Comments</label></dt>
+          <dd><input type="text" name="work_search[comments_count]" id="work_search_comments_count" /></dd>
+          <dt><label for="work_search_bookmarks_count">Bookmarks</label></dt>
+          <dd><input type="text" name="work_search[bookmarks_count]" id="work_search_bookmarks_count" /></dd>
+        </dl>
+      </fieldset>
+
+      <fieldset>
+        <legend>Search</legend>
+        <h3 class="landmark heading">Search</h3>
+        <dl>
+          <dt><label for="work_search_sort_column">Sort by</label></dt>
+          <dd>
+            <select name="work_search[sort_column]" id="work_search_sort_column">
+              <option selected="selected" value="_score">Best Match</option>
+              <option value="authors_to_sort_on">Creator</option>
+              <option value="title_to_sort_on">Title</option>
+              <option value="created_at">Date Posted</option>
+              <option value="revised_at">Date Updated</option>
+              <option value="word_count">Word Count</option>
+              <option value="hits">Hits</option>
+              <option value="kudos_count">Kudos</option>
+              <option value="comments_count">Comments</option>
+              <option value="bookmarks_count">Bookmarks</option>
+            </select>
+          </dd>
+          <dt><label for="work_search_sort_direction">Sort direction</label></dt>
+          <dd>
+            <select name="work_search[sort_direction]" id="work_search_sort_direction">
+              <option value="asc">Ascending</option>
+              <option selected="selected" value="desc">Descending</option>
+            </select>
+          </dd>
+        </dl>
+        <!-- ★ AO3H searchEnhancer — smart sort hint (mock) -->
+        <div class="ao3h-se-tip-row">
+          💡 <strong>SearchEnhancer:</strong> After searching, enable smart sort: <strong>Kudos Ratio</strong> · <strong>Save Rate</strong> · <strong>Engagement Score</strong>
+        </div>
+        <p class="submit"><input type="submit" name="commit" value="Search" /></p>
+      </fieldset>
+    </form>
+
+  </div>
+  <div class="clear"></div>
+</div>
+
+<div id="footer" role="contentinfo" class="region">
+  <h3 class="landmark heading">Footer</h3>
+  <ul class="navigation actions">
+    <li class="module group">
+      <h4 class="heading">About the Archive</h4>
+      <ul class="menu">
+        <li><a href="#">Site Map</a></li>
+        <li><a href="#">Diversity Statement</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Content Policy</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">DMCA Policy</a></li>
+        <li><a href="#">Site Status</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Contact Us</h4>
+      <ul class="menu">
+        <li><a href="#">Policy Questions &amp; Abuse Reports</a></li>
+        <li><a href="#">Technical Support &amp; Feedback</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Development</h4>
+      <ul class="menu">
+        <li><a href="#">otwarchive v0.9.463.1</a></li>
+        <li><a href="#">Known Issues</a></li>
+        <li><a href="#">GPL-2.0-or-later</a> by the <a href="#">OTW</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+</body>
+</html>
