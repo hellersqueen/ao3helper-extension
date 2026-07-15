@@ -11,6 +11,8 @@ AO3 Helper — Rich Text Notes
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+
 const D = document;
 const SK_NOTES = 'ao3h:bookmarkVault:inlineNotes';
 const SK_DATA  = 'ao3h:bookmarkVault:data';
@@ -40,9 +42,7 @@ export class RichTextNotes {
   _isWorkOrSeries  () { return /^\/(works|series)\/\d+/.test(location.pathname); }
   _isBookmarksPage () { return /\/bookmarks/.test(location.pathname); }
   _getWorkId (blurb) {
-    const a = blurb.querySelector('h4.heading a[href*="/works/"]');
-    const m = (a?.getAttribute('href') || '').match(/\/works\/(\d+)/);
-    return m ? m[1] : null;
+    return extractWorkIdFromBlurb(blurb);
   }
   _getKindAndId () {
     const m = location.pathname.match(/\/(works|series)\/(\d+)/);

@@ -9,6 +9,7 @@ AO3 Helper — Reading Timeline › HistoryAnalytics sub-module
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 const W = getGlobalWindow();
 
@@ -136,8 +137,7 @@ export class HistoryAnalytics {
       const link = blurb.querySelector('h4.heading a[href^="/works/"]');
       if (!link) return;
 
-      const m      = link.getAttribute('href').match(/\/works\/(\d+)/);
-      const workId = m ? String(m[1]) : '';
+      const workId = extractWorkIdFromHref(link.getAttribute('href')) || '';
       if (!workId || !lookup[workId]) return;
 
       const info     = lookup[workId];

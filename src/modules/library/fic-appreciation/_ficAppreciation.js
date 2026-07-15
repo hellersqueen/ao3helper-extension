@@ -35,6 +35,7 @@ AO3 Helper — Fic Appreciation Coordinator
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
+import { extractWorkIdFromHref, extractWorkIdFromBlurb as parseWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import styles from './ficAppreciation.css?inline';
 
 import { MarkAsFinished } from './markAsFinished.js';
@@ -95,13 +96,10 @@ function isListingPage () {
          /^\/collections\/[^/]+\/works/.test(location.pathname);
 }
 function getWorkIdFromPath () {
-  const m = location.pathname.match(/\/works\/(\d+)/);
-  return m ? m[1] : null;
+  return extractWorkIdFromHref(location.pathname);
 }
 function getWorkIdFromBlurb (blurb) {
-  const a = blurb.querySelector('h4.heading > a[href*="/works/"]');
-  const m = (a?.getAttribute('href') || '').match(/\/works\/(\d+)/);
-  return m ? m[1] : null;
+  return parseWorkIdFromBlurb(blurb);
 }
 
 // ── Module registration ───────────────────────────────────────────────────

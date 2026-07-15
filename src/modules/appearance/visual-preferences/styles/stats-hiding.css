@@ -1,0 +1,76 @@
+/* visualPreferencesManager/styles/stats-hiding.css
+   CSS rules for hiding statistics and metrics */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WORD COUNTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-wc dl.stats dd.words,
+html.ao3h-hide-wc .stats .words,
+html.ao3h-hide-wc li.words,
+html.ao3h-hide-wc span.words,
+html.ao3h-hide-wc dt.words + dd {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KUDOS COUNTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-kudos dl.stats dd.kudos,
+html.ao3h-hide-kudos .stats .kudos,
+html.ao3h-hide-kudos li.kudos,
+html.ao3h-hide-kudos span.kudos,
+html.ao3h-hide-kudos dt.kudos + dd {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMMENTS COUNTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-comments dl.stats dd.comments,
+html.ao3h-hide-comments .stats .comments,
+html.ao3h-hide-comments li.comments,
+html.ao3h-hide-comments span.comments,
+html.ao3h-hide-comments dt.comments + dd,
+html.ao3h-hide-comments .comments a {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BOOKMARKS COUNTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-bookmarks dl.stats dd.bookmarks,
+html.ao3h-hide-bookmarks .stats .bookmarks,
+html.ao3h-hide-bookmarks li.bookmarks,
+html.ao3h-hide-bookmarks span.bookmarks,
+html.ao3h-hide-bookmarks dt.bookmarks + dd,
+html.ao3h-hide-bookmarks .bookmarks a {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HITS/VISITS COUNTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-hits dl.stats dd.hits,
+html.ao3h-hide-hits .stats .hits,
+html.ao3h-hide-hits li.hits,
+html.ao3h-hide-hits span.hits,
+html.ao3h-hide-hits dt.hits + dd {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUMMARIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-summaries .blurb .summary,
+html.ao3h-hide-summaries .blurb blockquote.userstuff.summary,
+html.ao3h-hide-summaries .blurb blockquote.userstuff,
+html.ao3h-hide-summaries li.blurb .summary,
+html.ao3h-hide-summaries ol.work .summary {
+  display: none !important;
+}

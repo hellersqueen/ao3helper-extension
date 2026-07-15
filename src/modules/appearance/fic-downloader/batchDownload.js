@@ -80,6 +80,7 @@ AO3 Helper - Batch Download Submodule
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 
 const W = getGlobalWindow();
 
@@ -194,11 +195,7 @@ export class BatchDownload {
   }
 
   getWorkIdFromBlurb(blurb) {
-    const link = blurb.querySelector('h4.heading > a');
-    if (!link) return null;
-    
-    const match = link.href.match(/\/works\/(\d+)/);
-    return match ? match[1] : null;
+    return extractWorkIdFromBlurb(blurb);
   }
 
   getWorkTitle(blurb) {

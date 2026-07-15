@@ -1,6 +1,7 @@
 import { KEY_LATER_SHELF_ITEMS } from '../../../../lib/storage/keys.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 const MOD = 'laterShelf';
 
@@ -22,9 +23,8 @@ export function saveItems (items) {
 }
 
 export function markCurrent () {
-  const match = location.pathname.match(/\/works\/(\d+)/);
-  if (!match) return false;
-  const wid = match[1];
+  const wid = extractWorkIdFromHref(location.pathname);
+  if (!wid) return false;
   const items = loadItems();
   if (items.some(item => String(item.wid || item) === wid)) return true;
   const title = document.querySelector('h2.title.heading, .title.heading')?.textContent?.trim() || `Work ${wid}`;

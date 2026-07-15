@@ -31,6 +31,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import styles from './chapterNavigation.css?inline';
 
 import { NavigationControls } from './navigationControls.js';
@@ -90,8 +91,7 @@ register(
     const diOpts = { NS, cfg, lsGet, lsSet, SK_LASTCHAP };
 
     if (isWorkPage()) {
-      const workIdMatch = location.pathname.match(/\/works\/(\d+)/);
-      const workId = workIdMatch?.[1];
+      const workId = extractWorkIdFromHref(location.pathname);
 
       navCtrl = new NavigationControls(diOpts);
 

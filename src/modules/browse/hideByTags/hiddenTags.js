@@ -10,6 +10,7 @@
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 
 const W = getGlobalWindow();
@@ -522,14 +523,7 @@ export class HiddenTags {
   }
 
   getWorkIdFromBlurb (blurb) {
-    const Parsers = W.AO3H_Common?.Parsers || {};
-    if (Parsers.extractWorkIdFromBlurb) return Parsers.extractWorkIdFromBlurb(blurb);
-    if (!blurb || typeof blurb.querySelectorAll !== 'function') return null;
-    for (const a of blurb.querySelectorAll('.header .heading a, .header a, a[href*="/works/"]')) {
-      const m = (a.getAttribute('href') || '').replace(/(#.*|\?.*)$/, '').match(/\/works\/(\d+)/);
-      if (m) return m[1];
-    }
-    return null;
+    return extractWorkIdFromBlurb(blurb);
   }
 
   // ── Fold / cut DOM helpers ─────────────────────────────────────────────

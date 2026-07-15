@@ -17,6 +17,7 @@ AO3 Helper - Fic Peek Module
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './ficPeek.css?inline';
 
 css(styles, 'ao3h-ficPeek');

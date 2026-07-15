@@ -29,6 +29,7 @@ import { register } from '../../../core/lifecycle.js';
 import { cfg } from './laterShelfStore.js';
 import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
 import { sendNotification, requestNotifyPermission } from '../../../../lib/utils/notifications.js';
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 
 const MOD = 'workReminder';
 const D   = document;
@@ -104,11 +105,8 @@ register(MOD, {
   function injectReminderBadges () {
     var reminders = loadReminders();
     D.querySelectorAll('li.work.blurb, li.bookmark.blurb').forEach(function (blurb) {
-      var a = blurb.querySelector('h4.heading a[href*="/works/"]');
-      if (!a) return;
-      var m = (a.getAttribute('href') || '').match(/\/works\/(\d+)/);
-      if (!m) return;
-      var wid = m[1];
+      var wid = extractWorkIdFromBlurb(blurb);
+      if (!wid) return;
       var r = reminders[wid];
       if (!r || r.status === 'fired') return;
       var unavailable = r.status === 'unavailable';
@@ -130,12 +128,10 @@ register(MOD, {
     if (!isMFL) return;
     D.querySelectorAll('li.work.blurb, li.bookmark.blurb').forEach(function (blurb) {
       if (blurb.querySelector('.ao3h-ls-remind-btn')) return;
-      var a = blurb.querySelector('h4.heading a[href*="/works/"]');
-      if (!a) return;
-      var m = (a.getAttribute('href') || '').match(/\/works\/(\d+)/);
-      if (!m) return;
-      var wid = m[1];
-      var title = a.textContent.trim();
+      var wid = extractWorkIdFromBlurb(blurb);
+      if (!wid) return;
+      var titleLink = blurb.querySelector('h4.heading a[href*="/works/"]');
+      var title = titleLink ? titleLink.textContent.trim() : '';
       var btn = D.createElement('button');
       btn.type = 'button';
       btn.className = 'ao3h-ls-remind-btn';

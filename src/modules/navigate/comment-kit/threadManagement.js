@@ -27,6 +27,7 @@ AO3 Helper - Thread Management Submodule
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 const W    = getGlobalWindow();
 const D    = document;
@@ -280,7 +281,7 @@ register(MOD, {
 }, async function init () {
   if (!/^\/works\/\d+/.test(W.location.pathname)) return () => {};
 
-  const workId = (W.location.pathname.match(/\/works\/(\d+)/) || [])[1];
+  const workId = extractWorkIdFromHref(W.location.pathname);
   if (!workId) return () => {};
 
   let processNew = null;

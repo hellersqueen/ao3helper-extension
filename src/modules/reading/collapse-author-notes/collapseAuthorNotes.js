@@ -25,6 +25,8 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { Flags } from '../../../../lib/utils/config.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import styles from './collapseAuthorNotes.css?inline';
 
 css(styles, 'ao3h-collapseAuthorNotes');
@@ -52,7 +54,7 @@ function isWorkPage () {
 }
 
 function parseWorkId () {
-  return location.pathname.match(/\/works\/(\d+)/)?.[1] || null;
+  return extractWorkIdFromHref(location.pathname);
 }
 
 // ── Persistence (localStorage, per-work) ──────────────────────────────────

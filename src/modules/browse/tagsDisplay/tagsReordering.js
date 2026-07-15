@@ -19,6 +19,7 @@ AO3 Helper - Tags Reordering Submodule
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 const MOD  = 'tagsReordering';
 const NS   = 'ao3h';
@@ -26,7 +27,7 @@ const NS   = 'ao3h';
 const TAG_TYPES = ['fandom', 'character', 'relationship', 'freeform'];
 
 function getWorkId () {
-  return location.pathname.match(/\/works\/(\d+)/)?.[1] || null;
+  return extractWorkIdFromHref(location.pathname);
 }
 
 function storageKey (workId, tagType) {

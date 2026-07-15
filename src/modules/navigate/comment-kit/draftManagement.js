@@ -33,6 +33,7 @@ AO3 Helper - Draft Management Submodule
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 const W    = getGlobalWindow();
 const D    = document;
@@ -276,7 +277,7 @@ register(MOD, {
 
   pruneOldDrafts();
 
-  const workId = (W.location.pathname.match(/\/works\/(\d+)/) || [])[1] || null;
+  const workId = extractWorkIdFromHref(W.location.pathname);
 
   const enhanceAll = () =>
     D.querySelectorAll('form.comment.new, form.comment.edit').forEach(f => enhanceForm(f, workId));

@@ -24,6 +24,7 @@ AO3 Helper - Marked for Later Status Submodule
 import { register } from '../../../core/lifecycle.js';
 import { loadItems, saveItems } from './laterShelfStore.js';
 import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 
 const MOD = 'markedForLaterStatus';
 const D   = document;
@@ -53,10 +54,7 @@ register(MOD, {
 
   // ── Helpers ──────────────────────────────────────────────────────────────
   function widFromBlurb (blurb) {
-    const a = blurb.querySelector('h4.heading a[href*="/works/"]');
-    if (!a) return null;
-    const m = (a.getAttribute('href') || '').match(/\/works\/(\d+)/);
-    return m ? m[1] : null;
+    return extractWorkIdFromBlurb(blurb);
   }
 
   // ── 📌 badges on listing blurbs ──────────────────────────────────────────

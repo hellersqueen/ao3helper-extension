@@ -9,6 +9,7 @@
 //   - Count notification: "X works updated since your last visit"
 
 import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 export class SeenTracking {
   /** @param {{ NS, cfg, getHistory, saveHistory, relativeTime }} opts */
@@ -26,7 +27,7 @@ export class SeenTracking {
   // ── Work ID / metadata parsing ────────────────────────────────────────
 
   parseWorkId () {
-    return location.pathname.match(/\/works\/(\d+)/)?.[1] || null;
+    return extractWorkIdFromHref(location.pathname);
   }
 
   parseWorkMeta () {

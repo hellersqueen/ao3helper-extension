@@ -19,6 +19,7 @@ import { register } from '../../../core/lifecycle.js';
 import { loadItems, saveItems, cfg } from './laterShelfStore.js';
 import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
 import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 
 const MOD = 'quickMarkForLaterButton';
 const D   = document;
@@ -33,10 +34,7 @@ register(MOD, {
 
   // ── Helpers ──────────────────────────────────────────────────────────────
   function widFromBlurb (blurb) {
-    const a = blurb.querySelector('h4.heading a[href*="/works/"]');
-    if (!a) return null;
-    const m = (a.getAttribute('href') || '').match(/\/works\/(\d+)/);
-    return m ? m[1] : null;
+    return extractWorkIdFromBlurb(blurb);
   }
 
   function titleFromBlurb (blurb) {

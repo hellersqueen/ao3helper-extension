@@ -12,6 +12,8 @@ AO3 Helper — Status Indicators
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { extractWorkIdFromBlurb } from '../../../../../lib/ao3/parsers.js';
+
 const D = document;
 const SK_DATA = 'ao3h:bookmarkVault:data';
 const SK_LAST = 'ao3h:bookmarkVault:lastRead';
@@ -36,9 +38,7 @@ export class StatusIndicators {
   _isListingPage   () { return /\/(works|tags|bookmarks|users\/[^/]+\/)/.test(location.pathname); }
 
   _getWorkId (blurb) {
-    const a = blurb.querySelector('h4.heading a[href*="/works/"]');
-    const m = (a?.getAttribute('href') || '').match(/\/works\/(\d+)/);
-    return m ? m[1] : null;
+    return extractWorkIdFromBlurb(blurb);
   }
 
   // ── Scan bookmarks page → build cache ────────────────────────────────────

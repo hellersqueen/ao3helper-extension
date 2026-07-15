@@ -10,6 +10,8 @@ AO3 Helper — Organization Tools
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+
 const D = document;
 const SK_CATS   = 'ao3h:bookmarkVault:categories';
 const SK_PINNED = 'ao3h:bookmarkVault:pinned';
@@ -29,9 +31,7 @@ export class OrganizationTools {
 
   _isBookmarksPage () { return /\/users\/[^/]+\/bookmarks/.test(location.pathname); }
   _getWorkId (blurb) {
-    const a = blurb.querySelector('h4.heading a[href*="/works/"]');
-    const m = (a?.getAttribute('href') || '').match(/\/works\/(\d+)/);
-    return m ? m[1] : null;
+    return extractWorkIdFromBlurb(blurb);
   }
 
   // ── Category labels on blurbs ─────────────────────────────────────────────

@@ -66,6 +66,7 @@ AO3 Helper - Download Enhancements Submodule
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 const W = getGlobalWindow();
 
@@ -159,8 +160,7 @@ export class DownloadEnhancements {
   }
 
   getWorkId () {
-    const m = W.location.pathname.match(/^\/works\/(\d+)/);
-    return m ? m[1] : null;
+    return extractWorkIdFromHref(W.location.pathname);
   }
 
   isListingPage () {
@@ -191,9 +191,8 @@ export class DownloadEnhancements {
     const authorLink = blurb.querySelector('a[rel="author"]');
     const fandomLink = blurb.querySelector('.fandoms a');
     const ratingEl   = blurb.querySelector('.rating .text');
-    const match      = titleLink?.href?.match(/\/works\/(\d+)/);
     return {
-      workId: match ? match[1] : null,
+      workId: extractWorkIdFromHref(titleLink?.href),
       title:  titleLink?.textContent.trim()  || 'Untitled',
       author: authorLink?.textContent.trim() || 'Anonymous',
       fandom: fandomLink?.textContent.trim() || '',

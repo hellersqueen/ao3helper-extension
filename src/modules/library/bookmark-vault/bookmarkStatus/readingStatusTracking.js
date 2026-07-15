@@ -10,6 +10,8 @@ AO3 Helper — Reading Status Tracking
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { extractWorkIdFromBlurb, extractWorkIdFromHref } from '../../../../../lib/ao3/parsers.js';
+
 const D = document;
 const SK_LAST = 'ao3h:bookmarkVault:lastRead';
 
@@ -28,17 +30,15 @@ export class ReadingStatusTracking {
   _isListingPage   () { return /\/(works|tags|bookmarks|users\/[^/]+\/)/.test(location.pathname); }
 
   _getWorkId (blurb) {
-    const a = blurb.querySelector('h4.heading a[href*="/works/"]');
-    const m = (a?.getAttribute('href') || '').match(/\/works\/(\d+)/);
-    return m ? m[1] : null;
+    return extractWorkIdFromBlurb(blurb);
   }
 
   // ── Track last-read timestamp on work pages ───────────────────────────────
   _trackLastRead () {
-    const m = location.pathname.match(/\/works\/(\d+)/);
-    if (!m) return;
+    const workId = extractWorkIdFromHref(location.pathname);
+    if (!workId) return;
     const data = this._load(SK_LAST, {});
-    data[m[1]] = Date.now();
+    data[workId] = Date.now();
     this._save(SK_LAST, data);
   }
 

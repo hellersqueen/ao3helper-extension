@@ -45,6 +45,7 @@ import { css } from '../../../../lib/utils/index.js';
 import { KEY_RT_HISTORY, KEY_BOOKMARK_VAULT_DATA, KEY_LATER_SHELF_ITEMS } from '../../../../lib/storage/keys.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { sendNotification, requestNotifyPermission } from '../../../../lib/utils/notifications.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import styles from './notificationCenter.css?inline';
 
 css(styles, 'ao3h-notificationCenter');
@@ -155,9 +156,8 @@ register(MOD, {
 
   // ── Update knownChapters when visiting a work page ──────────────────────────
   function onWorkPage () {
-    var match = location.pathname.match(/^\/works\/(\d+)/);
-    if (match === null) return;
-    var wid     = match[1];
+    var wid = extractWorkIdFromHref(location.pathname);
+    if (wid === null) return;
     var chapEl  = D.querySelector('dd.chapters');
     var titleEl = D.querySelector('h2.title.heading');
     if (chapEl === null) return;

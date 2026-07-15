@@ -16,6 +16,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { getHistoryWorkIdSet } from '../../../../lib/storage/keys.js';
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './surpriseMe.css?inline';
 
@@ -47,9 +48,7 @@ function isListingPage () {
 
 // ── Collect eligible blurbs ───────────────────────────────────────────────
 function getWorkId (blurb) {
-  const a = blurb.querySelector('.heading a[href*="/works/"]');
-  const m = a?.getAttribute('href')?.match(/\/works\/(\d+)/);
-  return m ? m[1] : null;
+  return extractWorkIdFromBlurb(blurb);
 }
 
 function isVisible (el) {

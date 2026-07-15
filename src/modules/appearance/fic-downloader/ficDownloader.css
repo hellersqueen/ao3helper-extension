@@ -1,0 +1,1073 @@
+/*: ═══════════════════════════════════════════════════════════════
+      FIC DOWNLOADER — Injected UI Styles
+        Contrôle l'apparence de l'interface injectée
+        par le module Fic Downloader (toolbar de batch,
+        checkboxes, barre de progression, icône individuelle).
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ────────────────────────────────────────────────────────────── 
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ────────────────────────────────────────────────────────────── 
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🎨 La couleur bleue principale (boutons, toolbar, icône)
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-fdl-color-primary
+
+        ├─  🔴 La couleur rouge du bouton Clear
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-fdl-color-danger
+
+        ├─  📦 La toolbar flottante (position, taille, fond)
+        │     → SECTION 01 — TOOLBAR FLOTTANTE
+        │     → .ao3h-batch-download-toolbar
+
+        ├─  🔘 Les boutons (Download / Clear)
+        │     → SECTION 02 — BOUTONS
+        │     → .ao3h-batch-download-btn, .ao3h-batch-clear-btn
+
+        ├─  📊 La barre de progression
+        │     → SECTION 03 — BARRE DE PROGRESSION
+        │     → .ao3h-batch-progress, .ao3h-batch-progress-fill
+
+        ├─  ☑️ Les checkboxes sur les blurbs
+        │     → SECTION 04 — CHECKBOXES
+        │     → .ao3h-batch-checkbox
+
+        ├─  🖊️ L'état "sélectionné" d'un blurb
+        │     → SECTION 05 — BLURB SÉLECTIONNÉ
+        │     → .ao3h-blurb-selected
+
+        ├─  ⬇️ L'icône de téléchargement individuel
+        │     → SECTION 06 — ICÔNE DE TÉLÉCHARGEMENT INDIVIDUEL
+        │     → .ao3h-blurb-download-icon
+
+        ├─  🪟 La modale de téléchargement (modal + bouton Download All)
+        │     → SECTION 07 — MODAL DE TÉLÉCHARGEMENT
+        │     → .ao3h-cpd-overlay, .ao3h-cpd-box, .ao3h-dl-all-btn
+
+        ├─  🔔 Les notifications, sélecteurs, boutons Kindle / Calibre / séries
+        │     → SECTION 08 — DOWNLOAD ENHANCEMENTS
+        │     → .ao3h-dl-note, .ao3h-kindle-btn, .ao3h-queue-panel, .ao3h-ctx-menu
+
+        ├─  📴 Les boutons Save / Read Offline
+        │     → SECTION 09 — OFFLINE LIBRARY
+        │     → .ao3h-offline-save-btn, .ao3h-offline-read-btn
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Toolbar flottante                         */
+/*#        |                                                 */
+/*####     ├─  02. Boutons                                   */
+/*#        |                                                 */
+/*=        ├─  03. Barre de progression                      */
+/*#        |                                                 */
+/*==       ├─  04. Checkboxes                                */
+/*#        |                                                 */
+/*===      ├─  05. Blurb sélectionné                         */
+/*#        |                                                 */
+/*====     ├─  06. Icône de téléchargement individuel        */
+/*#        |                                                 */
+/*=====    ├─  07. Modal de téléchargement                   */
+/*#        |                                                 */
+/*======   ├─  08. Download Enhancements                    */
+/*#        |                                                 */
+/*=======  └─  09. Offline Library                          */
+
+
+/*##    
+  ═══════════════════════════════════════════════════════════════════════   
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - la couleur bleue principale (toolbar, boutons, icône)
+      - la couleur rouge du bouton Clear
+      - les coins arrondis
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🎨 Couleur bleue principale (toolbar, boutons, icône, sélection) */
+  --ao3h-fdl-color-primary: #2c5f8a;
+
+  /*- 🎨 Couleur bleue foncée (hover des boutons et de l'icône) */
+  --ao3h-fdl-color-dark: #1a4567;
+
+  /*- 🔴 Couleur rouge du bouton Clear */
+  --ao3h-fdl-color-danger: #dc3545;
+
+  /*- 🔴 Couleur rouge foncée (hover du bouton Clear) */
+  --ao3h-fdl-color-danger-dark: #c82333;
+
+  /*- 🔲 Arrondi des boîtes principales (toolbar) */
+  --ao3h-fdl-radius-lg: 8px;
+
+  /*- 🔲 Arrondi des boutons et de la barre de progression */
+  --ao3h-fdl-radius: 4px;
+}
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — TOOLBAR FLOTTANTE
+  ───────────────────────────────────────────────────────────────────────
+    La boîte flottante qui apparaît en bas à droite quand des œuvres
+    sont sélectionnées pour le téléchargement en batch.
+    À l'écran :
+      ┌───────────────────────────────────────┐
+      │  ⬇ Batch Download                    │
+      │  3 works selected                     │
+      │  [Download All]  [Clear]              │
+      └───────────────────────────────────────┘
+    ⚠️ display est contrôlé par JavaScript (show/hide selon sélection).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOÎTE PRINCIPALE DE LA TOOLBAR
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ display: none — affiché/caché par JavaScript.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-batch-download-toolbar {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+
+  /*- 🎨 Couleur de la bordure — voir SECTION 00 */
+  border: 2px solid var(--ao3h-fdl-color-primary);
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius-lg);
+
+  padding: 15px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+
+  /*- ⚠️ Contrôlé par JavaScript */
+  display: none;
+
+  min-width: 250px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    TITRE DE LA TOOLBAR
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-batch-toolbar-title {
+  font-weight: bold;
+
+  /*- 🎨 Couleur — voir SECTION 00 */
+  color: var(--ao3h-fdl-color-primary);
+
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    COMPTEUR D'ŒUVRES SÉLECTIONNÉES
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-batch-counter {
+  margin-bottom: 12px;
+  color: #666;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    ZONE DES BOUTONS
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-batch-button-container {
+  display: flex;
+  gap: 10px;
+}
+
+
+/*####  
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — BOUTONS
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle les boutons Download et Clear dans la toolbar.
+    Les couleurs viennent de SECTION 00.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON DOWNLOAD ALL
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-batch-download-btn {
+  flex: 1;
+  padding: 10px 15px;
+
+  /*- 🎨 Fond bleu — voir SECTION 00 */
+  background: var(--ao3h-fdl-color-primary);
+
+  color: white;
+  border: none;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+/*- ⚠️ :not(:disabled) évite le hover quand le téléchargement est en cours */
+.ao3h-batch-download-btn:hover:not(:disabled) {
+  background: var(--ao3h-fdl-color-dark);
+}
+
+/*- Bouton désactivé pendant le téléchargement */
+.ao3h-batch-download-btn:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON CLEAR
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-batch-clear-btn {
+  padding: 10px 15px;
+
+  /*- 🔴 Fond rouge — voir SECTION 00 */
+  background: var(--ao3h-fdl-color-danger);
+
+  color: white;
+  border: none;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+/*- Bouton Clear au survol */
+.ao3h-batch-clear-btn:hover {
+  background: var(--ao3h-fdl-color-danger-dark);
+}
+
+
+/*=     
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — BARRE DE PROGRESSION
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle la barre de progression affichée pendant le téléchargement.
+    À l'écran :
+      ┌───────────────────────────────────────┐
+      │ ████████████░░░░░░░░░░░░  3 / 8       │
+      └───────────────────────────────────────┘
+    ⚠️ display et width sont contrôlés par JavaScript.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    CONTENEUR DE LA BARRE
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ display: none — affiché par JavaScript pendant le téléchargement.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-batch-progress {
+  /*- ⚠️ Contrôlé par JavaScript */
+  display: none;
+
+  background: #f0f0f0;
+  height: 20px;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    REMPLISSAGE DE LA BARRE
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ width est calculé dynamiquement par JavaScript (pourcentage).
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-batch-progress-fill {
+  /*- 🎨 Couleur bleue — voir SECTION 00 */
+  background: var(--ao3h-fdl-color-primary);
+
+  height: 100%;
+
+  /*- ⚠️ width contrôlé par JavaScript */
+  width: 0%;
+
+  transition: width 0.3s;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    TEXTE DE PROGRESSION
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ display: none — affiché par JavaScript pendant le téléchargement.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-batch-progress-text {
+  /*- ⚠️ Contrôlé par JavaScript */
+  display: none;
+
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+
+/*==    
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — CHECKBOXES
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle les checkboxes ajoutées sur chaque blurb d'œuvre.
+    ⚠️ Les checkboxes sont injectées dynamiquement par JavaScript.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-batch-checkbox {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+
+/*===   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — BLURB SÉLECTIONNÉ
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle l'apparence visuelle d'un blurb quand sa checkbox est cochée.
+    ⚠️ Classe .ao3h-blurb-selected ajoutée/retirée par JavaScript.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*- ⚠️ Classe ajoutée/retirée par JavaScript quand une checkbox est cochée */
+.ao3h-blurb-selected {
+  /*- 🎨 Contour bleu — voir SECTION 00 */
+  outline: 2px solid var(--ao3h-fdl-color-primary);
+
+  background-color: #eef4fa;
+}
+
+
+/*====  
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — ICÔNE DE TÉLÉCHARGEMENT INDIVIDUEL
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle l'icône ⬇️ affichée sur chaque blurb individuel.
+    La couleur vient de SECTION 00.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-blurb-download-icon {
+  display: inline-block;
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 1.1em;
+
+  /*- 🎨 Couleur bleue — voir SECTION 00 */
+  color: var(--ao3h-fdl-color-primary);
+
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+/*- Icône au survol */
+.ao3h-blurb-download-icon:hover {
+  color: var(--ao3h-fdl-color-dark);
+}
+
+
+/*=====
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 07 — MODAL DE TÉLÉCHARGEMENT
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle la fenêtre modale affichée pendant le téléchargement
+    complet d'une page (completePageDownload) et le bouton
+    "Download All" avec son sélecteur de format.
+    À l'écran :
+      ┌──────────────────────────────────────┐
+      │  Downloading Works…                  │
+      │  (2/8) Downloading "Title"…          │
+      │  ████████████░░░░░░░░░░░░            │
+      │  [    Cancel    ]                    │
+      └──────────────────────────────────────┘
+    ⚠️ width de la barre et couleur du bouton Cancel sont
+       contrôlés dynamiquement par JavaScript.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    OVERLAY DE LA MODALE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-cpd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOÎTE DE LA MODALE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-cpd-box {
+  background: #fff;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius-lg);
+
+  padding: 24px 28px;
+  min-width: 360px;
+  max-width: 480px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  font-family: sans-serif;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    TITRE DE LA MODALE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-cpd-heading {
+  margin: 0 0 16px;
+
+  /*- 🎨 Couleur bleue — voir SECTION 00 */
+  color: var(--ao3h-fdl-color-primary);
+
+  font-size: 1.1em;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    TEXTE DE STATUT
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-cpd-status {
+  margin-bottom: 12px;
+  color: #555;
+  font-size: 0.9em;
+  min-height: 1.2em;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    CONTENEUR DE LA BARRE DE PROGRESSION
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Pas de display:none ici — la modale entière est gérée via l'overlay.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-cpd-bar-wrap {
+  background: #eee;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  overflow: hidden;
+  height: 16px;
+  margin-bottom: 16px;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    REMPLISSAGE DE LA BARRE
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ width et background changent dynamiquement (progression / annulation).
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-cpd-bar-fill {
+  /*- 🎨 Couleur bleue — voir SECTION 00 */
+  background: var(--ao3h-fdl-color-primary);
+
+  height: 100%;
+
+  /*- ⚠️ width contrôlé par JavaScript */
+  width: 0%;
+
+  transition: width 0.3s;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON CANCEL
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ background change dynamiquement (→ bleu primaire quand terminé).
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-cpd-cancel-btn {
+  padding: 8px 20px;
+
+  /*- 🔴 Fond rouge — voir SECTION 00 */
+  background: var(--ao3h-fdl-color-danger);
+
+  color: #fff;
+  border: none;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    CONTENEUR BOUTON + SÉLECTEUR DE FORMAT
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-cpd-dl-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    SÉLECTEUR DE FORMAT
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-cpd-format-select {
+  padding: 7px 10px;
+
+  /*- 🎨 Bordure bleue — voir SECTION 00 */
+  border: 1px solid var(--ao3h-fdl-color-primary);
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  font-size: 0.9em;
+  cursor: pointer;
+  background: #fff;
+  color: #333;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON DOWNLOAD ALL
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-dl-all-btn {
+  padding: 8px 16px;
+
+  /*- 🎨 Fond bleu — voir SECTION 00 */
+  background: var(--ao3h-fdl-color-primary);
+
+  color: #fff;
+  border: none;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+/*- Bouton Download All au survol */
+.ao3h-dl-all-btn:hover {
+  background: var(--ao3h-fdl-color-dark);
+}
+
+
+/*======
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 08 — DOWNLOAD ENHANCEMENTS
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle les éléments injectés par DownloadEnhancements :
+    notifications, sélecteur de format, bouton Kindle,
+    aperçu de couverture, menu contextuel, panneau de queue,
+    bouton série, bouton Calibre.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    NOTIFICATIONS
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-dl-note {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  padding: 10px 16px;
+  color: #fff;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: 6px;
+
+  font-family: sans-serif;
+  font-size: 0.9em;
+  z-index: 99998;
+  opacity: 1;
+  transition: opacity 0.5s;
+  max-width: 320px;
+  pointer-events: none;
+}
+
+/*- 🟢 Variante info (défaut) */
+.ao3h-dl-note--info    { background: var(--ao3h-fdl-color-primary); }
+
+/*- 🔴 Variante erreur */
+.ao3h-dl-note--error   { background: var(--ao3h-fdl-color-danger); }
+
+/*- ✅ Variante succès */
+.ao3h-dl-note--success { background: #28a745; }
+
+
+/*+ ───────────────────────────────────────────────────────────
+    SÉLECTEUR DE FORMAT (page work)
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-format-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 10px;
+  font-size: 0.85em;
+}
+
+.ao3h-format-label {
+  color: #555;
+}
+
+.ao3h-format-sel {
+  padding: 2px 5px;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON KINDLE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-kindle-btn {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 4px 10px;
+  background: #ff9900;
+  color: #fff;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  font-size: 0.85em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.2s;
+}
+
+/*- Bouton Kindle au survol */
+.ao3h-kindle-btn:hover {
+  filter: brightness(0.85);
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    APC‌R‌CU DE COUVERTURE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-cover-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  font-family: sans-serif;
+}
+
+.ao3h-cover-box {
+  background: #fff;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius-lg);
+
+  padding: 20px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.ao3h-cover-heading {
+  margin: 0 0 12px;
+
+  /*- 🎨 Couleur bleue — voir SECTION 00 */
+  color: var(--ao3h-fdl-color-primary);
+}
+
+.ao3h-cover-tpl-wrap {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ao3h-cover-tpl-label {
+  font-size: 0.9em;
+}
+
+.ao3h-cover-tpl-sel {
+  padding: 3px 8px;
+  border: 1px solid #aaa;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+}
+
+.ao3h-cover-img {
+  display: block;
+  max-width: 200px;
+  margin: 0 auto 16px;
+  border: 1px solid #ddd;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+}
+
+.ao3h-cover-btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.ao3h-cover-dl-btn {
+  padding: 8px 16px;
+
+  /*- 🎨 Fond bleu — voir SECTION 00 */
+  background: var(--ao3h-fdl-color-primary);
+
+  color: #fff;
+  border: none;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  cursor: pointer;
+}
+
+.ao3h-cover-close-btn {
+  padding: 8px 16px;
+  background: #eee;
+  color: #333;
+  border: none;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  cursor: pointer;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON DE TÉLÉCHARGEMENT SUR BLURB
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ background change dynamiquement (running / success / error).
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-dl-blurb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: 3px;
+
+  /*- 🎨 Fond bleu — voir SECTION 00 */
+  background: var(--ao3h-fdl-color-primary);
+
+  color: #fff !important;
+  font-size: 0.8em;
+  font-weight: bold;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    MENU CONTEXTUEL
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ top et left sont définis dynamiquement par JavaScript (position du clic).
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-ctx-menu {
+  position: fixed;
+  background: #fff;
+  border: 1px solid #ccc;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: 6px;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  z-index: 99997;
+  font-family: sans-serif;
+  font-size: 0.9em;
+  min-width: 200px;
+}
+
+/*- Élément du menu contextuel */
+.ao3h-ctx-item {
+  padding: 7px 16px;
+  cursor: pointer;
+}
+
+/*- Item au survol */
+.ao3h-ctx-item:hover {
+  background: #f0f4f8;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    PANNEAU DE QUEUE DE TÉLÉCHARGEMENT
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ display est contrôlé dynamiquement par JavaScript.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-queue-panel {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #fff;
+
+  /*- 🎨 Bordure bleue — voir SECTION 00 */
+  border: 2px solid var(--ao3h-fdl-color-primary);
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius-lg);
+
+  padding: 14px 18px;
+  min-width: 280px;
+  max-width: 340px;
+  max-height: 360px;
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 99996;
+  font-family: sans-serif;
+  font-size: 0.88em;
+
+  /*- ⚠️ Contrôlé par JavaScript */
+  display: none;
+}
+
+.ao3h-queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-weight: bold;
+
+  /*- 🎨 Couleur bleue — voir SECTION 00 */
+  color: var(--ao3h-fdl-color-primary);
+}
+
+.ao3h-queue-btn-row {
+  display: flex;
+  gap: 6px;
+}
+
+.ao3h-queue-pause-btn {
+  padding: 2px 8px;
+  background: #f0ad4e;
+  color: #fff;
+  border: none;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: 3px;
+
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+.ao3h-queue-clear-btn {
+  padding: 2px 8px;
+
+  /*- 🔴 Fond rouge — voir SECTION 00 */
+  background: var(--ao3h-fdl-color-danger);
+
+  color: #fff;
+  border: none;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: 3px;
+
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+.ao3h-queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ao3h-queue-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9em;
+}
+
+.ao3h-queue-item-label {
+  flex: 1;
+}
+
+.ao3h-queue-cancel-btn {
+  padding: 1px 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 0.9em;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON TÉLÉCHARGER LA SÉRIE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-series-dl-btn {
+  display: block;
+  margin: 12px 0;
+  padding: 9px 18px;
+
+  /*- 🎨 Fond bleu — voir SECTION 00 */
+  background: var(--ao3h-fdl-color-primary);
+
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.95em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+/*- Bouton série au survol */
+.ao3h-series-dl-btn:hover {
+  background: var(--ao3h-fdl-color-dark);
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON CALIBRE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-calibre-btn {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 4px 10px;
+  background: #5bc0de;
+  color: #fff;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  font-size: 0.85em;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+
+/*=======
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 09 — OFFLINE LIBRARY
+  ───────────────────────────────────────────────────────────────────────
+    Boutons injectés par OfflineLibrary sur les pages work.
+    ⚠️ background change dynamiquement selon l'état (cached / saving / failed).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ─────────────────────────────────────────────────────────
+    BOUTON SAVE OFFLINE
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ background géré dynamiquement (cached / not cached / saving / failed).
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-offline-save-btn {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 4px 10px;
+  color: #fff;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  font-size: 0.85em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.2s;
+}
+
+/*- Survol du bouton Save Offline */
+.ao3h-offline-save-btn:hover {
+  filter: brightness(0.85);
+}
+
+
+/*+ ─────────────────────────────────────────────────────────
+    BOUTON READ OFFLINE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-offline-read-btn {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 4px 10px;
+  background: #7b5ea7;
+  color: #fff;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  font-size: 0.85em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.2s;
+}
+
+/*- Survol du bouton Read Offline */
+.ao3h-offline-read-btn:hover {
+  filter: brightness(0.85);
+}

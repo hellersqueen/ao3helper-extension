@@ -27,6 +27,8 @@ AO3 Helper - User History Filters Submodule
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+
 export class UserHistoryFilters {
   constructor ({ NS, cfg, W, AO3H }) {
     this.NS   = NS;
@@ -36,9 +38,7 @@ export class UserHistoryFilters {
   }
 
   _workIdFromBlurb (blurb) {
-    const a = blurb.querySelector('h4.heading > a[href*="/works/"]');
-    const m = (a?.getAttribute('href') || '').match(/\/works\/(\d+)/);
-    return m ? m[1] : null;
+    return extractWorkIdFromBlurb(blurb);
   }
 
   _getHiddenReasons (blurb, workId) {

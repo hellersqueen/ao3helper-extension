@@ -1,0 +1,568 @@
+/*: ═══════════════════════════════════════════════════════════════
+      VISUAL PREFERENCES — Injected UI Styles
+        Contrôle toutes les règles CSS injectées par le module
+        Visual Preferences (masquage de stats, dates, header
+        minimal, format d'affichage des stats).
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ────────────────────────────────────────────────────────────── 
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ────────────────────────────────────────────────────────────── 
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🙈 Les règles qui masquent les compteurs (mots, kudos, etc.)
+        │     → SECTION 01 — STATS VISIBILITY
+        │     → classes : .ao3h-hide-wc, .ao3h-hide-kudos, etc.
+
+        ├─  📅 Les règles qui masquent les dates
+        │     → SECTION 02 — DATES & TIMESTAMPS
+        │     → classes : .ao3h-hide-pub-date, .ao3h-hide-upd-date, etc.
+
+        ├─  📖 Les règles qui masquent les stats dans la liste des chapitres
+        │     → SECTION 03 — CHAPTERS LIST STATS
+        │     → classe : .ao3h-hide-chap-stats
+
+        ├─  🗜️ Les règles du mode header minimal
+        │     → SECTION 04 — MINIMAL HEADER
+        │     → classe : .ao3h-minimal-header
+
+        ├─  🔢 Les icônes de remplacement des labels stats
+        │     → SECTION 05 — STATS DISPLAY FORMAT
+        │     → classes : .ao3h-stats-as-icons, .ao3h-stats-icons-text
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*###      ├─  01. Stats Visibility                          */
+/*#        |                                                 */
+/*####     ├─  02. Dates & Timestamps                        */
+/*#        |                                                 */
+/*=        ├─  03. Chapters List Stats                       */
+/*#        |                                                 */
+/*==       ├─  04. Minimal Header                            */
+/*#        |                                                 */
+/*===      └─  05. Stats Display Format                      */
+/*#             |                                            */
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — STATS VISIBILITY
+  ───────────────────────────────────────────────────────────────────────
+    Masque les compteurs d'engagement (mots, kudos, commentaires,
+    bookmarks, hits, résumés) sur les listings et pages d'œuvres.
+    ⚠️ Les classes sont ajoutées/retirées par statsVisibility.js
+       via document.documentElement.classList.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    NOMBRE DE MOTS
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-wc gérée par statsVisibility.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-wc dl.stats dd.words,
+html.ao3h-hide-wc .stats .words,
+html.ao3h-hide-wc li.words,
+html.ao3h-hide-wc span.words,
+html.ao3h-hide-wc dt.words + dd {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    KUDOS
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-kudos gérée par statsVisibility.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-kudos dl.stats dd.kudos,
+html.ao3h-hide-kudos .stats .kudos,
+html.ao3h-hide-kudos li.kudos,
+html.ao3h-hide-kudos span.kudos,
+html.ao3h-hide-kudos dt.kudos + dd {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    COMMENTAIRES
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-comments gérée par statsVisibility.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-comments dl.stats dd.comments,
+html.ao3h-hide-comments .stats .comments,
+html.ao3h-hide-comments li.comments,
+html.ao3h-hide-comments span.comments,
+html.ao3h-hide-comments dt.comments + dd,
+html.ao3h-hide-comments .comments a {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOOKMARKS
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-bookmarks gérée par statsVisibility.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-bookmarks dl.stats dd.bookmarks,
+html.ao3h-hide-bookmarks .stats .bookmarks,
+html.ao3h-hide-bookmarks li.bookmarks,
+html.ao3h-hide-bookmarks span.bookmarks,
+html.ao3h-hide-bookmarks dt.bookmarks + dd,
+html.ao3h-hide-bookmarks .bookmarks a {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    HITS / VISITES
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-hits gérée par statsVisibility.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-hits dl.stats dd.hits,
+html.ao3h-hide-hits .stats .hits,
+html.ao3h-hide-hits li.hits,
+html.ao3h-hide-hits span.hits,
+html.ao3h-hide-hits dt.hits + dd {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    RÉSUMÉS
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-summaries gérée par statsVisibility.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-summaries .blurb .summary,
+html.ao3h-hide-summaries .blurb blockquote.userstuff.summary,
+html.ao3h-hide-summaries .blurb blockquote.userstuff,
+html.ao3h-hide-summaries li.blurb .summary,
+html.ao3h-hide-summaries ol.work .summary {
+  display: none !important;
+}
+
+
+/*####  
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — DATES & TIMESTAMPS
+  ───────────────────────────────────────────────────────────────────────
+    Masque les dates de publication, mise à jour et complétion
+    sur les blurbs et pages d'œuvres.
+    ⚠️ Les classes sont ajoutées/retirées par datesTimestamps.js
+       via document.documentElement.classList.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    DATE DE PUBLICATION
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-pub-date gérée par datesTimestamps.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-pub-date dt.published,
+html.ao3h-hide-pub-date dd.published,
+html.ao3h-hide-pub-date li.published,
+html.ao3h-hide-pub-date dt.published + dd {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    DATE DE MISE À JOUR
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-upd-date gérée par datesTimestamps.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-upd-date p.datetime,
+html.ao3h-hide-upd-date dt.status,
+html.ao3h-hide-upd-date dd.status,
+html.ao3h-hide-upd-date li.status,
+html.ao3h-hide-upd-date dt.status + dd {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    DATE DE COMPLÉTION
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-comp-date gérée par datesTimestamps.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-comp-date dt.completed,
+html.ao3h-hide-comp-date dd.completed,
+html.ao3h-hide-comp-date li.completed,
+html.ao3h-hide-comp-date dt.completed + dd {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    DATES DANS LA LISTE DES CHAPITRES
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-chap-dates gérée par datesTimestamps.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-chap-dates #chapters dt.published,
+html.ao3h-hide-chap-dates #chapters .datetime,
+html.ao3h-hide-chap-dates #chapters span.datetime,
+html.ao3h-hide-chap-dates #chapters .published {
+  display: none !important;
+}
+
+
+/*=     
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — CHAPTERS LIST STATS
+  ───────────────────────────────────────────────────────────────────────
+    Masque les statistiques (mots, commentaires, dates) dans
+    la liste des chapitres d'une œuvre.
+    ⚠️ La classe est ajoutée/retirée par statsOnChaptersList.js
+       via document.documentElement.classList.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    MOTS DANS LA LISTE DES CHAPITRES
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-hide-chap-stats gérée par statsOnChaptersList.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-chap-stats #chapters .words,
+html.ao3h-hide-chap-stats #chapters span.words,
+html.ao3h-hide-chap-stats #chapters li .words {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    COMMENTAIRES DANS LA LISTE DES CHAPITRES
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-chap-stats #chapters .comments,
+html.ao3h-hide-chap-stats #chapters span.comments,
+html.ao3h-hide-chap-stats #chapters li .comments,
+html.ao3h-hide-chap-stats #chapters .comments a {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    DATES DANS LA LISTE DES CHAPITRES
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-chap-stats #chapters .datetime,
+html.ao3h-hide-chap-stats #chapters span.datetime,
+html.ao3h-hide-chap-stats #chapters li .datetime {
+  display: none !important;
+}
+
+
+/*==    
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — MINIMAL HEADER
+  ───────────────────────────────────────────────────────────────────────
+    Masque les méta-données secondaires dans l'en-tête d'une œuvre
+    (dates, mots, chapitres, langue) pour un affichage épuré.
+    ⚠️ La classe est ajoutée/retirée par minimalHeader.js
+       via document.documentElement.classList.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    DATES PUBLISHED / STATUS DANS L'EN-TÊTE DE L'ŒUVRE
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Classe .ao3h-minimal-header gérée par minimalHeader.js
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-minimal-header .work .preface .meta .published,
+html.ao3h-minimal-header .work .preface .meta .status {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    MOTS DANS L'EN-TÊTE
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-minimal-header .work .preface .meta .words,
+html.ao3h-minimal-header .work .preface .meta dt.words,
+html.ao3h-minimal-header .work .preface .meta dt.words + dd {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    CHAPITRES DANS L'EN-TÊTE
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-minimal-header .work .preface .meta .chapters,
+html.ao3h-minimal-header .work .preface .meta dt.chapters,
+html.ao3h-minimal-header .work .preface .meta dt.chapters + dd {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    LANGUE DANS L'EN-TÊTE
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-minimal-header .work .preface .meta .language,
+html.ao3h-minimal-header .work .preface .meta dt.language,
+html.ao3h-minimal-header .work .preface .meta dt.language + dd {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    SÉPARATEUR GRIS AU-DESSUS DES TAGS
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-minimal-header .work .preface .meta .separator {
+  display: none !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    SÉLECTEURS ALTERNATIFS (skins AO3 différents)
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-minimal-header #workskin .work.meta .published,
+html.ao3h-minimal-header #workskin .work.meta .status,
+html.ao3h-minimal-header #workskin .work.meta .words,
+html.ao3h-minimal-header #workskin .work.meta .chapters,
+html.ao3h-minimal-header #workskin .work.meta .language {
+  display: none !important;
+}
+
+
+/*===   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — STATS DISPLAY FORMAT
+  ───────────────────────────────────────────────────────────────────────
+    Remplace les labels textuels des stats par des emojis.
+    Deux modes :
+      • icons-only  → label caché, emoji seul
+      • icons+text  → emoji préfixé devant le label texte
+    ⚠️ Les classes sont ajoutées/retirées par statsDisplayFormat.js
+       via document.documentElement.classList.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BASE — PSEUDO-ÉLÉMENT ::before (commun aux deux modes)
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ S'applique dès que ao3h-stats-as-icons est sur <html>
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-stats-as-icons dl.stats dt::before {
+  font-size: 1rem;
+  display: inline-block;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    MODE ICONS-ONLY — Masque le label texte
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ :not(.ao3h-stats-icons-text) exclut le mode icons+text
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt {
+  font-size: 0;
+  white-space: nowrap;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    MODE ICONS-ONLY — Contenu des emojis (sans espace)
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt.words::before     { content: "📝"; }
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt.chapters::before  { content: "📖"; }
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt.language::before  { content: "🌐"; }
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt.collections::before { content: "📚"; }
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt.published::before { content: "📅"; }
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt.status::before    { content: "🔄"; }
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt.comments::before  { content: "💬"; }
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt.kudos::before     { content: "❤️"; }
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt.bookmarks::before { content: "🔖"; }
+.ao3h-stats-as-icons:not(.ao3h-stats-icons-text) dl.stats dt.hits::before      { content: "👁"; }
+
+
+/*+ ───────────────────────────────────────────────────────────
+    MODE ICONS+TEXT — Contenu des emojis (avec espace)
+  ─────────────────────────────────────────────────────────────
+      └─ Le label texte reste visible, l'emoji est préfixé
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-stats-as-icons.ao3h-stats-icons-text dl.stats dt.words::before     { content: "📝 "; }
+.ao3h-stats-as-icons.ao3h-stats-icons-text dl.stats dt.chapters::before  { content: "📖 "; }
+.ao3h-stats-as-icons.ao3h-stats-icons-text dl.stats dt.language::before  { content: "🌐 "; }
+.ao3h-stats-as-icons.ao3h-stats-icons-text dl.stats dt.collections::before { content: "📚 "; }
+.ao3h-stats-as-icons.ao3h-stats-icons-text dl.stats dt.published::before { content: "📅 "; }
+.ao3h-stats-as-icons.ao3h-stats-icons-text dl.stats dt.status::before    { content: "🔄 "; }
+.ao3h-stats-as-icons.ao3h-stats-icons-text dl.stats dt.comments::before  { content: "💬 "; }
+.ao3h-stats-as-icons.ao3h-stats-icons-text dl.stats dt.kudos::before     { content: "❤️ "; }
+.ao3h-stats-as-icons.ao3h-stats-icons-text dl.stats dt.bookmarks::before { content: "🔖 "; }
+.ao3h-stats-as-icons.ao3h-stats-icons-text dl.stats dt.hits::before      { content: "👁 "; }
+
+
+/*====  
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — HOVER REVEAL
+  ───────────────────────────────────────────────────────────────────────
+    Révèle brièvement les stats/dates masquées quand l'utilisateur
+    survole un blurb. Les règles sont toujours présentes mais n'ont
+    d'effet que si la classe de masquage correspondante est sur <html>.
+    ⚠️ Ces règles remplacent l'ancienne injection dynamique de hoverReveal.js
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    MOTS (hover)
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Actif uniquement si .ao3h-hide-wc est sur <html>
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-wc li.blurb:hover .words {
+  display: revert !important;
+  opacity: 0.65 !important;
+  transition: opacity 0.15s !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    KUDOS (hover)
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Actif uniquement si .ao3h-hide-kudos est sur <html>
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-kudos li.blurb:hover .kudos {
+  display: revert !important;
+  opacity: 0.65 !important;
+  transition: opacity 0.15s !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    COMMENTAIRES (hover)
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Actif uniquement si .ao3h-hide-comments est sur <html>
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-comments li.blurb:hover .comments {
+  display: revert !important;
+  opacity: 0.65 !important;
+  transition: opacity 0.15s !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOOKMARKS (hover)
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Actif uniquement si .ao3h-hide-bookmarks est sur <html>
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-bookmarks li.blurb:hover .bookmarks {
+  display: revert !important;
+  opacity: 0.65 !important;
+  transition: opacity 0.15s !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    HITS (hover)
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Actif uniquement si .ao3h-hide-hits est sur <html>
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-hits li.blurb:hover .hits {
+  display: revert !important;
+  opacity: 0.65 !important;
+  transition: opacity 0.15s !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    DATE DE PUBLICATION (hover)
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Actif uniquement si .ao3h-hide-pub-date est sur <html>
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-pub-date li.blurb:hover .published {
+  display: revert !important;
+  opacity: 0.65 !important;
+  transition: opacity 0.15s !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    DATE DE MISE À JOUR (hover)
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Actif uniquement si .ao3h-hide-upd-date est sur <html>
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-upd-date li.blurb:hover p.datetime,
+html.ao3h-hide-upd-date li.blurb:hover .status {
+  display: revert !important;
+  opacity: 0.65 !important;
+  transition: opacity 0.15s !important;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    DATE DE COMPLÉTION (hover)
+  ─────────────────────────────────────────────────────────────
+      └─ ⚠️ Actif uniquement si .ao3h-hide-comp-date est sur <html>
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-hide-comp-date li.blurb:hover .completed {
+  display: revert !important;
+  opacity: 0.65 !important;
+  transition: opacity 0.15s !important;
+}
+
+
+/*====  
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 07 — FANDOM HIGHLIGHTING
+  ───────────────────────────────────────────────────────────────────────
+    Style structurel des tags de fandom mis en valeur.
+    La couleur de fond est appliquée en inline style (définie par
+    l'utilisateur, par fandom). Ces règles gèrent uniquement les
+    propriétés fixes.
+    ⚠️ Classe ajoutée/retirée par fandomHighlighting.js
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────────────────
+    TAG FANDOM MIS EN VALEUR
+  ─────────────────────────────────────────────────────────────────────────
+      └─ ⚠️ background-color défini en inline style (couleur utilisateur)
+  ───────────────────────────────────────────────────────────────────────── */
+
+.ao3h-fandom-highlight {
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-weight: 600;
+}

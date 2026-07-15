@@ -24,6 +24,7 @@ import { downloadJSON, downloadFile } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -67,7 +68,7 @@ function calcStreak (seen) {
 }
 
 function recordTropes (stats) {
-  const workId = location.pathname.match(/^\/works\/(\d+)/)?.[1];
+  const workId = extractWorkIdFromHref(location.pathname);
   if (workId) {
     const seen = loadSeen();
     if (seen.some(e => (typeof e === 'object' ? e.id : e) === workId)) {

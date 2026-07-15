@@ -74,6 +74,7 @@ AO3 Helper - Complete Page Download Submodule
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 const W = getGlobalWindow();
 
@@ -116,9 +117,8 @@ export class CompletePageDownload {
   _getWorkInfo (blurb) {
     const titleLink  = blurb.querySelector('h4.heading > a');
     const authorLink = blurb.querySelector('a[rel="author"]');
-    const match      = titleLink?.href?.match(/\/works\/(\d+)/);
     return {
-      workId: match ? match[1] : null,
+      workId: extractWorkIdFromHref(titleLink?.href),
       title:  titleLink?.textContent.trim()  || 'Untitled',
       author: authorLink?.textContent.trim() || 'Anonymous',
     };

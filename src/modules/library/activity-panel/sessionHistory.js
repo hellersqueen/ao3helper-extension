@@ -8,6 +8,7 @@ AO3 Helper — Activity Panel › SessionHistory sub-module
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 const MOD = 'sessionHistory';
 
@@ -25,8 +26,8 @@ function saveSessions (sessions) {
 }
 
 function getWorkMeta () {
-  const match = location.pathname.match(/\/works\/(\d+)/);
-  if (!match) return null;
+  const workId = extractWorkIdFromHref(location.pathname);
+  if (!workId) return null;
   const title = document.querySelector('h2.title')?.textContent.trim() ||
                 document.title.split('|')[0].trim();
   const fandomTags = [...document.querySelectorAll('.fandom.tags a')]
@@ -34,7 +35,7 @@ function getWorkMeta () {
   const words = parseInt(
     (document.querySelector('.stats dd.words')?.textContent || '0').replace(/,/g, ''), 10
   ) || 0;
-  return { workId: match[1], title, fandoms: fandomTags, words };
+  return { workId, title, fandoms: fandomTags, words };
 }
 
 function startSession (meta) {

@@ -1,0 +1,279 @@
+/*: ═══════════════════════════════════════════════════════════════
+      THEME BUILDER — Injected UI Styles
+        Contrôle l'apparence de l'interface injectée
+        par le module Theme Builder (panel partagé, éditeur CSS,
+        gestion des thèmes, inspecteur visuel).
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ────────────────────────────────────────────────────────────── 
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ────────────────────────────────────────────────────────────── 
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  📦 Le panel partagé (fond, taille, position, boutons)
+        │     → SECTION 00 — PANEL PARTAGÉ
+        │     → .ao3h-tb-panel, .ao3h-tb-btn, .ao3h-tb-trigger
+
+        ├─  ✏️ L'éditeur CSS (zone de texte, highlighting, presets)
+        │     → SECTION 01 — ÉDITEUR CSS
+        │     → .ao3h-tb-editor-wrap, .ao3h-tb-preset-list
+
+        ├─  🎨 La liste des thèmes
+        │     → SECTION 02 — GESTION DES THÈMES
+        │     → .ao3h-tb-theme-item, .ao3h-tb-theme-active
+
+        ├─  🔍 L'inspecteur visuel (surlignage au survol)
+        │     → SECTION 03 — INSPECTEUR VISUEL
+        │     → .ao3h-tb-inspector-highlight
+
+    ────────────────────────────────────────────────────────────── */
+
+
+/* ─────────────────────────────────────────────────────────────────
+   SECTION 00 — PANEL PARTAGÉ
+   Styles communs à tous les sous-modules (panel, boutons, trigger).
+   Extrait de _themeBuilder.js → injectSharedStyles()
+───────────────────────────────────────────────────────────────── */
+
+.ao3h-tb-panel {
+  position: fixed; top: 60px; right: 16px; z-index: 8100;
+  background: #fff; border: 2px solid #333; border-radius: 10px;
+  padding: 14px 16px; width: 300px; max-height: 80vh;
+  overflow-y: auto; box-shadow: 0 6px 24px rgba(0,0,0,.25);
+  font-size: .84em;
+}
+.ao3h-tb-panel h4 {
+  margin: 0 0 10px; font-size: .95em; color: #333;
+}
+.ao3h-tb-panel label { display: block; margin: 6px 0 2px; font-size: .82em; color: #555; }
+.ao3h-tb-panel input[type="color"] { width: 40px; height: 24px; padding: 0; border: 1px solid #ccc; cursor: pointer; }
+.ao3h-tb-panel input[type="range"] { width: 100%; }
+.ao3h-tb-panel textarea {
+  width: 100%; box-sizing: border-box; height: 120px;
+  font-family: monospace; font-size: .8em;
+  border: 1px solid #ccc; border-radius: 4px;
+  padding: 6px; resize: vertical;
+}
+.ao3h-tb-panel-close {
+  position: absolute; top: 8px; right: 12px;
+  background: none; border: none; font-size: 1em;
+  color: #999; cursor: pointer; padding: 0;
+}
+.ao3h-tb-panel-close:hover { color: #333; }
+.ao3h-tb-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.ao3h-tb-btn {
+  font-size: .75em; padding: 4px 10px; border-radius: 10px;
+  border: 1px solid #555; color: #333; background: transparent; cursor: pointer;
+}
+.ao3h-tb-btn:hover { background: #333; color: #fff; }
+.ao3h-tb-btn.primary { border-color: #900; color: #900; }
+.ao3h-tb-btn.primary:hover { background: #900; color: #fff; }
+.ao3h-tb-section { margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee; }
+.ao3h-tb-section-title { font-weight: bold; font-size: .78em; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+.ao3h-tb-trigger {
+  position: fixed; bottom: 60px; right: 16px; z-index: 8099;
+  background: #333; color: #fff; border: none; border-radius: 20px;
+  padding: 6px 14px; font-size: .78em; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.ao3h-tb-trigger:hover { background: #111; }
+select.ao3h-tb-select {
+  width: 100%; font-size: .82em; padding: 3px 6px;
+  border: 1px solid #ccc; border-radius: 4px; margin-top: 4px;
+}
+.ao3h-tb-value-label { font-size: .75em; color: #888; margin-left: 4px; }
+
+
+/* ─────────────────────────────────────────────────────────────────
+   SECTION 01 — ÉDITEUR CSS
+   Styles de la zone d'édition avec syntax highlighting (customStyling).
+   Extrait de customStyling.js → EDITOR_CSS
+   ⚠️ Le textarea et le pre se superposent — ne pas modifier position/inset.
+───────────────────────────────────────────────────────────────── */
+
+.ao3h-tb-editor-wrap {
+  position: relative;
+  height: 180px;
+  margin-bottom: 6px;
+}
+.ao3h-tb-editor-wrap pre,
+.ao3h-tb-editor-wrap textarea {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  font: 12px/1.5 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 3px;
+}
+.ao3h-tb-editor-wrap pre {
+  background: #1a1a1a;
+  color: #d4d4d4;
+  pointer-events: none;
+  border: 1px solid #444;
+}
+.ao3h-tb-editor-wrap textarea {
+  background: transparent;
+  color: transparent;
+  caret-color: #e0e0e0;
+  resize: none;
+  border: 1px solid #555;
+  outline: none;
+  z-index: 1;
+  -webkit-text-fill-color: transparent;
+}
+.ao3h-tb-editor-wrap textarea:focus {
+  border-color: #900;
+  box-shadow: 0 0 0 1px #900;
+}
+.ao3h-tb-css-status {
+  font-size: 11px;
+  min-height: 16px;
+  padding: 2px 0;
+}
+.ao3h-tb-css-ok   { color: #4ec94e; }
+.ao3h-tb-css-warn { color: #f0a030; }
+.ao3h-tb-preset-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  max-height: 100px;
+  overflow-y: auto;
+}
+.ao3h-tb-preset-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 12px;
+}
+.ao3h-tb-preset-list button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 1;
+  color: #888;
+}
+.ao3h-tb-preset-list button:hover { color: #f44; }
+.ao3h-tb-preset-tag {
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: #333;
+  color: #aaa;
+}
+.ao3h-tb-preset-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#ao3h-tb-js-notice   { font-size: 11px; padding: 2px 0; }
+#ao3h-tb-pages-row   { gap: 6px 12px; }
+#ao3h-tb-pages-note  { font-size: 11px; color: #888; padding: 2px 0 4px; }
+#ao3h-tb-priority    { width: 54px; }
+#ao3h-tb-priority-row  { gap: 8px; }
+.ao3h-tb-label--nowrap { white-space: nowrap; }
+.ao3h-tb-hint          { font-size: 11px; color: #888; }
+.ao3h-tb-muted         { color: #666; }
+
+
+/* ─────────────────────────────────────────────────────────────────
+   SECTION 02 — GESTION DES THÈMES
+   Styles de la liste de thèmes (themeManagement).
+   Extrait de themeManagement.js → PANEL_CSS
+───────────────────────────────────────────────────────────────── */
+
+.ao3h-tb-theme-item {
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 6px;
+}
+.ao3h-tb-theme-active  { border-color: #900 !important; }
+.ao3h-tb-theme-header  { display: flex; align-items: baseline; gap: 6px; margin-bottom: 2px; flex-wrap: wrap; }
+.ao3h-tb-theme-name    { font-weight: bold; font-size: 13px; }
+.ao3h-tb-theme-author  { font-size: 11px; color: #888; }
+.ao3h-tb-theme-badge          { font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #900; color: #fff; }
+.ao3h-tb-theme-badge--preview { background: #665500; }
+.ao3h-tb-theme-desc    { font-size: 11px; color: #aaa; margin: 2px 0 4px; }
+/* Preview notice */
+#ao3h-tb-preview-notice {
+  background: #332200; color: #ffcc44;
+  padding: 4px 8px; border-radius: 3px;
+  margin-bottom: 8px; font-size: 12px;
+}
+#ao3h-tb-preview-notice .ao3h-tb-btn { float: right; padding: 1px 6px; font-size: 11px; }
+/* New-theme / edit-theme form */
+#ao3h-tb-new-theme-form { margin-top: 6px; }
+.ao3h-tb-input { width: 100%; box-sizing: border-box; margin-bottom: 4px; }
+#ao3h-tb-nt-desc,
+.ao3h-tb-panel [data-field="description"] { resize: vertical; font-family: inherit; }
+#ao3h-tb-nt-css,
+.ao3h-tb-panel [data-field="css"]         { font-family: 'Courier New', monospace; resize: vertical; }
+/* Hidden file input */
+#ao3h-tb-import-file { display: none; }
+/* Themes trigger — stacked above CSS trigger */
+.ao3h-tb-trigger--themes { bottom: 122px; }
+/* Utility modifiers (themeManagement) */
+.ao3h-tb-empty-notice        { font-size: .8em; opacity: .6; }
+.ao3h-tb-row--compact        { gap: 4px; margin-top: 4px; }
+.ao3h-tb-row--center         { align-items: center; }
+.ao3h-tb-btn--sm             { padding: 2px 8px; }
+.ao3h-tb-btn--danger         { color: #c00; border-color: #c00; }
+.ao3h-tb-section-title--flex { flex: 1; margin: 0; }
+
+
+/* ─────────────────────────────────────────────────────────────────
+   SECTION 03 — INSPECTEUR VISUEL
+   Surlignage de l'élément survolé en mode inspecteur (visualBuilder).
+   Extrait de visualBuilder.js → inspectorHighlight.style.cssText
+   ⚠️ top/left/width/height restent pilotés par le JS (position dynamique).
+───────────────────────────────────────────────────────────────── */
+
+.ao3h-tb-inspector-highlight {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  border: 2px solid #f00;
+  background: rgba(255,0,0,.07);
+  transition: all .1s;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────
+   SECTION 04 — SYSTÈME TYPOGRAPHIQUE
+   Styles du panel de typographie (typographySystem).
+───────────────────────────────────────────────────────────────── */
+
+#ao3h-tb-font-family,
+#ao3h-tb-font-family-heading {
+  width: 100%; box-sizing: border-box;
+  font-size: .82em; padding: 3px 6px;
+  border: 1px solid #ccc; border-radius: 4px;
+}
+/* Typography trigger — stacked above Themes trigger */
+.ao3h-tb-trigger--typography { bottom: 154px; }
+
+#ao3h-vb-selector {
+  width: 100%; box-sizing: border-box;
+  font-size: .78em; padding: 3px 6px;
+  border: 1px solid #ccc; border-radius: 4px;
+  font-family: monospace;
+}
+.ao3h-vb-color-row       { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.ao3h-vb-color-row-label { font-size: .8em; }
+/* Visual Builder trigger — stacked above Typography trigger */
+.ao3h-tb-trigger--visual { bottom: 186px; }

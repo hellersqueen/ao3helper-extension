@@ -24,6 +24,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import styles from './fanficBingeMode.css?inline';
 
 css(styles, 'ao3h-fanficBingeMode');
@@ -58,8 +59,7 @@ function isListPage ()  {
          /^\/collections\/[^/]+\/works/.test(location.pathname);
 }
 function getWorkId () {
-  const m = location.pathname.match(/\/works\/(\d+)/);
-  return m ? m[1] : null;
+  return extractWorkIdFromHref(location.pathname);
 }
 
 // ── Last-chapter detection ────────────────────────────────────────────────

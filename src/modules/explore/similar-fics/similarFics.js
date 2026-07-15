@@ -17,6 +17,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { getHistoryWorkIdSet } from '../../../../lib/storage/keys.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import styles from './similarFics.css?inline';
 
 css(styles, 'ao3h-similarFics');
@@ -229,8 +230,7 @@ function collectSimilarityInfo() {
 
 // Extract the current work ID from the URL.
 function getCurrentWorkId() {
-  const m = W.location.pathname.match(/\/works\/(\d+)/);
-  return m ? m[1] : null;
+  return extractWorkIdFromHref(W.location.pathname);
 }
 
 // Build a URL for an author's works page sorted by kudos.

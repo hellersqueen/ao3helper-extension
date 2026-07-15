@@ -30,6 +30,7 @@ import { register } from '../../../core/lifecycle.js';
 import { detectUser } from '../../../../lib/utils/user-detector.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
+import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import styles from './readingDashboard.css?inline';
 
 css(styles, 'ao3h-readingDashboard');
@@ -123,9 +124,7 @@ function isHomePage() {
 // ───────────────────────────────────────────────────────────────
 
 function getWorkIdFromLocation() {
-  const path = W.location.pathname || '';
-  const match = path.match(/\/works\/(\d+)/);
-  return match ? match[1] : null;
+  return extractWorkIdFromHref(W.location.pathname);
 }
 
 function getWorkTitle() {
