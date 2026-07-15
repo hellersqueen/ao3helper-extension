@@ -44,6 +44,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { KEY_RT_HISTORY, KEY_BOOKMARK_VAULT_DATA, KEY_LATER_SHELF_ITEMS } from '../../../../lib/storage/keys.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { sendNotification, requestNotifyPermission } from '../../../../lib/utils/notifications.js';
 import styles from './notificationCenter.css?inline';
 
 css(styles, 'ao3h-notificationCenter');
@@ -438,7 +439,7 @@ register(MOD, {
     if (typeof Notification === 'undefined') return;
     function fire () {
       if (active === false) return;
-      new Notification(title, { body: body, tag: 'ao3h-notif' }); // eslint-disable-line no-new
+      sendNotification(title, { body: body, tag: 'ao3h-notif' });
       if (cfg('soundEffects')) {
         try {
           var ctx  = new (W.AudioContext || W.webkitAudioContext)();
@@ -459,11 +460,7 @@ register(MOD, {
         } catch (_) {}
       }
     }
-    if (Notification.permission === 'granted') {
-      fire();
-    } else if (Notification.permission !== 'denied') {
-      Notification.requestPermission().then(function (p) { if (p === 'granted' && active) fire(); });
-    }
+    requestNotifyPermission().then(function (ok) { if (ok && active) fire(); });
   }
 
   // ── Schedule auto-refresh every 15 min ──────────────────────────────────────────────────

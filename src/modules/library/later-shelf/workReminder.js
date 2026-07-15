@@ -28,6 +28,7 @@ AO3 Helper - Work Reminders Submodule
 import { register } from '../../../core/lifecycle.js';
 import { cfg } from './laterShelfStore.js';
 import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { sendNotification, requestNotifyPermission } from '../../../../lib/utils/notifications.js';
 
 const MOD = 'workReminder';
 const D   = document;
@@ -66,17 +67,14 @@ register(MOD, {
 
   // ── Notification dispatch ────────────────────────────────────────────────
   function notify (title, body) {
-    if (!('Notification' in window)) return;
-    if (Notification.permission === 'granted') {
-      new Notification('AO3 Helper — Reminder', { body: title + '\n' + body, icon: 'https://archiveofourown.org/favicon.ico' });
-    }
+    sendNotification('AO3 Helper — Reminder', {
+      body: title + '\n' + body,
+      icon: 'https://archiveofourown.org/favicon.ico',
+    });
   }
 
   function requestPermission (cb) {
-    if (!('Notification' in window)) { cb(false); return; }
-    if (Notification.permission === 'granted') { cb(true); return; }
-    if (Notification.permission === 'denied') { cb(false); return; }
-    Notification.requestPermission().then(function (p) { cb(p === 'granted'); });
+    requestNotifyPermission().then(cb);
   }
 
   // ── Check due reminders ──────────────────────────────────────────────────
