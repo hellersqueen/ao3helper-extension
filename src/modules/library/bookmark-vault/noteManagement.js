@@ -1,4 +1,5 @@
 import { register } from '../../../core/lifecycle.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const MOD = 'noteManagement';
 const NS  = 'ao3h';
@@ -75,8 +76,7 @@ register(MOD, {
   addWordCounters();
   injectNotesSearch();
 
-  const obs = new MutationObserver(addWordCounters);
-  obs.observe(document.body, { childList: true, subtree: true });
+  const obs = observe(document.body, { childList: true, subtree: true }, addWordCounters);
 
   return () => {
     obs.disconnect();

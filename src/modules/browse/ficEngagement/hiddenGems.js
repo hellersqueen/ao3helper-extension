@@ -25,6 +25,8 @@ const DATA_ATTR     = 'ao3hGemChecked';
 const MIN_HITS      = 50;
 const MIN_KUDOS     = 5;
 const MIN_RATIO     = 0.05;  // 5%
+import { observe } from '../../../../lib/utils/index.js';
+
 const MAX_KUDOS     = 100;
 const MAX_BOOKMARKS = 10;
 
@@ -130,11 +132,9 @@ export class HiddenGems {
       if (this._isGem(stats)) this._attachToWorkPage(stats);
     }
 
-    const mo = new MutationObserver(() => this._scan());
-    mo.observe(document.querySelector('#main') || document.body, {
+    this._mo = observe(document.querySelector('#main') || document.body, {
       childList: true, subtree: true,
-    });
-    this._mo = mo;
+    }, () => this._scan());
   }
 
   /* ── cleanup ────────────────────────────────────────────────────── */

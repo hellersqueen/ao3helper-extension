@@ -13,6 +13,7 @@ AO3 Helper — Status Indicators
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { extractWorkIdFromBlurb, isListingPage } from '../../../../../lib/ao3/parsers.js';
+import { observe } from '../../../../../lib/utils/index.js';
 
 const D = document;
 const SK_DATA = 'ao3h:bookmarkVault:data';
@@ -222,12 +223,11 @@ export class StatusIndicators {
     if (this._isBookmarksPage()) this._scanAndCache();
     if (this._isListingPage()) {
       this._processBlurbs(D.querySelectorAll('li.work.blurb, li.bookmark.blurb'));
-      const obs = new MutationObserver(() => {
+      const obs = observe(D.getElementById('main') || D.body, { childList: true, subtree: true }, () => {
         this._processBlurbs(D.querySelectorAll(
           'li.work.blurb:not([data-bv-si-done]), li.bookmark.blurb:not([data-bv-si-done])'
         ));
       });
-      obs.observe(D.getElementById('main') || D.body, { childList: true, subtree: true });
       this._obs.push(obs);
       if (this.cfg('bookmarkStatusFilterEnabled')) this._injectStatusFilter();
     }

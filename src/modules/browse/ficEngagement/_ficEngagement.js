@@ -19,7 +19,7 @@
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, observe } from '../../../../lib/utils/index.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import styles from './ficEngagement.css?inline';
 
@@ -54,10 +54,9 @@ register(MOD, {
   /* ── Observer ──────────────────────────────────────────────────────── */
   metrics.scan();
   metrics.processWorkPage();
-  const mo = new MutationObserver(() => metrics.scan());
-  mo.observe(document.querySelector('#main') || document.body, {
+  const mo = observe(document.querySelector('#main') || document.body, {
     childList: true, subtree: true,
-  });
+  }, () => metrics.scan());
 
   /* ── Cleanup ──────────────────────────────────────────────────────── */
   return () => {

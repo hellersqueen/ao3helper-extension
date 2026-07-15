@@ -1,6 +1,7 @@
 import { register } from '../../../core/lifecycle.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const MOD = 'bookmarkMaintenance';
 const NS  = 'ao3h';
@@ -157,8 +158,7 @@ register(MOD, {
   // Only watch for the bookmark form opening dynamically if the feature is on
   let obs = null;
   if (cfg('privateByDefault')) {
-    obs = new MutationObserver(applyPrivateDefault);
-    obs.observe(document.body, { childList: true, subtree: true });
+    obs = observe(document.body, { childList: true, subtree: true }, applyPrivateDefault);
   }
 
   return () => {

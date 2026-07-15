@@ -36,6 +36,7 @@ AO3 Helper - Comment Composing Submodule
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 const D    = document;
@@ -355,8 +356,7 @@ register(MOD, {
 }, async function init () {
   enhanceAll();
 
-  const obs = new MutationObserver(enhanceAll);
-  obs.observe(D.body, { childList: true, subtree: true });
+  const obs = observe(D.body, { childList: true, subtree: true }, enhanceAll);
 
   return () => {
     obs.disconnect();

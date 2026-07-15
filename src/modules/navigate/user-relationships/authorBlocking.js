@@ -24,6 +24,7 @@ AO3 Helper - Author Blocking Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const MOD  = 'authorBlocking';
 const NS   = 'ao3h';
@@ -109,8 +110,7 @@ register(MOD, {
   const blocked = getBlockedAuthors();
   processBlurbs(blocked);
 
-  const observer = new MutationObserver(() => processBlurbs(getBlockedAuthors()));
-  observer.observe(document.body, { childList: true, subtree: true });
+  const observer = observe(document.body, { childList: true, subtree: true }, () => processBlurbs(getBlockedAuthors()));
 
   // Live-update when blockingInterface dispatches a block/unblock action
   const onBlockingChanged = () => { restoreBlurbs(); processBlurbs(getBlockedAuthors()); };

@@ -1,4 +1,5 @@
 import { register } from '../../../core/lifecycle.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const MOD = 'noteDisplay';
 const NS  = 'ao3h';
@@ -173,12 +174,11 @@ register(MOD, {
   addHoverPreviews();
   applyMarkdownToNotes();
 
-  const obs = new MutationObserver(() => {
+  const obs = observe(document.body, { childList: true, subtree: true }, () => {
     collapseNotes();
     addHoverPreviews();
     applyMarkdownToNotes();
   });
-  obs.observe(document.body, { childList: true, subtree: true });
 
   return () => {
     obs.disconnect();

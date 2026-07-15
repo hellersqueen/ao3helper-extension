@@ -21,6 +21,7 @@ AO3 Helper - Comment Hiding Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const MOD  = 'commentHiding';
 const NS   = 'ao3h';
@@ -112,8 +113,7 @@ register(MOD, {
 }, async function init () {
   processPage(getBlockedUsers());
 
-  const observer = new MutationObserver(() => processPage(getBlockedUsers()));
-  observer.observe(document.body, { childList: true, subtree: true });
+  const observer = observe(document.body, { childList: true, subtree: true }, () => processPage(getBlockedUsers()));
 
   // Live-update when blockingInterface dispatches a block/unblock action
   const onBlockingChanged = () => { restoreHiddenContent(); processPage(getBlockedUsers()); };

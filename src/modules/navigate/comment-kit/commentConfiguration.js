@@ -21,6 +21,7 @@ AO3 Helper - Comment Configuration Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const MOD  = 'commentConfiguration';
 const NS   = 'ao3h';
@@ -82,8 +83,7 @@ register(MOD, {
 
   if (cfg('chapterIndicator')) {
     addChapterIndicators();
-    const obs = new MutationObserver(addChapterIndicators);
-    obs.observe(document.body, { childList: true, subtree: true });
+    const obs = observe(document.body, { childList: true, subtree: true }, addChapterIndicators);
     cleanups.push(() => obs.disconnect());
   }
 

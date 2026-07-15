@@ -42,6 +42,7 @@ AO3 Helper - Author Preference Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const MOD  = 'authorPreference';
 const NS   = 'ao3h';
@@ -176,8 +177,7 @@ register(MOD, {
 }, async function init () {
   processBlurbs();
 
-  const observer = new MutationObserver(processBlurbs);
-  observer.observe(document.body, { childList: true, subtree: true });
+  const observer = observe(document.body, { childList: true, subtree: true }, processBlurbs);
 
   return () => {
     observer.disconnect();

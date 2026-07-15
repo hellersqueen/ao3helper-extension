@@ -15,6 +15,8 @@ AO3 Helper - Stats Display Format Submodule
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { observe } from '../../../../lib/utils/index.js';
+
 export class StatsDisplayFormat {
   constructor() {
     this._observer  = null;
@@ -88,8 +90,7 @@ export class StatsDisplayFormat {
     if (this._observer) return;
     const main = document.getElementById('main');
     if (!main) return;
-    this._observer = new MutationObserver(() => this._applyRelativeDates());
-    this._observer.observe(main, { childList: true, subtree: true });
+    this._observer = observe(main, { childList: true, subtree: true }, () => this._applyRelativeDates());
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────

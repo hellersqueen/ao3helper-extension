@@ -29,6 +29,7 @@ AO3 Helper - Author Tracking Submodule
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const MOD  = 'authorTracking';
 const NS   = 'ao3h';
@@ -152,8 +153,7 @@ register(MOD, {
   }
 
   annotateBlurbs();
-  const observer = new MutationObserver(annotateBlurbs);
-  observer.observe(document.body, { childList: true, subtree: true });
+  const observer = observe(document.body, { childList: true, subtree: true }, annotateBlurbs);
 
   return () => {
     observer.disconnect();

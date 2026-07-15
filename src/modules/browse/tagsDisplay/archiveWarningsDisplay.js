@@ -27,6 +27,7 @@ AO3 Helper - Archive Warnings Display Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const MOD  = 'archiveWarningsDisplay';
 const NS   = 'ao3h';
@@ -115,9 +116,8 @@ register(MOD, {
 
   convertAll(style);
 
-  const obs = new MutationObserver(() => convertAll(style));
   const main = document.querySelector('#main') || document.body;
-  obs.observe(main, { childList: true, subtree: true });
+  const obs = observe(main, { childList: true, subtree: true }, () => convertAll(style));
 
   return () => {
     obs.disconnect();

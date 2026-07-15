@@ -16,6 +16,7 @@
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Routes } from '../../../../lib/ao3/routes.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const W = getGlobalWindow();
 const NS  = 'ao3h';
@@ -193,11 +194,10 @@ function createScheduler(){
   const start = () => {
     if (!active) return;
     scheduleRuns();
-    observer = new MutationObserver(() => {
+    observer = observe(document.body, { childList: true, subtree: true }, () => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(scheduleRuns, 250);
     });
-    observer.observe(document.body, { childList: true, subtree: true });
   };
 
   if (document.readyState === 'loading') {

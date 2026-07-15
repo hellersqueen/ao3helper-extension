@@ -6,6 +6,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Storage } from '../../../../lib/storage/index.js';
 import { wrapStorageForUser } from '../../../../lib/storage/user.js';
 import { isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const W = getGlobalWindow();
 const MOD = 'seriesProgress';
@@ -221,8 +222,7 @@ function injectBanner(api) {
 let observer = null;
 function startObserver(cfg, api) {
   if (observer) return;
-  observer = new MutationObserver(() => enhanceAllLinks(cfg, api));
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer = observe(document.body, { childList: true, subtree: true }, () => enhanceAllLinks(cfg, api));
 }
 
 // ── Module registration ───────────────────────────────────────────────────

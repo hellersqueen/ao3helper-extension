@@ -21,6 +21,7 @@
 
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const NS   = 'ao3h';
 
@@ -177,10 +178,9 @@ register('tagHighlighting', {
 
   /* ── Observer + initial scan ───────────────────────────────────────────── */
   scan();
-  const mo = new MutationObserver(scan);
-  mo.observe(document.querySelector('#main') || document.body, {
+  const mo = observe(document.querySelector('#main') || document.body, {
     childList: true, subtree: true,
-  });
+  }, scan);
 
   /* ── Cleanup ──────────────────────────────────────────────────────────── */
   return () => {

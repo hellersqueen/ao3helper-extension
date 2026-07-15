@@ -22,7 +22,7 @@ AO3 Helper — Fanfic Binge Mode
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet, observe } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './fanficBingeMode.css?inline';
@@ -418,8 +418,7 @@ let _observer = null;
 function startObserver () {
   if (!cfg('queueEnabled')) return;
   const target = document.getElementById('main') || document.body;
-  _observer = new MutationObserver(() => addQueueButtonsToBlurbs());
-  _observer.observe(target, { childList: true, subtree: true });
+  _observer = observe(target, { childList: true, subtree: true }, () => addQueueButtonsToBlurbs());
 }
 
 // ── Module registration ───────────────────────────────────────────────────

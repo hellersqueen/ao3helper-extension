@@ -34,7 +34,7 @@ AO3 Helper — Fic Appreciation Coordinator
 
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, observe } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromHref, extractWorkIdFromBlurb as parseWorkIdFromBlurb, isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './ficAppreciation.css?inline';
 
@@ -206,8 +206,7 @@ register(MOD, {
     processBlurbs();
 
     const root     = document.querySelector('#main') || document.body;
-    const observer = new MutationObserver(() => processBlurbs());
-    observer.observe(root, { childList: true, subtree: true });
+    const observer = observe(root, { childList: true, subtree: true }, () => processBlurbs());
 
     return () => {
       observer.disconnect();

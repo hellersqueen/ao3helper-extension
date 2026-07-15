@@ -11,6 +11,7 @@ AO3 Helper — Reading Status Tracking
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { extractWorkIdFromBlurb, extractWorkIdFromHref, isListingPage } from '../../../../../lib/ao3/parsers.js';
+import { observe } from '../../../../../lib/utils/index.js';
 
 const D = document;
 const SK_LAST = 'ao3h:bookmarkVault:lastRead';
@@ -128,10 +129,9 @@ export class ReadingStatusTracking {
     if (this._isWorkPage()) this._trackLastRead();
     if (this._isListingPage()) {
       this._collapseNotes(D.querySelectorAll('li.bookmark.blurb'));
-      const obs = new MutationObserver(() => {
+      const obs = observe(D.getElementById('main') || D.body, { childList: true, subtree: true }, () => {
         this._collapseNotes(D.querySelectorAll('li.bookmark.blurb:not([data-bv-rst-done])'));
       });
-      obs.observe(D.getElementById('main') || D.body, { childList: true, subtree: true });
       this._obs.push(obs);
       if (this._isBookmarksPage()) this._injectNoteSearch();
     }

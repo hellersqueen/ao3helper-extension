@@ -24,6 +24,7 @@ AO3 Helper - Comment Highlighting Submodule
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 const D    = document;
@@ -153,10 +154,9 @@ register(MOD, {
 
   processAll(authorNames, myName, doAuthors, doReplies);
 
-  const obs = new MutationObserver(() =>
+  const obs = observe(D.body, { childList: true, subtree: true }, () =>
     processAll(authorNames, myName, doAuthors, doReplies)
   );
-  obs.observe(D.body, { childList: true, subtree: true });
 
   return () => {
     obs.disconnect();

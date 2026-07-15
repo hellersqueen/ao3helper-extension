@@ -24,6 +24,7 @@ AO3 Helper - Marked for Later Status Submodule
 import { register } from '../../../core/lifecycle.js';
 import { loadItems, saveItems } from './laterShelfStore.js';
 import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { observe } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 
 const MOD = 'markedForLaterStatus';
@@ -259,8 +260,7 @@ register(MOD, {
   }
 
   // ── MutationObserver for dynamic content ─────────────────────────────────
-  var observer = new MutationObserver(function () { injectMFLBadges(); });
-  observer.observe(D.body, { childList: true, subtree: true });
+  var observer = observe(D.body, { childList: true, subtree: true }, function () { injectMFLBadges(); });
 
   // ── Boot ─────────────────────────────────────────────────────────────────
   injectMFLBadges();

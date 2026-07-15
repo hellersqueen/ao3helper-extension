@@ -19,7 +19,7 @@ AO3 Helper - Instant Footnotes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, observe } from '../../../../lib/utils/index.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './instantFootnotes.css?inline';
@@ -274,8 +274,7 @@ register(MOD, {
 
   scanLinks();
   const scanLinksDebounced = debounce(scanLinks, 100);
-  const mo = new MutationObserver(scanLinksDebounced);
-  mo.observe(workRoot, { childList: true, subtree: true });
+  const mo = observe(workRoot, { childList: true, subtree: true }, scanLinksDebounced);
 
   return () => {
     mo.disconnect();

@@ -12,6 +12,7 @@ AO3 Helper — Rich Text Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const D = document;
 const SK_NOTES = 'ao3h:bookmarkVault:inlineNotes';
@@ -262,18 +263,16 @@ export class RichTextNotes {
     if (this.cfg('autoFillBookmarkForm') && this._isWorkOrSeries()) {
       const tryFill = () => { if (D.getElementById('bookmark_notes')) this._applyAutoFill(); };
       tryFill();
-      const obs = new MutationObserver(tryFill);
-      obs.observe(D.getElementById('main') || D.body, { childList: true, subtree: true });
+      const obs = observe(D.getElementById('main') || D.body, { childList: true, subtree: true }, tryFill);
       this._obs.push(obs);
     }
     if (this.cfg('inlineNoteEditing') && this._isBookmarksPage()) {
       this._processBlurbsForNotes(D.querySelectorAll('li.work.blurb, li.bookmark.blurb'));
-      const obs2 = new MutationObserver(() => {
+      const obs2 = observe(D.getElementById('main') || D.body, { childList: true, subtree: true }, () => {
         this._processBlurbsForNotes(D.querySelectorAll(
           'li.work.blurb:not([data-bv-rtn-done]), li.bookmark.blurb:not([data-bv-rtn-done])'
         ));
       });
-      obs2.observe(D.getElementById('main') || D.body, { childList: true, subtree: true });
       this._obs.push(obs2);
     }
   }

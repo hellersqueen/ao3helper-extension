@@ -28,6 +28,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { observe } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 const D    = document;
@@ -294,8 +295,9 @@ register(MOD, {
     setupUnread(workId);
   }
 
-  const obs = new MutationObserver(() => processNew?.());
-  if (processNew) obs.observe(D.body, { childList: true, subtree: true });
+  const obs = processNew
+    ? observe(D.body, { childList: true, subtree: true }, () => processNew?.())
+    : new MutationObserver(() => processNew?.());
 
   return () => {
     obs.disconnect();
