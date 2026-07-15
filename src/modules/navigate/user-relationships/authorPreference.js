@@ -42,7 +42,7 @@ AO3 Helper - Author Preference Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, onReady } from '../../../../lib/utils/index.js';
 
 const MOD  = 'authorPreference';
 const NS   = 'ao3h';
@@ -175,12 +175,20 @@ register(MOD, {
   parent:           'userRelationships',
   enabledByDefault: true,
 }, async function init () {
-  processBlurbs();
-
-  const observer = observe(document.body, { childList: true, subtree: true }, processBlurbs);
+  // document.body peut ne pas encore exister quand ce module boote — sans ce
+  // report, l'observer plantait (Cannot read properties of null), constaté
+  // sur plusieurs modules similaires en test.
+  let active = true;
+  let observer = null;
+  onReady(() => {
+    if (!active) return;
+    processBlurbs();
+    observer = observe(document.body, { childList: true, subtree: true }, processBlurbs);
+  });
 
   return () => {
-    observer.disconnect();
+    active = false;
+    observer?.disconnect();
     document.querySelectorAll(`.${NS}-author-pref-controls`).forEach(el => el.remove());
     document.querySelectorAll(`.${NS}-hidden-author-blurb`).forEach(el => el.remove());
     originalStates.forEach((state, blurb) => {

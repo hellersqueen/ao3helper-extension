@@ -11,6 +11,7 @@ AO3 Helper — Organization Tools
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { createBulkSelect } from '../../../../lib/ui/bulk-select.js';
 
 const D = document;
 const SK_CATS   = 'ao3h:bookmarkVault:categories';
@@ -21,6 +22,24 @@ export class OrganizationTools {
     this.cfg  = cfgFn;
     this._obs = [];
     this._bookmarkAddedHandler = null;
+    // lib/ui/bulk-select.js — fusionné avec markedForLaterStatus (shared.md, E6).
+    this._bulkSelect = createBulkSelect({
+      blurbSelector:  'li.work.blurb, li.bookmark.blurb',
+      barId:          'ao3h-bv-bulk-bar',
+      checkboxClass:  'ao3h-bv-bulk-chk',
+      countId:        'ao3h-bv-bulk-count',
+      selectAllClass: 'ao3h-bv-bulk-selall',
+      removeClass:    'ao3h-bv-bulk-del',
+      labels: {
+        selectAll:   'Select All',
+        deselectAll: 'Deselect All',
+        remove:      '🗑 Remove Selected',
+      },
+      onRemove: (selected) => {
+        if (!window.confirm(`Remove ${selected.length} bookmark(s) from view?`)) return;
+        selected.forEach(b => b.remove());
+      },
+    });
   }
 
   // ── Storage ──────────────────────────────────────────────────────────────
@@ -154,53 +173,16 @@ export class OrganizationTools {
   }
 
   // ── Bulk selection ────────────────────────────────────────────────────────
+  // Le marquage bvOrgDone doit rester ici (et non dans le lib partagé) : les
+  // labels de catégorie (_injectCategoryLabels) n'ont pas leur propre garde
+  // anti-doublon et comptent sur ce marqueur, posé historiquement ici, pour
+  // ne pas être ré-appliqués par le MutationObserver de boot().
   _injectBulkSelection (blurbs) {
-    if (!D.getElementById('ao3h-bv-bulk-bar')) this._createBulkBar();
     Array.from(blurbs).forEach(blurb => {
       if (blurb.dataset.bvOrgDone) return;
       blurb.dataset.bvOrgDone = '1';
-      const chk = D.createElement('input');
-      chk.type  = 'checkbox'; chk.className = 'ao3h-bv-bulk-chk';
-      blurb.style.position = 'relative';
-      blurb.insertBefore(chk, blurb.firstChild);
-      chk.addEventListener('change', () => this._updateBulkBar());
     });
-  }
-
-  _createBulkBar () {
-    const bar = D.createElement('div');
-    bar.id    = 'ao3h-bv-bulk-bar';
-    const selAll = D.createElement('button');
-    selAll.textContent = 'Select All';
-    selAll.addEventListener('click', () => {
-      const unchecked = D.querySelectorAll('.ao3h-bv-bulk-chk:not(:checked)').length > 0;
-      D.querySelectorAll('.ao3h-bv-bulk-chk').forEach(c => c.checked = unchecked);
-      selAll.textContent = unchecked ? 'Deselect All' : 'Select All';
-      this._updateBulkBar();
-    });
-    const count = D.createElement('span');
-    count.id = 'ao3h-bv-bulk-count';
-    const delBtn = D.createElement('button');
-    delBtn.textContent = '🗑 Remove Selected';
-    delBtn.addEventListener('click', () => {
-      const checked = Array.from(D.querySelectorAll('.ao3h-bv-bulk-chk:checked'));
-      if (!checked.length) return;
-      if (!window.confirm(`Remove ${checked.length} bookmark(s) from view?`)) return;
-      checked.forEach(c => c.closest('li.work.blurb, li.bookmark.blurb')?.remove());
-      this._updateBulkBar();
-    });
-    bar.appendChild(selAll); bar.appendChild(count); bar.appendChild(delBtn);
-    const main = D.getElementById('main');
-    if (main) main.insertBefore(bar, main.firstChild);
-  }
-
-  _updateBulkBar () {
-    const bar   = D.getElementById('ao3h-bv-bulk-bar');
-    const count = D.getElementById('ao3h-bv-bulk-count');
-    if (!bar) return;
-    const n = D.querySelectorAll('.ao3h-bv-bulk-chk:checked').length;
-    bar.style.display = n ? '' : 'none';
-    if (count) count.textContent = `${n} selected`;
+    this._bulkSelect.scan();
   }
 
   // ── Pin bookmarks ─────────────────────────────────────────────────────────
@@ -332,10 +314,10 @@ export class OrganizationTools {
       D.removeEventListener('ao3h:bookmarkAdded', this._bookmarkAddedHandler);
       this._bookmarkAddedHandler = null;
     }
-    D.querySelectorAll('.ao3h-bv-cat-lbl, .ao3h-bv-pin-btn, .ao3h-bv-bulk-chk').forEach(e => e.remove());
+    this._bulkSelect.destroy();
+    D.querySelectorAll('.ao3h-bv-cat-lbl, .ao3h-bv-pin-btn').forEach(e => e.remove());
     D.getElementById('ao3h-bv-cf')?.remove();
     D.getElementById('ao3h-bv-cm')?.remove();
-    D.getElementById('ao3h-bv-bulk-bar')?.remove();
     D.getElementById('ao3h-bv-sort')?.remove();
     D.querySelectorAll('[data-bv-org-cf-hidden]').forEach(el => {
       el.style.display = '';

@@ -16,10 +16,10 @@
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Routes } from '../../../../lib/ao3/routes.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, countWords } from '../../../../lib/utils/index.js';
+import { upsertChapterBadgePart, removeChapterBadgePartsByKey } from '../../../../lib/ui/chapter-badge.js';
 
 const W = getGlobalWindow();
-const NS  = 'ao3h';
 const MOD = 'chapterWordCount';
 const LOG = `[AO3H][${MOD}]`;
 
@@ -72,29 +72,10 @@ function textFromNodes(nodes){
   return nodes.map(n => n.innerText || '').join('\n');
 }
 
-function countWordsFromText(text){
-  if (!text) return 0;
-  const s = text.replace(/\s+/g, ' ').trim();
-  if (!s) return 0;
-  try {
-    const tokens = s.match(/[\p{L}\p{N}’'-]+/gu);
-    if (tokens) return tokens.length;
-  } catch {}
-  const simple = s.match(/\S+/g);
-  return simple ? simple.length : 0;
-}
-
 function wordsForChapter(ch){
   let nodes = proseNodesForChapter(ch);
   if (!nodes.length) nodes = userstuffsWholeWorkskin();
-  return countWordsFromText(textFromNodes(nodes));
-}
-
-function setTextIfChanged(el, text){
-  if (!el) return false;
-  if (el.textContent === text) return false;
-  el.textContent = text;
-  return true;
+  return countWords(textFromNodes(nodes));
 }
 
 function abbreviateWords(n){
@@ -105,15 +86,7 @@ function abbreviateWords(n){
 function insertOrUpdateBadge(afterEl, words, scope='chapter'){
   if (!afterEl) return false;
   const content = `~ ${abbreviateWords(words)} words in this ${scope}`;
-  const next = afterEl.nextElementSibling;
-  if (next && next.classList?.contains(`${NS}-wc-badge`)) {
-    return setTextIfChanged(next, content);
-  }
-  const el = document.createElement('div');
-  el.className = `${NS}-wc-badge`;
-  el.setAttribute('data-ao3h-mod', MOD);
-  el.textContent = content;
-  afterEl.insertAdjacentElement('afterend', el);
+  upsertChapterBadgePart(afterEl, 'words', content);
   return true;
 }
 
@@ -217,7 +190,7 @@ function createScheduler(){
 }
 
 function removeBadges(){
-  document.querySelectorAll(`.${NS}-wc-badge,[data-ao3h-mod="${MOD}"]`).forEach(el => el.remove());
+  removeChapterBadgePartsByKey('words');
 }
 
 /* ---------- registration ---------- */

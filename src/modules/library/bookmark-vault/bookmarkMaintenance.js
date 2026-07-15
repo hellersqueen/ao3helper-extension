@@ -1,7 +1,8 @@
 import { register } from '../../../core/lifecycle.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, onReady } from '../../../../lib/utils/index.js';
+import { relativeDate } from '../../../../lib/utils/format-date.js';
 
 const MOD = 'bookmarkMaintenance';
 const NS  = 'ao3h';
@@ -57,8 +58,9 @@ function refreshBadge (badge) {
     badge.className   = `${NS}-export-badge ${NS}-export-badge--warn`;
     badge.title       = 'Bookmarks have never been exported';
   } else {
-    const days = Math.floor((Date.now() - Number(lastExport)) / 86400000);
-    badge.textContent = days < 30 ? `✅ Backed up ${days}d ago` : `⚠️ Backup ${days}d ago`;
+    const days  = Math.floor((Date.now() - Number(lastExport)) / 86400000);
+    const label = relativeDate(Number(lastExport), { short: true });
+    badge.textContent = days < 30 ? `✅ Backed up ${label}` : `⚠️ Backup ${label}`;
     badge.className   = `${NS}-export-badge ${NS}-export-badge--${days < 30 ? 'ok' : 'warn'}`;
     badge.title       = `Last exported: ${new Date(Number(lastExport)).toLocaleDateString()}`;
   }
@@ -150,18 +152,26 @@ register(MOD, {
   parent:           'bookmarkVault',
   enabledByDefault: false,
 }, async function init () {
-  // Try immediately (bookmark page with inline form already in DOM)
-  applyPrivateDefault();
-  injectExportBadge();
-  injectAnalyticsDashboard();
-
-  // Only watch for the bookmark form opening dynamically if the feature is on
+  // document.body peut ne pas encore exister quand ce module boote (surtout
+  // sur une grosse page) — sans ce report, l'observer plantait (Cannot read
+  // properties of null), constaté sur plusieurs modules similaires en test.
+  let active = true;
   let obs = null;
-  if (cfg('privateByDefault')) {
-    obs = observe(document.body, { childList: true, subtree: true }, applyPrivateDefault);
-  }
+  onReady(() => {
+    if (!active) return;
+    // Try immediately (bookmark page with inline form already in DOM)
+    applyPrivateDefault();
+    injectExportBadge();
+    injectAnalyticsDashboard();
+
+    // Only watch for the bookmark form opening dynamically if the feature is on
+    if (cfg('privateByDefault')) {
+      obs = observe(document.body, { childList: true, subtree: true }, applyPrivateDefault);
+    }
+  });
 
   return () => {
+    active = false;
     obs?.disconnect();
     document.getElementById(`${NS}-bm-analytics`)?.remove();
     document.querySelectorAll(`.${NS}-export-badge, .${NS}-export-btn`).forEach(el => el.remove());

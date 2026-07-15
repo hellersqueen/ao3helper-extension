@@ -1,10 +1,8 @@
 // ── ViewHistory ───────────────────────────────────────────────────────────
 // Submodule of: readingTracker
 
-import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
-
-const W = getGlobalWindow();
+import { fetchAO3PageText } from '../../../../lib/ao3/requests.js';
 
 export class ViewHistory {
   /** @param {{ NS, LOG, isHistoryPage, getHistory, saveHistory, clearProgress }} opts */
@@ -18,7 +16,6 @@ export class ViewHistory {
     this._onInput       = null;
     this._onClick       = null;
     this._abortController = null;
-    this._gmRequest     = null;
     this._active        = false;
   }
 
@@ -55,17 +52,7 @@ export class ViewHistory {
         html = document.documentElement.outerHTML;
       } else {
         this._abortController = new AbortController();
-        const res = await (W.GM?.xmlhttpRequest
-          ? new Promise((resolve, reject) => {
-            this._gmRequest = W.GM.xmlhttpRequest({
-              method: 'GET', url: `https://archiveofourown.org/users/${username}/readings`,
-              onload: r => resolve(r.responseText), onerror: reject,
-              onabort: () => reject(new DOMException('Aborted', 'AbortError')),
-            });
-          })
-          : fetch(`/users/${username}/readings`, { signal: this._abortController.signal }).then(r => r.text())
-        );
-        html = res;
+        html = await fetchAO3PageText(`/users/${username}/readings`, { signal: this._abortController.signal });
       }
     } catch (err) {
       if (err?.name === 'AbortError' || !this._active) return;

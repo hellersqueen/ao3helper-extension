@@ -22,7 +22,7 @@ AO3 Helper — Fanfic Binge Mode
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css, lsGet, lsSet, observe } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet, observe, onReady } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './fanficBingeMode.css?inline';
@@ -428,29 +428,38 @@ register(MOD, {
 }, async function init () {
   console.log(`${LOG} init`);
 
-  // Homepage panel
-  if (cfg('showHomepagePanel') && isHomePage()) {
-    injectHomepagePanel();
-  }
+  // document.body peut ne pas encore exister quand ce module boote — sans ce
+  // report, l'appendChild/l'observer plantaient (Cannot read properties of
+  // null), constaté sur plusieurs modules similaires en test.
+  let active = true;
+  onReady(() => {
+    if (!active) return;
 
-  // Continue-reading modal (work pages, last chapter, 95% scroll)
-  if (cfg('continueReadingModal') && isWorkPage() && isLastChapter()) {
-    watchForEndOfFic(showContinueModal);
-  }
+    // Homepage panel
+    if (cfg('showHomepagePanel') && isHomePage()) {
+      injectHomepagePanel();
+    }
 
-  // Post-reading suggestions (work pages)
-  if (cfg('showPostReadingSuggestions') && isWorkPage()) {
-    injectPostReadingSuggestions();
-  }
+    // Continue-reading modal (work pages, last chapter, 95% scroll)
+    if (cfg('continueReadingModal') && isWorkPage() && isLastChapter()) {
+      watchForEndOfFic(showContinueModal);
+    }
 
-  // Reading queue (listing pages + work pages)
-  if (cfg('queueEnabled')) {
-    injectQueuePanel();
-    if (isListPage()) addQueueButtonsToBlurbs();
-    startObserver();
-  }
+    // Post-reading suggestions (work pages)
+    if (cfg('showPostReadingSuggestions') && isWorkPage()) {
+      injectPostReadingSuggestions();
+    }
+
+    // Reading queue (listing pages + work pages)
+    if (cfg('queueEnabled')) {
+      injectQueuePanel();
+      if (isListPage()) addQueueButtonsToBlurbs();
+      startObserver();
+    }
+  });
 
   return function cleanup () {
+    active = false;
     // Modal
     removeModal();
     if (_scrollHandler) {

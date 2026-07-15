@@ -44,8 +44,9 @@ favoris, le réordonnancement à la souris, et le masquage des tags en trop.
 
 ### 4. `tagHighlighting.js` — surligner ses tags favoris
 
-- Surligne en couleur les tags que l'utilisateur a choisis comme favoris
+- Surligne en couleur les tags que l'utilisateur a choisis comme favoris, y compris les tags de fandom
 - Un clic droit sur un tag ouvre un petit menu pour choisir une couleur parmi 6 et l'ajouter tout de suite
+- Reprend aussi, une seule fois au démarrage, les fandoms mis en valeur par l'ancien module fandomHighlighting (appearance/visual-preferences), fusionné ici
 
 ### 5. `tagsReordering.js` — réordonner les tags à la souris
 

@@ -42,6 +42,9 @@ function cfg (key, fallback) {
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────
+// Clés vérifiées identiques à lib/ao3/constants.js ARCHIVE_WARNINGS (forme
+// tag canonique) — gardées ici en objet plutôt qu'importées car chaque
+// entrée porte aussi son icône/abréviation, pas juste le libellé.
 const WARNING_ICONS = {
   'Graphic Depictions Of Violence'              : { icon: '⚠️', abbrev: 'Violence' },
   'Major Character Death'                       : { icon: '💀', abbrev: 'MCD' },

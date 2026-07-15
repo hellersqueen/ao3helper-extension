@@ -542,27 +542,12 @@ html.ao3h-hide-comp-date li.blurb:hover .completed {
 }
 
 
-/*====  
+/*====
   ═══════════════════════════════════════════════════════════════════════
-    SECTION 07 — FANDOM HIGHLIGHTING
+    SECTION 07 — FANDOM HIGHLIGHTING (fusionné)
   ───────────────────────────────────────────────────────────────────────
-    Style structurel des tags de fandom mis en valeur.
-    La couleur de fond est appliquée en inline style (définie par
-    l'utilisateur, par fandom). Ces règles gèrent uniquement les
-    propriétés fixes.
-    ⚠️ Classe ajoutée/retirée par fandomHighlighting.js
+    fandomHighlighting.js a été retiré : le surlignage des tags de fandom
+    est désormais géré par browse/tagsDisplay/tagHighlighting.js (styles
+    dans tagsDisplay.css) — shared.md, décision produit K4.
   ═══════════════════════════════════════════════════════════════════════
 */
-
-
-/*+ ───────────────────────────────────────────────────────────────────────
-    TAG FANDOM MIS EN VALEUR
-  ─────────────────────────────────────────────────────────────────────────
-      └─ ⚠️ background-color défini en inline style (couleur utilisateur)
-  ───────────────────────────────────────────────────────────────────────── */
-
-.ao3h-fandom-highlight {
-  border-radius: 3px;
-  padding: 1px 4px;
-  font-weight: 600;
-}

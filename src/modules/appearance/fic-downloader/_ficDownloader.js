@@ -31,8 +31,8 @@ AO3 Helper - Fic Downloader Module Coordinator
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register, AO3H } from '../../../core/lifecycle.js';
-import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './ficDownloader.css?inline';
 
 import { BlurbDownloadButton } from './individualDownloads.js';
@@ -44,7 +44,6 @@ import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
 
 css(styles, 'ao3h-ficDownloader');
 
-const W    = getGlobalWindow();
 const MOD  = 'ficDownloader';
 const LOG  = `[AO3H][${MOD}]`;
 
@@ -57,9 +56,10 @@ const DEFAULTS = {
   autoKindleSend:      false,
 };
 
-function cfg (key) {
-  return W.AO3H_Config?.[MOD]?.defaults?.[key] ?? DEFAULTS[key];
-}
+// globalConfig: true préserve le fallback historique sur window.AO3H_Config,
+// mais la priorité passe désormais aux réglages du panneau (ao3h:mod:ficDownloader:settings),
+// jamais lus jusqu'ici — bug documenté dans shared.md (I3).
+const cfg = makeCfg(MOD, DEFAULTS, { globalConfig: true });
 
 // ── Auto-cache MFL listener ────────────────────────────────────────────────
 function initAutoCacheMFL (offlineInst) {

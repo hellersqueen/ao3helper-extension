@@ -131,6 +131,10 @@ function storeSet (key, value) {
 
 // ══════════════════════════════════════════════════════════════════════════
 // TAG BUNDLES — shared across presetManagement and hideByTags
+// Bundles de variantes orthographiques par trope, forme différente de
+// lib/ao3/constants.js TROPE_NAMES (liste plate) — voir ce fichier pour la
+// liste de référence des noms de tropes du projet ; garder les `name`
+// ci-dessous alignés avec elle.
 // ══════════════════════════════════════════════════════════════════════════
 
 const BUILTIN_BUNDLES = [

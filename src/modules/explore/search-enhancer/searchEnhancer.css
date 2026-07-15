@@ -249,18 +249,13 @@
   ═══════════════════════════════════════════════════════════════════════
     SECTION 04 — BADGE RATIO ET ICÔNE QUICK SEARCH
   ───────────────────────────────────────────────────────────────────────
-    Badge inline affiché à côté du titre, et icône de recherche rapide
-    visible au hover.
+    Le badge de ratio kudos÷hits est désormais partagé avec ficEngagement
+    (browse) — voir lib/ui/engagement-badge.js, stylé dans
+    browse/ficEngagement/ficEngagement.css (.ao3h-engagement-badge).
+    Icône de recherche rapide visible au hover.
     ⚠️ .ao3h-se-qs-icon est injecté par JS (searchAutocomplete.js).
   ═══════════════════════════════════════════════════════════════════════
 */
-
-.ao3h-se-ratio {
-  font-size: .78em;
-  color: #555;
-  margin-left: 5px;
-  white-space: nowrap;
-}
 
 .ao3h-se-qs-icon {
   display: inline-block;

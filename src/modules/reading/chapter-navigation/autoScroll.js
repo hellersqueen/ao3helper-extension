@@ -15,6 +15,7 @@
 //   autoScrollShowControls (bool, default true)
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { onReady } from '../../../../lib/utils/index.js';
 
 const W = getGlobalWindow();
 
@@ -40,18 +41,26 @@ export class AutoScroll {
     this._resumeTimer  = null;
     this._speed        = 0;        // px/s — 0 = stopped
     this._listeners    = [];
+    this._active       = true;
   }
 
   // ── Public API ─────────────────────────────────────────────────────────
 
   setup () {
-    if (this.cfg('autoScrollShowControls') !== false) {
-      this._injectControls();
-    }
-    // Don't auto-start on setup — user must press a preset button
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'appendChild plantait (Cannot read properties of null),
+    // constaté sur plusieurs modules similaires en test.
+    onReady(() => {
+      if (!this._active) return;
+      if (this.cfg('autoScrollShowControls') !== false) {
+        this._injectControls();
+      }
+      // Don't auto-start on setup — user must press a preset button
+    });
   }
 
   teardown () {
+    this._active = false;
     this._stopScroll();
     this._removeControls();
     this._removeListeners();

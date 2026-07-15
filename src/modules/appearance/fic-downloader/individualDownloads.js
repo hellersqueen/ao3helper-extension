@@ -54,8 +54,9 @@ AO3 Helper - Individual Downloads Submodule
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
-import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { extractWorkIdFromBlurb, isListingPage as libIsListingPage } from '../../../../lib/ao3/parsers.js';
+import { buildWorkHTML } from './workHtmlTemplate.js';
+import { onReady } from '../../../../lib/utils/index.js';
 
 const W = getGlobalWindow();
 
@@ -118,70 +119,10 @@ export class BlurbDownloadButton {
     }
 
     const summary = doc.querySelector('.summary .userstuff')?.innerHTML || '';
-    const chapters = doc.querySelector('#chapters')?.innerHTML || doc.querySelector('.userstuff')?.innerHTML || '';
+    const chaptersHTML = doc.querySelector('#chapters')?.innerHTML || doc.querySelector('.userstuff')?.innerHTML || '';
     const notes = doc.querySelector('.notes .userstuff')?.innerHTML || '';
 
-    const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${escapeHtml(title)} - ${escapeHtml(author)}</title>
-<style>
-  body {
-    font-family: Georgia, 'Times New Roman', serif;
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px;
-    line-height: 1.8;
-    color: #333;
-  }
-  h1 {
-    color: #2c5f8a;
-    font-size: 2em;
-    margin-bottom: 10px;
-  }
-  .author {
-    font-size: 1.2em;
-    color: #666;
-    margin-bottom: 30px;
-  }
-  .summary {
-    background: #f9f9f9;
-    padding: 20px;
-    border-left: 4px solid #2c5f8a;
-    margin: 30px 0;
-  }
-  .notes {
-    background: #fff8dc;
-    padding: 15px;
-    margin: 20px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  hr {
-    border: none;
-    border-top: 2px solid #ddd;
-    margin: 40px 0;
-  }
-</style>
-</head>
-<body>
-<h1>${escapeHtml(title)}</h1>
-<p class="author"><em>by ${escapeHtml(author)}</em></p>
-
-${summary ? `<div class="summary"><strong>Summary:</strong><br>${summary}</div>` : ''}
-${notes ? `<div class="notes">${notes}</div>` : ''}
-
-<hr>
-
-<div id="content">
-  ${chapters}
-</div>
-</body>
-</html>
-    `;
+    const html = buildWorkHTML({ title, author, summary, notes, chaptersHTML });
 
     downloadFile(html, `${workId}_${title.replace(/[^a-z0-9]/gi, '_')}.html`, 'text/html;charset=utf-8');
     
@@ -274,8 +215,14 @@ ${notes ? `<div class="notes">${notes}</div>` : ''}
       return;
     }
 
-    this.processBlurbs();
-    this.observeBlurbs();
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'observer plantait (Cannot read properties of null), constaté
+    // sur plusieurs modules similaires en test.
+    onReady(() => {
+      if (!this._active) return;
+      this.processBlurbs();
+      this.observeBlurbs();
+    });
   }
 
   cleanup() {

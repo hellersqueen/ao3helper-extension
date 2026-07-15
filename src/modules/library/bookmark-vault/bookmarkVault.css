@@ -195,27 +195,8 @@
 }
 
 /* ── Notes search bar ────────────────────────────────────────────────── */
-
-#ao3h-notes-search {
-  margin: 0.5em 0 1em;
-  display: flex;
-  gap: 0.4em;
-  align-items: center;
-}
-
-#ao3h-notes-search input {
-  flex: 1;
-  max-width: 300px;
-  padding: 0.3em 0.6em;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 0.9em;
-}
-
-#ao3h-notes-search button {
-  padding: 0.2em 0.5em;
-  cursor: pointer;
-}
+/* Fusionnée dans ReadingStatusTracking._injectNoteSearch() — voir
+   #ao3h-bv-note-search plus bas dans ce fichier. */
 
 /* ── Organization Tools ─────────────────────────────────── */
 
@@ -513,6 +494,11 @@
 
 #ao3h-bv-ns-count {
   color: #666;
+}
+
+#ao3h-bv-note-search button {
+  padding: 0.2em 0.5em;
+  cursor: pointer;
 }
 
 /* ── Status Indicators ──────────────────────────────────── */

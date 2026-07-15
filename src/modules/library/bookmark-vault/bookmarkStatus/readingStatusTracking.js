@@ -27,7 +27,9 @@ export class ReadingStatusTracking {
   _save (key, v)  { try { localStorage.setItem(key, JSON.stringify(v)); } catch (_) {} }
 
   _isWorkPage      () { return /^\/works\/\d+/.test(location.pathname); }
-  _isBookmarksPage () { return /\/bookmarks/.test(location.pathname); }
+  // Sur les bookmarks d'un user précisément (pas /works/:id/bookmarks) —
+  // même garde que l'ex-noteManagement.injectNotesSearch, fusionnée ici.
+  _isBookmarksPage () { return /\/users\/[^/]+\/bookmarks/.test(location.pathname); }
   _isListingPage   () { return isListingPage(); }
 
   _getWorkId (blurb) {
@@ -105,7 +107,11 @@ export class ReadingStatusTracking {
     inp.placeholder = 'Search in bookmark notes…';
     const count = D.createElement('span');
     count.id = 'ao3h-bv-ns-count';
-    inp.addEventListener('input', () => {
+    const clearBtn = D.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.textContent = '✕';
+    clearBtn.title = 'Clear search';
+    function applyFilter () {
       const q = inp.value.trim().toLowerCase();
       let shown = 0;
       D.querySelectorAll('li.bookmark.blurb').forEach(blurb => {
@@ -115,9 +121,12 @@ export class ReadingStatusTracking {
         if (visible) shown++;
       });
       count.textContent = q ? `${shown} results` : '';
-    });
+    }
+    inp.addEventListener('input', applyFilter);
+    clearBtn.addEventListener('click', () => { inp.value = ''; applyFilter(); });
     wrap.appendChild(label);
     wrap.appendChild(inp);
+    wrap.appendChild(clearBtn);
     wrap.appendChild(count);
     const anchor = D.querySelector('#main > h2, #main > h3');
     if (anchor) anchor.insertAdjacentElement('afterend', wrap);

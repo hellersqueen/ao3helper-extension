@@ -68,29 +68,28 @@ Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
 - Voir la liste des sauvegardes automatiques et choisir laquelle restaurer, directement depuis le panneau (les sauvegardes existent, mais rien ne permet de les parcourir dans l'interface)
+
 - Un bouton "Sauvegarder maintenant" dans le panneau (la fonction existe déjà à l'intérieur du module, mais aucun bouton ne la déclenche)
-- Choisir de protéger une sauvegarde avec un mot de passe, de la compresser, ou de ne garder que ce qui a changé, directement depuis le panneau (ces façons de sauvegarder existent déjà à l'intérieur du module, mais rien ne permet de les choisir dans l'interface)
-- Choisir précisément quelles données sauvegarder, plutôt que tout d'un coup, directement depuis le panneau (ça existe déjà à l'intérieur du module, mais pas dans l'interface)
+
 - Voir en un coup d'œil toutes les données sauvegardées, avec leur taille et leur état
+
 - Chercher directement dans ses données sauvegardées
-- Vérifier que les données sauvegardées ne sont pas abîmées ou corrompues
+
 - Nettoyer ou mettre à jour automatiquement les données quand l'extension change de version
-- Un bouton pour tout effacer d'un coup
+
 - Pouvoir choisir soi-même quelle version garder quand deux appareils ont des données différentes, plutôt que ce soit toujours la plus récente qui gagne automatiquement
+
+---
+
+~~- Choisir de protéger une sauvegarde avec un mot de passe, de la compresser, ou de ne garder que ce qui a changé, directement depuis le panneau (ces façons de sauvegarder existent déjà à l'intérieur du module, mais rien ne permet de les choisir dans l'interface)~~
+~~- Choisir précisément quelles données sauvegarder, plutôt que tout d'un coup, directement depuis le panneau (ça existe déjà à l'intérieur du module, mais pas dans l'interface)~~
+~~- Un bouton pour tout effacer d'un coup~~
+~~- Vérifier que les données sauvegardées ne sont pas abîmées ou corrompues~~
 
 ## Explicitement écarté
 
 - Passer par un compte GitHub pour la synchronisation entre appareils — jugé trop technique pour la plupart des gens
 - Synchroniser tout l'historique de lecture entre appareils — les données sont trop volumineuses pour la petite place disponible dans la synchronisation du navigateur
 
-## Précision
 
-⚠️ La doc historique présentait ce module comme une simple idée pas encore
-codée ("Ce qui est prévu"), et listait le chiffrement, la compression, la
-sauvegarde incrémentielle et la synchronisation automatique en arrière-plan
-comme des idées "explicitement écartées". Ce n'est plus le cas : toutes ces
-fonctionnalités sont aujourd'hui bel et bien codées dans le module — il
-manque seulement des boutons dans le panneau de réglages pour toutes les
-utiliser facilement (voir "Specs non implémentés" ci-dessus). Seule l'idée
-d'utiliser un compte GitHub pour la synchronisation a vraiment été
-abandonnée.
+

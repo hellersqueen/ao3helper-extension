@@ -14,6 +14,7 @@ AO3 Helper — Status Indicators
 
 import { extractWorkIdFromBlurb, isListingPage } from '../../../../../lib/ao3/parsers.js';
 import { observe } from '../../../../../lib/utils/index.js';
+import { relativeDate } from '../../../../../lib/utils/format-date.js';
 
 const D = document;
 const SK_DATA = 'ao3h:bookmarkVault:data';
@@ -92,8 +93,7 @@ export class StatusIndicators {
       }
 
       if (showDate && lastRead[wid]) {
-        const days  = Math.floor((Date.now() - lastRead[wid]) / 86400000);
-        const label = days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days}d ago`;
+        const label = relativeDate(lastRead[wid], { short: true });
         const span  = D.createElement('span');
         span.className     = 'ao3h-bv-last-read';
         span.textContent   = `Last read: ${label}`;

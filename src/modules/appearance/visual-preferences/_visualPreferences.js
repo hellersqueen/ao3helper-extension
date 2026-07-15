@@ -12,8 +12,10 @@ AO3 Helper - Visual Preferences Module Coordinator
         4. statsDisplayFormat   ./statsDisplayFormat.js
         5. hoverReveal          ./hoverReveal.js
         6. visibilityPresets    ./visibilityPresets.js
-        7. fandomHighlighting   ./fandomHighlighting.js
-        8. statsOnChaptersList  ./statsOnChaptersList.js
+        7. statsOnChaptersList  ./statsOnChaptersList.js
+
+    fandomHighlighting a été fusionné dans browse/tagsDisplay/tagHighlighting.js
+    (shared.md, décision K4) — voir ce fichier pour la migration des données.
 
     Storage key: ao3h:mod:visualPreferences:settings
                  (legacy fallback: ao3h:visualPreferences)
@@ -46,7 +48,6 @@ import { MinimalHeader } from './minimalHeader.js';
 import { StatsDisplayFormat } from './statsDisplayFormat.js';
 import { HoverReveal } from './hoverReveal.js';
 import { VisibilityPresets } from './visibilityPresets.js';
-import { FandomHighlighting } from './fandomHighlighting.js';
 import { StatsOnChaptersList } from './statsOnChaptersList.js';
 
 // Same order as the legacy CSS bundle had (bundler supprimé en Phase 27)
@@ -108,28 +109,12 @@ class VisualPreferences {
       statsDisplayFormat:   new StatsDisplayFormat(),
       hoverReveal:          new HoverReveal(),
       visibilityPresets:    new VisibilityPresets(),
-      fandomHighlighting:   new FandomHighlighting(),
       statsOnChaptersList:  new StatsOnChaptersList(),
     };
   }
 
   getDefaults() {
-    return {
-      hideWordCount: false,
-      hideKudosCount: false,
-      hideCommentsCount: false,
-      hideBookmarksCount: false,
-      hideHits: false,
-      hidePublishedDate: false,
-      hideUpdatedDate: false,
-      hideCompletedDate: false,
-      hideChapterDates: false,
-      minimalHeader: false,
-      hideStatsOnChaptersList: false,
-      statsAsIcons: false,
-      statsIconsMode: 'icons',
-      relativeDates: false
-    };
+    return { ...DEFAULTS };
   }
 
   loadState() {
@@ -212,7 +197,6 @@ class VisualPreferences {
     this.components.minimalHeader.apply(state.minimalHeader);
     this.components.statsDisplayFormat.apply(state);
     this.components.hoverReveal.apply(state);
-    this.components.fandomHighlighting.apply(state);
     this.components.statsOnChaptersList.apply(state.hideStatsOnChaptersList);
   }
 

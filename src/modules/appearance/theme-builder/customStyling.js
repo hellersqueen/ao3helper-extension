@@ -25,7 +25,8 @@ AO3 Helper - Custom Styling Submodule
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
+import { ThemeValidator } from '../../../../lib/themes/engine/themeValidator.js';
 
 const W    = getGlobalWindow();
 // Étape 318 : AO3H importé du core/lifecycle (avant : capture window.AO3H).
@@ -392,6 +393,16 @@ function renderPanel () {
       return;
     }
     if (activeType === 'css') {
+      // Contrôle de sécurité (lib/themes/engine/themeValidator.js) — distinct
+      // du linter de syntaxe validateCSS() ci-dessous ; bloque plutôt que
+      // d'avertir, car c'est un motif dangereux et non une simple coquille.
+      try {
+        ThemeValidator.validate(code);
+      } catch (err) {
+        statusEl.textContent = '⛔ ' + err.message;
+        statusEl.className = `${NS}-tb-css-status ${NS}-tb-css-warn`;
+        return;
+      }
       const errs = validateCSS(code);
       if (errs.length > 0) {
         statusEl.textContent = '⚠ ' + errs[0] + ' — applied anyway';
@@ -615,27 +626,36 @@ register(
       console.log(LOG, 'migrated v1 storage → v2');
     }
 
-    // Re-apply saved injection on page load if current page matches
-    const savedCode   = lsGet(CSS_SK) || '';
-    const savedType2  = lsGet(TYPE_SK) || 'css';
-    const savedPages2 = lsGet(PAGES_SK) || ['all'];
-    const savedPrio2  = lsGet(PRIORITY_SK) ?? DEFAULT_PRIORITY;
-    if (savedCode && matchesCurrentPage(savedPages2)) {
-      injectWithPriority(savedCode, savedType2, savedPrio2);
-      console.log(LOG, 'restored injection on', location.pathname, 'priority', savedPrio2);
-    }
+    // document.body peut ne pas encore exister quand ce module boote (surtout
+    // sur une grosse page) — sans ce report, le bouton déclencheur plantait
+    // (Cannot read properties of null (reading 'appendChild')), constaté en test.
+    let active = true;
+    onReady(() => {
+      if (!active) return;
 
-    triggerBtn = document.createElement('button');
-    triggerBtn.className = `${NS}-tb-trigger`;
-    triggerBtn.textContent = '✏️ CSS';
-    triggerBtn.setAttribute('aria-label', 'Open custom CSS editor');
-    triggerBtn.addEventListener('click', () => {
-      if (panelEl) { closePanel(); } else { renderPanel(); }
+      // Re-apply saved injection on page load if current page matches
+      const savedCode   = lsGet(CSS_SK) || '';
+      const savedType2  = lsGet(TYPE_SK) || 'css';
+      const savedPages2 = lsGet(PAGES_SK) || ['all'];
+      const savedPrio2  = lsGet(PRIORITY_SK) ?? DEFAULT_PRIORITY;
+      if (savedCode && matchesCurrentPage(savedPages2)) {
+        injectWithPriority(savedCode, savedType2, savedPrio2);
+        console.log(LOG, 'restored injection on', location.pathname, 'priority', savedPrio2);
+      }
+
+      triggerBtn = document.createElement('button');
+      triggerBtn.className = `${NS}-tb-trigger`;
+      triggerBtn.textContent = '✏️ CSS';
+      triggerBtn.setAttribute('aria-label', 'Open custom CSS editor');
+      triggerBtn.addEventListener('click', () => {
+        if (panelEl) { closePanel(); } else { renderPanel(); }
+      });
+      document.body.appendChild(triggerBtn);
+      if (getShared()?.cfg?.('mode') === 'visual') triggerBtn.style.display = 'none';
     });
-    document.body.appendChild(triggerBtn);
-    if (getShared()?.cfg?.('mode') === 'visual') triggerBtn.style.display = 'none';
 
     return function cleanup () {
+      active = false;
       closePanel();
       triggerBtn?.remove();
       triggerBtn = null;

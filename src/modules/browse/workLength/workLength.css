@@ -45,15 +45,11 @@
   ═══════════════════════════════════════════════════════════════════════
     SECTION 02 — TEMPS PAR CHAPITRE
   ───────────────────────────────────────────────────────────────────────
-    Le texte de temps estimé injecté dans la liste des chapitres.
+    Le temps par chapitre est injecté dans le badge partagé
+    .ao3h-chapter-badge (voir lib/ui/chapter-badge.js), stylé dans
+    reading/chapter-navigation/chapterNavigation.css.
   ═══════════════════════════════════════════════════════════════════════
 */
-
-.ao3h-wl-chapter-time {
-  font-size: 11px;
-  color: #6b7280;
-  margin-left: 8px;
-}
 
 
 /*####

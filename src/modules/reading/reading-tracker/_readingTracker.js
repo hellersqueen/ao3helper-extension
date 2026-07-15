@@ -40,7 +40,7 @@ AO3 Helper - Reading Tracker Module Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css, lsGet, lsSet, lsDel } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet, lsDel, onReady } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 import { relativeDate } from '../../../../lib/utils/format-date.js';
@@ -127,6 +127,8 @@ register(
   MOD,
   { title: 'Reading Tracker', enabledByDefault: false },
   async function init () {
+    let active = true;
+
     // ── Public API ────────────────────────────────────────────────────────
     W.AO3H_ReadingTracker = {
       getProgress,
@@ -180,14 +182,21 @@ register(
           });
         }
 
-        if (isReturn && progress.chapter) {
-          readingProgress.showResumeToast(progress);
-          readingProgress.showResumeBanner(workId, progress);
-        }
+        // document.body peut ne pas encore exister quand ce module boote —
+        // sans ce report, injectFloatingBadge()/showResumeToast() plantaient
+        // (Cannot read properties of null), constaté sur plusieurs modules
+        // similaires en test.
+        onReady(() => {
+          if (!active) return;
+          if (isReturn && progress.chapter) {
+            readingProgress.showResumeToast(progress);
+            readingProgress.showResumeBanner(workId, progress);
+          }
 
-        readingProgress.injectFloatingBadge();
-        readingProgress.setupScrollTracking(workId);
-        readingProgress.schedulePositionMarker(workId, getProgress(workId));
+          readingProgress.injectFloatingBadge();
+          readingProgress.setupScrollTracking(workId);
+          readingProgress.schedulePositionMarker(workId, getProgress(workId));
+        });
       }
     }
 
@@ -197,6 +206,7 @@ register(
     }
 
     return function cleanup () {
+      active = false;
       seenTracking.teardown();
       visualMarkers.teardown();
       readingProgress.cleanup();

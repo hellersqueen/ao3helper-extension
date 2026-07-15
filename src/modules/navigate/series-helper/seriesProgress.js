@@ -6,7 +6,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Storage } from '../../../../lib/storage/index.js';
 import { wrapStorageForUser } from '../../../../lib/storage/user.js';
 import { isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, onReady } from '../../../../lib/utils/index.js';
 
 const W = getGlobalWindow();
 const MOD = 'seriesProgress';
@@ -236,14 +236,26 @@ register(MOD, {
   const cfg = Object.assign({}, DEFAULTS, parentCfg);
   const api = getAPI();
 
-  enhanceAllLinks(cfg, api);
-  startObserver(cfg, api);
+  // Le DOM (dd.series, .title.heading…) peut ne pas encore être parsé quand
+  // ce module boote sur une grosse page — sans ce report, enhanceAllLinks()
+  // trouve 0 lien au premier passage, et le MutationObserver démarré ensuite
+  // ne voit plus rien à observer si le parsing s'est déjà terminé entre
+  // temps (constaté en test).
+  let active = true;
+  onReady(() => {
+    if (!active) return;
+    if (isListingPage()) {
+      enhanceAllLinks(cfg, api);
+      startObserver(cfg, api);
+    }
 
-  if (isWorkPage() && api) {
-    injectBanner(api);
-  }
+    if (isWorkPage() && api) {
+      injectBanner(api);
+    }
+  });
 
   return function cleanup() {
+    active = false;
     if (observer) { observer.disconnect(); observer = null; }
     document.querySelectorAll(
       `.${NS}-sh-progress-wrap, .${NS}-sh-badge, #${NS}-sh-banner`

@@ -29,6 +29,7 @@ AO3 Helper - Trope Games Module Coordinator
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { TROPE_NAMES } from '../../../../lib/ao3/constants.js';
 import styles from './tropeGames.css?inline';
 
 import './tropeAchievements.js';
@@ -43,21 +44,9 @@ const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'tropeGames';
 
-// ── Shared trope list ─────────────────────────────────────────────────────
-const TROPE_LIST = [
-  'Slow Burn', 'Enemies to Lovers', 'Hurt/Comfort', 'Fake Dating',
-  'Soulmates', 'Found Family', 'Angst with a Happy Ending', 'Coffee Shop AU',
-  'Road Trip', 'Mutual Pining', 'Idiots in Love', 'Amnesia',
-  'Time Travel', 'Bodyswap', 'Roommates', 'Second Chance Romance',
-  'Forbidden Love', 'Secret Identity', 'Stranded Together', 'Undercover',
-  'Hanahaki Disease', 'Reincarnation', 'Canon Divergence', 'Fix-It',
-  'Chosen Family', 'First Meeting', 'Reunion', "Villain's POV",
-  'Mentor/Protégé', 'Sacrifice', 'Whump', 'Comfort without Hurt',
-  'Fake Marriage', 'Pining', 'Miscommunication', 'Jealousy',
-  'Protective', 'Touch-Starved', 'Childhood Friends', 'Dreams',
-  'Letters/Emails', 'Sickfic', 'Pre-Canon', 'Post-Canon', 'AU: Human',
-  'AU: Fantasy', 'AU: Modern', 'Epistolary', 'Unrequited Love', 'Loyalty',
-];
+// ── Shared trope list (référence commune : lib/ao3/constants.js TROPE_NAMES,
+// aussi utilisée par relatedSearches/CO_TAGS et filterManager/BUILTIN_BUNDLES) ──
+const TROPE_LIST = TROPE_NAMES;
 
 // ── Coordinator registration ──────────────────────────────────────────────
 register(

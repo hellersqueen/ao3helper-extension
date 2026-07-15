@@ -82,14 +82,11 @@ register(
     });
     instances.push(backupOpsInst);
 
-    // ── Auto backup ─────────────────────────────────────────────────────────
+    // ── Auto backup (delegates the actual work to backupOpsInst) ───────────
     const autoBackupInst = new AutoBackup({
       enableAutoBackup: cfg('enableAutoBackup'),
       backupInterval:   cfg('backupInterval') * 60 * 1000, // convert minutes → ms
-      maxBackups:       cfg('maxBackups'),
-      backups:          sharedBackups,
-      onBackupCreated,
-      getAllData:        () => backupOpsInst?.getAllAO3HelperData() ?? {},
+      backupOps:        backupOpsInst,
     });
     autoBackupInst.init();
     instances.push(autoBackupInst);

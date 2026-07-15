@@ -26,6 +26,7 @@ import { loadItems, saveItems } from './laterShelfStore.js';
 import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { createBulkSelect } from '../../../../lib/ui/bulk-select.js';
 
 const MOD = 'markedForLaterStatus';
 const D   = document;
@@ -213,37 +214,21 @@ register(MOD, {
   }
 
   // ── MFL page: multi-select + batch delete ────────────────────────────────
-  function injectMultiSelect () {
-    if (D.getElementById('ao3h-ls-ms-bar')) return;
-    var blurbs = Array.from(D.querySelectorAll('.bookmark.blurb'));
-    if (!blurbs.length) return;
-    blurbs.forEach(function (blurb) {
-      if (blurb.querySelector('.ao3h-ls-chk')) return;
-      var chk = D.createElement('input');
-      chk.type = 'checkbox'; chk.className = 'ao3h-ls-chk';
-      blurb.insertBefore(chk, blurb.firstChild);
-    });
-    var bar = D.createElement('div');
-    bar.id = 'ao3h-ls-ms-bar';
-    var selAllBtn = D.createElement('button');
-    selAllBtn.textContent = 'Select all';
-    selAllBtn.addEventListener('click', function () {
-      var chks = Array.from(D.querySelectorAll('.ao3h-ls-chk'));
-      var anyUnchecked = chks.some(function (c) { return !c.checked; });
-      chks.forEach(function (c) { c.checked = anyUnchecked; });
-      selAllBtn.textContent = anyUnchecked ? 'Deselect all' : 'Select all';
-    });
-    var delBtn = D.createElement('button');
-    delBtn.id = 'ao3h-ls-del';
-    delBtn.textContent = '🗑 Remove selected';
-    delBtn.addEventListener('click', function () {
-      var checked = Array.from(D.querySelectorAll('.ao3h-ls-chk:checked'));
-      if (!checked.length) return;
-      if (!confirm('Remove ' + checked.length + ' work' + (checked.length !== 1 ? 's' : '') + ' from your Later Shelf?')) return;
+  // lib/ui/bulk-select.js — fusionné avec organizationTools (shared.md, E6).
+  var bulkSelect = createBulkSelect({
+    blurbSelector: '.bookmark.blurb',
+    barId:         'ao3h-ls-ms-bar',
+    checkboxClass: 'ao3h-ls-chk',
+    removeId:      'ao3h-ls-del',
+    labels: {
+      selectAll:   'Select all',
+      deselectAll: 'Deselect all',
+      remove:      '🗑 Remove selected',
+    },
+    onRemove: function (selected) {
+      if (!confirm('Remove ' + selected.length + ' work' + (selected.length !== 1 ? 's' : '') + ' from your Later Shelf?')) return;
       var toRemove = new Set();
-      checked.forEach(function (chk) {
-        var blurb = chk.closest('li');
-        if (!blurb) return;
+      selected.forEach(function (blurb) {
         var wid = widFromBlurb(blurb);
         if (wid) toRemove.add(wid);
         var form = blurb.querySelector('form[data-method="delete"], form[action*="mark_for_later"]');
@@ -252,11 +237,11 @@ register(MOD, {
       if (toRemove.size > 0) {
         saveItems(loadItems().filter(function (i) { return !toRemove.has(String(i.wid || i)); }));
       }
-    });
-    bar.appendChild(selAllBtn);
-    bar.appendChild(delBtn);
-    var sortBar = D.getElementById('ao3h-ls-sort');
-    if (sortBar) sortBar.insertAdjacentElement('afterend', bar);
+    },
+  });
+
+  function injectMultiSelect () {
+    bulkSelect.scan();
   }
 
   // ── MutationObserver for dynamic content ─────────────────────────────────
@@ -275,10 +260,11 @@ register(MOD, {
   // ── Cleanup ──────────────────────────────────────────────────────────────
   return function cleanup () {
     observer.disconnect();
-    ['ao3h-ls-sort','ao3h-ls-ms-bar','ao3h-ls-count'].forEach(function (id) {
+    bulkSelect.destroy();
+    ['ao3h-ls-sort','ao3h-ls-count'].forEach(function (id) {
       var el = D.getElementById(id); if (el) el.remove();
     });
-    D.querySelectorAll('.ao3h-ls-badge, .ao3h-ls-date, .ao3h-ls-chk').forEach(function (el) { el.remove(); });
+    D.querySelectorAll('.ao3h-ls-badge, .ao3h-ls-date').forEach(function (el) { el.remove(); });
     hiddenStates.forEach(function (hidden, blurb) {
       blurb.hidden = hidden;
       delete blurb.dataset.lsHidden;

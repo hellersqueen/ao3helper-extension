@@ -23,7 +23,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON, downloadFile } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
-import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
 
 const W    = getGlobalWindow();
@@ -177,15 +177,23 @@ register(
     if (loadModuleSettings(MOD).enableStats === false) return () => {};
     console.log(LOG, 'init');
 
-    // Record tropes on work pages
-    if (isWorkPage()) {
-      const stats = loadStats();
-      recordTropes(stats);
-    }
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'appendChild plantait (Cannot read properties of null),
+    // constaté sur plusieurs modules similaires en test.
+    let active = true;
+    onReady(() => {
+      if (!active) return;
+      // Record tropes on work pages
+      if (isWorkPage()) {
+        const stats = loadStats();
+        recordTropes(stats);
+      }
 
-    injectTrigger();
+      injectTrigger();
+    });
 
     return function cleanup () {
+      active = false;
       panelEl?.remove();
       triggerBtn?.remove();
       panelEl = null;

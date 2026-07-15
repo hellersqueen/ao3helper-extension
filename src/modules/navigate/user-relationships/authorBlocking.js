@@ -24,7 +24,7 @@ AO3 Helper - Author Blocking Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, onReady } from '../../../../lib/utils/index.js';
 
 const MOD  = 'authorBlocking';
 const NS   = 'ao3h';
@@ -107,17 +107,25 @@ register(MOD, {
   parent:           'userRelationships',
   enabledByDefault: true,
 }, async function init () {
-  const blocked = getBlockedAuthors();
-  processBlurbs(blocked);
-
-  const observer = observe(document.body, { childList: true, subtree: true }, () => processBlurbs(getBlockedAuthors()));
+  // document.body peut ne pas encore exister quand ce module boote — sans ce
+  // report, l'observer plantait (Cannot read properties of null), constaté
+  // sur plusieurs modules similaires en test.
+  let active = true;
+  let observer = null;
+  onReady(() => {
+    if (!active) return;
+    const blocked = getBlockedAuthors();
+    processBlurbs(blocked);
+    observer = observe(document.body, { childList: true, subtree: true }, () => processBlurbs(getBlockedAuthors()));
+  });
 
   // Live-update when blockingInterface dispatches a block/unblock action
   const onBlockingChanged = () => { restoreBlurbs(); processBlurbs(getBlockedAuthors()); };
   document.addEventListener('ao3h:blocking-changed', onBlockingChanged);
 
   return () => {
-    observer.disconnect();
+    active = false;
+    observer?.disconnect();
     document.removeEventListener('ao3h:blocking-changed', onBlockingChanged);
     restoreBlurbs();
   };

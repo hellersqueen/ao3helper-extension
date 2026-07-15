@@ -29,7 +29,7 @@ AO3 Helper - Author Tracking Submodule
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, onReady } from '../../../../lib/utils/index.js';
 
 const MOD  = 'authorTracking';
 const NS   = 'ao3h';
@@ -143,20 +143,29 @@ register(MOD, {
   parent:           'userRelationships',
   enabledByDefault: true,
 }, async function init () {
-  if (isAuthorWorksPage()) {
-    const author = getAuthorFromPath();
-    const count  = getWorkCountFromPage();
-    if (author && count !== null) {
-      const newWorks = checkAndUpdateSnapshot(author.toLowerCase(), count);
-      if (newWorks > 0) showNewWorksBanner(author, newWorks);
+  // document.body peut ne pas encore exister quand ce module boote — sans ce
+  // report, l'observer plantait (Cannot read properties of null), constaté
+  // sur plusieurs modules similaires en test.
+  let active = true;
+  let observer = null;
+  onReady(() => {
+    if (!active) return;
+    if (isAuthorWorksPage()) {
+      const author = getAuthorFromPath();
+      const count  = getWorkCountFromPage();
+      if (author && count !== null) {
+        const newWorks = checkAndUpdateSnapshot(author.toLowerCase(), count);
+        if (newWorks > 0) showNewWorksBanner(author, newWorks);
+      }
     }
-  }
 
-  annotateBlurbs();
-  const observer = observe(document.body, { childList: true, subtree: true }, annotateBlurbs);
+    annotateBlurbs();
+    observer = observe(document.body, { childList: true, subtree: true }, annotateBlurbs);
+  });
 
   return () => {
-    observer.disconnect();
+    active = false;
+    observer?.disconnect();
     document.querySelectorAll(`.${NS}-author-tracking-badges`).forEach(el => el.remove());
     document.querySelectorAll(`.${NS}-author-new-works`).forEach(el => el.remove());
     document.querySelectorAll('[data-ao3h-tracked]').forEach(blurb => {

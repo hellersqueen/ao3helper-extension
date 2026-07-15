@@ -47,14 +47,14 @@ AO3 Helper - Automate Backup Submodule
 
 /**
  * AutoBackup - Periodic automatic backup scheduler.
+ * Delegates the actual backup/restore work to a BackupOperations instance
+ * (injected as `config.backupOps`) so the two submodules share one
+ * implementation instead of two near-identical copies.
  */
 export class AutoBackup {
   constructor(config = {}) {
     this.config = config;
-    this.backups = config.backups || [];
-    this.onBackupCreated = config.onBackupCreated || null;
-    this.onRestoreComplete = config.onRestoreComplete || null;
-    this.getAllData = config.getAllData || null;
+    this.backupOps = config.backupOps;
     this.backupInterval = null;
   }
 
@@ -73,61 +73,15 @@ export class AutoBackup {
   }
 
   createBackup() {
-    const data = this.getAllData ? this.getAllData() : {};
-    const backup = {
-      timestamp: new Date().toISOString(),
-      data: data
-    };
-
-    this.backups.unshift(backup);
-
-    // Keep only max backups
-    const maxBackups = this.config.maxBackups || 10;
-    if (this.backups.length > maxBackups) {
-      this.backups.length = maxBackups;
-    }
-
-    // Notify parent
-    if (this.onBackupCreated) {
-      this.onBackupCreated(this.backups);
-    }
-
-    console.log(`[AutoBackup] Backup saved (${this.backups.length}/${maxBackups})`);
+    return this.backupOps.createBackup();
   }
 
   restoreBackup(index = 0) {
-    if (!this.backups[index]) {
-      console.error('[AutoBackup] Backup not found at index:', index);
-      if (this.onRestoreComplete) this.onRestoreComplete({ success: false, reason: 'not-found', index });
-      return false;
-    }
-
-    const backup = this.backups[index];
-
-    if (!backup.data || typeof backup.data !== 'object') {
-      console.error('[AutoBackup] Backup at index', index, 'has no restorable data.');
-      if (this.onRestoreComplete) this.onRestoreComplete({ success: false, reason: 'no-data', index });
-      return false;
-    }
-
-    const date = new Date(backup.timestamp).toLocaleString();
-
-    if (!confirm(`Restore backup from ${date}?\n\nThis will overwrite current data.`)) {
-      if (this.onRestoreComplete) this.onRestoreComplete({ success: false, reason: 'cancelled', index });
-      return false;
-    }
-
-    Object.entries(backup.data).forEach(([key, value]) => {
-      localStorage.setItem(key, value);
-    });
-
-    console.log(`[AutoBackup] Backup restored from ${date}`);
-    if (this.onRestoreComplete) this.onRestoreComplete({ success: true, index, timestamp: backup.timestamp });
-    return true;
+    return this.backupOps.restoreBackup(index);
   }
 
   getBackups() {
-    return this.backups;
+    return this.backupOps.getBackups();
   }
 
   cleanup() {

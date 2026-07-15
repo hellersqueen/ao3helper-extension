@@ -21,7 +21,7 @@ AO3 Helper - Comment Configuration Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, onReady } from '../../../../lib/utils/index.js';
 
 const MOD  = 'commentConfiguration';
 const NS   = 'ao3h';
@@ -81,17 +81,25 @@ register(MOD, {
 }, async function init () {
   const cleanups = [];
 
-  if (cfg('chapterIndicator')) {
-    addChapterIndicators();
-    const obs = observe(document.body, { childList: true, subtree: true }, addChapterIndicators);
-    cleanups.push(() => obs.disconnect());
-  }
+  // document.body peut ne pas encore exister quand ce module boote — sans ce
+  // report, l'observer plantait (Cannot read properties of null), constaté
+  // sur plusieurs modules similaires en test.
+  let active = true;
+  onReady(() => {
+    if (!active) return;
+    if (cfg('chapterIndicator')) {
+      addChapterIndicators();
+      const obs = observe(document.body, { childList: true, subtree: true }, addChapterIndicators);
+      cleanups.push(() => obs.disconnect());
+    }
 
-  if (cfg('guestCommentsDefault')) {
-    applyGuestCommentDefault();
-  }
+    if (cfg('guestCommentsDefault')) {
+      applyGuestCommentDefault();
+    }
+  });
 
   return () => {
+    active = false;
     cleanups.forEach(fn => fn());
     document.querySelectorAll(`.${NS}-ch-badge`).forEach(badge => badge.remove());
     guestCheckboxStates.forEach((checked, checkbox) => {

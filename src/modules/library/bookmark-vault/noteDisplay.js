@@ -1,5 +1,5 @@
 import { register } from '../../../core/lifecycle.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, onReady } from '../../../../lib/utils/index.js';
 
 const MOD = 'noteDisplay';
 const NS  = 'ao3h';
@@ -170,18 +170,27 @@ register(MOD, {
   parent:           'bookmarkVault',
   enabledByDefault: false,
 }, async function init () {
-  collapseNotes();
-  addHoverPreviews();
-  applyMarkdownToNotes();
-
-  const obs = observe(document.body, { childList: true, subtree: true }, () => {
+  // document.body peut ne pas encore exister quand ce module boote — sans ce
+  // report, l'observer plantait (Cannot read properties of null), constaté
+  // sur plusieurs modules similaires en test.
+  let active = true;
+  let obs = null;
+  onReady(() => {
+    if (!active) return;
     collapseNotes();
     addHoverPreviews();
     applyMarkdownToNotes();
+
+    obs = observe(document.body, { childList: true, subtree: true }, () => {
+      collapseNotes();
+      addHoverPreviews();
+      applyMarkdownToNotes();
+    });
   });
 
   return () => {
-    obs.disconnect();
+    active = false;
+    obs?.disconnect();
     document.querySelectorAll(
       `.${NS}-note-preview, .${NS}-note-toggle, .${NS}-note-tooltip`
     ).forEach(el => el.remove());

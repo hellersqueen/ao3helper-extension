@@ -18,6 +18,9 @@ AO3 Helper - Reading Time Submodule
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { upsertChapterBadgePart, removeChapterBadgePartsByKey } from '../../../../lib/ui/chapter-badge.js';
+import { onReady } from '../../../../lib/utils/index.js';
+
 export class ReadingTime {
   constructor(NS, cfg) {
     this.NS  = NS;
@@ -63,7 +66,6 @@ export class ReadingTime {
 
   injectPerChapter() {
     if (!this.cfg('showEstimate') || !this.cfg('estimatePerChapter')) return;
-    const { NS } = this;
     const chapters = document.querySelectorAll('#chapters > .chapter');
     if (chapters.length <= 1) return;
     chapters.forEach(ch => {
@@ -71,13 +73,10 @@ export class ReadingTime {
       if (!userstuff) return;
       const chWords = (userstuff.textContent || '').split(/\s+/).filter(Boolean).length;
       const min     = chWords / this.getWPM();
-      const heading = ch.querySelector('.chapter.preface h3.title, h3.title');
-      if (heading && !heading.querySelector(`.${NS}-wl-chapter-time`)) {
-        const span = document.createElement('span');
-        span.className  = `${NS}-wl-chapter-time`;
-        span.textContent = `(${this.formatTime(min)} read)`;
-        heading.appendChild(span);
-      }
+      // Même sélecteur d'ancrage que chapterWordCount (reading/chapter-navigation)
+      // pour que les deux modules partagent le même badge (shared.md, Z2).
+      const heading = ch.querySelector('h3.title, h2.heading, h3.heading, h2, h3');
+      if (heading) upsertChapterBadgePart(heading, 'time', `${this.formatTime(min)} read`);
     });
   }
 
@@ -90,11 +89,19 @@ export class ReadingTime {
   setup() {
     const isWork = /^\/works\/\d+/.test(location.pathname);
     let observer = null;
+    let active = true;
 
     if (isWork) {
-      const stat = document.querySelector('dl.stats dd.words');
-      if (stat) this.injectTimeBadge(stat, true);
-      this.injectPerChapter();
+      // #chapters peut ne pas encore être parsé quand ce module boote (surtout
+      // sur un gros work) — injectPerChapter() n'a pas de retry, contrairement
+      // à chapterWordCount ; sans ce report, le badge partagé (lib/ui/chapter-badge.js)
+      // ne reçoit jamais sa partie « temps de lecture » sur un chargement lent.
+      onReady(() => {
+        if (!active) return;
+        const stat = document.querySelector('dl.stats dd.words');
+        if (stat) this.injectTimeBadge(stat, true);
+        this.injectPerChapter();
+      });
     } else {
       this.injectOnListings();
 
@@ -112,12 +119,14 @@ export class ReadingTime {
     }
 
     return function cleanup() {
+      active = false;
       if (observer) { observer.disconnect(); observer = null; }
     };
   }
 
   reset() {
     const { NS } = this;
-    document.querySelectorAll(`.${NS}-wl-time, .${NS}-wl-chapter-time`).forEach(el => el.remove());
+    document.querySelectorAll(`.${NS}-wl-time`).forEach(el => el.remove());
+    removeChapterBadgePartsByKey('time');
   }
 }

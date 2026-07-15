@@ -41,7 +41,7 @@ AO3 Helper - Search Autocomplete Submodule
 import { register } from '../../../core/lifecycle.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
-import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 
 const NS   = 'ao3h';
 const MOD  = 'searchAutocomplete';
@@ -292,22 +292,31 @@ register(
 
     const cleanup_fns = [];
     let observer = null;
+    let active = true;
 
-    // Autocomplete / history dropdown
-    if (cfg.searchHistory || cfg.tagAutocomplete) {
-      document.querySelectorAll(
-        'input[type="text"][name*="query"], input#work_search_query, input[name="query"]'
-      ).forEach(inp => attachToInput(inp, cfg, cleanup_fns));
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'observer plantait (Cannot read properties of null), constaté
+    // sur plusieurs modules similaires en test.
+    onReady(() => {
+      if (!active) return;
 
-      const onDocClick = e => { if (!dropdown?.contains(e.target)) closeDropdown(); };
-      document.addEventListener('click', onDocClick);
-      cleanup_fns.push(() => document.removeEventListener('click', onDocClick));
-    }
+      // Autocomplete / history dropdown
+      if (cfg.searchHistory || cfg.tagAutocomplete) {
+        document.querySelectorAll(
+          'input[type="text"][name*="query"], input#work_search_query, input[name="query"]'
+        ).forEach(inp => attachToInput(inp, cfg, cleanup_fns));
 
-    // Quick search icons on hover
-    observer = setupQuickIcons();
+        const onDocClick = e => { if (!dropdown?.contains(e.target)) closeDropdown(); };
+        document.addEventListener('click', onDocClick);
+        cleanup_fns.push(() => document.removeEventListener('click', onDocClick));
+      }
+
+      // Quick search icons on hover
+      observer = setupQuickIcons();
+    });
 
     return function cleanup () {
+      active = false;
       closeDropdown();
       clearTimeout(debounceTimer);
       cleanup_fns.forEach(fn => fn());

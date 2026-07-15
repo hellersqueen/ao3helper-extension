@@ -23,7 +23,7 @@
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, onReady } from '../../../../lib/utils/index.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
@@ -239,6 +239,7 @@ function wireToggle (notesEl, suffix) {
 // ── Main process ──────────────────────────────────────────────────────────
 let observer = null;
 let unwatchEnable = null;
+let active = false;
 
 function process () {
   const notes = findNotes();
@@ -251,6 +252,8 @@ function process () {
 
 // ── Cleanup ───────────────────────────────────────────────────────────────
 function cleanup () {
+  active = false;
+
   // Disconnect observer
   if (observer) { observer.disconnect(); observer = null; }
 
@@ -282,23 +285,31 @@ register(MOD, {
 }, async function init () {
   if (!isWorkPage()) return;
 
-  process();
+  active = true;
 
-  // Watch for dynamically added content (rare on AO3, but safe)
-  observer = new MutationObserver((muts) => {
-    for (const m of muts) {
-      for (const n of m.addedNodes) {
-        if (n instanceof Element && (
-          n.matches?.('div.notes.module') ||
-          n.querySelector?.('.notes.module')
-        )) {
-          process();
-          return;
+  // document.body peut ne pas encore exister quand ce module boote — sans ce
+  // report, l'observer plantait (Cannot read properties of null), constaté
+  // sur plusieurs modules similaires en test.
+  onReady(() => {
+    if (!active) return;
+    process();
+
+    // Watch for dynamically added content (rare on AO3, but safe)
+    observer = new MutationObserver((muts) => {
+      for (const m of muts) {
+        for (const n of m.addedNodes) {
+          if (n instanceof Element && (
+            n.matches?.('div.notes.module') ||
+            n.querySelector?.('.notes.module')
+          )) {
+            process();
+            return;
+          }
         }
       }
-    }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   });
-  observer.observe(document.body, { childList: true, subtree: true });
 
   // Live toggle via flags
   unwatchEnable = Flags?.watch(ENABLE_KEY, (val) => {

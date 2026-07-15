@@ -26,7 +26,15 @@ import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
+import { ThemeValidator } from '../../../../lib/themes/engine/themeValidator.js';
+
+// Ne rejette pas un CSS non validable (ex. déjà invalide avant ce contrôle) —
+// renvoie juste false pour que l'appelant décide (bloquer vs avertir).
+function isSafeCSS (css) {
+  try { ThemeValidator.validate(css); return true; }
+  catch { return false; }
+}
 
 const W    = getGlobalWindow();
 // Étape 318 : AO3H importé du core/lifecycle (avant : capture window.AO3H).
@@ -224,6 +232,8 @@ function renderEditForm (item, theme) {
   item.querySelector('[data-edit-save]').addEventListener('click', () => {
     const newName = item.querySelector('[data-field="name"]').value.trim();
     if (!newName) { alert('Name is required.'); return; }
+    const newCSS = item.querySelector('[data-field="css"]').value.trim();
+    if (!isSafeCSS(newCSS)) { alert('This CSS contains unsafe content and was not saved.'); return; }
     const all = loadThemes();
     const idx = all.findIndex(t => t.id === theme.id);
     if (idx >= 0) {
@@ -232,7 +242,7 @@ function renderEditForm (item, theme) {
         name:        newName,
         author:      item.querySelector('[data-field="author"]').value.trim(),
         description: item.querySelector('[data-field="description"]').value.trim(),
-        css:         item.querySelector('[data-field="css"]').value.trim(),
+        css:         newCSS,
       };
       saveThemes(all);
     }
@@ -329,6 +339,7 @@ function attachPanelEvents () {
     if (!name) { alert('Theme name is required.'); return; }
     const css  = panelEl.querySelector(`#${NS}-tb-nt-css`).value.trim();
     if (!css)  { alert('CSS is required.'); return; }
+    if (!isSafeCSS(css)) { alert('This CSS contains unsafe content and was not saved.'); return; }
     const all  = loadThemes();
     all.push({
       id:          `t${Date.now()}`,
@@ -358,14 +369,19 @@ function attachPanelEvents () {
         const data  = JSON.parse(ev.target.result);
         const items = Array.isArray(data) ? data : [data];
         const existing = loadThemes();
+        let imported = 0, skipped = 0;
         items.forEach(it => {
-          if (it.name && it.css) {
-            existing.push({ id: `t${Date.now()}-${Math.random().toString(36).slice(2)}`, name: it.name, author: it.author || '', description: it.description || '', css: it.css, createdAt: new Date().toISOString() });
-          }
+          if (!it.name || !it.css) return;
+          // Fichier importé = contenu non fiable (peut venir d'un tiers) —
+          // seul point d'entrée CSS externe du module, on filtre plutôt que d'avertir.
+          if (!isSafeCSS(it.css)) { skipped++; return; }
+          existing.push({ id: `t${Date.now()}-${Math.random().toString(36).slice(2)}`, name: it.name, author: it.author || '', description: it.description || '', css: it.css, createdAt: new Date().toISOString() });
+          imported++;
         });
         saveThemes(existing);
         refreshList();
-        console.log(LOG, 'Imported', items.length, 'themes');
+        console.log(LOG, 'Imported', imported, 'themes', skipped ? `(${skipped} skipped: unsafe CSS)` : '');
+        if (skipped) alert(`${skipped} theme(s) were skipped: unsafe CSS content.`);
       } catch {
         alert('Invalid JSON file.');
       }
@@ -399,14 +415,22 @@ register(
   async function init () {
     console.log(LOG, 'init');
 
-    triggerBtn = document.createElement('button');
-    triggerBtn.className = `${NS}-tb-trigger ${NS}-tb-trigger--themes`;
-    triggerBtn.textContent = '🎨 Themes';
-    triggerBtn.setAttribute('aria-label', 'Open theme library');
-    triggerBtn.addEventListener('click', openPanel);
-    document.body.appendChild(triggerBtn);
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, le bouton déclencheur plantait (Cannot read properties of null
+    // (reading 'appendChild')), constaté en test.
+    let active = true;
+    onReady(() => {
+      if (!active) return;
+      triggerBtn = document.createElement('button');
+      triggerBtn.className = `${NS}-tb-trigger ${NS}-tb-trigger--themes`;
+      triggerBtn.textContent = '🎨 Themes';
+      triggerBtn.setAttribute('aria-label', 'Open theme library');
+      triggerBtn.addEventListener('click', openPanel);
+      document.body.appendChild(triggerBtn);
+    });
 
     return function cleanup () {
+      active = false;
       if (previewingId) revertPreview();
       panelEl?.remove();
       triggerBtn?.remove();

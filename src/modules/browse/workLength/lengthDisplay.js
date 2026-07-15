@@ -16,6 +16,8 @@ AO3 Helper - Length Display Submodule
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { onReady } from '../../../../lib/utils/index.js';
+
 export class LengthDisplay {
   constructor(NS, cfg) {
     this.NS  = NS;
@@ -101,25 +103,33 @@ export class LengthDisplay {
   setup() {
     const isWork = /^\/works\/\d+/.test(location.pathname);
     let observer = null;
+    let active = true;
 
-    if (isWork) {
-      const stat = document.querySelector('dl.stats dd.words');
-      if (stat) this.inject(stat);
-    } else {
-      this.injectListings();
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'observer plantait (Cannot read properties of null), constaté
+    // sur plusieurs modules similaires en test (même bug que readingTime.js).
+    onReady(() => {
+      if (!active) return;
+      if (isWork) {
+        const stat = document.querySelector('dl.stats dd.words');
+        if (stat) this.inject(stat);
+      } else {
+        this.injectListings();
 
-      observer = new MutationObserver(mutations => {
-        mutations.forEach(mut => {
-          mut.addedNodes.forEach(node => {
-            if (node.nodeType !== Node.ELEMENT_NODE) return;
-            node.querySelectorAll?.('.stats dd.words').forEach(ddEl => this.inject(ddEl));
+        observer = new MutationObserver(mutations => {
+          mutations.forEach(mut => {
+            mut.addedNodes.forEach(node => {
+              if (node.nodeType !== Node.ELEMENT_NODE) return;
+              node.querySelectorAll?.('.stats dd.words').forEach(ddEl => this.inject(ddEl));
+            });
           });
         });
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-    }
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
+    });
 
     return function cleanup() {
+      active = false;
       if (observer) { observer.disconnect(); observer = null; }
     };
   }

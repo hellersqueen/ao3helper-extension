@@ -72,11 +72,15 @@ Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
 - Activer l'intégration Calibre depuis le panneau de réglages (le code existe déjà à l'intérieur du module, mais rien ne permet de l'activer)
+
 - Choisir de cacher les boutons de téléchargement rapide sur les listes (le réglage existe déjà à l'intérieur du module, mais rien ne permet de le changer depuis le panneau)
+
 - Envoyer une fic vers Kindle automatiquement en un clic, sans avoir à envoyer soi-même l'e-mail pré-rempli
-- Réessayer automatiquement un téléchargement qui a échoué, au lieu de devoir le refaire à la main
-- Prévenir quand la bibliothèque hors-ligne prend trop de place, ou nettoyer automatiquement les fics les plus anciennes quand il n'y a plus assez d'espace
+
 - Voir en un seul endroit la liste de toutes les fics sauvegardées hors-ligne — pour l'instant, il faut retrouver chaque fic une par une sur sa propre page pour savoir si elle est enregistrée
+
+- Prévenir quand la bibliothèque hors-ligne prend trop de place, ~~ou nettoyer automatiquement les fics les plus anciennes quand il n'y a plus assez d'espace~~
+~~- Réessayer automatiquement un téléchargement qui a échoué, au lieu de devoir le refaire à la main~~
 
 ## Explicitement écarté
 
@@ -85,14 +89,4 @@ vraiment dans ce module (pas de code pour ça) :
 - Télécharger automatiquement à intervalles réguliers — jugé trop agressif pour les serveurs d'AO3
 - Suivre sa progression de lecture dans les fics téléchargées — c'est le rôle d'un autre module (le suivi de lecture), pas de celui-ci
 
-## Précision
 
-⚠️ La doc historique présentait ce module comme une simple idée pas encore
-codée ("Ce qui est prévu"). Ce n'est plus le cas : le téléchargement
-individuel, la sélection multiple, le téléchargement d'une page entière en
-ZIP, le téléchargement d'une série entière, la bibliothèque hors-ligne, le
-bouton Kindle et même un générateur de couverture (non mentionné dans la
-doc historique) sont tous bel et bien codés aujourd'hui. Seules
-l'intégration Calibre et le masquage des boutons sur les listes existent
-dans le code sans être vraiment accessibles depuis le panneau (voir
-"Specs non implémentés" ci-dessus).

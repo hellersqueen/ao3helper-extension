@@ -17,6 +17,9 @@ AO3 Helper - Engagement Metrics Submodule
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { buildKudosRatioBadge } from '../../../../lib/ui/engagement-badge.js';
+import { getBlurbStats, getWorkPageStats } from '../../../../lib/ao3/work-stats.js';
+
 const BADGE_CLS = 'ao3h-engagement-badge';
 const WRAP_CLS  = 'ao3h-engagement-metrics';
 const DATA_ATTR = 'ao3hEngagement';
@@ -26,36 +29,17 @@ export class EngagementMetrics {
     this.colorCode = colorCode;
   }
 
-  /* ── Number parser ──────────────────────────────────────────────── */
-  parseNum (node) {
-    if (!node) return null;
-    const raw = (node.textContent || '').replace(/,/g, '').trim();
-    const n = parseInt(raw, 10);
-    return isNaN(n) ? null : n;
-  }
-
   /* ── Stats from a blurb ─────────────────────────────────────────── */
   getStats (blurb) {
-    const dl = blurb.querySelector('dl.stats');
-    if (!dl) return null;
-    return {
-      kudos:     this.parseNum(dl.querySelector('dd.kudos')),
-      hits:      this.parseNum(dl.querySelector('dd.hits')),
-      bookmarks: this.parseNum(dl.querySelector('dd.bookmarks')),
-      words:     this.parseNum(dl.querySelector('dd.words')),
-    };
+    if (!blurb.querySelector('dl.stats')) return null;
+    return getBlurbStats(blurb);
   }
 
   /* ── Metric calculators ─────────────────────────────────────────── */
-  kudosRatio (s)  { return (s.kudos != null && s.hits)  ? (s.kudos / s.hits)  * 100  : null; }
   kudosDensity (s){ return (s.kudos != null && s.words) ? (s.kudos / s.words) * 1000 : null; }
   saveRate (s)    { return (s.bookmarks != null && s.kudos) ? (s.bookmarks / s.kudos) * 100 : null; }
 
   /* ── Colour classes ─────────────────────────────────────────────── */
-  ratioColour (v)  {
-    if (!this.colorCode || v == null) return '';
-    return v >= 20 ? 'ao3h-metric-high' : v >= 8  ? 'ao3h-metric-mid' : 'ao3h-metric-low';
-  }
   densityColour (v) {
     if (!this.colorCode || v == null) return '';
     return v >= 50 ? 'ao3h-metric-high' : v >= 20 ? 'ao3h-metric-mid' : 'ao3h-metric-low';
@@ -79,11 +63,8 @@ export class EngagementMetrics {
     const wrap = document.createElement('span');
     wrap.className = WRAP_CLS;
 
-    const kr = this.kudosRatio(s);
-    if (kr != null) wrap.appendChild(this.badge(
-      kr.toFixed(1), '% ❤️/👁️', this.ratioColour(kr),
-      `${(s.kudos || 0).toLocaleString()} kudos / ${(s.hits || 0).toLocaleString()} hits`
-    ));
+    const ratioBadge = buildKudosRatioBadge(s, { colorCode: this.colorCode });
+    if (ratioBadge) wrap.appendChild(ratioBadge);
 
     const kd = this.kudosDensity(s);
     if (kd != null) wrap.appendChild(this.badge(
@@ -129,12 +110,7 @@ export class EngagementMetrics {
     if (!dl || dl.dataset[DATA_ATTR]) return;
     dl.dataset[DATA_ATTR] = '1';
 
-    const s = {
-      kudos:     this.parseNum(dl.querySelector('dd.kudos')),
-      hits:      this.parseNum(dl.querySelector('dd.hits')),
-      bookmarks: this.parseNum(dl.querySelector('dd.bookmarks')),
-      words:     this.parseNum(dl.querySelector('dd.words')),
-    };
+    const s = getWorkPageStats(document);
 
     const wrap = this.buildWrap(s);
     if (wrap) {

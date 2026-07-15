@@ -20,6 +20,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { onReady } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -115,9 +116,17 @@ register(
   async function init () {
     if (loadModuleSettings(MOD).enableRoulette === false) return () => {};
     console.log(LOG, 'init');
-    injectTrigger();
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'appendChild plantait (Cannot read properties of null),
+    // constaté sur plusieurs modules similaires en test.
+    let active = true;
+    onReady(() => {
+      if (!active) return;
+      injectTrigger();
+    });
 
     return function cleanup () {
+      active = false;
       closeModal();
       modalEl?.remove();
       triggerBtn?.remove();

@@ -25,9 +25,15 @@ AO3 Helper - Theme Builder Module Coordinator
         ao3h:tb:typography  — { preset, fontFamily, fontSize, lineHeight, letterSpacing }
         ao3h:tb:visual      — { accentColor, bgColor, textColor, linkColor, fontSize, lineHeight }
 
-    Note: themeBuilder est indépendant de lib/themes — il définit ses propres
-    thèmes inline (BUILTIN dans themeManagement.js). Comportement conservé à
-    l'identique lors de la migration Vite (Phase 24).
+    Note: themeBuilder définit ses propres thèmes inline (BUILTIN dans
+    themeManagement.js) plutôt que d'utiliser lib/themes/builtin — décision
+    Phase 24 réexaminée (shared.md, décision produit theme-builder↔lib/themes) :
+    fusionner les deux catalogues de thèmes changerait des thèmes déjà
+    sauvegardés par des utilisateurs, jugé trop risqué sans test en direct.
+    En revanche, lib/themes/engine/themeValidator.js (contrôle de sécurité
+    CSS, jusque-là inutilisé) est maintenant branché dans customStyling.js et
+    themeManagement.js sur les points d'entrée de CSS non fiable (import de
+    thème JSON notamment).
 
 ═══════════════════════════════════════════════════════════════════════════ */
 

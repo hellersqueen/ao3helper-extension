@@ -14,12 +14,21 @@ AO3 Helper - Tags Reordering Submodule
       - tagsReordering : master toggle (default: false)
 
     Storage keys (per work × tag type):
-      ao3h:tagsDisplay:order:[workId]:[tagType]
+      ao3h:tagsDisplay:order:[workId]:[tagType]  — array of tag names, in order
+
+    Utilise lib/ui/drag-reorder.js (makeListReorderable) — fusionné avec
+    l'implémentation de ficActions (shared.md, T1). Le bouton "Reset order"
+    a nécessité d'étendre la lib avec cleanup.resetToOriginal().
+    ⚠️ Non testé en conditions réelles sur AO3. La clé de stockage garde le
+    même nom mais change de format (index numériques → noms de tags) ; un
+    ordre déjà sauvegardé par un utilisateur ne sera pas retrouvé une fois
+    (retombe sur l'ordre par défaut, pas de casse).
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { makeListReorderable, applySavedOrder } from '../../../../lib/ui/drag-reorder.js';
 
 const MOD  = 'tagsReordering';
 const NS   = 'ao3h';
@@ -34,42 +43,30 @@ function storageKey (workId, tagType) {
   return `ao3h:tagsDisplay:order:${workId}:${tagType}`;
 }
 
-function saveOrder (list, workId, tagType) {
-  const order = Array.from(list.querySelectorAll(':scope > li')).map(li =>
-    parseInt(li.dataset.ao3hOrigIdx || '0', 10)
-  );
+function getItemKey (li) {
+  const text = (li.querySelector('a.tag')?.textContent || li.textContent || '').trim();
+  return text || null;
+}
+
+function loadOrder (workId, tagType) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey(workId, tagType)));
+    return Array.isArray(saved) ? saved : null;
+  } catch (_) { return null; }
+}
+
+function saveOrder (workId, tagType, order) {
   try { localStorage.setItem(storageKey(workId, tagType), JSON.stringify(order)); }
   catch (_) {}
 }
 
-function restoreOrder (list, workId, tagType) {
-  let saved;
-  try { saved = JSON.parse(localStorage.getItem(storageKey(workId, tagType))); }
-  catch (_) { return; }
-  if (!Array.isArray(saved)) return;
-
-  const items = Array.from(list.querySelectorAll(':scope > li'));
-  const indexMap = {};
-  items.forEach(li => { indexMap[parseInt(li.dataset.ao3hOrigIdx || '0', 10)] = li; });
-
-  saved.forEach(idx => {
-    const li = indexMap[idx];
-    if (li) list.appendChild(li);
-  });
+function clearOrder (workId, tagType) {
+  try { localStorage.removeItem(storageKey(workId, tagType)); } catch (_) {}
 }
 
-function resetOrder (list) {
-  const items = Array.from(list.querySelectorAll(':scope > li'));
-  items.sort((a, b) =>
-    parseInt(a.dataset.ao3hOrigIdx || '0', 10) - parseInt(b.dataset.ao3hOrigIdx || '0', 10)
-  );
-  items.forEach(li => list.appendChild(li));
-}
-
-function syncResetButton (list, workId, tagType) {
-  const key     = storageKey(workId, tagType);
-  const hasSaved = localStorage.getItem(key) !== null;
-  const btnId   = `${NS}-reset-${tagType}`;
+function syncResetButton (list, workId, tagType, onReset) {
+  const hasSaved = loadOrder(workId, tagType) !== null;
+  const btnId    = `${NS}-reset-${tagType}`;
   const existing = document.getElementById(btnId);
 
   if (hasSaved && !existing) {
@@ -79,8 +76,8 @@ function syncResetButton (list, workId, tagType) {
     btn.dataset.tagtype = tagType;
     btn.textContent = 'Reset order';
     btn.addEventListener('click', () => {
-      resetOrder(list);
-      try { localStorage.removeItem(key); } catch (_) {}
+      onReset();
+      clearOrder(workId, tagType);
       btn.remove();
     });
     list.insertAdjacentElement('afterend', btn);
@@ -91,66 +88,23 @@ function syncResetButton (list, workId, tagType) {
 
 function initList (list, workId, tagType) {
   const items = Array.from(list.querySelectorAll(':scope > li'));
-  if (!items.length) return;
+  if (items.length < 2) return null;
 
-  let dragging = null;
+  applySavedOrder(list, loadOrder(workId, tagType), getItemKey, ':scope > li');
 
-  items.forEach((li, i) => {
-    li.dataset.ao3hOrigIdx = String(i);
-    li.setAttribute('draggable', 'true');
-
-    const handle = document.createElement('span');
-    handle.className  = `${NS}-drag-handle`;
-    handle.title      = 'Drag to reorder';
-    handle.textContent = '⋮⋮';
-    handle.setAttribute('aria-hidden', 'true');
-    li.prepend(handle);
-
-    li.addEventListener('dragstart', e => {
-      dragging = li;
-      li.classList.add(`${NS}-dragging`);
-      e.dataTransfer.effectAllowed = 'move';
-    });
-
-    li.addEventListener('dragend', () => {
-      dragging = null;
-      list.querySelectorAll(':scope > li').forEach(el => {
-        el.classList.remove(`${NS}-dragging`, `${NS}-drag-over`);
-      });
-    });
-
-    li.addEventListener('dragover', e => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      if (!dragging || dragging === li) return;
-      list.querySelectorAll(':scope > li').forEach(el => el.classList.remove(`${NS}-drag-over`));
-      li.classList.add(`${NS}-drag-over`);
-    });
-
-    li.addEventListener('dragleave', () => {
-      li.classList.remove(`${NS}-drag-over`);
-    });
-
-    li.addEventListener('drop', e => {
-      e.preventDefault();
-      if (!dragging || dragging === li) return;
-      li.classList.remove(`${NS}-drag-over`);
-
-      const rect = li.getBoundingClientRect();
-      const mid  = rect.top + rect.height / 2;
-      if (e.clientY < mid) {
-        list.insertBefore(dragging, li);
-      } else {
-        list.insertBefore(dragging, li.nextSibling);
-      }
-
-      saveOrder(list, workId, tagType);
-      syncResetButton(list, workId, tagType);
-    });
+  const dragCleanup = makeListReorderable(list, {
+    getItemKey,
+    onOrderChanged: (order) => {
+      saveOrder(workId, tagType, order);
+      syncResetButton(list, workId, tagType, () => dragCleanup.resetToOriginal());
+    },
+    handleGlyph: '⋮⋮',
+    itemSelector: ':scope > li',
   });
 
-  restoreOrder(list, workId, tagType);
-  syncResetButton(list, workId, tagType);
+  syncResetButton(list, workId, tagType, () => dragCleanup.resetToOriginal());
+
+  return dragCleanup;
 }
 
 register(MOD, {
@@ -161,28 +115,18 @@ register(MOD, {
   const workId = getWorkId();
   if (!workId) return () => {};
 
+  const cleanups = [];
   TAG_TYPES.forEach(tagType => {
     const list = document.querySelector(`dd.${tagType}.tags ul`);
-    if (list) initList(list, workId, tagType);
+    if (!list) return;
+    const cleanup = initList(list, workId, tagType);
+    if (cleanup) cleanups.push(cleanup);
   });
 
   return () => {
-    // Remove handles
-    document.querySelectorAll(`.${NS}-drag-handle`).forEach(el => el.remove());
-    // Remove reset buttons
+    // Restaure l'ordre natif AO3 avant de retirer le drag & drop, pour ne
+    // pas laisser un ordre personnalisé visible après désactivation.
+    cleanups.forEach(fn => { fn.resetToOriginal(); fn(); });
     document.querySelectorAll(`.${NS}-tags-reset-order`).forEach(el => el.remove());
-    // Remove draggable + drag classes + data attr; restore original order
-    TAG_TYPES.forEach(tagType => {
-      const list = document.querySelector(`dd.${tagType}.tags ul`);
-      if (!list) return;
-      list.querySelectorAll(':scope > li').forEach(li => {
-        li.removeAttribute('draggable');
-        li.classList.remove(`${NS}-dragging`, `${NS}-drag-over`);
-      });
-      resetOrder(list);
-      list.querySelectorAll(':scope > li').forEach(li => {
-        delete li.dataset.ao3hOrigIdx;
-      });
-    });
   };
 });

@@ -26,7 +26,7 @@ AO3 Helper - Visual Builder Submodule
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 // Étape 318 : AO3H importé du core/lifecycle (avant : capture window.AO3H).
@@ -248,15 +248,23 @@ register(
     document.addEventListener('mousemove', onHover);
     document.addEventListener('click', onClick, true);
 
-    triggerBtn = document.createElement('button');
-    triggerBtn.className = `${NS}-tb-trigger ${NS}-tb-trigger--visual`;
-    triggerBtn.textContent = '🖌';
-    triggerBtn.setAttribute('aria-label', 'Open visual builder');
-    triggerBtn.addEventListener('click', openPanel);
-    document.body.appendChild(triggerBtn);
-    if (getShared()?.cfg?.('mode') === 'css') triggerBtn.style.display = 'none';
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'appendChild plantait (Cannot read properties of null),
+    // constaté sur plusieurs modules similaires en test.
+    let active = true;
+    onReady(() => {
+      if (!active) return;
+      triggerBtn = document.createElement('button');
+      triggerBtn.className = `${NS}-tb-trigger ${NS}-tb-trigger--visual`;
+      triggerBtn.textContent = '🖌';
+      triggerBtn.setAttribute('aria-label', 'Open visual builder');
+      triggerBtn.addEventListener('click', openPanel);
+      document.body.appendChild(triggerBtn);
+      if (getShared()?.cfg?.('mode') === 'css') triggerBtn.style.display = 'none';
+    });
 
     return function cleanup () {
+      active = false;
       stopInspector();
       removePreview();
       document.removeEventListener('mousemove', onHover);

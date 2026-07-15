@@ -31,6 +31,8 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { getBlurbStats } from '../../../../lib/ao3/work-stats.js';
+import { buildKudosRatioBadge, RATIO_BADGE_CLASS } from '../../../../lib/ui/engagement-badge.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -58,22 +60,6 @@ function isListingPage () {
          location.search.includes('work_search');
 }
 
-// ── Parse stats from a blurb ──────────────────────────────────────────────
-function parseStats (blurb) {
-  const text = blurb.textContent;
-
-  function extract (label) {
-    const m = text.match(new RegExp(label + ':\\s*([\\d,]+)', 'i'));
-    return m ? parseInt(m[1].replace(/,/g, ''), 10) : 0;
-  }
-
-  return {
-    kudos:     extract('Kudos'),
-    hits:      extract('Hits'),
-    bookmarks: extract('Bookmarks'),
-  };
-}
-
 // ── Sort mode definitions ─────────────────────────────────────────────────
 const SORT_MODES = [
   { value: 'default',     label: 'Default order' },
@@ -84,7 +70,7 @@ const SORT_MODES = [
 ];
 
 function scoreBlurb (blurb, mode) {
-  const { kudos, hits, bookmarks } = parseStats(blurb);
+  const { kudos, hits, bookmarks } = getBlurbStats(blurb);
   if (mode === 'kudos_ratio') return hits > 0 ? kudos / hits : 0;
   if (mode === 'save_rate')   return kudos > 0 ? bookmarks / kudos : 0;
   if (mode === 'kudos')       return kudos;
@@ -92,20 +78,23 @@ function scoreBlurb (blurb, mode) {
   return 0; // default = no reorder
 }
 
-// ── Inline ratio display ──────────────────────────────────────────────────
+// ── Inline ratio display ────────────────────────────────────────────────────
+// Badge partagé avec ficEngagement (browse) — voir lib/ui/engagement-badge.js
+// et shared.md décision O3. Si ficEngagement a déjà posé son badge de ratio
+// sur ce blurb, on ne le double pas.
+// Badges que ce module a lui-même créés (par opposition à ceux déjà posés par
+// ficEngagement) — pour ne retirer que les nôtres au cleanup.
+const ownRatioBadges = new Set();
+
 function addRatioBadges (blurbs) {
   blurbs.forEach(blurb => {
-    if (blurb.querySelector(`.${NS}-se-ratio`)) return;
-    const { kudos, hits } = parseStats(blurb);
-    if (!hits) return;
-    const pct = ((kudos / hits) * 100).toFixed(1);
-    const badge = document.createElement('span');
-    badge.className = `${NS}-se-ratio`;
-    badge.textContent = `${pct}% eng.`;
-    badge.title = `Engagement ratio: ${kudos} kudos / ${hits} hits`;
+    if (blurb.querySelector(`.${RATIO_BADGE_CLASS}`)) return;
+    const stats = getBlurbStats(blurb);
+    const badge = buildKudosRatioBadge(stats);
+    if (!badge) return;
     // Append after stats list
     const statsEl = blurb.querySelector('dl.stats, .stats');
-    if (statsEl) statsEl.appendChild(badge);
+    if (statsEl) { statsEl.appendChild(badge); ownRatioBadges.add(badge); }
   });
 }
 
@@ -211,7 +200,8 @@ register(
     return function cleanup () {
       toolbarEl?.remove();
       toolbarEl = null;
-      document.querySelectorAll(`.${NS}-se-ratio`).forEach(el => el.remove());
+      ownRatioBadges.forEach(el => el.remove());
+      ownRatioBadges.clear();
       restoreOriginalOrder(container, blurbs, originalPositions);
       originalPositions.forEach((marker, blurb) => {
         marker.remove();

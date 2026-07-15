@@ -53,9 +53,9 @@
 }
 #ao3h-autoscroll-ctrl .ao3h-as-pause-indicator.running { background: #2a2; }
 
-/* ── Chapter Word Count ───────────────────────────────────────────────────── */
+/* ── Chapter badge (mots + temps de lecture, partagé avec workLength/readingTime) ── */
 
-.ao3h-wc-badge {
+.ao3h-chapter-badge {
   margin: .5rem 0;
   font-size: .95rem;
   opacity: .85;

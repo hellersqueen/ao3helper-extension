@@ -21,7 +21,7 @@ AO3 Helper - Comment Hiding Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, onReady } from '../../../../lib/utils/index.js';
 
 const MOD  = 'commentHiding';
 const NS   = 'ao3h';
@@ -30,8 +30,10 @@ const STORAGE_KEY = 'userBlocker:list';
 const originalDisplays = new Map();
 
 function getBlockedUsers () {
-  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
-  catch (_) { return new Set(); }
+  try {
+    const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    return new Set(list.map(u => u.toLowerCase()));
+  } catch (_) { return new Set(); }
 }
 
 function getCommentAuthor (comment) {
@@ -111,16 +113,25 @@ register(MOD, {
   parent:           'userRelationships',
   enabledByDefault: true,
 }, async function init () {
-  processPage(getBlockedUsers());
-
-  const observer = observe(document.body, { childList: true, subtree: true }, () => processPage(getBlockedUsers()));
+  // document.body peut ne pas encore exister quand ce module boote (surtout
+  // sur une grosse page) — sans ce report, l'observer plantait (Cannot read
+  // properties of null), constaté en test, et .comment n'existait pas encore
+  // au premier passage de processPage().
+  let active = true;
+  let observer = null;
+  onReady(() => {
+    if (!active) return;
+    processPage(getBlockedUsers());
+    observer = observe(document.body, { childList: true, subtree: true }, () => processPage(getBlockedUsers()));
+  });
 
   // Live-update when blockingInterface dispatches a block/unblock action
   const onBlockingChanged = () => { restoreHiddenContent(); processPage(getBlockedUsers()); };
   document.addEventListener('ao3h:blocking-changed', onBlockingChanged);
 
   return () => {
-    observer.disconnect();
+    active = false;
+    observer?.disconnect();
     document.removeEventListener('ao3h:blocking-changed', onBlockingChanged);
     restoreHiddenContent();
   };

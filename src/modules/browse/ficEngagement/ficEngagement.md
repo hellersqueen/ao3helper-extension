@@ -41,27 +41,42 @@ Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
 - Une note personnelle qu'on pourrait donner à une fic
-- Voir si une fic devient de plus en plus populaire au fil du temps, avec des graphiques et un historique
+
 - Compter combien de fois une fic est mise en favori ou commentée, par rapport à ses kudos
-- Voir si le ratio d'une fic monte ou descend avec le temps
-- Comparer une fic à la moyenne de son fandom
-- Deviner à l'avance si une fic va devenir populaire
+
 - Un filtre pour ne montrer que les fics avec un très bon ratio
+
 - Des catégories de "pépites cachées" (nouveaux auteurs, vieux classiques, couples rares)
+
 - Des niveaux de pépites, comme des médailles (diamant/or/argent)
+
 - Une version plus poussée du détecteur de pépites cachées
+
 - Mettre automatiquement les pépites cachées en haut de la liste "à lire plus tard"
-- Suivre si les commentaires qu'on écrit soi-même ont un effet
-- Trier les résultats par engagement — *ça existe déjà, mais dans un autre module (`searchEnhancer`), pas ici*
-- Calculer les kudos par chapitre au lieu du total
+
 - Montrer le classement d'une fic parmi tout le fandom (en %)
-- Afficher le ratio "collé" en haut de la page pendant qu'on lit
-- Pouvoir cacher certains badges un par un, ou choisir combien de chiffres après la virgule
-- Repérer quels fandoms entiers sont en train de devenir tendance, pas seulement fic par fic
+
 - Un petit guide qui explique comment interpréter chaque ratio (bon, moyen, faible)
+
 - Pouvoir changer soi-même les seuils utilisés pour repérer une pépite cachée, au lieu de seuils fixes
+
 - Repérer les pépites cachées en les comparant à la moyenne de leur propre fandom, plutôt qu'avec les mêmes seuils fixes pour tout le monde
+
 - Un score qui essaie de deviner si une fic en cours risque d'être abandonnée et jamais terminée, en regardant les habitudes de publication passées de l'auteur
+
+---
+
+~~- Voir si une fic devient de plus en plus populaire au fil du temps, avec des graphiques et un historique~~
+~~- Voir si le ratio d'une fic monte ou descend avec le temps~~
+~~- Comparer une fic à la moyenne de son fandom~~
+~~- Deviner à l'avance si une fic va devenir populaire~~
+~~- Suivre si les commentaires qu'on écrit soi-même ont un effet~~
+~~- Trier les résultats par engagement — *ça existe déjà, mais dans un autre module (`searchEnhancer`), pas ici*~~
+~~- Afficher le ratio "collé" en haut de la page pendant qu'on lit~~
+~~- Pouvoir cacher certains badges un par un, ou choisir combien de chiffres après la virgule~~
+~~- Repérer quels fandoms entiers sont en train de devenir tendance, pas seulement fic par fic~~
+~~- Calculer les kudos par chapitre au lieu du total~~
+
 
 ## Explicitement écarté
 

@@ -19,7 +19,7 @@
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { css, observe } from '../../../../lib/utils/index.js';
+import { css, observe, onReady } from '../../../../lib/utils/index.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import styles from './ficEngagement.css?inline';
 
@@ -49,18 +49,28 @@ register(MOD, {
   /* ── Submodules ───────────────────────────────────────────────────── */
   const metrics = new EngagementMetrics({ colorCode: cfg('colorCodeMetrics') });
   const hiddenGems = new HiddenGems();
-  hiddenGems.init();
 
-  /* ── Observer ──────────────────────────────────────────────────────── */
-  metrics.scan();
-  metrics.processWorkPage();
-  const mo = observe(document.querySelector('#main') || document.body, {
-    childList: true, subtree: true,
-  }, () => metrics.scan());
+  // document.querySelector('#main')/document.body peuvent ne pas encore
+  // exister quand ce module boote — sans ce report, l'observer plantait
+  // (Cannot read properties of null), constaté sur plusieurs modules
+  // similaires en test.
+  let active = true;
+  let mo = null;
+  onReady(() => {
+    if (!active) return;
+    hiddenGems.init();
+
+    metrics.scan();
+    metrics.processWorkPage();
+    mo = observe(document.querySelector('#main') || document.body, {
+      childList: true, subtree: true,
+    }, () => metrics.scan());
+  });
 
   /* ── Cleanup ──────────────────────────────────────────────────────── */
   return () => {
-    mo.disconnect();
+    active = false;
+    mo?.disconnect();
     metrics.cleanup();
     hiddenGems.cleanup();
   };

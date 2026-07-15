@@ -26,15 +26,7 @@ AO3 Helper - Filter Warnings Submodule
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-
-const ARCHIVE_WARNINGS = [
-  'Graphic Depictions of Violence',
-  'Major Character Death',
-  'Rape/Non-Con',
-  'Underage',
-  'Choose Not To Use Archive Warnings',
-  'No Archive Warnings Apply',
-];
+import { ARCHIVE_WARNING_FORM_LABELS as ARCHIVE_WARNINGS } from '../../../../lib/ao3/constants.js';
 
 export class FilterWarnings {
   constructor ({ NS, cfg }) {

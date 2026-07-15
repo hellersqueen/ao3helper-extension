@@ -67,6 +67,7 @@ AO3 Helper - Download Enhancements Submodule
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { onReady } from '../../../../lib/utils/index.js';
 
 const W = getGlobalWindow();
 
@@ -868,67 +869,74 @@ ${notes    ? `<div class="notes">${notes}</div>` : ''}
 
   // ── Init ───────────────────────────────────────────────────────────────
   init () {
-    // Queue panel (always available)
-    this._queuePanel = this._buildQueuePanel();
-    document.body.appendChild(this._queuePanel);
-    this._injected.push(this._queuePanel);
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'appendChild/l'observer plantaient (Cannot read properties of
+    // null), constaté sur plusieurs modules similaires en test.
+    onReady(() => {
+      if (!this._active) return;
 
-    // Work page
-    if (this.isWorkPage()) {
-      const dlArea = document.querySelector('.download');
-      if (!dlArea) {
-        this._log('info', '[DownloadEnhancements] No .download area found on work page');
+      // Queue panel (always available)
+      this._queuePanel = this._buildQueuePanel();
+      document.body.appendChild(this._queuePanel);
+      this._injected.push(this._queuePanel);
+
+      // Work page
+      if (this.isWorkPage()) {
+        const dlArea = document.querySelector('.download');
+        if (!dlArea) {
+          this._log('info', '[DownloadEnhancements] No .download area found on work page');
+          return;
+        }
+
+        const fmtSel = this._buildFormatSelector();
+        dlArea.appendChild(fmtSel);
+        this._injected.push(fmtSel);
+
+        if (this.kindleEnabled) {
+          const titleEl = document.querySelector('.title.heading');
+          const title   = titleEl?.textContent.trim() || 'Untitled';
+          const kBtn    = this._buildKindleButton(title);
+          dlArea.appendChild(kBtn);
+          this._injected.push(kBtn);
+        }
+
+        if (this.calibreEnabled) {
+          const workId = this.getWorkId();
+          const title  = document.querySelector('.title.heading')?.textContent.trim() || 'Untitled';
+          const author = document.querySelector('a[rel="author"]')?.textContent.trim() || 'Anonymous';
+          const cBtn   = document.createElement('a');
+          cBtn.className   = 'ao3h-calibre-btn';
+          cBtn.href        = 'javascript:void(0);';
+          cBtn.textContent = '📚 Send to Calibre';
+          cBtn.addEventListener('click', e => { e.preventDefault(); this._sendToCalibre(workId, title, author); });
+          dlArea.appendChild(cBtn);
+          this._injected.push(cBtn);
+        }
+
+        this._log('info', '[DownloadEnhancements] Work page initialized');
         return;
       }
 
-      const fmtSel = this._buildFormatSelector();
-      dlArea.appendChild(fmtSel);
-      this._injected.push(fmtSel);
-
-      if (this.kindleEnabled) {
-        const titleEl = document.querySelector('.title.heading');
-        const title   = titleEl?.textContent.trim() || 'Untitled';
-        const kBtn    = this._buildKindleButton(title);
-        dlArea.appendChild(kBtn);
-        this._injected.push(kBtn);
+      // Listing pages: per-blurb download buttons
+      if (this.isListingPage() && this.showListingBtns) {
+        this._processBlurbs();
+        this._observeBlurbs();
+        this._log('info', '[DownloadEnhancements] Listing page initialized');
+        return;
       }
 
-      if (this.calibreEnabled) {
-        const workId = this.getWorkId();
-        const title  = document.querySelector('.title.heading')?.textContent.trim() || 'Untitled';
-        const author = document.querySelector('a[rel="author"]')?.textContent.trim() || 'Anonymous';
-        const cBtn   = document.createElement('a');
-        cBtn.className   = 'ao3h-calibre-btn';
-        cBtn.href        = 'javascript:void(0);';
-        cBtn.textContent = '📚 Send to Calibre';
-        cBtn.addEventListener('click', e => { e.preventDefault(); this._sendToCalibre(workId, title, author); });
-        dlArea.appendChild(cBtn);
-        this._injected.push(cBtn);
+      // Series page: series download button
+      if (this.isSeriesPage()) {
+        const seriesBtn = this._buildSeriesDownloadBtn();
+        if (seriesBtn) {
+          const anchor = document.querySelector('#main h2.heading');
+          if (anchor) anchor.insertAdjacentElement('afterend', seriesBtn);
+          else document.querySelector('#main')?.prepend(seriesBtn);
+          this._injected.push(seriesBtn);
+        }
+        this._log('info', '[DownloadEnhancements] Series page initialized');
       }
-
-      this._log('info', '[DownloadEnhancements] Work page initialized');
-      return;
-    }
-
-    // Listing pages: per-blurb download buttons
-    if (this.isListingPage() && this.showListingBtns) {
-      this._processBlurbs();
-      this._observeBlurbs();
-      this._log('info', '[DownloadEnhancements] Listing page initialized');
-      return;
-    }
-
-    // Series page: series download button
-    if (this.isSeriesPage()) {
-      const seriesBtn = this._buildSeriesDownloadBtn();
-      if (seriesBtn) {
-        const anchor = document.querySelector('#main h2.heading');
-        if (anchor) anchor.insertAdjacentElement('afterend', seriesBtn);
-        else document.querySelector('#main')?.prepend(seriesBtn);
-        this._injected.push(seriesBtn);
-      }
-      this._log('info', '[DownloadEnhancements] Series page initialized');
-    }
+    });
   }
 
   // ── Cleanup ────────────────────────────────────────────────────────────

@@ -59,32 +59,52 @@ Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
 - Un compteur visible qui dit "X fics cachées à cause de la liste noire de tags", affiché au-dessus des résultats
+
 - Voir en permanence, dans le menu de l'extension, combien de tags sont dans ta liste noire
+
 - Un bouton pour tout effacer d'un coup dans la liste noire de tags
+
 - Choisir si un tag doit correspondre exactement ou juste "contenir" un morceau de texte — en ce moment c'est toujours une correspondance exacte
+
 - Reconnaître automatiquement les tags qui veulent dire la même chose sur AO3, pour ne pas avoir à tous les ajouter un par un
-- Faire le lien entre des tags similaires (par exemple "Harry/Draco" et "Draco/Harry") en utilisant les groupes de tags équivalents d'un autre module — prévu avec `filterManager`, mais ce lien n'est pas branché dans le code en ce moment
-- Proposer des tags déjà connus pendant qu'on tape, pour aider à les ajouter plus vite
+
 - Reconnaître un mot interdit seulement quand c'est un mot entier, pas juste un bout caché dans un mot plus long
+
 - Chercher avec des motifs compliqués comme des jokers ou des expressions techniques
-- Regrouper plusieurs tags dans un thème tout fait automatiquement (par exemple tous les tags "sombres" ensemble)
-- Un mode où on ne voit QUE les fics avec certains mots ou tags, au lieu de les cacher
+
 - Un masquage juste pour la journée, qui s'efface tout seul après
-- Partager sa liste de tags cachés avec d'autres personnes, ou utiliser une liste déjà faite par la communauté
-- Un module à part juste pour cacher les crossovers automatiquement (en ce moment il faut ajouter soi-même le tag "Crossover" à la liste)
-- Choisir un autre format que JSON pour exporter/importer ses listes
+
 - Ajouter un tag en cliquant n'importe où sur le résumé d'une fic, pas seulement sur le tag
+
 - Choisir à quel point une fic est rendue transparente quand elle est atténuée — en ce moment c'est toujours pareil pour tout le monde
+
 - Ajouter un effet flou en plus de la transparence
-- Faire la différence entre majuscules et minuscules dans les tags à bloquer
+
 - Cacher une fic seulement si plusieurs tags précis sont présents en même temps, pas juste un seul
-- Cacher un tag seulement sur certaines pages ou dans certaines situations précises, pas partout
+
 - Une liste de mots à éviter déjà toute prête par défaut, en plus de celle qu'on construit soi-même
+
 - Un badge qui indique qu'un mot interdit a été trouvé sur une fic, en plus de la cacher ou l'atténuer
+
 - Toujours montrer les fics déjà mises en favori ou en bookmark, même si elles ont un tag dans la liste noire
-- Faire la différence entre majuscules et minuscules pour les mots interdits (en ce moment ce n'est prévu que pour les tags, pas pour les mots)
+
 - Un bouton pour revérifier manuellement les mots interdits sur la page, sans avoir à la recharger
+
 - Cacher automatiquement une fic dès qu'un de ses tags a été repéré comme gênant par le module qui gère l'affichage des tags, sans avoir à l'ajouter soi-même à la liste noire
+
+---
+
+~~- Faire le lien entre des tags similaires (par exemple "Harry/Draco" et "Draco/Harry") en utilisant les groupes de tags équivalents d'un autre module — prévu avec `filterManager`, mais ce lien n'est pas branché dans le code en ce moment~~
+~~- Proposer des tags déjà connus pendant qu'on tape, pour aider à les ajouter plus vite~~
+~~- Regrouper plusieurs tags dans un thème tout fait automatiquement (par exemple tous les tags "sombres" ensemble)~~
+~~- Un mode où on ne voit QUE les fics avec certains mots ou tags, au lieu de les cacher~~
+~~- Faire la différence entre majuscules et minuscules pour les mots interdits (en ce moment ce n'est prévu que pour les tags, pas pour les mots)~~
+~~- Cacher un tag seulement sur certaines pages ou dans certaines situations précises, pas partout~~
+~~- Faire la différence entre majuscules et minuscules dans les tags à bloquer~~
+~~- Partager sa liste de tags cachés avec d'autres personnes, ou utiliser une liste déjà faite par la communauté~~
+~~- Un module à part juste pour cacher les crossovers automatiquement (en ce moment il faut ajouter soi-même le tag "Crossover" à la liste)~~
+~~- Choisir un autre format que JSON pour exporter/importer ses listes~~
+
 
 ## Explicitement écarté
 

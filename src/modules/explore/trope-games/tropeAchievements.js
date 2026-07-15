@@ -22,7 +22,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
-import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -234,15 +234,23 @@ register(
     // Check achievementsEnabled setting (default true)
     if (loadModuleSettings(MOD).achievementsEnabled === false) return () => {};
 
-    // Check for newly unlocked achievements
-    const newUnlocks = checkNewUnlocks();
-    for (const ach of newUnlocks) {
-      showToast(ach);
-    }
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'appendChild plantait (Cannot read properties of null),
+    // constaté sur plusieurs modules similaires en test.
+    let active = true;
+    onReady(() => {
+      if (!active) return;
+      // Check for newly unlocked achievements
+      const newUnlocks = checkNewUnlocks();
+      for (const ach of newUnlocks) {
+        showToast(ach);
+      }
 
-    injectTrigger();
+      injectTrigger();
+    });
 
     return function cleanup () {
+      active = false;
       panelEl?.remove();
       triggerBtn?.remove();
       activeTimers.forEach(timer => clearTimeout(timer));

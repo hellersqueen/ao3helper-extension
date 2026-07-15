@@ -18,7 +18,7 @@ AO3 Helper - Playback Controls Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 
 const W   = getGlobalWindow();
@@ -89,8 +89,6 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
       <span class="${NS}-tts-sleep-countdown"></span>
     </div>
   `;
-  if (cfg('floatingPanel') !== false) document.body.appendChild(panel);
-
   // ── Element refs ────────────────────────────────────────────────────────
   const playBtn    = panel.querySelector('[data-act="play"]');
   const pauseBtn   = panel.querySelector('[data-act="pause"]');
@@ -108,7 +106,14 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
   const fab = document.createElement('button');
   fab.className = `${NS}-tts-btn ${NS}-tts-fab`;
   fab.textContent = '🔊 Read Aloud';
-  if (cfg('floatingPanel') !== false) document.body.appendChild(fab);
+  // document.body peut ne pas encore exister quand ce module boote — sans ce
+  // report, l'appendChild plantait (Cannot read properties of null), constaté
+  // sur plusieurs modules similaires en test.
+  let attachActive = true;
+  onReady(() => {
+    if (!attachActive) return;
+    if (cfg('floatingPanel') !== false) { document.body.appendChild(panel); document.body.appendChild(fab); }
+  });
 
   fab.addEventListener('click', () => {
     panel.style.display = '';
@@ -338,6 +343,7 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
   console.log(LOG, 'init');
 
   return function cleanup () {
+    attachActive = false;
     stopPlayback();
     panel.remove();
     fab.remove();

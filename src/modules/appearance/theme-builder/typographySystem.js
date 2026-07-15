@@ -25,7 +25,7 @@ AO3 Helper - Typography System Submodule
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 // Étape 318 : AO3H importé du core/lifecycle (avant : capture window.AO3H).
@@ -180,18 +180,26 @@ register(
   async function init () {
     console.log(LOG, 'init');
 
-    // Re-apply saved typography on load
-    const saved = lsGet(TYPO_SK);
-    if (saved) applyTypography(saved);
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'appendChild plantait (Cannot read properties of null),
+    // constaté sur plusieurs modules similaires en test.
+    let active = true;
+    onReady(() => {
+      if (!active) return;
+      // Re-apply saved typography on load
+      const saved = lsGet(TYPO_SK);
+      if (saved) applyTypography(saved);
 
-    triggerBtn = document.createElement('button');
-    triggerBtn.className = `${NS}-tb-trigger ${NS}-tb-trigger--typography`;
-    triggerBtn.textContent = 'Aa';
-    triggerBtn.setAttribute('aria-label', 'Open typography panel');
-    triggerBtn.addEventListener('click', openPanel);
-    document.body.appendChild(triggerBtn);
+      triggerBtn = document.createElement('button');
+      triggerBtn.className = `${NS}-tb-trigger ${NS}-tb-trigger--typography`;
+      triggerBtn.textContent = 'Aa';
+      triggerBtn.setAttribute('aria-label', 'Open typography panel');
+      triggerBtn.addEventListener('click', openPanel);
+      document.body.appendChild(triggerBtn);
+    });
 
     return function cleanup () {
+      active = false;
       document.getElementById(STYLE_ID)?.remove();
       panelEl?.remove();
       triggerBtn?.remove();

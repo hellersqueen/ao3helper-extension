@@ -80,7 +80,10 @@ function getActiveTags () {
 }
 
 // ── Suggestions data ──────────────────────────────────────────────────────
-// Static curated co-tag list (fallback — avoids live fetch for privacy)
+// Static curated co-tag list (fallback — avoids live fetch for privacy).
+// Table de co-occurrence, forme différente de lib/ao3/constants.js
+// TROPE_NAMES (liste plate) — voir ce fichier pour la liste de référence des
+// noms de tropes du projet ; garder les clés ci-dessous alignées avec elle.
 const CO_TAGS = {
   'Slow Burn':            [['Mutual Pining', '82K'], ['Enemies to Lovers', '65K'], ['Pining', '73K'], ['UST', '41K'], ['Friends to Lovers', '55K']],
   'Enemies to Lovers':    [['Slow Burn', '65K'], ['Hate to Love', '38K'], ['Sexual Tension', '29K'], ['Rivals', '22K'], ['Forced Proximity', '31K']],

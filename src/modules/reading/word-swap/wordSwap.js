@@ -28,7 +28,7 @@ AO3 Helper - Word Swap
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import styles from './wordSwap.css?inline';
@@ -368,15 +368,6 @@ register(MOD, {
     const cfg = Object.assign({}, DEFAULTS, loadSettings());
     let rules = withYNRule(loadRules(), cfg.yourFirstName);
 
-    // Target: work text only — never alter AO3 navigation/UI
-    const target = document.querySelector('#workskin .userstuff') ||
-                   document.querySelector('#workskin');
-    const allSnaps = new Map();
-    if (target) {
-        applyRules(target, rules, allSnaps);
-        startObserver(target, rules, allSnaps);
-    }
-
     const panelController = new AbortController();
     const fileReaders = new Set();
     const renderedContainers = new Set();
@@ -386,9 +377,28 @@ register(MOD, {
         if (!panelArea || wiredPanels.has(panelArea)) return;
         if (wirePanelIO(panelArea, panelController.signal, fileReaders, renderedContainers)) wiredPanels.add(panelArea);
     }
-    tryWirePanel();
-    const panelObserver = new MutationObserver(tryWirePanel);
-    panelObserver.observe(document.body, { childList: true, subtree: true });
+
+    // document.body peut ne pas encore exister quand ce module boote — sans ce
+    // report, l'observer plantait (Cannot read properties of null), constaté
+    // sur plusieurs modules similaires en test.
+    let active = true;
+    let panelObserver = null;
+    onReady(() => {
+        if (!active) return;
+
+        // Target: work text only — never alter AO3 navigation/UI
+        const target = document.querySelector('#workskin .userstuff') ||
+                       document.querySelector('#workskin');
+        const allSnaps = new Map();
+        if (target) {
+            applyRules(target, rules, allSnaps);
+            startObserver(target, rules, allSnaps);
+        }
+
+        tryWirePanel();
+        panelObserver = new MutationObserver(tryWirePanel);
+        panelObserver.observe(document.body, { childList: true, subtree: true });
+    });
 
     W.AO3H_WordSwap = {
         loadRules,
@@ -400,8 +410,9 @@ register(MOD, {
     };
 
     return function cleanup() {
+        active = false;
         if (observer) { observer.disconnect(); observer = null; }
-        panelObserver.disconnect();
+        panelObserver?.disconnect();
         panelController.abort();
         fileReaders.forEach(reader => reader.abort());
         fileReaders.clear();
