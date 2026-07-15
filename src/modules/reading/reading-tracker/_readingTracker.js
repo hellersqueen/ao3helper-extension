@@ -43,6 +43,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet, lsDel } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { relativeDate } from '../../../../lib/utils/format-date.js';
 import styles from './readingTracker.css?inline';
 
 import { SeenTracking } from './seenTracking.js';
@@ -111,13 +112,9 @@ function saveProgress (workId, data) {
 function clearProgress (workId) { lsDel(SK_PROGRESS(workId)); }
 
 // ── Utilities ─────────────────────────────────────────────────────────────
-function relativeTime (ts) {
-  if (!ts) return null;
-  const days = Math.floor((Date.now() - ts) / 86400000);
-  if (days === 0) return 'today';
-  if (days === 1) return 'yesterday';
-  return `${days} days ago`;
-}
+// Note: granularité étendue vs l'ancienne version (au-delà de 30 jours,
+// affiche désormais "N months/years ago" au lieu de "N days ago").
+const relativeTime = relativeDate;
 
 function sanitizeHref (href) {
   if (!href) return '#';

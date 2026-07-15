@@ -8,10 +8,9 @@
 ───────────────────────────────────────────────────────────────────────── */
 
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { createMirroredListStore } from '../../../../lib/storage/mirrored-list.js';
 
-const LS_MIRROR  = true;
 const TM_KEY_WL  = 'hideTagsWhitelist';
-const LS_KEY_WL  = 'hideTagsWhitelist';
 
 export class WhitelistExceptions {
   /**
@@ -22,58 +21,25 @@ export class WhitelistExceptions {
     this.Storage     = Storage;
     this.UserLS      = UserLS;
     this.KeyboardNav = KeyboardNav || {};
-  }
-
-  // ── Internal helpers ───────────────────────────────────────────────────
-
-  _lsGet (key, def) {
-    try {
-      const raw = this.UserLS
-        ? this.UserLS.getItem(key)
-        : localStorage.getItem(`${this.NS}:${key}`);
-      return JSON.parse(raw || 'null') ?? def;
-    } catch { return def; }
-  }
-
-  _lsSet (key, value) {
-    try {
-      const data = JSON.stringify(value);
-      if (this.UserLS) this.UserLS.setItem(key, data);
-      else localStorage.setItem(`${this.NS}:${key}`, data);
-    } catch {}
+    this._store = createMirroredListStore({ key: TM_KEY_WL, Storage, UserLS, NS });
   }
 
   // ── Storage ────────────────────────────────────────────────────────────
 
   async getWhitelistTags () {
-    let list = (await this.Storage.get(TM_KEY_WL, [])) || [];
-    if ((!list || !list.length) && LS_MIRROR) {
-      const fromLS = this._lsGet(LS_KEY_WL, []);
-      if (Array.isArray(fromLS) && fromLS.length) list = fromLS;
-    }
-    return list.map(s => String(s).trim().toLowerCase()).filter(Boolean);
+    return this._store.get();
   }
 
   async setWhitelistTags (arr) {
-    const cleaned = Array.from(new Set(
-      arr.map(s => String(s).trim().toLowerCase()).filter(Boolean)
-    ));
-    await this.Storage.set(TM_KEY_WL, cleaned);
-    if (LS_MIRROR) this._lsSet(LS_KEY_WL, cleaned);
-    return cleaned;
+    return this._store.set(arr);
   }
 
   async addWhitelistTag (canon) {
-    const cur = await this.getWhitelistTags();
-    const t   = String(canon).trim().toLowerCase();
-    if (t && !cur.includes(t)) { cur.push(t); await this.setWhitelistTags(cur); }
+    return this._store.add(canon);
   }
 
   async removeWhitelistTag (canon) {
-    const cur = await this.getWhitelistTags();
-    const t   = String(canon).trim().toLowerCase();
-    const idx = cur.indexOf(t);
-    if (idx >= 0) { cur.splice(idx, 1); await this.setWhitelistTags(cur); }
+    return this._store.remove(canon);
   }
 
   // ── Matching ───────────────────────────────────────────────────────────

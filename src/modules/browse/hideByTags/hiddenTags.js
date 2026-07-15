@@ -12,13 +12,13 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { createMirroredListStore } from '../../../../lib/storage/mirrored-list.js';
 
 const W = getGlobalWindow();
 
 // ── Constants ────────────────────────────────────────────────────────────
 const LS_MIRROR      = true;
 const TM_KEY         = 'hideTags';
-const LS_KEY         = 'hideTags';
 const TM_KEY_GROUPS  = 'hideTagsGroups';
 const LS_KEY_GROUPS  = 'hideTagsGroups';
 const LS_KEY_COLLAPSED = 'hideTagsGroupsCollapsed';
@@ -32,6 +32,9 @@ export class HiddenTags {
     this.Storage     = Storage;
     this.UserLS      = UserLS;
     this.KeyboardNav = KeyboardNav || {};
+    // normalizeOnGet: false — getHidden() ne re-normalise pas à la lecture
+    // (comportement historique conservé ; setHidden/add/remove écrivent déjà normalisé)
+    this._store = createMirroredListStore({ key: TM_KEY, Storage, UserLS, NS, normalizeOnGet: false });
   }
 
   // ── Internal helpers ───────────────────────────────────────────────────
@@ -75,32 +78,19 @@ export class HiddenTags {
   // ── Blacklist storage ──────────────────────────────────────────────────
 
   async getHidden () {
-    let list = (await this.Storage.get(TM_KEY, [])) || [];
-    if ((!list || !list.length) && LS_MIRROR) {
-      const fromLS = this._lsGet(LS_KEY, []);
-      if (Array.isArray(fromLS) && fromLS.length) list = fromLS;
-    }
-    return list;
+    return this._store.get();
   }
 
   async setHidden (arr) {
-    const cleaned = Array.from(new Set(
-      arr.map(s => String(s).trim().toLowerCase()).filter(Boolean)
-    ));
-    await this.Storage.set(TM_KEY, cleaned);
-    if (LS_MIRROR) this._lsSet(LS_KEY, cleaned);
-    return cleaned;
+    return this._store.set(arr);
   }
 
   async addHiddenTag (canon) {
-    const cur = await this.getHidden();
-    if (!cur.includes(canon)) { cur.push(canon); await this.setHidden(cur); }
+    return this._store.add(canon);
   }
 
   async removeHiddenTag (canon) {
-    const cur = await this.getHidden();
-    const idx = cur.indexOf(canon);
-    if (idx >= 0) { cur.splice(idx, 1); await this.setHidden(cur); }
+    return this._store.remove(canon);
   }
 
   // ── Group-map storage ──────────────────────────────────────────────────

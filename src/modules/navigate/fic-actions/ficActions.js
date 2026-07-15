@@ -48,6 +48,7 @@ import { Routes } from '../../../../lib/ao3/routes.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { subscribeToWork } from '../../../../lib/ao3/actions.js';
 import { getCSRF } from '../../../../lib/ao3/requests.js';
+import { makeListReorderable, applySavedOrder } from '../../../../lib/ui/drag-reorder.js';
 import styles from './ficActions.css?inline';
 
 css(styles, 'ao3h-ficActions');
@@ -278,63 +279,15 @@ register(MOD, {
     originalButtonItems = Array.from(ul.children);
 
     // Restore saved order
-    const savedOrder = getButtonOrder();
-    if (savedOrder?.length) {
-      const byKey = {};
-      items.forEach(li => { const k = getItemKey(li); if (k) byKey[k] = li; });
-      savedOrder.forEach(key => { if (byKey[key]) ul.appendChild(byKey[key]); });
-      items.forEach(li => { const k = getItemKey(li); if (k && !savedOrder.includes(k)) ul.appendChild(li); });
-    }
+    applySavedOrder(ul, getButtonOrder(), getItemKey, 'li');
 
-    // Add drag handles & make draggable
-    items.forEach(li => {
-      li.setAttribute('draggable', 'true');
-      if (!li.querySelector(`.${NS}-drag-handle`)) {
-        const handle = document.createElement('span');
-        handle.className = `${NS}-drag-handle`;
-        handle.title = 'Drag to reorder';
-        handle.textContent = '⠿';
-        handle.setAttribute('aria-hidden', 'true');
-        li.prepend(handle);
-      }
+    dragCleanup = makeListReorderable(ul, {
+      getItemKey,
+      onOrderChanged: saveButtonOrder,
+      handleGlyph: '⠿',
+      itemSelector: 'li',
+      filter: (li) => !!getItemKey(li),
     });
-
-    // Drag events
-    let dragged = null;
-    function onDragStart (e) {
-      dragged = e.currentTarget;
-      dragged.classList.add(`${NS}-dragging`);
-      e.dataTransfer.effectAllowed = 'move';
-    }
-    function onDragEnd () {
-      if (dragged) dragged.classList.remove(`${NS}-dragging`);
-      dragged = null;
-      const order = Array.from(ul.querySelectorAll('li')).map(getItemKey).filter(Boolean);
-      saveButtonOrder(order);
-    }
-    function onDragOver (e) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      const target = e.currentTarget;
-      if (!dragged || target === dragged) return;
-      const rect = target.getBoundingClientRect();
-      ul.insertBefore(dragged, e.clientY < rect.top + rect.height / 2 ? target : target.nextSibling);
-    }
-    items.forEach(li => {
-      li.addEventListener('dragstart', onDragStart);
-      li.addEventListener('dragend',   onDragEnd);
-      li.addEventListener('dragover',  onDragOver);
-    });
-    dragCleanup = () => {
-      items.forEach(li => {
-        li.removeEventListener('dragstart', onDragStart);
-        li.removeEventListener('dragend',   onDragEnd);
-        li.removeEventListener('dragover',  onDragOver);
-        li.removeAttribute('draggable');
-      });
-      ul.querySelectorAll(`.${NS}-drag-handle`).forEach(h => h.remove());
-      ul.querySelectorAll(`li.${NS}-dragging`).forEach(li => li.classList.remove(`${NS}-dragging`));
-    };
   }
 
   // ═══════════════════════════════════════════════════════════════════════

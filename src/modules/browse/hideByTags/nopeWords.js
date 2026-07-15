@@ -7,10 +7,9 @@
 ───────────────────────────────────────────────────────────────────────── */
 
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { createMirroredListStore } from '../../../../lib/storage/mirrored-list.js';
 
-const LS_MIRROR   = true;
 const TM_KEY_NOPE = 'hideTagsNope';
-const LS_KEY_NOPE = 'hideTagsNope';
 
 export class NopeWords {
   /**
@@ -21,58 +20,25 @@ export class NopeWords {
     this.Storage     = Storage;
     this.UserLS      = UserLS;
     this.KeyboardNav = KeyboardNav || {};
-  }
-
-  // ── Internal helpers ───────────────────────────────────────────────────
-
-  _lsGet (key, def) {
-    try {
-      const raw = this.UserLS
-        ? this.UserLS.getItem(key)
-        : localStorage.getItem(`${this.NS}:${key}`);
-      return JSON.parse(raw || 'null') ?? def;
-    } catch { return def; }
-  }
-
-  _lsSet (key, value) {
-    try {
-      const data = JSON.stringify(value);
-      if (this.UserLS) this.UserLS.setItem(key, data);
-      else localStorage.setItem(`${this.NS}:${key}`, data);
-    } catch {}
+    this._store = createMirroredListStore({ key: TM_KEY_NOPE, Storage, UserLS, NS });
   }
 
   // ── Storage ────────────────────────────────────────────────────────────
 
   async getNopeWords () {
-    let list = (await this.Storage.get(TM_KEY_NOPE, [])) || [];
-    if ((!list || !list.length) && LS_MIRROR) {
-      const fromLS = this._lsGet(LS_KEY_NOPE, []);
-      if (Array.isArray(fromLS) && fromLS.length) list = fromLS;
-    }
-    return list.map(s => String(s).trim().toLowerCase()).filter(Boolean);
+    return this._store.get();
   }
 
   async setNopeWords (arr) {
-    const cleaned = Array.from(new Set(
-      arr.map(s => String(s).trim().toLowerCase()).filter(Boolean)
-    ));
-    await this.Storage.set(TM_KEY_NOPE, cleaned);
-    if (LS_MIRROR) this._lsSet(LS_KEY_NOPE, cleaned);
-    return cleaned;
+    return this._store.set(arr);
   }
 
   async addNopeWord (word) {
-    const cur = await this.getNopeWords();
-    const w   = String(word).trim().toLowerCase();
-    if (w && !cur.includes(w)) { cur.push(w); await this.setNopeWords(cur); }
+    return this._store.add(word);
   }
 
   async removeNopeWord (word) {
-    const cur = await this.getNopeWords();
-    const w   = String(word).trim().toLowerCase();
-    const idx = cur.indexOf(w);
-    if (idx >= 0) { cur.splice(idx, 1); await this.setNopeWords(cur); }
+    return this._store.remove(word);
   }
 
   // ── Matching ───────────────────────────────────────────────────────────

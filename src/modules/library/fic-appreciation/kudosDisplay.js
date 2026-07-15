@@ -29,6 +29,8 @@ AO3 Helper — Fic Appreciation › KudosDisplay sub-module
  * KudosDisplay handles: formatted "Kudos given" badge on work page, rich tooltips,
  *                       loading indicator, custom icon via cfg.
  */
+import { formatDate } from '../../../../lib/utils/format-date.js';
+
 export class KudosDisplay {
   /** @param {{ NS, storeGet, cfg }} opts */
   constructor ({ NS, storeGet, cfg }) {
@@ -114,22 +116,7 @@ export class KudosDisplay {
   // ── Helpers ─────────────────────────────────────────────────────────────
 
   _formatDate (dateStr, format = 'long') {
-    try {
-      const d = new Date(dateStr + 'T00:00:00');
-      if (format === 'short')    return d.toLocaleDateString('en-CA');
-      if (format === 'relative') return this._relativeDate(d);
-      // 'long' (default)
-      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    } catch { return dateStr; }
-  }
-
-  _relativeDate (d) {
-    const diff = Math.round((Date.now() - d.getTime()) / 86400000);
-    if (diff === 0)   return 'today';
-    if (diff === 1)   return 'yesterday';
-    if (diff < 30)    return `${diff} days ago`;
-    if (diff < 365)   return `${Math.round(diff / 30)} months ago`;
-    return `${Math.round(diff / 365)} years ago`;
+    return formatDate(dateStr, format);
   }
 
   cleanup () {

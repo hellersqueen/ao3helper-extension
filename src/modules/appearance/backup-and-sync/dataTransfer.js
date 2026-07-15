@@ -67,6 +67,7 @@ import { AO3H } from '../../../core/lifecycle.js';
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
+import { showToast as libShowToast } from '../../../../lib/ui/toast.js';
 
 const W = getGlobalWindow();
 const D = document;
@@ -81,8 +82,6 @@ export class ImportExportLists {
     this.htmlTemplate = config.htmlTemplate || null; // (work) => html string
     this._active      = true;
     this._activeReader = null;
-    this._toastTimers  = new Set();
-    this._toastEls     = new Set();
   }
 
   // ── Page source detection ─────────────────────────────────────────────
@@ -365,24 +364,7 @@ export class ImportExportLists {
 
   showToast(message, type = 'info') {
     if (!this._active) return;
-    const toast = D.createElement('div');
-    toast.textContent = message;
-    toast.className = `ao3h-toast ao3h-toast--${type}`;
-
-    D.body.appendChild(toast);
-    this._toastEls.add(toast);
-
-    const fadeTimer = setTimeout(() => {
-      this._toastTimers.delete(fadeTimer);
-      toast.style.opacity = '0';
-      const removeTimer = setTimeout(() => {
-        this._toastTimers.delete(removeTimer);
-        this._toastEls.delete(toast);
-        toast.remove();
-      }, 400);
-      this._toastTimers.add(removeTimer);
-    }, 3000);
-    this._toastTimers.add(fadeTimer);
+    libShowToast(message, { type });
   }
 
   cleanup() {
@@ -392,12 +374,6 @@ export class ImportExportLists {
       try { this._activeReader.abort(); } catch (_) {}
       this._activeReader = null;
     }
-
-    this._toastTimers.forEach(timer => clearTimeout(timer));
-    this._toastTimers.clear();
-
-    this._toastEls.forEach(el => el.remove());
-    this._toastEls.clear();
 
     this.hideProgress();
   }
