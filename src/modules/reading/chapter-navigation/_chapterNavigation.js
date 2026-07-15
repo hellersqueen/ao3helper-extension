@@ -31,7 +31,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './chapterNavigation.css?inline';
 
 import { NavigationControls } from './navigationControls.js';
@@ -61,7 +61,6 @@ const cfg = makeCfg(MOD, DEFAULTS);
 const SK_LASTCHAP = (id) => `ao3h:cn:lastchap:${id}`;
 
 // ── Route guards ──────────────────────────────────────────────────────────
-function isWorkPage ()    { return /^\/works\/\d+/.test(location.pathname); }
 function isMultiChapter () { return !!document.querySelector('select#selected_id'); }
 function isListingPage () {
   return (

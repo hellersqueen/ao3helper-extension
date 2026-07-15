@@ -16,6 +16,7 @@ AO3 Helper - Content Filtering Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 
 const W   = getGlobalWindow();
 const MOD = 'contentFiltering';
@@ -25,7 +26,6 @@ function shared () { return W.AO3H_TextToSpeech || null; }
 function cfg (k) { const s = shared(); return s ? s.cfg(k) : null; }
 function splitSentences (t) { const s = shared(); return s ? s.splitSentences(t) : [t]; }
 
-function isWorkPage () { return /^\/works\/\d+/.test(location.pathname); }
 
 // ── Registration ──────────────────────────────────────────────────────────
 register(MOD, { title: 'Content Filtering', parent: 'textToSpeech', enabledByDefault: true }, async function init () {

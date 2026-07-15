@@ -17,6 +17,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 
 const W   = getGlobalWindow();
 const NS  = 'ao3h';
@@ -27,7 +28,6 @@ function shared () { return W.AO3H_TextToSpeech || null; }
 
 const LS_DICT = `${NS}:tts:pronunciations`;
 
-function isWorkPage () { return /^\/works\/\d+/.test(location.pathname); }
 
 register(MOD, { title: 'Pronunciation Manager', parent: 'textToSpeech', enabledByDefault: true }, async function init () {
   if (!isWorkPage()) return () => {};

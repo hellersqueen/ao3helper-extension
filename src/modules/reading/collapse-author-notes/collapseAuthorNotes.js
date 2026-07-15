@@ -26,7 +26,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './collapseAuthorNotes.css?inline';
 
 css(styles, 'ao3h-collapseAuthorNotes');
@@ -49,10 +49,6 @@ const DEFAULTS = {
 const cfg = makeCfg(MOD);
 
 // ── Route guard ───────────────────────────────────────────────────────────
-function isWorkPage () {
-  return /^\/works\/\d+/.test(location.pathname);
-}
-
 function parseWorkId () {
   return extractWorkIdFromHref(location.pathname);
 }

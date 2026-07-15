@@ -40,6 +40,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { Storage } from '../../../../lib/storage/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './readingFormatter.css?inline';
 
 import './contentCleanup.js';
@@ -55,10 +56,6 @@ const W   = getGlobalWindow();
 const NS  = 'ao3h';
 const MOD = 'readingFormatter';
 
-// ── Route guard ──────────────────────────────────────────────────────────
-function isWorkPage () {
-  return /^\/works\/\d+/.test(location.pathname);
-}
 
 // ── Config helpers ────────────────────────────────────────────────────────
 const DEFAULTS = {

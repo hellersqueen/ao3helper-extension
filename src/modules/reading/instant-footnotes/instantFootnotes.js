@@ -21,6 +21,7 @@ AO3 Helper - Instant Footnotes
 import { register } from '../../../core/lifecycle.js';
 import { css } from '../../../../lib/utils/index.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './instantFootnotes.css?inline';
 
 css(styles, 'ao3h-instantFootnotes');
@@ -28,10 +29,6 @@ css(styles, 'ao3h-instantFootnotes');
 const MOD = 'instantFootnotes';
 const LOG = `[AO3H][${MOD}]`;
 
-// ── Route guard ───────────────────────────────────────────────────────────
-function isWorkPage () {
-  return /^\/works\/\d+/.test(location.pathname);
-}
 
 // ── Minimal inline utilities ──────────────────────────────────────────────
 function qs  (sel, root)  { return (root || document).querySelector(sel); }

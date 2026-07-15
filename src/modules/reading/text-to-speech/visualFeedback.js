@@ -14,6 +14,7 @@ AO3 Helper - Visual Feedback Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 
 const W   = getGlobalWindow();
 const NS  = 'ao3h';
@@ -23,7 +24,6 @@ const LOG = `[AO3H][${MOD}]`;
 function shared () { return W.AO3H_TextToSpeech || null; }
 function cfg (k) { const s = shared(); return s ? s.cfg(k) : null; }
 
-function isWorkPage () { return /^\/works\/\d+/.test(location.pathname); }
 
 register(MOD, { title: 'Visual Feedback', parent: 'textToSpeech', enabledByDefault: true }, async function init () {
   if (!isWorkPage()) return () => {};

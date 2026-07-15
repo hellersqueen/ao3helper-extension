@@ -10,7 +10,7 @@ AO3 Helper — Reading Status Tracking
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { extractWorkIdFromBlurb, extractWorkIdFromHref } from '../../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromBlurb, extractWorkIdFromHref, isListingPage } from '../../../../../lib/ao3/parsers.js';
 
 const D = document;
 const SK_LAST = 'ao3h:bookmarkVault:lastRead';
@@ -27,7 +27,7 @@ export class ReadingStatusTracking {
 
   _isWorkPage      () { return /^\/works\/\d+/.test(location.pathname); }
   _isBookmarksPage () { return /\/bookmarks/.test(location.pathname); }
-  _isListingPage   () { return /\/(works|tags|bookmarks|users\/[^/]+\/)/.test(location.pathname); }
+  _isListingPage   () { return isListingPage(); }
 
   _getWorkId (blurb) {
     return extractWorkIdFromBlurb(blurb);

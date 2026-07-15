@@ -12,7 +12,7 @@ AO3 Helper — Status Indicators
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { extractWorkIdFromBlurb } from '../../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromBlurb, isListingPage } from '../../../../../lib/ao3/parsers.js';
 
 const D = document;
 const SK_DATA = 'ao3h:bookmarkVault:data';
@@ -35,7 +35,7 @@ export class StatusIndicators {
 
   // ── Route checks ─────────────────────────────────────────────────────────
   _isBookmarksPage () { return /\/bookmarks/.test(location.pathname); }
-  _isListingPage   () { return /\/(works|tags|bookmarks|users\/[^/]+\/)/.test(location.pathname); }
+  _isListingPage   () { return isListingPage(); }
 
   _getWorkId (blurb) {
     return extractWorkIdFromBlurb(blurb);

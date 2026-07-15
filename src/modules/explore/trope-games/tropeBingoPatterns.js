@@ -31,6 +31,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -40,10 +41,6 @@ const SK   = `${NS}:tg:bingo`;
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function getShared () { return W.AO3H_TropeGames || null; }
-
-function isWorkPage () {
-  return /^\/works\/\d+/.test(location.pathname);
-}
 
 // ── Card logic ────────────────────────────────────────────────────────────
 const FREE_CENTER = 12; // index 12 of 25 cells

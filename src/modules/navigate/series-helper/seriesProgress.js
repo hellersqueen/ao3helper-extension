@@ -5,6 +5,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Storage } from '../../../../lib/storage/index.js';
 import { wrapStorageForUser } from '../../../../lib/storage/user.js';
+import { isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
 
 const W = getGlobalWindow();
 const MOD = 'seriesProgress';
@@ -15,12 +16,6 @@ const NS = 'ao3h';
 const wrappedStorage = wrapStorageForUser(Storage);
 
 const DEFAULTS = { epicSeriesWarning: false };
-
-// ── Route helpers ─────────────────────────────────────────────────────────
-function isWorkPage()   { return /^\/works\/\d+/.test(location.pathname); }
-function isListingPage(){
-  return /^\/(works|tags|bookmarks|users|search)/.test(location.pathname);
-}
 
 // ── Shared API (provided by coordinator) ──────────────────────────────────
 function getAPI() { return W.AO3H_SeriesHelper || null; }

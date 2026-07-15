@@ -55,7 +55,7 @@ AO3 Helper - Individual Downloads Submodule
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromBlurb, isListingPage as libIsListingPage } from '../../../../lib/ao3/parsers.js';
 
 const W = getGlobalWindow();
 
@@ -74,8 +74,7 @@ export class BlurbDownloadButton {
   }
 
   isListingPage() {
-    const path = W.location.pathname;
-    return /\/(works|bookmarks|series|tags)/.test(path);
+    return libIsListingPage(W.location.pathname);
   }
 
   createDownloadIcon() {

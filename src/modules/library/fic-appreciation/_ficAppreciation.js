@@ -35,7 +35,7 @@ AO3 Helper — Fic Appreciation Coordinator
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
-import { extractWorkIdFromHref, extractWorkIdFromBlurb as parseWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, extractWorkIdFromBlurb as parseWorkIdFromBlurb, isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './ficAppreciation.css?inline';
 
 import { MarkAsFinished } from './markAsFinished.js';
@@ -88,7 +88,6 @@ function storeSet (key, val) {
 }
 
 // ── Route helpers ─────────────────────────────────────────────────────────
-function isWorkPage ()    { return /^\/works\/\d+/.test(location.pathname); }
 function isListingPage () {
   return /^\/works$/.test(location.pathname) ||
          /^\/tags\/[^/]+\/works/.test(location.pathname) ||
