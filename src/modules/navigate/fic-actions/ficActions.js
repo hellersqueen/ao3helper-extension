@@ -46,6 +46,8 @@ import { register } from '../../../core/lifecycle.js';
 import { $, $$, observe, css } from '../../../../lib/utils/index.js';
 import { Routes } from '../../../../lib/ao3/routes.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { subscribeToWork } from '../../../../lib/ao3/actions.js';
+import { getCSRF } from '../../../../lib/ao3/requests.js';
 import styles from './ficActions.css?inline';
 
 css(styles, 'ao3h-ficActions');
@@ -199,22 +201,10 @@ register(MOD, {
         e.preventDefault();
         e.stopPropagation();
         if (btn.dataset.subscribed === '1') return;
-        const token = document.querySelector('meta[name="csrf-token"]')?.content;
-        if (!token) { location.assign(`/works/${workId}`); return; }
-        const body = new URLSearchParams({
-          'subscription[subscribable_type]': 'Work',
-          'subscription[subscribable_id]': workId,
-          authenticity_token: token,
-        });
+        if (!getCSRF()) { location.assign(`/works/${workId}`); return; }
         try {
-          const r = await fetch('/subscriptions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-            credentials: 'same-origin',
-            body: body.toString(),
-            signal: requestController.signal,
-          });
-          if (active && (r.ok || r.redirected)) {
+          const ok = await subscribeToWork(workId, { signal: requestController.signal });
+          if (active && ok) {
             markSubscribed(workId);
             if (btn.isConnected) {
               btn.textContent = '🔔';

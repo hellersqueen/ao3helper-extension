@@ -9,6 +9,7 @@ AO3 Helper — Fic Appreciation › KudosTracker sub-module
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { EV_KUDOS_GIVEN } from '../../../../lib/utils/event-names.js';
+import { giveKudos } from '../../../../lib/ao3/actions.js';
 import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
 
 const W = getGlobalWindow();
@@ -134,21 +135,9 @@ export class KudosTracker {
       e.preventDefault();
       e.stopPropagation();
       try {
-        const token = document.querySelector('meta[name="csrf-token"]')?.content
-          || document.querySelector('input[name="authenticity_token"]')?.value
-          || '';
-        const resp = await fetch(`/works/${workId}/kudos`, {
-          method:  'POST',
-          headers: {
-            'Content-Type':     'application/x-www-form-urlencoded',
-            'X-CSRF-Token':     token,
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          body: `authenticity_token=${encodeURIComponent(token)}`,
-          signal: this._requestController.signal,
-        });
+        const ok = await giveKudos(workId, { signal: this._requestController.signal });
         if (this._requestController.signal.aborted) return;
-        if (resp.ok || resp.redirected) {
+        if (ok) {
           this.recordKudos(workId);
           if (btn.isConnected) {
             btn.textContent = '🧡';
@@ -156,7 +145,7 @@ export class KudosTracker {
             btn.disabled    = true;
           }
         } else {
-          if (btn.isConnected) btn.title = `Kudos failed (${resp.status}) — try opening the work`;
+          if (btn.isConnected) btn.title = 'Kudos failed — try opening the work';
         }
       } catch (error) {
         if (error?.name !== 'AbortError' && btn.isConnected) {

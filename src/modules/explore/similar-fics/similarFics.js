@@ -17,6 +17,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { getHistoryWorkIdSet } from '../../../../lib/storage/keys.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { markWorkForLater } from '../../../../lib/ao3/actions.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import styles from './similarFics.css?inline';
 
@@ -241,12 +242,6 @@ function buildAuthorWorksUrl(username) {
   return base.toString();
 }
 
-// Get the AO3 CSRF token from the current page.
-function getAuthToken() {
-  const meta = document.querySelector('meta[name="csrf-token"]');
-  return meta ? meta.getAttribute('content') : null;
-}
-
 function runRequest(options) {
   return new Promise((resolve, reject) => {
     if (typeof GM_xmlhttpRequest === 'undefined') {
@@ -284,23 +279,20 @@ function runRequest(options) {
   });
 }
 
-// POST mark_for_later for a given work ID using GM_xmlhttpRequest.
+// POST mark_for_later for a given work ID.
+// Transport note: was GM_xmlhttpRequest, now fetch (via lib/ao3/actions.js) —
+// same-origin relative POST, no CORS need ; abort tracking preserved via
+// activeRequests so module cleanup still cancels in-flight requests.
 async function markForLater(workId) {
-  const token = getAuthToken();
-  if (!token) return false;
+  const controller = new AbortController();
+  const tracked = { abort: () => controller.abort() };
+  activeRequests.add(tracked);
   try {
-    const response = await runRequest({
-      method: 'POST',
-      url: `${W.location.origin}/works/${workId}/mark_for_later`,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRF-Token': token,
-      },
-      data: `_method=patch&authenticity_token=${encodeURIComponent(token)}`,
-    });
-    return response.status >= 200 && response.status < 400;
-  } catch (_) {
+    return await markWorkForLater(workId, { signal: controller.signal });
+  } catch {
     return false;
+  } finally {
+    activeRequests.delete(tracked);
   }
 }
 
