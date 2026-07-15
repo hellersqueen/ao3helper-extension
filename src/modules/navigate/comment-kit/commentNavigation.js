@@ -19,6 +19,7 @@ AO3 Helper - Comment Navigation Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 
 const W    = getGlobalWindow();
 const D    = document;
@@ -28,12 +29,7 @@ const NS   = 'ao3h';
 // ── Defaults (settings stored under parent commentKit panel) ─────────────
 const DEFAULTS = { jumpToCommentsButton: false };
 
-function cfg (key) {
-  try {
-    const s = JSON.parse(localStorage.getItem('ao3h:mod:commentKit:settings') || '{}');
-    return (key in s) ? s[key] : DEFAULTS[key];
-  } catch (_) { return DEFAULTS[key]; }
-}
+const cfg = makeCfg('commentKit', DEFAULTS);
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 

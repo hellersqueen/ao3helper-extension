@@ -43,6 +43,7 @@ AO3 Helper — Fic Appreciation › MultiStatusTracker sub-module
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { EV_STATUS_CHANGED } from '../../../../lib/utils/event-names.js';
+import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
 
 const W = getGlobalWindow();
 
@@ -103,18 +104,18 @@ export class MultiStatusTracker {
     if (blurb.dataset.mstBadge) return;
     blurb.dataset.mstBadge = '1';
 
-    const entry   = this.getStatus(workId);
-    const heading = blurb.querySelector('h4.heading');
-    if (!heading || !entry) return;
+    const entry = this.getStatus(workId);
+    if (!entry) return;
 
     const def = STATUSES[entry.status];
     if (!def) return;
 
-    const badge       = document.createElement('span');
-    badge.className   = `${NS}-fa-badge ${NS}-fa-badge-status ${NS}-fa-badge-status-${entry.status}`;
-    badge.textContent = def.icon;
-    badge.title       = `${def.label}${entry.date ? ' — ' + entry.date : ''}${entry.note ? '\n' + entry.note : ''}`;
-    heading.appendChild(badge);
+    appendHeadingBadge(blurb, {
+      className: `${NS}-fa-badge ${NS}-fa-badge-status ${NS}-fa-badge-status-${entry.status}`,
+      guardSelector: `.${NS}-fa-badge-status`,
+      text: def.icon,
+      title: `${def.label}${entry.date ? ' — ' + entry.date : ''}${entry.note ? '\n' + entry.note : ''}`,
+    });
   }
 
   /** Inject a quick-status dropdown into a blurb's .stats area. */

@@ -16,6 +16,7 @@ AO3 Helper - Pronunciation Manager Submodule
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 const W   = getGlobalWindow();
 const NS  = 'ao3h';
@@ -23,8 +24,6 @@ const MOD = 'pronunciationManager';
 const LOG = `[AO3H][${MOD}]`;
 
 function shared () { return W.AO3H_TextToSpeech || null; }
-function lsGet (k) { const s = shared(); return s ? s.lsGet(k) : null; }
-function lsSet (k, v) { const s = shared(); if (s) s.lsSet(k, v); }
 
 const LS_DICT = `${NS}:tts:pronunciations`;
 

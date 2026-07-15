@@ -40,7 +40,8 @@ AO3 Helper - Reading Tracker Module Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet, lsDel } from '../../../../lib/utils/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './readingTracker.css?inline';
 
 import { SeenTracking } from './seenTracking.js';
@@ -77,16 +78,7 @@ const DEFAULTS = {
   updatedOnlyMode:         false,
 };
 
-const SK_SETTINGS = `${NS}:mod:${MOD}:settings`;
-
-function lsGetSettings () {
-  try { const v = localStorage.getItem(SK_SETTINGS); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-
-function cfg (key) {
-  const saved = lsGetSettings() || {};
-  return key in saved ? saved[key] : DEFAULTS[key];
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 // ── Route guards ──────────────────────────────────────────────────────────
 function isWorkPage () { return /^\/works\/\d+/.test(location.pathname); }
@@ -110,15 +102,6 @@ const SK_HISTORY  = 'ao3h:rt:history';
 const SK_PROGRESS = (id) => `ao3h:rt:progress:${id}`;
 const HISTORY_CAP = 2000;
 
-function lsGet (key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
-function lsDel (key) {
-  try { localStorage.removeItem(key); } catch {}
-}
 function getHistory ()          { return lsGet(SK_HISTORY) || []; }
 function saveHistory (arr)      { lsSet(SK_HISTORY, arr.slice(-HISTORY_CAP)); }
 function getProgress (workId)   { return lsGet(SK_PROGRESS(workId)); }

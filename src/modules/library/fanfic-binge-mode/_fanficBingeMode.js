@@ -22,7 +22,8 @@ AO3 Helper — Fanfic Binge Mode
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './fanficBingeMode.css?inline';
 
 css(styles, 'ao3h-fanficBingeMode');
@@ -42,21 +43,10 @@ const DEFAULTS = {
 };
 
 // ── Storage ───────────────────────────────────────────────────────────────
-const SK_SETTINGS = `ao3h:mod:${MOD}:settings`;
 const SK_QUEUE    = 'ao3h:fbm:queue';
 const SK_RT_HIST  = 'ao3h:rt:history';  // readingTracker — soft dep
 
-function lsGet (key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
-
-function cfg (key) {
-  const saved = lsGet(SK_SETTINGS) || {};
-  return key in saved ? saved[key] : DEFAULTS[key];
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 // ── Route helpers ─────────────────────────────────────────────────────────
 function isHomePage ()  { return location.pathname === '/' || location.pathname === '/home'; }

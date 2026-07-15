@@ -40,6 +40,8 @@ AO3 Helper - Search Autocomplete Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 const NS   = 'ao3h';
 const MOD  = 'searchAutocomplete';
@@ -53,19 +55,7 @@ const DEFAULTS = {
   tagAutocomplete: true,
 };
 function readCfg () {
-  try {
-    const raw = localStorage.getItem('ao3h:mod:searchEnhancer:settings');
-    if (raw) { const saved = JSON.parse(raw); return Object.assign({}, DEFAULTS, saved); }
-  } catch (_) { /* */ }
-  return Object.assign({}, DEFAULTS);
-}
-
-// ── Storage helpers ───────────────────────────────────────────────────────
-function lsGet (key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+  return loadModuleSettings('searchEnhancer', DEFAULTS);
 }
 
 // ── Search history (max 25, deduped) ──────────────────────────────────────

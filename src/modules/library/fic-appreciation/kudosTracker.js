@@ -9,6 +9,7 @@ AO3 Helper — Fic Appreciation › KudosTracker sub-module
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { EV_KUDOS_GIVEN } from '../../../../lib/utils/event-names.js';
+import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
 
 const W = getGlobalWindow();
 
@@ -107,14 +108,12 @@ export class KudosTracker {
 
     if (!workId || !this.hasGivenKudos(workId)) return;
 
-    const heading = blurb.querySelector('h4.heading');
-    if (!heading) return;
-
-    const badge       = document.createElement('span');
-    badge.className   = `${NS}-fa-badge ${NS}-fa-badge-kudos`;
-    badge.textContent = '🧡';
-    badge.title       = `Kudos'd on ${this._load()[workId]?.date || ''}`;
-    heading.appendChild(badge);
+    appendHeadingBadge(blurb, {
+      className: `${NS}-fa-badge ${NS}-fa-badge-kudos`,
+      guardSelector: `.${NS}-fa-badge-kudos`,
+      text: '🧡',
+      title: `Kudos'd on ${this._load()[workId]?.date || ''}`,
+    });
   }
 
   /** Inject a quick-kudos button on a listing blurb (no page reload needed). */

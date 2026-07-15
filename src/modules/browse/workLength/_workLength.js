@@ -22,6 +22,7 @@ AO3 Helper - Work Length Module Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { css } from '../../../../lib/utils/index.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import styles from './workLength.css?inline';
 
 import { LengthDisplay } from './lengthDisplay.js';
@@ -45,10 +46,7 @@ const DEFAULTS = {
   thresholdNovella:   60000,
 };
 
-function loadSettings() {
-  try { const v = localStorage.getItem(`${NS}:mod:${MOD}:settings`); return v ? JSON.parse(v) : {}; }
-  catch { return {}; }
-}
+function loadSettings() { return loadModuleSettings(MOD); }
 
 register(MOD, { title: 'Work Length', enabledByDefault: false }, async function init() {
   const saved = loadSettings();

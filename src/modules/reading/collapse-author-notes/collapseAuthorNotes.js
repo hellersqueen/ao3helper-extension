@@ -44,16 +44,7 @@ const DEFAULTS = {
 };
 
 // ── Settings reader ───────────────────────────────────────────────────────
-function cfg (key, fallback) {
-  try {
-    const raw = localStorage.getItem(`ao3h:mod:${MOD}:settings`);
-    if (raw) {
-      const saved = JSON.parse(raw);
-      if (key in saved) return saved[key];
-    }
-  } catch {}
-  return fallback;
-}
+const cfg = makeCfg(MOD);
 
 // ── Route guard ───────────────────────────────────────────────────────────
 function isWorkPage () {

@@ -23,6 +23,7 @@ AO3 Helper - Marked for Later Status Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { loadItems, saveItems } from './laterShelfStore.js';
+import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
 
 const MOD = 'markedForLaterStatus';
 const D   = document;
@@ -64,13 +65,7 @@ register(MOD, {
     D.querySelectorAll('li.work.blurb, li.bookmark.blurb').forEach(function (blurb) {
       const wid = widFromBlurb(blurb);
       if (!wid || !wids.has(wid)) return;
-      if (blurb.querySelector('.ao3h-ls-badge')) return;
-      var badge = D.createElement('span');
-      badge.className   = 'ao3h-ls-badge';
-      badge.textContent = '📌';
-      badge.title       = 'In your Later Shelf';
-      var heading = blurb.querySelector('h4.heading');
-      if (heading) heading.appendChild(badge);
+      appendHeadingBadge(blurb, { className: 'ao3h-ls-badge', text: '📌', title: 'In your Later Shelf' });
     });
   }
 

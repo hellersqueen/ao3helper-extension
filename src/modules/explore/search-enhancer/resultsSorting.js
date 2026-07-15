@@ -29,6 +29,8 @@ AO3 Helper - Results Sorting Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -45,25 +47,11 @@ const DEFAULTS = {
   showRatioInline:  true,
 };
 function readCfg () {
-  try {
-    const raw = localStorage.getItem('ao3h:mod:searchEnhancer:settings');
-    if (raw) { const saved = JSON.parse(raw); return Object.assign({}, DEFAULTS, saved); }
-  } catch (_) { /* */ }
-  return Object.assign({}, DEFAULTS);
+  return loadModuleSettings('searchEnhancer', DEFAULTS);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function getShared () { return W.AO3H_SearchEnhancer || null; }
-function lsGet (key) {
-  const s = getShared();
-  if (s) return s.lsGet(key);
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  const s = getShared();
-  if (s) return s.lsSet(key, val);
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
 
 function isListingPage () {
   return /^\/works(\/search)?$|^\/tags\/.*\/works|^\/users\/.*\/bookmarks|^\/collections\/.*\/works/.test(location.pathname) ||

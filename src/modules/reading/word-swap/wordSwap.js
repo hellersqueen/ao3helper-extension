@@ -28,8 +28,9 @@ AO3 Helper - Word Swap
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import styles from './wordSwap.css?inline';
 
 css(styles, 'ao3h-wordSwap');
@@ -44,15 +45,7 @@ const LS_RULES = `${NS}:ws:rules`;
 const DEFAULTS = { yourFirstName: '' };
 
 // ── Storage ───────────────────────────────────────────────────────────────
-function lsGet(key) {
-    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
-    catch { return null; }
-}
-function lsSet(key, val) {
-    try { localStorage.setItem(key, JSON.stringify(val)); }
-    catch { /* quota */ }
-}
-function loadSettings() { return lsGet(`${NS}:mod:${MOD}:settings`) || {}; }
+function loadSettings() { return loadModuleSettings(MOD); }
 
 // ── Rule helpers ──────────────────────────────────────────────────────────
 function loadRules() { return lsGet(LS_RULES) || []; }

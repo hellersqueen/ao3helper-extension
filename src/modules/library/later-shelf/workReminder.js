@@ -27,6 +27,7 @@ AO3 Helper - Work Reminders Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { cfg } from './laterShelfStore.js';
+import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
 
 const MOD = 'workReminder';
 const D   = document;
@@ -112,18 +113,14 @@ register(MOD, {
       var wid = m[1];
       var r = reminders[wid];
       if (!r || r.status === 'fired') return;
-      if (blurb.querySelector('.ao3h-ls-reminder-badge')) return;
-      var badge = D.createElement('span');
-      badge.className = 'ao3h-ls-reminder-badge';
-      if (r.status === 'unavailable') {
-        badge.textContent = '⚠️';
-        badge.title = 'Reminder set but this work may be unavailable';
-      } else {
-        badge.textContent = '⏰';
-        badge.title = 'Reminder: ' + (r.remindAt ? new Date(r.remindAt).toLocaleString() : 'pending');
-      }
-      var heading = blurb.querySelector('h4.heading');
-      if (heading) heading.appendChild(badge);
+      var unavailable = r.status === 'unavailable';
+      appendHeadingBadge(blurb, {
+        className: 'ao3h-ls-reminder-badge',
+        text: unavailable ? '⚠️' : '⏰',
+        title: unavailable
+          ? 'Reminder set but this work may be unavailable'
+          : 'Reminder: ' + (r.remindAt ? new Date(r.remindAt).toLocaleString() : 'pending'),
+      });
     });
   }
 

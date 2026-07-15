@@ -20,6 +20,7 @@ AO3 Helper - Comment Configuration Submodule
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 
 const MOD  = 'commentConfiguration';
 const NS   = 'ao3h';
@@ -30,12 +31,7 @@ const DEFAULTS = {
 };
 const guestCheckboxStates = new Map();
 
-function cfg (key) {
-  try {
-    const s = JSON.parse(localStorage.getItem('ao3h:mod:commentKit:settings') || '{}');
-    return (key in s) ? s[key] : DEFAULTS[key];
-  } catch (_) { return DEFAULTS[key]; }
-}
+const cfg = makeCfg('commentKit', DEFAULTS);
 
 // ── Feature 1: Chapter indicator on inbox comment items ───────────────────
 

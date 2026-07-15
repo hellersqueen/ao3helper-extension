@@ -39,6 +39,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { Storage } from '../../../../lib/storage/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './readingFormatter.css?inline';
 
 import './contentCleanup.js';
@@ -72,16 +73,7 @@ const DEFAULTS = {
   paragraphSpacing    : '0.5em',
 };
 
-const SK_SETTINGS = `${NS}:mod:${MOD}:settings`;
-
-function lsGetSettings () {
-  try { const v = localStorage.getItem(SK_SETTINGS); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-
-function cfg (key) {
-  const saved = lsGetSettings() || {};
-  return key in saved ? saved[key] : (key in DEFAULTS ? DEFAULTS[key] : null);
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 // ── Persistent prefs (localStorage, bypassing Settings API) ───────────────
 function prefGet (key, def) {

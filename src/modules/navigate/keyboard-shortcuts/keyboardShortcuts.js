@@ -20,6 +20,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import styles from './keyboardShortcuts.css?inline';
 import { css } from '../../../../lib/utils/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 
 css(styles, 'ao3h-keyboardShortcuts');
 
@@ -29,14 +30,7 @@ const MOD  = 'keyboardShortcuts';
 const LOG  = `[AO3H][${MOD}]`;
 
 // ── Settings reader ───────────────────────────────────────────────────────
-function cfg (key, fallback) {
-  try {
-    const raw = localStorage.getItem(`ao3h:mod:${MOD}:settings`);
-    if (!raw) return fallback;
-    const saved = JSON.parse(raw);
-    return (key in saved) ? saved[key] : fallback;
-  } catch { return fallback; }
-}
+const cfg = makeCfg(MOD);
 
 // ── Default shortcut map (action → key string) ────────────────────────────
 // Key strings use the format: "Ctrl+Shift+K" or single keys like "?"

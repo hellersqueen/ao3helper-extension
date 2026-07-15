@@ -16,6 +16,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { getHistoryWorkIdSet } from '../../../../lib/storage/keys.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './surpriseMe.css?inline';
 
 css(styles, 'ao3h-surpriseMe');
@@ -31,13 +32,7 @@ const DEFAULTS = {
   completedOnly:         false,
 };
 
-function cfg (key) {
-  try {
-    const raw = localStorage.getItem(`ao3h:mod:${MOD}:settings`);
-    if (raw) { const saved = JSON.parse(raw); if (saved && key in saved) return saved[key]; }
-  } catch (_) { /* */ }
-  return DEFAULTS[key];
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 // ── Route guard — any listing page ────────────────────────────────────────
 function isListingPage () {

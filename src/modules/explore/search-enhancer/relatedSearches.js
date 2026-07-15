@@ -26,6 +26,9 @@ AO3 Helper - Related Searches Submodule
 
 import { register } from '../../../core/lifecycle.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { createPersistedCache } from '../../../../lib/storage/cache.js';
 
 const NS   = 'ao3h';
 const MOD  = 'relatedSearches';
@@ -40,19 +43,7 @@ const DEFAULTS = {
   suggestionWorkCount:     true,
 };
 function readCfg () {
-  try {
-    const raw = localStorage.getItem('ao3h:mod:searchEnhancer:settings');
-    if (raw) { const saved = JSON.parse(raw); return Object.assign({}, DEFAULTS, saved); }
-  } catch (_) { /* */ }
-  return Object.assign({}, DEFAULTS);
-}
-
-// ── Storage helpers ───────────────────────────────────────────────────────
-function lsGet (key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+  return loadModuleSettings('searchEnhancer', DEFAULTS);
 }
 
 // ── Search history (read-only) ────────────────────────────────────────────
@@ -61,22 +52,12 @@ const HIST_KEY = `${NS}:se:history`;
 function historyLoad () { return lsGet(HIST_KEY) || []; }
 
 // ── Suggestion cache (7-day TTL) ──────────────────────────────────────────
-const CACHE_KEY = `${NS}:se:sugcache`;
-const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
-
-function cacheGet (tagKey) {
-  const cache = lsGet(CACHE_KEY) || {};
-  const entry = cache[tagKey];
-  if (!entry) return null;
-  if (Date.now() - entry.ts > CACHE_TTL) { delete cache[tagKey]; lsSet(CACHE_KEY, cache); return null; }
-  return entry.tags;
-}
-
-function cacheSet (tagKey, tags) {
-  const cache = lsGet(CACHE_KEY) || {};
-  cache[tagKey] = { tags, ts: Date.now() };
-  lsSet(CACHE_KEY, cache);
-}
+const sugCache = createPersistedCache({
+  key: `${NS}:se:sugcache`,
+  ttlMs: 7 * 24 * 60 * 60 * 1000,
+});
+const cacheGet = (tagKey) => sugCache.get(tagKey);
+const cacheSet = (tagKey, tags) => sugCache.set(tagKey, tags);
 
 function isSearchPage () {
   return /^\/works\/search|^\/tags\/.*\/works/.test(location.pathname) ||

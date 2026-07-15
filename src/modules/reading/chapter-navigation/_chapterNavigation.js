@@ -29,7 +29,8 @@ AO3 Helper - Chapter Navigation Module Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './chapterNavigation.css?inline';
 
 import { NavigationControls } from './navigationControls.js';
@@ -53,18 +54,7 @@ const DEFAULTS = {
   autoScrollShowControls:  true,
 };
 
-const SK_SETTINGS = `ao3h:mod:${MOD}:settings`;
-
-function lsGet (key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
-function cfg (key) {
-  const saved = lsGet(SK_SETTINGS) || {};
-  return key in saved ? saved[key] : DEFAULTS[key];
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 // ── Storage helpers ───────────────────────────────────────────────────────
 const SK_LASTCHAP = (id) => `ao3h:cn:lastchap:${id}`;

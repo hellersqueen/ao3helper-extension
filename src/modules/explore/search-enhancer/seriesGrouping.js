@@ -17,6 +17,7 @@ AO3 Helper - Series Grouping Submodule
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 
 const NS   = 'ao3h';
 const MOD  = 'seriesGrouping';
@@ -29,11 +30,7 @@ const DEFAULTS = {
   fandomSortMode:       'alpha', // 'alpha' | 'popularity' | 'history'
 };
 function readCfg () {
-  try {
-    const raw = localStorage.getItem('ao3h:mod:searchEnhancer:settings');
-    if (raw) { const saved = JSON.parse(raw); return Object.assign({}, DEFAULTS, saved); }
-  } catch (_) { /* */ }
-  return Object.assign({}, DEFAULTS);
+  return loadModuleSettings('searchEnhancer', DEFAULTS);
 }
 
 // ── Route guard ───────────────────────────────────────────────────────────

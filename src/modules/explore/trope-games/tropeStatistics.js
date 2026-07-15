@@ -22,6 +22,8 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON, downloadFile } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -31,16 +33,6 @@ const SK   = `${NS}:tg:stats`;
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function getShared () { return W.AO3H_TropeGames || null; }
-function lsGet (key) {
-  const s = getShared();
-  if (s) return s.lsGet(key);
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  const s = getShared();
-  if (s) return s.lsSet(key, val);
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
 
 function isWorkPage () {
   return /^\/works\/\d+/.test(location.pathname);
@@ -185,8 +177,7 @@ register(
   MOD,
   { title: 'Trope Statistics', parent: 'tropeGames', enabledByDefault: true },
   async function init () {
-    const s = JSON.parse(localStorage.getItem('ao3h:mod:tropeStatistics:settings') || '{}');
-    if (s.enableStats === false) return () => {};
+    if (loadModuleSettings(MOD).enableStats === false) return () => {};
     console.log(LOG, 'init');
 
     // Record tropes on work pages

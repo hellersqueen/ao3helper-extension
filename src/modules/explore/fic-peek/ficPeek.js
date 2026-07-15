@@ -111,13 +111,7 @@ function ensurePreviewButton(blurb) {
 }
 
 // ── Settings reader ──────────────────────────────────────────────────────
-function cfg (key, fallback) {
-  try {
-    const raw = localStorage.getItem(`ao3h:mod:${MOD_ID}:settings`);
-    if (raw) { const saved = JSON.parse(raw); if (saved && key in saved) return saved[key]; }
-  } catch (_) { /* */ }
-  return fallback;
-}
+const cfg = makeCfg(MOD_ID);
 
 /**
  * Extract preview text from a work page HTML string.

@@ -1,3 +1,5 @@
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+
 export const DEFAULTS = {
   favoritesOnlyFilter: false,
   showPlaceholder: true,
@@ -5,10 +7,5 @@ export const DEFAULTS = {
 };
 
 export function getUserRelationshipsSettings () {
-  try {
-    const saved = JSON.parse(localStorage.getItem('ao3h:mod:userRelationships:settings') || '{}');
-    return { ...DEFAULTS, ...(saved && typeof saved === 'object' ? saved : {}) };
-  } catch {
-    return { ...DEFAULTS };
-  }
+  return loadModuleSettings('userRelationships', DEFAULTS);
 }

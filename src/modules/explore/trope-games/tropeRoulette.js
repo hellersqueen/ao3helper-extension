@@ -19,6 +19,7 @@ AO3 Helper - Trope Roulette Submodule
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -112,10 +113,7 @@ register(
   MOD,
   { title: 'Trope Roulette', parent: 'tropeGames', enabledByDefault: true },
   async function init () {
-    try {
-      const s = JSON.parse(localStorage.getItem('ao3h:mod:tropeRoulette:settings') || '{}');
-      if (s.enableRoulette === false) return () => {};
-    } catch {}
+    if (loadModuleSettings(MOD).enableRoulette === false) return () => {};
     console.log(LOG, 'init');
     injectTrigger();
 

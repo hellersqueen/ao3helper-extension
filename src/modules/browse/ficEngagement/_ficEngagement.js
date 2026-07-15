@@ -20,6 +20,7 @@
 
 import { register } from '../../../core/lifecycle.js';
 import { css } from '../../../../lib/utils/index.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import styles from './ficEngagement.css?inline';
 
 import { EngagementMetrics } from './engagementMetrics.js';
@@ -33,10 +34,7 @@ const DEFAULTS = {
   colorCodeMetrics: false,
 };
 
-function loadSettings() {
-  try { const v = localStorage.getItem(`ao3h:mod:${MOD}:settings`); return v ? JSON.parse(v) : {}; }
-  catch { return {}; }
-}
+function loadSettings() { return loadModuleSettings(MOD); }
 
 /* ── Registration ───────────────────────────────────────────────────── */
 

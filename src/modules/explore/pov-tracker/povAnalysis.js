@@ -48,12 +48,7 @@ const SIGNALS = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-function lsGet (key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 function loadCache () {
   return lsGet(CACHE_KEY) || {};

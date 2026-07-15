@@ -26,6 +26,7 @@ import { wrapStorageForUser, UserLocalStorage } from '../../../../lib/storage/us
 import { Flags } from '../../../../lib/utils/config.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { EV_SETTINGS_CHANGED, EV_OPEN_HIDE_MANAGER } from '../../../../lib/utils/event-names.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import styles from './hideByTags.css?inline';
 
 import { HiddenTags } from './hiddenTags.js';
@@ -100,12 +101,7 @@ const DEFAULTS = {
   nopeTargetTitles:      false,
 };
 
-function loadSettings () {
-  try {
-    const v = localStorage.getItem(`${NS}:mod:${MOD}:settings`);
-    return v ? JSON.parse(v) : {};
-  } catch { return {}; }
-}
+function loadSettings () { return loadModuleSettings(MOD); }
 
 // ── Processing ─────────────────────────────────────────────────────────────
 

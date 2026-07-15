@@ -15,6 +15,7 @@ AO3 Helper — Reading Timeline Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { css } from '../../../../lib/utils/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './readingTimeline.css?inline';
 
 import { HistoryAnalytics } from './historyAnalytics.js';
@@ -30,13 +31,7 @@ const DEFAULTS = {
   calendarRange: 5,        // number of years shown in year selector
 };
 
-function cfg (key) {
-  try {
-    const raw = localStorage.getItem(`ao3h:mod:${MOD}:settings`);
-    if (raw) { const saved = JSON.parse(raw); if (saved && key in saved) return saved[key]; }
-  } catch { /* */ }
-  return DEFAULTS[key];
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 register(MOD, {
   title: 'Reading Timeline',

@@ -1,6 +1,5 @@
-import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 
-const W = getGlobalWindow();
 const MOD = 'activityPanel';
 
 export const NS = 'ao3h';
@@ -10,14 +9,7 @@ const DEFAULTS = {
   readingAchievements: true,
 };
 
-export function cfg (key, fallback) {
-  try {
-    const saved = JSON.parse(localStorage.getItem(`ao3h:mod:${MOD}:settings`) || '{}');
-    if (key in saved) return saved[key];
-  } catch { /* malformed settings fall through */ }
-  const configured = W.AO3H_Config?.[MOD]?.defaults?.[key];
-  return configured !== undefined ? configured : (key in DEFAULTS ? DEFAULTS[key] : fallback);
-}
+export const cfg = makeCfg(MOD, DEFAULTS, { globalConfig: true });
 
 export const store = {
   get (key) {

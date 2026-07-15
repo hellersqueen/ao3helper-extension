@@ -21,6 +21,8 @@ AO3 Helper - Trope Achievements Submodule
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -33,17 +35,6 @@ const activeToasts = new Set();
 const activeTimers = new Set();
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-function getShared () { return W.AO3H_TropeGames || null; }
-function lsGet (key) {
-  const s = getShared();
-  if (s) return s.lsGet(key);
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  const s = getShared();
-  if (s) return s.lsSet(key, val);
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
 
 function schedule (callback, delay) {
   const timer = setTimeout(() => {
@@ -241,11 +232,7 @@ register(
     console.log(LOG, 'init');
 
     // Check achievementsEnabled setting (default true)
-    let s = {};
-    try {
-      s = JSON.parse(localStorage.getItem('ao3h:mod:tropeAchievements:settings') || '{}');
-    } catch { /* malformed settings fall back to defaults */ }
-    if (s.achievementsEnabled === false) return () => {};
+    if (loadModuleSettings(MOD).achievementsEnabled === false) return () => {};
 
     // Check for newly unlocked achievements
     const newUnlocks = checkNewUnlocks();

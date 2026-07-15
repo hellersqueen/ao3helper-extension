@@ -16,6 +16,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { getHistoryWorkIdSet } from '../../../../lib/storage/keys.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './similarFics.css?inline';
 
 css(styles, 'ao3h-similarFics');
@@ -49,14 +50,7 @@ const DEFAULTS = {
   openInNewTab:         false,
 };
 
-const SK_SETTINGS = `ao3h:mod:${MOD}:settings`;
-function cfg (key) {
-  try {
-    const raw = localStorage.getItem(SK_SETTINGS);
-    if (raw) { const s = JSON.parse(raw); if (s && key in s) return s[key]; }
-  } catch { /* */ }
-  return key in DEFAULTS ? DEFAULTS[key] : null;
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 function log(...args) {
   console.log(LOG, ...args);

@@ -1,4 +1,5 @@
 import { KEY_LATER_SHELF_ITEMS } from '../../../../lib/storage/keys.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
 
 const MOD = 'laterShelf';
@@ -10,12 +11,7 @@ const DEFAULTS = {
   remindersEnabled: false,
 };
 
-export function cfg (key) {
-  try {
-    const settings = JSON.parse(localStorage.getItem(`ao3h:mod:${MOD}:settings`) || '{}');
-    return key in settings ? settings[key] : DEFAULTS[key];
-  } catch { return DEFAULTS[key]; }
-}
+export const cfg = makeCfg(MOD, DEFAULTS);
 
 export function loadItems () {
   try { return JSON.parse(localStorage.getItem(SK_ITEMS) || '[]'); } catch { return []; }

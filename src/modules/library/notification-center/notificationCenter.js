@@ -43,6 +43,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { KEY_RT_HISTORY, KEY_BOOKMARK_VAULT_DATA, KEY_LATER_SHELF_ITEMS } from '../../../../lib/storage/keys.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './notificationCenter.css?inline';
 
 css(styles, 'ao3h-notificationCenter');
@@ -68,14 +69,7 @@ const DEFAULTS = {
   quietHoursEnd:        '08:00',
 };
 
-function cfg (key) {
-  try {
-    const s = JSON.parse(localStorage.getItem('ao3h:mod:' + MOD + ':settings') || '{}');
-    if (key in s) return s[key];
-  } catch (_) {}
-  const inMem = W.AO3H_Config?.[MOD]?.defaults?.[key];
-  return inMem !== undefined ? inMem : DEFAULTS[key];
-}
+const cfg = makeCfg(MOD, DEFAULTS, { globalConfig: true });
 
 register(MOD, {
   title: 'Notification Center',

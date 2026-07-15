@@ -9,6 +9,7 @@ AO3 Helper — Fic Appreciation › MarkAsFinished sub-module
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
+import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
 
 const W = getGlobalWindow();
 
@@ -79,13 +80,13 @@ export class MarkAsFinished {
     if (blurb.dataset.faFinished) return;
     blurb.dataset.faFinished = '1';
 
-    const heading = blurb.querySelector('h4.heading');
-    if (heading && this.isFinished(workId)) {
-      const badge       = document.createElement('span');
-      badge.className   = `${NS}-fa-badge ${NS}-fa-badge-finished`;
-      badge.textContent = '✅';
-      badge.title       = `Finished on ${this._load()[workId]?.date || ''}`;
-      heading.appendChild(badge);
+    if (this.isFinished(workId)) {
+      appendHeadingBadge(blurb, {
+        className: `${NS}-fa-badge ${NS}-fa-badge-finished`,
+        guardSelector: `.${NS}-fa-badge-finished`,
+        text: '✅',
+        title: `Finished on ${this._load()[workId]?.date || ''}`,
+      });
     }
 
     const stats = blurb.querySelector('.stats');

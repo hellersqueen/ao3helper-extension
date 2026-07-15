@@ -1,4 +1,5 @@
 import { register } from '../../../core/lifecycle.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 
 // ── Feature list ────────────────────────────────────────────────────────
 // 1. "Back to work" button on the bookmark form page — restores context
@@ -17,12 +18,7 @@ const DEFAULTS = {
   showViewBookmarkLink: true,
 };
 
-function cfg (key) {
-  try {
-    const s = JSON.parse(localStorage.getItem('ao3h:mod:bookmarkVault:settings') || '{}');
-    return (key in s) ? s[key] : DEFAULTS[key];
-  } catch (_) { return DEFAULTS[key]; }
-}
+const cfg = makeCfg('bookmarkVault', DEFAULTS);
 
 // ── Feature 1: "Back" button after bookmarking ───────────────────────────
 

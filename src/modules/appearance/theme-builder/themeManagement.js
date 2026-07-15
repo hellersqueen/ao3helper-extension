@@ -26,6 +26,7 @@ import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 // Étape 318 : AO3H importé du core/lifecycle (avant : capture window.AO3H).
@@ -37,16 +38,6 @@ const ACTIVE_SK = `${NS}:tb:active-theme`;
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function getShared () { return W.AO3H_ThemeBuilder || null; }
-function lsGet (key) {
-  const s = getShared();
-  if (!s) { console.warn(LOG, 'shared ThemeBuilder not ready'); return null; }
-  return s.lsGet(key) ?? null;
-}
-function lsSet (key, val) {
-  const s = getShared();
-  if (!s) { console.warn(LOG, 'shared ThemeBuilder not ready, drop write', key); return; }
-  s.lsSet(key, val);
-}
 function applyCSS (css, src) { getShared()?.applyCSS(css, src || 'theme'); }
 function removeCSS () { getShared()?.removeCSS(); }
 

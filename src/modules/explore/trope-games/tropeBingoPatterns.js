@@ -29,6 +29,8 @@ AO3 Helper - Trope Bingo Patterns Submodule
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
@@ -38,16 +40,6 @@ const SK   = `${NS}:tg:bingo`;
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function getShared () { return W.AO3H_TropeGames || null; }
-function lsGet (key) {
-  const s = getShared();
-  if (s) return s.lsGet(key);
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  const s = getShared();
-  if (s) return s.lsSet(key, val);
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
 
 function isWorkPage () {
   return /^\/works\/\d+/.test(location.pathname);
@@ -240,10 +232,7 @@ register(
   MOD,
   { title: 'Trope Bingo', parent: 'tropeGames', enabledByDefault: true },
   async function init () {
-    try {
-      const s = JSON.parse(localStorage.getItem('ao3h:mod:tropeBingoPatterns:settings') || '{}');
-      if (s.enableBingo === false) return () => {};
-    } catch {}
+    if (loadModuleSettings(MOD).enableBingo === false) return () => {};
     console.log(LOG, 'init');
     let state = loadState();
 

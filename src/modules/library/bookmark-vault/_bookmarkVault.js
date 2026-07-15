@@ -38,6 +38,7 @@ import './bookmarkMaintenance.js';
 import './noteManagement.js';
 import './noteDisplay.js';
 import './sortingAndFiltering.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 
 css(styles, 'ao3h-bookmarkVault');
 
@@ -70,12 +71,7 @@ const DEFAULTS = {
   showProgressRing:             false,
 };
 
-function cfg (key) {
-  try {
-    const s = JSON.parse(localStorage.getItem(`ao3h:mod:${MOD}:settings`) || '{}');
-    return (key in s) ? s[key] : DEFAULTS[key];
-  } catch (_) { return DEFAULTS[key]; }
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 register(MOD, {
   title:            'Bookmark Vault',

@@ -28,7 +28,7 @@ AO3 Helper - Trope Games Module Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import styles from './tropeGames.css?inline';
 
 import './tropeAchievements.js';
@@ -58,14 +58,6 @@ const TROPE_LIST = [
   'Letters/Emails', 'Sickfic', 'Pre-Canon', 'Post-Canon', 'AU: Human',
   'AU: Fantasy', 'AU: Modern', 'Epistolary', 'Unrequited Love', 'Loyalty',
 ];
-
-// ── Shared storage helpers ────────────────────────────────────────────────
-function lsGet (key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
 
 // ── Coordinator registration ──────────────────────────────────────────────
 register(

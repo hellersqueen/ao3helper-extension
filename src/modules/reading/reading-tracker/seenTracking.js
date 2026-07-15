@@ -8,6 +8,8 @@
 //   - "Only show updated works" filter mode (cfg: updatedOnlyMode)
 //   - Count notification: "X works updated since your last visit"
 
+import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+
 export class SeenTracking {
   /** @param {{ NS, cfg, getHistory, saveHistory, relativeTime }} opts */
   constructor ({ NS, cfg, getHistory, saveHistory, relativeTime }) {
@@ -137,14 +139,14 @@ export class SeenTracking {
       if (blurb.querySelector(`.${_BADGE_CLS}`)) return;
 
       updatedCount++;
-      const recency     = this._recencyClass(updatedAt);
-      const label       = relativeTime(updatedAt);
-      const badge       = document.createElement('span');
-      badge.className   = `${_BADGE_CLS} ${_BADGE_CLS}--${recency}`;
-      badge.textContent = `\u{1F195} Updated ${label}`;
-      badge.title       = 'This work was updated since your last visit';
-      const heading = blurb.querySelector('h4.heading');
-      if (heading) heading.appendChild(badge);
+      const recency = this._recencyClass(updatedAt);
+      const label   = relativeTime(updatedAt);
+      appendHeadingBadge(blurb, {
+        className: `${_BADGE_CLS} ${_BADGE_CLS}--${recency}`,
+        guardSelector: `.${_BADGE_CLS}`,
+        text: `\u{1F195} Updated ${label}`,
+        title: 'This work was updated since your last visit',
+      });
     });
 
     if (updatedCount > 0) this._injectUpdatedCounter(updatedCount);

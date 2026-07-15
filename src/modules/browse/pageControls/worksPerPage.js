@@ -2,16 +2,11 @@
 // Submodule ID: pageControls/worksPerPage
 // Role: density selector (20 / 50 / 100 works per page), memorized in localStorage
 
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+
 const SK_WPP      = 'ao3h:pc:worksPerPage';
 const VALID_WPP   = [20, 50, 100];
 const DEFAULT_WPP = 20;
-
-function lsGet (key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
 
 // AO3 uses ?items_per_page=N
 function buildURL (n) {

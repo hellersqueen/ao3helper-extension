@@ -25,6 +25,7 @@ AO3 Helper - POV Tracker Module Coordinator
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './povTracker.css?inline';
 
 import { PovAnalysis } from './povAnalysis.js';
@@ -52,16 +53,7 @@ const DEFAULTS = {
 };
 
 // ── Storage helpers ───────────────────────────────────────────────────────
-const SK_SETTINGS = `ao3h:mod:${MOD}:settings`;
-
-function lsGet (key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-
-function cfg (key) {
-  const saved = lsGet(SK_SETTINGS) || {};
-  return key in saved ? saved[key] : DEFAULTS[key];
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 // ── Module registration ───────────────────────────────────────────────────
 register(MOD, {

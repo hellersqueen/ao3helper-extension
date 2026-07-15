@@ -1,5 +1,6 @@
 import { register } from '../../../core/lifecycle.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 
 const MOD = 'bookmarkMaintenance';
 const NS  = 'ao3h';
@@ -21,12 +22,7 @@ const DEFAULTS = {
   showAnalyticsDashboard:  false,
 };
 
-function cfg (key) {
-  try {
-    const s = JSON.parse(localStorage.getItem('ao3h:mod:bookmarkVault:settings') || '{}');
-    return (key in s) ? s[key] : DEFAULTS[key];
-  } catch (_) { return DEFAULTS[key]; }
-}
+const cfg = makeCfg('bookmarkVault', DEFAULTS);
 
 // ── Feature 1: Auto-tick "Private" on the bookmark form ─────────────────
 

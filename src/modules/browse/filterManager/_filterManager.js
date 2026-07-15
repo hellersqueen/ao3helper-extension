@@ -32,6 +32,7 @@ import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Storage } from '../../../../lib/storage/index.js';
 import { css } from '../../../../lib/utils/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './filterManager.css?inline';
 
 import { PresetManagement } from './presetManagement.js';
@@ -77,8 +78,6 @@ function detectCurrentFandom () {
 }
 
 // ── Config helpers ────────────────────────────────────────────────────────
-const SK_SETTINGS = `ao3h:mod:${MOD}:settings`;
-
 const DEFAULTS = {
   // Presets
   starredPresetsFirst         : true,
@@ -112,13 +111,7 @@ const DEFAULTS = {
   crossoverDefault            : false,
 };
 
-function cfg (key) {
-  try {
-    const raw = localStorage.getItem(SK_SETTINGS);
-    if (raw) { const saved = JSON.parse(raw); if (saved && key in saved) return saved[key]; }
-  } catch { /* */ }
-  return key in DEFAULTS ? DEFAULTS[key] : null;
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 // ── Storage helpers ───────────────────────────────────────────────────────
 // AO3H.store.lsGet/lsSet resolve to Storage.lsGet/lsSet (lib/storage/index.js) —

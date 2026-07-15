@@ -10,6 +10,7 @@
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 
 const W = getGlobalWindow();
 
@@ -157,10 +158,7 @@ export class HiddenTags {
   // ── Inline icon injection ──────────────────────────────────────────────
 
   ensureInlineIcons (root = document, getWorkBlurbs) {
-    try {
-      const s = JSON.parse(localStorage.getItem('ao3h:mod:hideByTags:settings') || '{}');
-      if (s.quickAddIcon === false) return;
-    } catch {}
+    if (loadModuleSettings('hideByTags').quickAddIcon === false) return;
     const scopes = getWorkBlurbs(root);
     if (scopes.length === 0) {
       const fallback = document.querySelector('#workskin') ||

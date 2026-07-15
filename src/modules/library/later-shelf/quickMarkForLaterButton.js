@@ -18,6 +18,7 @@ AO3 Helper - Quick Mark for Later Button Submodule
 import { register } from '../../../core/lifecycle.js';
 import { loadItems, saveItems, cfg } from './laterShelfStore.js';
 import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
+import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
 
 const MOD = 'quickMarkForLaterButton';
 const D   = document;
@@ -89,13 +90,8 @@ register(MOD, {
         btn.title = 'Remove from Later Shelf';
         // inject badge immediately without waiting for markedForLaterStatus repaint
         var blurb = btn.closest('li.work.blurb, li.bookmark.blurb');
-        if (blurb && !blurb.querySelector('.ao3h-ls-badge')) {
-          var badge = D.createElement('span');
-          badge.className = 'ao3h-ls-badge';
-          badge.textContent = '📌';
-          badge.title = 'In your Later Shelf';
-          var heading = blurb.querySelector('h4.heading');
-          if (heading) heading.appendChild(badge);
+        if (blurb) {
+          appendHeadingBadge(blurb, { className: 'ao3h-ls-badge', text: '📌', title: 'In your Later Shelf' });
         }
       }
     });

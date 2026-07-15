@@ -49,6 +49,7 @@ import { detectUser } from '../../../../lib/utils/user-detector.js';
 import { UserLocalStorage } from '../../../../lib/storage/user.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { EV_SETTINGS_CHANGED } from '../../../../lib/utils/event-names.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './skipWorks.css?inline';
 
 css(styles, 'ao3h-skipWorks');
@@ -65,14 +66,7 @@ const DEFAULTS = {
 };
 
 // Read a persisted setting (falls back to default)
-function getSetting(key, defaultVal) {
-  try {
-    const raw = localStorage.getItem(`ao3h:mod:${MOD}:settings`);
-    if (!raw) return defaultVal;
-    const saved = JSON.parse(raw);
-    return (key in saved) ? saved[key] : defaultVal;
-  } catch { return defaultVal; }
-}
+const getSetting = makeCfg(MOD);
 
 // Detect current user for per-user IndexedDB isolation
 const CURRENT_USER = detectUser();

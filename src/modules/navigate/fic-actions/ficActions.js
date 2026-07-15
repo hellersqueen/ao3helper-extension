@@ -45,6 +45,7 @@ AO3 Helper - Fic Actions Module
 import { register } from '../../../core/lifecycle.js';
 import { $, $$, observe, css } from '../../../../lib/utils/index.js';
 import { Routes } from '../../../../lib/ao3/routes.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './ficActions.css?inline';
 
 css(styles, 'ao3h-ficActions');
@@ -62,13 +63,7 @@ const DEFAULTS = {
   hideSubscribe:          false,
 };
 
-function cfg (key) {
-  try {
-    const raw = localStorage.getItem(`ao3h:mod:${MOD}:settings`);
-    if (raw) { const saved = JSON.parse(raw); if (saved && key in saved) return saved[key]; }
-  } catch { /* */ }
-  return DEFAULTS[key];
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 const SK_SUBSCRIBED    = `ao3h:${MOD}:subscribedWorks`;
 const SK_BUTTON_ORDER  = `ao3h:${MOD}:buttonOrder`;

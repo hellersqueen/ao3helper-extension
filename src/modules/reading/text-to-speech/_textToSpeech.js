@@ -27,7 +27,8 @@ AO3 Helper - Text To Speech Module Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './textToSpeech.css?inline';
 
 import './speechEngine.js';
@@ -42,13 +43,6 @@ const W   = getGlobalWindow();
 const NS  = 'ao3h';
 const MOD = 'textToSpeech';
 
-// ── Shared storage helpers ────────────────────────────────────────────────
-function lsGet (key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
-}
-function lsSet (key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
 
 // ── Shared config reader ──────────────────────────────────────────────────
 const DEFAULTS = {
@@ -63,12 +57,7 @@ const DEFAULTS = {
   floatingPanel:    true,
 };
 
-function cfg (key) {
-  try {
-    const saved = JSON.parse(localStorage.getItem(`${NS}:mod:${MOD}:settings`) || '{}');
-    return saved[key] !== undefined ? saved[key] : DEFAULTS[key];
-  } catch { return DEFAULTS[key]; }
-}
+const cfg = makeCfg(MOD, DEFAULTS);
 
 // ── Sentence splitter (shared utility for submodules) ─────────────────────
 function splitSentences (text) {

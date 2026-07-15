@@ -20,6 +20,7 @@ AO3 Helper - Instant Footnotes
 
 import { register } from '../../../core/lifecycle.js';
 import { css } from '../../../../lib/utils/index.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import styles from './instantFootnotes.css?inline';
 
 css(styles, 'ao3h-instantFootnotes');
@@ -46,11 +47,6 @@ function debounce (fn, ms) {
   return debounced;
 }
 
-function lsGet (key, def) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; }
-  catch { return def; }
-}
-
 // ══════════════════════════════════════════════════════════════════════════
 // MODULE REGISTRATION
 // ══════════════════════════════════════════════════════════════════════════
@@ -62,7 +58,6 @@ register(MOD, {
 
   if (!isWorkPage()) return () => {};
 
-  const CFG_KEY = `ao3h:mod:${MOD}:settings`;
   const defaults = {
     trigger: 'hover',     // 'hover' | 'click'
     delayIn: 120,         // ms (hover)
@@ -71,7 +66,7 @@ register(MOD, {
     pinOnClick: true,
     showPermalink: true
   };
-  let cfg = Object.assign({}, defaults, lsGet(CFG_KEY, defaults));
+  let cfg = loadModuleSettings(MOD, defaults);
 
   document.documentElement.style.setProperty('--ao3h-if-max-width', cfg.maxWidth + 'px');
 
