@@ -103,29 +103,27 @@ AO3 Helper - Series Helper Module Coordinator
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Series Helper** améliore la navigation et le suivi des séries d’œuvres sur AO3.
 
-Il permet notamment de :
-
-* afficher la progression dans une série ;
-* signaler les séries particulièrement longues ;
-* afficher différents badges d’information sur les séries ;
-* indiquer si une série est terminée, en cours ou déjà suivie ;
-* ajouter une bannière de progression sur les pages d’œuvres appartenant à une série ;
-* regrouper les œuvres d’une même série dans les listes de résultats ;
-* fournir des actions communes pour gérer ces groupes.
+* Il permet notamment de :
+  - afficher la progression dans une série ;
+  - signaler les séries particulièrement longues ;
+  - afficher différents badges d’information sur les séries ;
+  - indiquer si une série est terminée, en cours ou déjà suivie ;
+  - ajouter une bannière de progression sur les pages d’œuvres appartenant à une série ;
+  - regrouper les œuvres d’une même série dans les listes de résultats ;
+  - fournir des actions communes pour gérer ces groupes.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage               | Défaut    | Description                                                                           |
-| --------------------- | --------- | ------------------------------------------------------------------------------------- |
-| `epicSeriesWarning`   | Désactivé | Affiche un badge d’avertissement sur les séries contenant au moins 20 œuvres.         |
-| `groupSeriesInSearch` | Désactivé | Regroupe les œuvres appartenant à une même série dans les résultats de recherche.     |
-| `enableShortcuts`     | Activé    | Réservé à une future fonctionnalité de raccourcis. Ce réglage n’est pas encore actif. |
-| `enableFilters`       | Activé    | Réservé à une future fonctionnalité de filtres. Ce réglage n’est pas encore actif.    |
+| Réglage               | Description                                                                           |
+| --------------------- |---------------------------------------------------------------------------------------|
+| `epicSeriesWarning`   | Affiche un badge d’avertissement sur les séries contenant au moins 20 œuvres.         |
+| `groupSeriesInSearch` | Regroupe les œuvres appartenant à une même série dans les résultats de recherche.     |
+| `enableShortcuts`     | Réservé à une future fonctionnalité de raccourcis. Ce réglage n’est pas encore actif. |
+| `enableFilters`       | Réservé à une future fonctionnalité de filtres. Ce réglage n’est pas encore actif.    |
 
 ---
 

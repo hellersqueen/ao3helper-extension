@@ -20,6 +20,7 @@ Notes
 
 import { extractWorkIdFromBlurb, extractWorkIdFromHref, isListingPage } from '../../../../../lib/ao3/parsers.js';
 import { observe } from '../../../../../lib/utils/index.js';
+import { noteQueryMatch } from '../vaultTools.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -125,7 +126,8 @@ export class ReadingStatusTracking {
     const inp = D.createElement('input');
     inp.type        = 'search';
     inp.id          = 'ao3h-bv-ns-input';
-    inp.placeholder = 'Search in bookmark notes…';
+    inp.placeholder = 'Search in bookmark notes… (a && b, a || b)';
+    inp.title       = 'Operators: "angst && fluff" requires both, "angst || fluff" matches either';
     const count = D.createElement('span');
     count.id = 'ao3h-bv-ns-count';
     const clearBtn = D.createElement('button');
@@ -133,11 +135,11 @@ export class ReadingStatusTracking {
     clearBtn.textContent = '✕';
     clearBtn.title = 'Clear search';
     function applyFilter () {
-      const q = inp.value.trim().toLowerCase();
+      const q = inp.value.trim();
       let shown = 0;
       D.querySelectorAll('li.bookmark.blurb').forEach(blurb => {
         const notes   = blurb.querySelector('.user.module.group blockquote.userstuff')?.textContent || '';
-        const visible = !q || notes.toLowerCase().includes(q);
+        const visible = noteQueryMatch(notes, q);
         blurb.style.display = visible ? '' : 'none';
         if (visible) shown++;
       });

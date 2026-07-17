@@ -551,3 +551,329 @@ html.ao3h-hide-comp-date li.blurb:hover .completed {
     dans tagsDisplay.css) — shared.md, décision produit K4.
   ═══════════════════════════════════════════════════════════════════════
 */
+
+/* =============================================================================
+   STATISTICS HIDING
+============================================================================= */
+
+/* Consolidated section: statistics hiding
+   CSS rules for hiding statistics and metrics */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WORD COUNTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-wc dl.stats dd.words,
+html.ao3h-hide-wc .stats .words,
+html.ao3h-hide-wc li.words,
+html.ao3h-hide-wc span.words,
+html.ao3h-hide-wc dt.words + dd {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KUDOS COUNTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-kudos dl.stats dd.kudos,
+html.ao3h-hide-kudos .stats .kudos,
+html.ao3h-hide-kudos li.kudos,
+html.ao3h-hide-kudos span.kudos,
+html.ao3h-hide-kudos dt.kudos + dd {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMMENTS COUNTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-comments dl.stats dd.comments,
+html.ao3h-hide-comments .stats .comments,
+html.ao3h-hide-comments li.comments,
+html.ao3h-hide-comments span.comments,
+html.ao3h-hide-comments dt.comments + dd,
+html.ao3h-hide-comments .comments a {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BOOKMARKS COUNTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-bookmarks dl.stats dd.bookmarks,
+html.ao3h-hide-bookmarks .stats .bookmarks,
+html.ao3h-hide-bookmarks li.bookmarks,
+html.ao3h-hide-bookmarks span.bookmarks,
+html.ao3h-hide-bookmarks dt.bookmarks + dd,
+html.ao3h-hide-bookmarks .bookmarks a {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HITS/VISITS COUNTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-hits dl.stats dd.hits,
+html.ao3h-hide-hits .stats .hits,
+html.ao3h-hide-hits li.hits,
+html.ao3h-hide-hits span.hits,
+html.ao3h-hide-hits dt.hits + dd {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUMMARIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-summaries .blurb .summary,
+html.ao3h-hide-summaries .blurb blockquote.userstuff.summary,
+html.ao3h-hide-summaries .blurb blockquote.userstuff,
+html.ao3h-hide-summaries li.blurb .summary,
+html.ao3h-hide-summaries ol.work .summary {
+  display: none !important;
+}
+
+
+/* =============================================================================
+   HEADER CLEANUP
+============================================================================= */
+
+/* Consolidated section: header cleanup
+   CSS rules for minimal header mode */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MINIMAL HEADER MODE
+   Hides: published/updated line, words, chapters, language, gray bar above tags
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Published/Updated line in work header */
+html.ao3h-minimal-header .work .preface .meta .published,
+html.ao3h-minimal-header .work .preface .meta .status {
+  display: none !important;
+}
+
+/* Words line */
+html.ao3h-minimal-header .work .preface .meta .words,
+html.ao3h-minimal-header .work .preface .meta dt.words,
+html.ao3h-minimal-header .work .preface .meta dt.words + dd {
+  display: none !important;
+}
+
+/* Chapters line */
+html.ao3h-minimal-header .work .preface .meta .chapters,
+html.ao3h-minimal-header .work .preface .meta dt.chapters,
+html.ao3h-minimal-header .work .preface .meta dt.chapters + dd {
+  display: none !important;
+}
+
+/* Language line */
+html.ao3h-minimal-header .work .preface .meta .language,
+html.ao3h-minimal-header .work .preface .meta dt.language,
+html.ao3h-minimal-header .work .preface .meta dt.language + dd {
+  display: none !important;
+}
+
+/* Gray bar above tags (if exists as separate element) */
+html.ao3h-minimal-header .work .preface .meta .separator {
+  display: none !important;
+}
+
+/* Alternative selectors for different AO3 skins */
+html.ao3h-minimal-header #workskin .work.meta .published,
+html.ao3h-minimal-header #workskin .work.meta .status,
+html.ao3h-minimal-header #workskin .work.meta .words,
+html.ao3h-minimal-header #workskin .work.meta .chapters,
+html.ao3h-minimal-header #workskin .work.meta .language {
+  display: none !important;
+}
+
+
+/* =============================================================================
+   DATES HIDING
+============================================================================= */
+
+/* Consolidated section: dates hiding
+   CSS rules for hiding dates and timestamps */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PUBLICATION DATES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-pub-date dt.published,
+html.ao3h-hide-pub-date dd.published,
+html.ao3h-hide-pub-date li.published,
+html.ao3h-hide-pub-date dt.published + dd {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UPDATE DATES (Status/Last Updated)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-upd-date p.datetime,
+html.ao3h-hide-upd-date dt.status,
+html.ao3h-hide-upd-date dd.status,
+html.ao3h-hide-upd-date li.status,
+html.ao3h-hide-upd-date dt.status + dd {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPLETION DATES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-comp-date dt.completed,
+html.ao3h-hide-comp-date dd.completed,
+html.ao3h-hide-comp-date li.completed,
+html.ao3h-hide-comp-date dt.completed + dd {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHAPTER DATES (in chapters list)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-hide-chap-dates #chapters dt.published,
+html.ao3h-hide-chap-dates #chapters .datetime,
+html.ao3h-hide-chap-dates #chapters span.datetime,
+html.ao3h-hide-chap-dates #chapters .published {
+  display: none !important;
+}
+
+
+/* =============================================================================
+   CHAPTER LIST CLEANUP
+============================================================================= */
+
+/* Consolidated section: chapter-list cleanup
+   CSS rules for hiding stats on chapters list */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHAPTERS LIST STATS HIDING
+   Hides: chapter word counts, comments counts, dates in the chapters list
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Word counts in chapters list */
+html.ao3h-hide-chap-stats #chapters .words,
+html.ao3h-hide-chap-stats #chapters span.words,
+html.ao3h-hide-chap-stats #chapters li .words {
+  display: none !important;
+}
+
+/* Comments counts in chapters list */
+html.ao3h-hide-chap-stats #chapters .comments,
+html.ao3h-hide-chap-stats #chapters span.comments,
+html.ao3h-hide-chap-stats #chapters li .comments,
+html.ao3h-hide-chap-stats #chapters .comments a {
+  display: none !important;
+}
+
+/* Dates in chapters list */
+html.ao3h-hide-chap-stats #chapters .datetime,
+html.ao3h-hide-chap-stats #chapters span.datetime,
+html.ao3h-hide-chap-stats #chapters li .datetime {
+  display: none !important;
+}
+
+/* Alternative: entire meta line in chapters if needed */
+html.ao3h-hide-chap-stats #chapters .meta {
+  /* Keep visible but hide children - more flexible */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAYOUT DENSITY
+   Compact / comfortable (default, untouched) / spacious spacing on listings.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.ao3h-density-compact li.blurb {
+  padding: 4px 6px !important;
+  margin-bottom: 4px !important;
+}
+html.ao3h-density-compact li.blurb .summary {
+  margin: 2px 0 !important;
+  max-height: 3em;
+  overflow: hidden;
+}
+html.ao3h-density-compact li.blurb ul.tags li {
+  margin: 1px 2px !important;
+}
+
+html.ao3h-density-spacious li.blurb {
+  padding: 20px 24px !important;
+  margin-bottom: 24px !important;
+}
+html.ao3h-density-spacious li.blurb .summary {
+  margin: 12px 0 !important;
+}
+html.ao3h-density-spacious li.blurb ul.tags li {
+  margin: 4px 6px !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DATE AGE COLORING
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ao3h-date-age-today  { color: #2e7d32; font-weight: 600; }
+.ao3h-date-age-week   { color: #1565c0; }
+.ao3h-date-age-month  { color: #6d5200; }
+.ao3h-date-age-older  { color: #757575; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BLURB SECTION ORDER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+li.blurb.ao3h-blurb-reordered {
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GRID VIEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ao3h-grid-view-list {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 16px;
+  list-style: none;
+  padding: 0;
+}
+
+.ao3h-grid-view-list > li.blurb {
+  flex: 1 1 300px;
+  max-width: 380px;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.ao3h-grid-view-list > li.blurb .summary {
+  max-height: 6em;
+  overflow: hidden;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WORD OCCURRENCE COUNTER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ao3h-word-occurrence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 0.9em;
+}
+
+.ao3h-word-occurrence input {
+  width: 180px;
+}
+
+.ao3h-word-occurrence-result {
+  color: #333;
+  font-weight: 600;
+}

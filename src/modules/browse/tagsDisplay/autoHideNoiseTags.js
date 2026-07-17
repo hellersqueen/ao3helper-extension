@@ -21,6 +21,11 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { observe } from '../../../../lib/utils/index.js';
+import {
+  REVEALED_CLASS, REVEAL_CHIP_CLASS, createRevealChip, extractBlurbAuthor,
+  getAuthorExceptions, getCustomNoiseWords, isExceptedAuthor, isNoiseTag,
+  mergeNoisePatterns, NOISE_PATTERNS, revealNoiseTag,
+} from './noiseTagUtils.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -32,6 +37,8 @@ const NS             = 'ao3h';
 const HIDDEN_CLS     = `${NS}-noise-tag-hidden`;
 const PROCESSED_ATTR = 'data-ao3h-noise-checked';
 
+export const BLURRED_CLASS     = 'ao3h-noise-tag-blurred';
+
 function cfg (key, fallback) {
   try {
     const v = Flags.get(`mod:tagsDisplay:${key}`);
@@ -40,50 +47,17 @@ function cfg (key, fallback) {
   return fallback;
 }
 
-const NOISE_PATTERNS = [
-  'idk',
-  "i don't know",
-  'i dont know',
-  "i'm sorry",
-  'im sorry',
-  'sorry this is bad',
-  'my first fic',
-  'first fic pls be nice',
-  'first fanfic pls be nice',
-  'pls be nice',
-  "don't read this",
-  'dont read this',
-  'this is dumb',
-  'this is stupid',
-  'this sucks',
-  'i cant write',
-  'i cannot write',
-  'probably bad',
-  'badly written',
-  'unbetaed',
-  "unbeta'd",
-  'no beta we die like men',
-  'not beta read',
-  'idk what im doing',
-  "idk what i'm doing",
-];
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — NOISE-TAG DETECTION AND VISIBILITY
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function normalize (text) {
-  return (text || '').toLowerCase().replace(/\s+/g, ' ').replace(/[.!?]+$/, '').trim();
-}
-
-function isNoiseTag (text) {
-  const norm = normalize(text);
-  if (!norm || norm.length < 3) return false;
-  return NOISE_PATTERNS.some(p => norm.includes(p));
-}
-
 const TAG_SELECTOR = 'a.tag, dd.tags a, dd.fandom a, dd.relationship a, dd.freeform a';
+
+// Set once at init from the config panel's settings/lists.
+let activePatterns  = NOISE_PATTERNS;
+let authorExceptions = [];
+let styleClass       = HIDDEN_CLS; // HIDDEN_CLS (display:none) or BLURRED_CLASS (filter: blur)
 
 function processRoot (root) {
   (root || document).querySelectorAll(TAG_SELECTOR).forEach(el => {
@@ -91,15 +65,37 @@ function processRoot (root) {
     el.setAttribute(PROCESSED_ATTR, 'true');
     const text = el.textContent?.trim();
     if (!text) return;
-    if (isNoiseTag(text)) {
-      const li = el.closest('li');
-      (li || el).classList.add(HIDDEN_CLS);
+    if (!isNoiseTag(text, activePatterns)) return;
+
+    const blurb = el.closest('li.blurb');
+    if (blurb && isExceptedAuthor(extractBlurbAuthor(blurb), authorExceptions)) return;
+
+    const li = el.closest('li');
+    if (li) {
+      // Normal case: keep the <li> (so the .commas li::after comma stays put),
+      // hide/blur its original content, and offer a per-tag reveal chip instead.
+      li.classList.add(styleClass);
+      if (!li.querySelector(`.${REVEAL_CHIP_CLASS}`)) li.appendChild(createRevealChip(document, { preview: text }));
+    } else {
+      // Rare fallback (no wrapping <li> found): hide the tag element itself.
+      // No reveal chip here — nesting a <button> inside an <a> would be invalid.
+      el.classList.add(styleClass);
     }
   });
 }
 
+// Individually reveal a single noise-hidden tag, without disabling the whole filter.
+function onRevealChipClick (e) {
+  const chip = e.target.closest(`.${REVEAL_CHIP_CLASS}`);
+  if (!chip) return;
+  revealNoiseTag(chip.closest('li'));
+}
+
 function restoreAll () {
-  document.querySelectorAll(`.${HIDDEN_CLS}`).forEach(el => el.classList.remove(HIDDEN_CLS));
+  document.querySelectorAll(`.${HIDDEN_CLS}, .${BLURRED_CLASS}`).forEach(el => {
+    el.classList.remove(HIDDEN_CLS, BLURRED_CLASS, REVEALED_CLASS);
+    el.querySelector(`.${REVEAL_CHIP_CLASS}`)?.remove();
+  });
   document.querySelectorAll(`[${PROCESSED_ATTR}]`).forEach(el => el.removeAttribute(PROCESSED_ATTR));
 }
 
@@ -116,8 +112,13 @@ register(MOD, {
 
   if (!cfg('autoHideNoiseTags', false)) return () => {};
 
+  activePatterns   = mergeNoisePatterns(NOISE_PATTERNS, getCustomNoiseWords());
+  authorExceptions = getAuthorExceptions();
+  styleClass       = cfg('noiseTagStyle', 'hide') === 'blur' ? BLURRED_CLASS : HIDDEN_CLS;
+
   document.documentElement.classList.add(`${NS}-noise-filter-on`);
   processRoot(document);
+  document.addEventListener('click', onRevealChipClick);
 
   const main = document.querySelector('#main') || document.body;
   const obs = observe(main, { childList: true, subtree: true }, mutations => {
@@ -130,7 +131,11 @@ register(MOD, {
 
   return () => {
     obs.disconnect();
+    document.removeEventListener('click', onRevealChipClick);
     document.documentElement.classList.remove(`${NS}-noise-filter-on`);
     restoreAll();
+    activePatterns   = NOISE_PATTERNS;
+    authorExceptions = [];
+    styleClass       = HIDDEN_CLS;
   };
 });

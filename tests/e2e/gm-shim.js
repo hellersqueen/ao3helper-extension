@@ -31,13 +31,24 @@
   };
 
   window.GM_registerMenuCommand = () => 0;
+  window.GM_info = { script: { downloadURL: '', updateURL: '' } };
 
-  // Aucun module testé ici ne fait de vraie requête réseau au démarrage —
-  // ce stub évite juste un crash si l'un d'eux l'appelle quand même.
+  // Les bundles physiques sont servis par le petit serveur E2E. Les autres
+  // requêtes restent bloquées afin de garder le test local et déterministe.
   window.GM_xmlhttpRequest = (details) => {
-    if (details && typeof details.onerror === 'function') {
-      details.onerror(new Error('GM_xmlhttpRequest indisponible dans ce test'));
+    let aborted = false;
+    const url = String(details?.url || '');
+    const isRuntimeBundle = /^http:\/\/127\.0\.0\.1:\d+\/ao3-helper\.(modules|panel)\.js$/.test(url);
+    if (isRuntimeBundle) {
+      fetch(url)
+        .then(async (response) => {
+          const responseText = await response.text();
+          if (!aborted) details?.onload?.({ status: response.status, responseText });
+        })
+        .catch((error) => { if (!aborted) details?.onerror?.(error); });
+    } else if (details && typeof details.onerror === 'function') {
+      queueMicrotask(() => details.onerror(new Error('GM_xmlhttpRequest indisponible dans ce test')));
     }
-    return { abort() {} };
+    return { abort() { aborted = true; } };
   };
 })();

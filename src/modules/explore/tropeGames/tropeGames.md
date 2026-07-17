@@ -230,26 +230,23 @@ AO3 Helper - Trope Roulette Submodule
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Trope Games** regroupe plusieurs mini-jeux autour des tropes de fanfiction.
 
-Un trope est un grand motif narratif récurrent, par exemple :
-
-* Enemies to Lovers ;
-* Slow Burn ;
-* Hurt/Comfort ;
-* Found Family ;
-* Alternate Universe.
+* Un trope est un grand motif narratif récurrent, par exemple :
+  - Enemies to Lovers ;
+  - Slow Burn ;
+  - Hurt/Comfort ;
+  - Found Family ;
+  - Alternate Universe.
 
 Le module utilise une liste partagée d’environ cinquante tropes courants.
 
-Il comprend cinq fonctionnalités principales :
-
-* un trope du jour ;
-* une carte de bingo ;
-* une roulette de tropes ;
-* des statistiques de lecture ;
-* des succès à débloquer.
+* Il comprend cinq fonctionnalités principales :
+  - un trope du jour ;
+  - une carte de bingo ;
+  - une roulette de tropes ;
+  - des statistiques de lecture ;
+  - des succès à débloquer.
 
 Ces fonctionnalités permettent de rendre l’exploration et le suivi des tropes plus ludiques.
 
@@ -257,13 +254,13 @@ Ces fonctionnalités permettent de rendre l’exploration et le suivi des tropes
 
 # Réglages utilisateur
 
-| Réglage               | Par défaut | Ce que ça fait                                                 |
-| --------------------- | ---------- | -------------------------------------------------------------- |
-| `showDailyTrope`      | Activé     | Affiche la bannière du trope du jour sur la page d’accueil.    |
-| `achievementsEnabled` | Activé     | Active le système de succès de lecture.                        |
-| `enableBingo`         | Activé     | Active la carte de Trope Bingo.                                |
-| `enableRoulette`      | Activé     | Active la Trope Roulette.                                      |
-| `enableStats`         | Activé     | Active le suivi et l’affichage des statistiques de tropes lus. |
+| Réglage               | Ce que ça fait                                                 |
+| ----------------------|----------------------------------------------------------------|
+| `showDailyTrope`      | Affiche la bannière du trope du jour sur la page d’accueil.    |
+| `achievementsEnabled` | Active le système de succès de lecture.                        |
+| `enableBingo`         | Active la carte de Trope Bingo.                                |
+| `enableRoulette`      | Active la Trope Roulette.                                      |
+| `enableStats`         | Active le suivi et l’affichage des statistiques de tropes lus. |
 
 ---
 

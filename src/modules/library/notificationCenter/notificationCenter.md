@@ -116,39 +116,37 @@ AO3 Helper - Notification Center
 
 Le module **Notification Center** surveille les œuvres suivies afin de repérer la publication de nouveaux chapitres.
 
-Les œuvres surveillées peuvent provenir :
-
-* des favoris ;
-* de la liste **Marked for Later** ;
-* de l’historique de lecture.
+* Les œuvres surveillées peuvent provenir :
+  - des favoris ;
+  - de la liste **Marked for Later** ;
+  - de l’historique de lecture.
 
 Les mises à jour détectées sont regroupées dans un flux intitulé **What’s New**.
 
-Le module permet notamment de :
-
-* détecter les nouveaux chapitres publiés ;
-* indiquer le nombre de chapitres ajoutés ;
-* signaler lorsqu’une œuvre devient terminée ;
-* conserver un historique des mises à jour pendant 90 jours ;
-* marquer une notification comme lue ;
-* marquer toutes les notifications comme lues ;
-* trier et filtrer le flux ;
-* afficher une cloche avec un compteur dans le menu AO3 ;
-* vérifier automatiquement les œuvres suivies ;
-* envoyer des notifications du navigateur ;
-* désactiver les notifications pendant une plage horaire choisie.
+* Le module permet notamment de :
+  - détecter les nouveaux chapitres publiés ;
+  - indiquer le nombre de chapitres ajoutés ;
+  - signaler lorsqu’une œuvre devient terminée ;
+  - conserver un historique des mises à jour pendant 90 jours ;
+  - marquer une notification comme lue ;
+  - marquer toutes les notifications comme lues ;
+  - trier et filtrer le flux ;
+  - afficher une cloche avec un compteur dans le menu AO3 ;
+  - vérifier automatiquement les œuvres suivies ;
+  - envoyer des notifications du navigateur ;
+  - désactiver les notifications pendant une plage horaire choisie.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                | Défaut    | Description                                                                                                                              |
-| ---------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `desktopNotifications` | Désactivé | Active les notifications du navigateur. Une autorisation du navigateur est nécessaire.                                                   |
-| `soundEffects`         | Désactivé | Joue un son lorsqu’une notification est envoyée. Ce réglage fonctionne uniquement lorsque les notifications du navigateur sont activées. |
-| `quietHoursEnabled`    | Désactivé | Active une plage horaire pendant laquelle aucune notification du navigateur n’est envoyée.                                               |
-| `quietHoursStart`      | `22:00`   | Définit l’heure de début des heures calmes.                                                                                              |
-| `quietHoursEnd`        | `08:00`   | Définit l’heure de fin des heures calmes.                                                                                                |
+| Réglage                | Description                                                                                                                              |
+| ---------------------- |------------------------------------------------------------------------------------------------------------------------------------------|
+| `desktopNotifications` | Active les notifications du navigateur. Une autorisation du navigateur est nécessaire.                                                   |
+| `soundEffects`         | Joue un son lorsqu’une notification est envoyée. Ce réglage fonctionne uniquement lorsque les notifications du navigateur sont activées. |
+| `quietHoursEnabled`    | Active une plage horaire pendant laquelle aucune notification du navigateur n’est envoyée.                                               |
+| `quietHoursStart`      | Définit l’heure de début des heures calmes.                                                                                              |
+| `quietHoursEnd`        | Définit l’heure de fin des heures calmes.                                                                                                |
 
 Le panneau affiche également une section **Sync & Refresh** proposant des options liées :
 

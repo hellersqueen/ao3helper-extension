@@ -163,3 +163,45 @@ describe('HiddenTags.openManager — bouton "Clear All"', () => {
     expect(confirmSpy).not.toHaveBeenCalled();
   });
 });
+
+describe('reasonsFor — modes de correspondance et combinaisons', () => {
+  function scopeWithTags(...tags) {
+    const div = document.createElement('div');
+    div.innerHTML = tags
+      .map(t => `<a class="tag" href="/tags/${encodeURIComponent(t.replace(/\//g, '*s*'))}/works">${t}</a>`)
+      .join(' ');
+    return div;
+  }
+
+  const ht = () => new HiddenTags({ NS: 'ao3h', Storage: fakeStorage(), UserLS: null, KeyboardNav: {} });
+
+  it('mode exact (défaut) : correspondance stricte uniquement', () => {
+    const scope = scopeWithTags('Harry Potter', 'Time Travel');
+    expect(ht().reasonsFor(scope, new Set(['harry potter']))).toEqual(['harry potter']);
+    expect(ht().reasonsFor(scope, new Set(['harry']))).toEqual([]);
+  });
+
+  it('mode contains : une entrée matche tout tag qui la contient', () => {
+    const scope = scopeWithTags('Harry Potter', 'Time Travel');
+    expect(ht().reasonsFor(scope, new Set(['harry']), { matchMode: 'contains' })).toEqual(['harry']);
+    expect(ht().reasonsFor(scope, new Set(['zzz']), { matchMode: 'contains' })).toEqual([]);
+  });
+
+  it('combinaison "a + b" : cache seulement si TOUS les tags sont présents', () => {
+    const both = scopeWithTags('Harry Potter', 'Time Travel');
+    const one  = scopeWithTags('Harry Potter', 'Fluff');
+    const combo = new Set(['harry potter + time travel']);
+    expect(ht().reasonsFor(both, combo)).toEqual(['harry potter + time travel']);
+    expect(ht().reasonsFor(one, combo)).toEqual([]);
+  });
+
+  it('les combinaisons fonctionnent aussi en mode contains', () => {
+    const scope = scopeWithTags('Harry Potter', 'Time Travel Fix-It');
+    expect(ht().reasonsFor(scope, new Set(['harry + time travel']), { matchMode: 'contains' }))
+      .toEqual(['harry + time travel']);
+  });
+
+  it('retourne [] quand le scope n\'a aucun tag', () => {
+    expect(ht().reasonsFor(document.createElement('div'), new Set(['x']))).toEqual([]);
+  });
+});

@@ -13,21 +13,33 @@ navigation supplémentaires.
 
 | Réglage | Par défaut | Ce que ça fait |
 |---|---|---|
-| `showPlusMinus10Buttons` | activé | Affiche les boutons pour avancer/reculer de 10 pages |
+| `showPlusMinus10Buttons` | activé | Affiche les boutons de saut rapide (±N pages) |
+| `quickJumpStep` | `10` | De combien de pages sautent les boutons rapides |
+| `showBigJumpButtons` | désactivé | Affiche en plus des boutons de grand saut |
+| `bigJumpStep` | `50` | De combien de pages sautent les boutons de grand saut |
+| `showRandomPageButton` | activé | Affiche le bouton 🎲 "page au hasard" |
+| `showPercentJumpButtons` | activé | Affiche les sauts ¼ / ½ / ¾ |
+| `rememberRecentPages` | activé | Mémorise les pages visitées et propose "Resume"/"Recent" |
+| `pageInputPosition` | `below` | Position du champ de saisie (sous ou au-dessus de la pagination) |
+| `showPaginationProgressBar` | activé | Affiche une fine barre de progression dans la liste de pages |
+| `stickyEnhancedNav` | désactivé | Garde la barre de navigation du haut collée à l'écran en scrollant |
 | `worksPerPageEnabled` | activé | Active le menu pour choisir 20, 50 ou 100 fics par page |
 | `worksPerPage` | `20` | Le nombre de fics affichées par page, par défaut |
-| `infiniteScrollEnabled` | désactivé | Active le défilement infini (ce réglage existe, voir "Specs non implémentés") |
+| `infiniteScrollEnabled` | désactivé | Active le défilement infini (remplace les contrôles de saut de page) |
+| `showBackToTopButton` | activé | Affiche le bouton flottant "remonter en haut" |
 
 ## Fichiers
 
 ### 1. `_pageControls.js` — le chef d'orchestre
 
 - Ne s'active que sur les pages qui affichent une liste de fics
-- Met en route les trois autres fichiers de fonctionnalités
+- Met en route les fichiers de fonctionnalités ; quand le défilement infini est activé, il remplace les contrôles de saut de page
 
 ### 2. `coreNavigation.js` — sauter directement à une page
 
-- Ajoute un petit champ ("Page [_] / N") sous la pagination, pour taper un numéro de page et y aller directement
+- Ajoute un petit champ ("Page [_] / N") sous (ou au-dessus, au choix) de la pagination, pour taper un numéro de page et y aller directement
+- Un bouton 🎲 ouvre une page au hasard, et des liens ¼ / ½ / ¾ sautent à une fraction de la liste
+- Mémorise les pages visitées de chaque liste et propose des liens "Resume"/"Recent" pour y revenir
 
 ### 3. `worksPerPage.js` — nombre de fics par page
 
@@ -36,35 +48,67 @@ navigation supplémentaires.
 
 ### 4. `enhancedNavigation.js` — navigation enrichie
 
-- Ajoute une rangée de boutons "First / −10 / Prev / Next / +10 / Last" au-dessus de la pagination normale
+- Ajoute une rangée de boutons "First / −N / Prev / Next / +N / Last" au-dessus de la pagination normale (pas de saut réglable, gros sauts ±50 optionnels)
 - Les boutons se désactivent tout seuls quand on est déjà à la première ou dernière page
+- Une fine barre de progression montre où on en est dans la liste de pages
+- La rangée du haut peut rester collée à l'écran pendant le défilement (option)
 
-### 5. `pageControls.css`
+### 5. `infiniteScroll.js` — défilement infini
 
-- Les styles visuels des trois widgets ci-dessus
+- Charge automatiquement la page suivante quand on approche du bas de la liste, et ajoute ses fics à la suite
+- Cache la pagination pendant qu'il est actif, affiche l'avancement ("Page X / N — scroll for more") et s'arrête à la dernière page
+
+### 6. `backToTop.js` — remonter en haut
+
+- Un bouton flottant qui apparaît après un peu de défilement et remonte la page en douceur
+
+### 7. `pageJumpTargets.js` et `paginationMemory.js` — logique extraite
+
+- `pageJumpTargets.js` : les calculs de destination (page au hasard, pourcentage, bornes, pas de saut valides)
+- `paginationMemory.js` : la mémoire des pages visitées par liste (identité de la liste sans le numéro de page, plafonds par liste et global)
+
+### 8. `pageControls.css`
+
+- Les styles visuels des widgets ci-dessus
 
 ## Specs non implémentés
 
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Le défilement infini (charger automatiquement la suite pendant qu'on descend la page, sans changer de page) — un réglage porte ce nom, mais rien ne le fait vraiment
-- Se souvenir de la dernière page où on était pour pouvoir y retourner plus tard
-- Aller à une page complètement au hasard
-- Sauter à un pourcentage de la liste, par exemple "aller au quart" ou "à la moitié"
-- Des boutons pour sauter 50 pages d'un coup, en plus des boutons qui sautent 10 pages
-- Choisir soi-même de combien de pages sautent les boutons rapides
-- Deviner tout seul le nombre idéal de fics à afficher selon la situation
-- Se souvenir des pages visitées récemment, ou proposer des pages à revisiter
-- Avoir des réglages de pagination différents selon le type de page (recherche, tags, favoris...)
-- Choisir où positionner le champ pour taper le numéro de page
-- Une barre de progression visuelle qui montre où on en est dans la liste de pages
-- Une barre de navigation qui reste collée en haut de l'écran même en scrollant
-- Un bouton pour remonter tout en haut de la page en un clic
+- ~~Le défilement infini (charger automatiquement la suite pendant qu'on descend la page, sans changer de page) — un réglage porte ce nom, mais rien ne le fait vraiment~~ ✅
+  Fait : `infiniteScroll.js` — le réglage `infiniteScrollEnabled` charge la
+  page suivante à l'approche du bas de la liste et ajoute ses fics à la
+  suite, cache la pagination et s'arrête à la dernière page.
+- ~~Se souvenir de la dernière page où on était pour pouvoir y retourner plus tard~~ ✅
+  Fait : chaque visite est mémorisée par liste (`paginationMemory.js`) ; en
+  revenant sur la page 1, un lien "Resume" ramène à la dernière page vue.
+- ~~Aller à une page complètement au hasard~~ ✅
+  Fait : bouton 🎲 à côté du champ de saut de page.
+- ~~Sauter à un pourcentage de la liste, par exemple "aller au quart" ou "à la moitié"~~ ✅
+  Fait : liens ¼ / ½ / ¾ à côté du champ de saut de page.
+- ~~Des boutons pour sauter 50 pages d'un coup, en plus des boutons qui sautent 10 pages~~ ✅
+  Fait : réglage `showBigJumpButtons` (+ pas réglable `bigJumpStep`, 50 par défaut).
+- ~~Choisir soi-même de combien de pages sautent les boutons rapides~~ ✅
+  Fait : réglage `quickJumpStep` (10 par défaut).
+- ~~Se souvenir des pages visitées récemment, ou proposer des pages à revisiter~~ ✅
+  Fait : liens "Recent" vers les dernières pages visitées de la liste (5 max
+  par liste, 30 listes max).
+- ~~Choisir où positionner le champ pour taper le numéro de page~~ ✅
+  Fait : réglage `pageInputPosition` (sous ou au-dessus de la pagination).
+- ~~Une barre de progression visuelle qui montre où on en est dans la liste de pages~~ ✅
+  Fait : fine barre sous la rangée de navigation enrichie (désactivable).
+- ~~Une barre de navigation qui reste collée en haut de l'écran même en scrollant~~ ✅
+  Fait : réglage `stickyEnhancedNav` — la rangée du haut devient collante
+  (position: sticky).
+- ~~Un bouton pour remonter tout en haut de la page en un clic~~ ✅
+  Fait : `backToTop.js`, bouton flottant après ~400px de défilement.
 
 ## Explicitement écarté
 
 - Suggérer automatiquement des pages "intéressantes" à visiter — jugé trop compliqué pour le bénéfice apporté
+- Deviner tout seul le nombre idéal de fics à afficher selon la situation — écarté : aucune heuristique objective ("idéal" est subjectif), un réglage qui change tout seul serait imprévisible ; le choix manuel 20/50/100 reste la référence
+- Avoir des réglages de pagination différents selon le type de page (recherche, tags, favoris...) — écarté : cela triplerait chaque réglage du panneau pour un bénéfice marginal ; les réglages actuels s'appliquent partout
 
 
 
@@ -106,14 +150,12 @@ AO3 Helper - Page Controls Module Coordinator
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Page Controls** améliore la navigation entre les pages de résultats d'AO3.
 
-Il ajoute plusieurs outils permettant de se déplacer plus rapidement dans de longues listes de fics, notamment :
-
-- un champ pour aller directement à une page précise ;
-- un sélecteur permettant de choisir combien de fics afficher par page ;
-- une barre de navigation enrichie avec des raccourcis vers la première, la dernière ou plusieurs pages plus loin.
+* Il ajoute plusieurs outils permettant de se déplacer plus rapidement dans de longues listes de fics, notamment :
+    - un champ pour aller directement à une page précise ;
+    - un sélecteur permettant de choisir combien de fics afficher par page ;
+    - une barre de navigation enrichie avec des raccourcis vers la première, la dernière ou plusieurs pages plus loin.
 
 Le module fonctionne sur toutes les pages AO3 affichant une liste d'œuvres, comme les recherches, les tags, les bookmarks, l'historique ou les collections.
 
@@ -121,12 +163,12 @@ Le module fonctionne sur toutes les pages AO3 affichant une liste d'œuvres, com
 
 # Réglages utilisateur
 
-| Réglage | Défaut | Description |
-|----------|--------|-------------|
-| `showPlusMinus10Buttons` | Activé | Affiche les boutons permettant d'avancer ou de reculer de 10 pages. |
-| `worksPerPageEnabled` | Activé | Active le sélecteur du nombre de fics par page. |
-| `worksPerPage` | `20` | Nombre de fics affichées par page. |
-| `infiniteScrollEnabled` | Désactivé | Active le défilement infini (fonctionnalité prévue mais non implémentée). |
+| Réglage                   | Description                                                               |
+|---------------------------|---------------------------------------------------------------------------|
+| `showPlusMinus10Buttons`  | Affiche les boutons permettant d'avancer ou de reculer de 10 pages.       |
+| `worksPerPageEnabled`     | Active le sélecteur du nombre de fics par page.                           |
+| `worksPerPage`            | Nombre de fics affichées par page.                                        |
+| `infiniteScrollEnabled`   | Active le défilement infini (fonctionnalité prévue mais non implémentée). |
 
 ---
 
@@ -473,108 +515,104 @@ Les fonctionnalités ci-dessous sont prévues dans la conception du module ou do
 
 ## Navigation
 
-### Défilement infini
+### ~~Défilement infini~~ ✅ Fait
 
-Permettre de charger automatiquement les œuvres suivantes lorsque l'utilisateur atteint le bas de la page.
+~~Permettre de charger automatiquement les œuvres suivantes lorsque l'utilisateur atteint le bas de la page.~~
 
-Le système remplacerait la pagination classique par un chargement continu des résultats.
-
-Le réglage `infiniteScrollEnabled` existe déjà mais aucune logique ne l'utilise actuellement.
-
----
-
-### Mémorisation de la position
-
-Conserver la dernière page visitée afin de permettre à l'utilisateur de reprendre sa navigation plus tard.
-
-Cette fonctionnalité pourrait notamment être utilisée :
-
-- après une fermeture du navigateur ;
-- lors d'un retour sur une recherche ;
-- entre plusieurs sessions.
+> Ajouté : `infiniteScroll.js`. Un IntersectionObserver déclenche le
+> chargement de la page suivante à ~600px du bas, les fics sont ajoutées à
+> la liste courante, la pagination est masquée pendant l'activité et une
+> ligne d'état affiche l'avancement. Les contrôles de saut de page sont
+> remplacés quand le mode est actif.
 
 ---
 
-### Page aléatoire
+### ~~Mémorisation de la position~~ ✅ Fait
 
-Ajouter un bouton permettant d'ouvrir directement une page choisie aléatoirement parmi toutes les pages disponibles.
+~~Conserver la dernière page visitée afin de permettre à l'utilisateur de reprendre sa navigation plus tard.~~
 
----
-
-### Navigation par pourcentage
-
-Permettre d'accéder directement à une position relative dans une liste.
-
-Exemples :
-
-- 25 %
-- 50 %
-- 75 %
-
-Le module calculerait automatiquement le numéro de page correspondant.
+> Ajouté : `paginationMemory.js` (stocké dans localStorage, donc persistant
+> entre sessions et fermetures du navigateur). Une liste est identifiée par
+> son chemin + ses filtres (sans le numéro de page) ; en revenant sur la
+> page 1, un lien "Resume" ramène à la dernière page vue.
 
 ---
 
-### Sauts personnalisés
+### ~~Page aléatoire~~ ✅ Fait
 
-Ajouter des boutons permettant de sauter :
+~~Ajouter un bouton permettant d'ouvrir directement une page choisie aléatoirement parmi toutes les pages disponibles.~~
 
-- ±50 pages ;
-- ou tout autre intervalle choisi par l'utilisateur.
-
-Les valeurs de saut pourraient devenir entièrement configurables.
+> Bouton 🎲 dans la rangée du champ de saut de page (évite de retomber sur
+> la page courante).
 
 ---
 
-### Réglages par type de page
+### ~~Navigation par pourcentage~~ ✅ Fait
 
-Permettre d'utiliser des paramètres différents selon le contexte.
+~~Permettre d'accéder directement à une position relative dans une liste (25 %, 50 %, 75 %).~~
 
-Exemples :
-
-- recherches ;
-- tags ;
-- bookmarks ;
-- historique ;
-- collections.
-
-Chaque type de page pourrait mémoriser son propre nombre de fics par page et ses propres préférences de navigation.
+> Liens ¼ / ½ / ¾ dans la rangée du champ de saut de page ; le numéro de
+> page correspondant est calculé automatiquement (`percentPage`).
 
 ---
 
-### Historique de navigation
+### ~~Sauts personnalisés~~ ✅ Fait
 
-Conserver les pages récemment visitées afin de pouvoir y revenir rapidement.
+~~Ajouter des boutons ±50 pages, ou tout autre intervalle choisi par l'utilisateur.~~
 
-Le système pourrait également proposer des raccourcis vers les pages les plus consultées.
+> Le pas des boutons rapides est réglable (`quickJumpStep`, 10 par défaut)
+> et des boutons de grand saut optionnels ont leur propre pas
+> (`showBigJumpButtons` + `bigJumpStep`, 50 par défaut).
+
+---
+
+### ~~Réglages par type de page~~ ❌ Écarté
+
+~~Permettre d'utiliser des paramètres différents selon le contexte (recherches, tags, bookmarks, historique, collections).~~
+
+> Écarté : cela triplerait chaque réglage du panneau pour un bénéfice
+> marginal — les réglages actuels s'appliquent uniformément partout.
+
+---
+
+### ~~Historique de navigation~~ ✅ Fait
+
+~~Conserver les pages récemment visitées afin de pouvoir y revenir rapidement.~~
+
+> Liens "Recent" vers les dernières pages visitées de la liste courante
+> (5 par liste, 30 listes max, les plus anciennes évincées).
 
 ---
 
 ## Interface
 
-### Position du champ de navigation
+### ~~Position du champ de navigation~~ ✅ Fait
 
-Permettre de choisir où afficher le champ de saisie du numéro de page.
+~~Permettre de choisir où afficher le champ de saisie du numéro de page.~~
 
-Exemples :
-
-- au-dessus de la pagination ;
-- en dessous ;
-- dans la barre de navigation enrichie.
+> Réglage `pageInputPosition` : sous la pagination (défaut) ou au-dessus.
+> (L'option "dans la barre de navigation enrichie" n'a pas été retenue : les
+> deux widgets restent indépendants et désactivables séparément.)
 
 ---
 
-### Barre de progression
+### ~~Barre de progression~~ ✅ Fait
 
-Afficher une barre indiquant la position actuelle dans l'ensemble des résultats.
+~~Afficher une barre indiquant la position actuelle dans l'ensemble des résultats.~~
 
-Cette barre représenterait visuellement la progression entre la première et la dernière page.
+> Fine barre (4px) sous la rangée de navigation enrichie, remplie
+> proportionnellement à page courante / dernière page. Désactivable
+> (`showPaginationProgressBar`).
 
 ---
 
-### Barre de navigation fixe
+### ~~Barre de navigation fixe~~ ✅ Fait
 
-Permettre à la barre de navigation enrichie de rester visible en permanence pendant le défilement de la page.
+~~Permettre à la barre de navigation enrichie de rester visible en permanence pendant le défilement de la page.~~
+
+> Réglage `stickyEnhancedNav` (désactivé par défaut) : la rangée du haut
+> devient `position: sticky` avec un léger fond et une ombre. Seule la
+> rangée du haut colle — une barre collante en bas masquerait la liste.
 
 ---
 
@@ -589,13 +627,14 @@ Permettre à la barre de navigation enrichie de rester visible en permanence pen
 
 ---
 
-### Ajustement automatique
+### ~~Ajustement automatique~~ ❌ Écarté
 
-Déterminer automatiquement le nombre idéal de fics à afficher selon :
+~~Déterminer automatiquement le nombre idéal de fics à afficher selon la
+taille de l'écran, le type de page et les préférences de navigation.~~
 
-- la taille de l'écran ;
-- le type de page ;
-- les préférences de navigation de l'utilisateur.
+> Écarté : aucune heuristique objective — "idéal" est subjectif, et un
+> réglage qui change tout seul serait imprévisible. Le choix manuel
+> 20/50/100 reste la référence.
 
 ---
 

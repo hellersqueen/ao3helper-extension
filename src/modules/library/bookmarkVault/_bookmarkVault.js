@@ -43,6 +43,7 @@ import './bookmarkMaintenance.js';
 import './noteManagement.js';
 import './noteDisplay.js';
 import './sortingAndFiltering.js';
+import './blockedBookmarks.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 
 
@@ -79,6 +80,10 @@ const DEFAULTS = {
   showViewBookmarkLink:         true,
   showCompletionBadge:          false,
   showProgressRing:             false,
+  showPersonalRating:           true,
+  quickNoteOnWorkPage:          true,
+  staleReminderMonths:          0,
+  hideBlockedUsersBookmarks:    true,
 };
 
 const cfg = makeCfg(MOD, DEFAULTS);

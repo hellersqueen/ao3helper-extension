@@ -29,6 +29,32 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 const W = getGlobalWindow();
 
+/**
+ * Chooses whether initial synchronization should restore the remote payload,
+ * ask the user which side wins, or leave the local data untouched.
+ * @returns {'restore'|'ask'|'skip'}
+ */
+export function decideSyncAction ({ remoteTs, localTs }) {
+  if (!Number.isFinite(remoteTs) || remoteTs <= 0) return 'skip';
+  if (!Number.isFinite(localTs) || localTs < 0) localTs = 0;
+  if (remoteTs <= localTs) return 'skip';
+  if (localTs === 0) return 'restore';
+  return 'ask';
+}
+
+/** Message shown when the user must choose between local and remote data. */
+export function buildConflictMessage (remoteTs, localTs) {
+  const remoteDate = new Date(remoteTs).toLocaleString();
+  const localDate  = new Date(localTs).toLocaleString();
+  return (
+    `AO3 Helper sync conflict:\n\n` +
+    `Another device saved data on ${remoteDate}.\n` +
+    `This device last synced on ${localDate}.\n\n` +
+    `OK — use the other device's version (overwrites this device's data)\n` +
+    `Cancel — keep this device's data (it will overwrite the other version on the next change)`
+  );
+}
+
 export class CloudSync {
   constructor (config = {}) {
     this.syncEnabled = config.syncEnabled ?? false;
@@ -104,13 +130,23 @@ export class CloudSync {
         const remoteTs = new Date(payload.timestamp).getTime();
         const localTs  = parseInt(localStorage.getItem('ao3h:sync:lastWrite') || '0', 10);
 
-        if (remoteTs > localTs) {
-          // Remote is newer — restore remote data to localStorage
+        // Conflict resolution: silent restore only on a device with no sync
+        // history; otherwise the user chooses which version to keep (instead
+        // of the old blind Last-Write-Wins restore).
+        const action = decideSyncAction({ remoteTs, localTs });
+
+        if (action === 'restore' ||
+            (action === 'ask' && W.confirm(buildConflictMessage(remoteTs, localTs)))) {
           Object.entries(payload.data).forEach(([key, value]) => {
             localStorage.setItem(key, value);
           });
           localStorage.setItem('ao3h:sync:lastWrite', String(remoteTs));
           console.log('[CloudSync] Restored from sync storage (remote was newer).');
+        } else if (action === 'ask') {
+          // User kept local — mark it authoritative so we stop asking and the
+          // next local change overwrites the remote payload.
+          localStorage.setItem('ao3h:sync:lastWrite', String(Date.now()));
+          console.log('[CloudSync] Kept local data (user choice) — local wins on next push.');
         } else {
           console.log('[CloudSync] Local is up to date — no restore needed.');
         }

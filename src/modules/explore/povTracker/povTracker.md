@@ -131,46 +131,39 @@ AO3 Helper - POV Tracker: Analysis
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **POV Tracker** tente de déterminer automatiquement le point de vue narratif d’une œuvre AO3 à partir de ses tags et de son résumé.
 
-Il peut classer une œuvre comme étant écrite à la :
+* Il peut classer une œuvre comme étant écrite à la :
+    - première personne ;
+    - deuxième personne ;
+    - troisième personne ;
+    - personne mixte ;
+    - avec plusieurs points de vue ;
+    - avec un point de vue inconnu.
 
-* première personne ;
-* deuxième personne ;
-* troisième personne ;
-* personne mixte ;
-* avec plusieurs points de vue ;
-* avec un point de vue inconnu.
+* Le résultat peut ensuite être utilisé pour :
+    - afficher un badge sur les œuvres présentes dans les listes ;
+    - filtrer les œuvres selon leur point de vue ;
+    - afficher des statistiques personnelles sur les points de vue rencontrés.
 
-Le résultat peut ensuite être utilisé pour :
-
-* afficher un badge sur les œuvres présentes dans les listes ;
-* filtrer les œuvres selon leur point de vue ;
-* afficher des statistiques personnelles sur les points de vue rencontrés.
-
-La détection est expérimentale.
-
-Elle repose sur des motifs de texte simples et sur des heuristiques liées aux pronoms. Elle ne lit pas réellement le texte complet de l’œuvre.
-
-Sa précision est estimée à environ **60 %**, ce qui la rend utile comme indication générale, mais insuffisante pour garantir un résultat exact.
+La détection est expérimentale. Elle repose sur des motifs de texte simples et sur des heuristiques liées aux pronoms. Elle ne lit pas réellement le texte complet de l’œuvre. Sa précision est estimée à environ **60 %**, ce qui la rend utile comme indication générale, mais insuffisante pour garantir un résultat exact.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage              | Par défaut | Ce que ça fait                                                                    |
-| -------------------- | ---------- | --------------------------------------------------------------------------------- |
-| `showBadgesOnBlurbs` | Activé     | Affiche les badges de point de vue sur les œuvres déjà analysées dans les listes. |
-| `badgeFirst`         | Activé     | Affiche les badges associés à la première personne.                               |
-| `badgeSecond`        | Désactivé  | Affiche les badges associés à la deuxième personne.                               |
-| `badgeThird`         | Activé     | Affiche les badges associés à la troisième personne.                              |
-| `badgeMixed`         | Désactivé  | Affiche les badges associés aux points de vue mixtes.                             |
-| `badgeMulti`         | Désactivé  | Affiche les badges associés aux œuvres comportant plusieurs points de vue.        |
-| `badgeUnknown`       | Désactivé  | Affiche les badges associés aux œuvres dont le point de vue est inconnu.          |
-| `enablePovFilters`   | Activé     | Ajoute des contrôles permettant de filtrer les listes par point de vue.           |
-| `autoAnalyze`        | Activé     | Analyse automatiquement l’œuvre à l’ouverture de sa page.                         |
-| `showStats`          | Désactivé  | Affiche un résumé personnel de la répartition des points de vue.                  |
+| Réglage              | Ce que ça fait                                                                    |
+| -------------------- | --------------------------------------------------------------------------------- |
+| `showBadgesOnBlurbs` | Affiche les badges de point de vue sur les œuvres déjà analysées dans les listes. |
+| `badgeFirst`         | Affiche les badges associés à la première personne.                               |
+| `badgeSecond`        | Affiche les badges associés à la deuxième personne.                               |
+| `badgeThird`         | Affiche les badges associés à la troisième personne.                              |
+| `badgeMixed`         | Affiche les badges associés aux points de vue mixtes.                             |
+| `badgeMulti`         | Affiche les badges associés aux œuvres comportant plusieurs points de vue.        |
+| `badgeUnknown`       | Affiche les badges associés aux œuvres dont le point de vue est inconnu.          |
+| `enablePovFilters`   | Ajoute des contrôles permettant de filtrer les listes par point de vue.           |
+| `autoAnalyze`        | Analyse automatiquement l’œuvre à l’ouverture de sa page.                         |
+| `showStats`          | Affiche un résumé personnel de la répartition des points de vue.                  |
 
 ---
 

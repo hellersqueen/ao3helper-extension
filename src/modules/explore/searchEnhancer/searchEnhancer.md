@@ -229,43 +229,40 @@ AO3 Helper - Series Grouping Submodule
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Search Enhancer** regroupe plusieurs améliorations liées aux recherches et aux listes d’œuvres sur AO3.
 
-Il permet notamment de :
+* Il permet notamment de :
+  - suggérer des tags liés à la recherche actuelle ;
+  - proposer des suggestions provenant de l’historique de recherche ;
+  - conserver les recherches récentes ;
+  - afficher un menu d’autocomplétion fondé sur cet historique ;
+  - lancer rapidement une recherche depuis un tag ou un nom d’auteur ;
+  - trier les résultats selon différents indicateurs d’engagement ;
+  - afficher les ratios directement dans les statistiques des œuvres ;
+  - regrouper visuellement les œuvres appartenant à une même série.
 
-* suggérer des tags liés à la recherche actuelle ;
-* proposer des suggestions provenant de l’historique de recherche ;
-* conserver les recherches récentes ;
-* afficher un menu d’autocomplétion fondé sur cet historique ;
-* lancer rapidement une recherche depuis un tag ou un nom d’auteur ;
-* trier les résultats selon différents indicateurs d’engagement ;
-* afficher les ratios directement dans les statistiques des œuvres ;
-* regrouper visuellement les œuvres appartenant à une même série.
-
-Le module fonctionne principalement sur :
-
-* `/works/search` ;
-* `/tags/{tag}/works` ;
-* les pages de résultats contenant un formulaire de recherche ;
-* les autres listings d’œuvres compatibles.
+* Le module fonctionne principalement sur :
+  - `/works/search` ;
+  - `/tags/{tag}/works` ;
+  - les pages de résultats contenant un formulaire de recherche ;
+  - les autres listings d’œuvres compatibles.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                   | Par défaut                  | Ce que ça fait                                                                         |
-| ------------------------- | --------------------------- | -------------------------------------------------------------------------------------- |
-| `tagSuggestions`          | Activé                      | Affiche les suggestions de tags liés.                                                  |
-| `historyBasedSuggestions` | Activé                      | Inclut des suggestions provenant de l’historique de recherche.                         |
-| `suggestionWorkCount`     | Activé                      | Affiche le nombre d’œuvres associé à chaque suggestion.                                |
-| `searchHistory`           | Activé                      | Active l’historique de recherche, limité actuellement à 25 recherches.                 |
-| `tagAutocomplete`         | Activé *(pas encore actif)* | Réservé à une future connexion avec le système officiel d’autocomplétion des tags AO3. |
-| `sortByKudosRatio`        | Activé                      | Active le tri selon le ratio kudos/vues.                                               |
-| `sortBySaveRate`          | Activé                      | Active le tri selon le ratio bookmarks/kudos.                                          |
-| `showRatioInline`         | Activé                      | Affiche le ratio directement à côté des statistiques, par exemple `12% eng.`.          |
-| `groupSeriesInResults`    | Désactivé                   | Regroupe les œuvres appartenant à une même série dans les résultats.                   |
-| `fandomSortMode`          | `alpha`                     | Définit l’ordre des groupes : alphabétique, popularité ou ordre historique.            |
+| Réglage                   | Ce que ça fait                                                                         |
+|---------------------------|----------------------------------------------------------------------------------------|
+| `tagSuggestions`          | Affiche les suggestions de tags liés.                                                  |
+| `historyBasedSuggestions` | Inclut des suggestions provenant de l’historique de recherche.                         |
+| `suggestionWorkCount`     | Affiche le nombre d’œuvres associé à chaque suggestion.                                |
+| `searchHistory`           | Active l’historique de recherche, limité actuellement à 25 recherches.                 |
+| `tagAutocomplete`         | Réservé à une future connexion avec le système officiel d’autocomplétion des tags AO3. |
+| `sortByKudosRatio`        | Active le tri selon le ratio kudos/vues.                                               |
+| `sortBySaveRate`          | Active le tri selon le ratio bookmarks/kudos.                                          |
+| `showRatioInline`         | Affiche le ratio directement à côté des statistiques, par exemple `12% eng.`.          |
+| `groupSeriesInResults`    | Regroupe les œuvres appartenant à une même série dans les résultats.                   |
+| `fandomSortMode`          | Définit l’ordre des groupes : alphabétique, popularité ou ordre historique.            |
 
 ---
 

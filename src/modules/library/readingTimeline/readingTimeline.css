@@ -28,6 +28,9 @@
         │     → SECTION 03 — SÉPARATEURS DE SESSION
         │     → variable : --ao3h-rt-divider-color
 
+        ├─  🏁 Jalons, annotations, recherche, filtres favoris
+        │     → SECTION 08 — SOUS-SÉPARATEURS ET EXTRAS
+
         ────────────────────────────────────────────────────────────── */
 
 
@@ -40,6 +43,8 @@
 /*####     ├─  02. Badge lu                                  */
 /*#        |                                                 */
 /*=        ├─  03. Séparateurs de session                    */
+/*#        |                                                 */
+/*###      ├─  08. Sous-séparateurs, jalons, annotations...   */
 /*#        |                                                 */
 /*#        └─*/
 
@@ -580,4 +585,103 @@
 .ao3h-timeline-work-meta {
   font-size: 0.9em;
   color: #666;
+}
+
+.ao3h-timeline-work-bookmark-note {
+  margin-top: 6px;
+  font-size: 0.85em;
+  font-style: italic;
+  color: #555;
+}
+
+
+/*###
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 08 — SOUS-SÉPARATEURS, JALONS, ANNOTATIONS, RECHERCHE, PRESETS
+  ───────────────────────────────────────────────────────────────────────
+    Sous-séparateurs matin/après-midi/soir/nuit (page historique AO3),
+    marqueurs de jalons et d'annotations sur les cellules de la heatmap,
+    éditeur de note de date, cellules mises en avant par la recherche,
+    et la zone de filtres favoris.
+    ⚠️ .ao3h-heatmap-cell--milestone / --annotated / --search-match sont
+       posées par timelineVisualization.js (_decorateCell).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-session-subdivider {
+  list-style: none;
+  font-weight: 600;
+  font-size: 0.85em;
+  color: var(--ao3h-rt-divider-color);
+  opacity: 0.75;
+  padding: 4px 0;
+  margin: 6px 0 4px 12px;
+}
+
+.ao3h-heatmap-cell--milestone {
+  box-shadow: 0 0 0 2px #f5a623;
+}
+
+.ao3h-heatmap-cell--annotated::after {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #2c5f8a;
+  margin: 1px auto 0;
+}
+
+.ao3h-heatmap-cell--search-match {
+  outline: 2px solid #e63946;
+  outline-offset: 1px;
+}
+
+.ao3h-timeline-milestone-banner {
+  background: #fff4e0;
+  border: 1px solid #f5a623;
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+  color: #8a5a00;
+}
+
+.ao3h-timeline-annotation {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.ao3h-timeline-annotation-input {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 0.85em;
+}
+
+.ao3h-timeline-annotation-save {
+  padding: 5px 12px;
+  background: #2c5f8a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+.ao3h-filter-preset-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ao3h-filter-preset-select,
+.ao3h-filter-preset-name-input {
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 0.85em;
+  width: 180px;
 }

@@ -21,6 +21,7 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { observe } from '../../../../lib/utils/index.js';
+import { isExcludedCategory, TAG_CATEGORIES } from './tagRules.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -39,6 +40,19 @@ function cfg (key, fallback) {
     if (v !== undefined && v !== null) return v;
   } catch { /* */ }
   return fallback;
+}
+
+// Which whole categories to hide entirely (independent of the density
+// truncation below) — e.g. always hide Freeform tags, keep Characters.
+const CATEGORY_HIDE_SETTINGS = {
+  warnings     : 'hideTagsWarnings',
+  relationships: 'hideTagsRelationships',
+  characters   : 'hideTagsCharacters',
+  freeforms    : 'hideTagsFreeforms',
+};
+
+function getExcludedCategories () {
+  return TAG_CATEGORIES.filter(cat => cfg(CATEGORY_HIDE_SETTINGS[cat], false));
 }
 
 
@@ -64,8 +78,22 @@ function getPriorityScore (li) {
   return PRIORITY_CLASSES.length; // lowest priority if unknown
 }
 
+// Whole-category exclusion (setting-driven, permanent — no "+N more" toggle).
+function hideExcludedCategories (blurb, excluded) {
+  if (!excluded.length) return;
+  blurb.querySelectorAll('.tags li').forEach(li => {
+    if (li.dataset.ao3hCatHidden) return;
+    if (isExcludedCategory(li, excluded)) {
+      li.dataset.ao3hCatHidden = '1';
+      li.style.display = 'none';
+    }
+  });
+}
+
 function applyDensity (blurb, density) {
-  const allTags = Array.from(blurb.querySelectorAll('.tags li'));
+  // Category-excluded tags don't count toward the density budget or the
+  // "+N more" total — they're gone regardless of density.
+  const allTags = Array.from(blurb.querySelectorAll('.tags li')).filter(li => !li.dataset.ao3hCatHidden);
   if (allTags.length <= density) return;
 
   // Smart truncation: sort by priority descending (lowest priority hidden first)
@@ -110,11 +138,12 @@ function applyDensity (blurb, density) {
   }
 }
 
-function processBlurbs (blurbs, density) {
+function processBlurbs (blurbs, density, excludedCategories) {
   blurbs.forEach(blurb => {
+    hideExcludedCategories(blurb, excludedCategories);
     if (blurb.dataset.ao3hVis) return;
     blurb.dataset.ao3hVis = '1';
-    applyDensity(blurb, density);
+    if (density) applyDensity(blurb, density);
   });
 }
 
@@ -131,10 +160,12 @@ register(MOD, {
   if (!isListingPage()) return () => {};
 
   const rawDensity = cfg('maxTagsVisible', DEFAULT_DENSITY);
-  if (!rawDensity) return () => {}; // 0 = "show all" — nothing to do
-  const density = Math.max(1, parseInt(rawDensity, 10) || DEFAULT_DENSITY);
+  const density = rawDensity ? Math.max(1, parseInt(rawDensity, 10) || DEFAULT_DENSITY) : 0;
+  const excludedCategories = getExcludedCategories();
 
-  processBlurbs(document.querySelectorAll('li.work.blurb, li.bookmark.blurb'), density);
+  if (!density && !excludedCategories.length) return () => {}; // nothing to do
+
+  processBlurbs(document.querySelectorAll('li.work.blurb, li.bookmark.blurb'), density, excludedCategories);
 
   const main = document.querySelector('#main');
   const obs = main ? observe(main, { childList: true, subtree: false }, mutations => {
@@ -142,10 +173,10 @@ register(MOD, {
       for (const node of m.addedNodes) {
         if (!(node instanceof Element)) continue;
         if (node.matches?.('li.work.blurb, li.bookmark.blurb')) {
-          processBlurbs([node], density);
+          processBlurbs([node], density, excludedCategories);
         } else {
           node.querySelectorAll?.('li.work.blurb, li.bookmark.blurb')
-            .forEach(el => processBlurbs([el], density));
+            .forEach(el => processBlurbs([el], density, excludedCategories));
         }
       }
     }
@@ -158,6 +189,10 @@ register(MOD, {
     document.querySelectorAll('[data-ao3h-hidden]').forEach(li => {
       li.style.display = '';
       delete li.dataset.ao3hHidden;
+    });
+    document.querySelectorAll('[data-ao3h-cat-hidden]').forEach(li => {
+      li.style.display = '';
+      delete li.dataset.ao3hCatHidden;
     });
     document.querySelectorAll('[data-ao3h-vis]').forEach(el => {
       delete el.dataset.ao3hVis;

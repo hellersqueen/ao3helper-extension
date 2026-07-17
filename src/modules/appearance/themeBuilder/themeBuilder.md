@@ -62,13 +62,31 @@ propose aussi une bibliothèque de thèmes, avec 3 thèmes déjà prêts.
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Après avoir choisi un élément avec l'inspecteur, pouvoir directement le styliser depuis ce clic — pour l'instant, ça remplit juste un champ texte avec son nom technique, il faut ensuite écrire le style soi-même
+- ~~Après avoir choisi un élément avec l'inspecteur, pouvoir directement le styliser depuis ce clic — pour l'instant, ça remplit juste un champ texte avec son nom technique, il faut ensuite écrire le style soi-même~~ ✅
+  Fait : après avoir choisi un élément, une petite zone propose couleur du
+  texte, couleur de fond ou "Hide element" — "Apply to element" applique et
+  mémorise la règle (restaurée à chaque page, bouton "Clear element styles"
+  pour tout retirer). Les règles passent le contrôle de zones protégées.
 
-- Empêcher que le CSS personnalisé n'abîme certaines zones importantes de la page, comme le texte de la fic — pour l'instant, la vérification ne repère que les erreurs d'écriture (accolades ou deux-points manquants), pas les styles qui pourraient casser ces zones
+- ~~Empêcher que le CSS personnalisé n'abîme certaines zones importantes de la page, comme le texte de la fic — pour l'instant, la vérification ne repère que les erreurs d'écriture~~ ✅
+  Fait : `findProtectedViolations()` (`themeSafety.js`) — les règles qui
+  cacheraient une zone protégée (#workskin, .userstuff, #chapters, body,
+  #main : display:none, visibility:hidden, opacity:0, tailles nulles…) sont
+  bloquées à l'Apply avec un message ⛔, y compris à travers @media.
 
-- Voir un aperçu en direct des changements de police, taille de texte ou espacement pendant qu'on bouge les curseurs — pour l'instant, il faut cliquer sur "Apply" pour voir le résultat
+- ~~Voir un aperçu en direct des changements de police, taille de texte ou espacement pendant qu'on bouge les curseurs — pour l'instant, il faut cliquer sur "Apply" pour voir le résultat~~ ✅
+  Fait : les curseurs (taille, interligne, espacement des lettres) et les
+  champs de police du panneau Typographie, ainsi que les couleurs et
+  curseurs du Visual Builder, s'appliquent en direct pendant la
+  manipulation ; Apply enregistre, fermer sans Apply revient à l'état
+  sauvegardé.
 
-- Vérifier automatiquement que les couleurs choisies restent assez lisibles, et proposer des palettes pensées pour les daltoniens
+- ~~Vérifier automatiquement que les couleurs choisies restent assez lisibles, et proposer des palettes pensées pour les daltoniens~~ ✅
+  Fait : le Visual Builder affiche en continu le contraste WCAG texte/fond
+  et liens/fond (✓ AAA / ✓ AA / ⚠ avec conseil "≥ 4.5:1"), et deux boutons
+  remplissent les couleurs avec des palettes sûres pour les daltoniens
+  (claire et sombre, dérivées de la palette Okabe-Ito, contrastes vérifiés
+  par test).
 
 ---
 
@@ -113,7 +131,7 @@ AO3 Helper - Theme Builder Module Coordinator
     Phase 24 réexaminée (shared.md, décision produit theme-builder↔lib/themes) :
     fusionner les deux catalogues de thèmes changerait des thèmes déjà
     sauvegardés par des utilisateurs, jugé trop risqué sans test en direct.
-    En revanche, lib/themes/engine/themeValidator.js (contrôle de sécurité
+    En revanche, lib/themes/engine/themeUtils.js (contrôle de sécurité
     CSS, jusque-là inutilisé) est maintenant branché dans customStyling.js et
     themeManagement.js sur les points d'entrée de CSS non fiable (import de
     thème JSON notamment).
@@ -231,30 +249,27 @@ AO3 Helper - Visual Builder Submodule
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Theme Builder** permet de personnaliser entièrement l'apparence d'AO3 en créant ses propres thèmes.
 
-Il propose deux approches complémentaires :
+* Il propose deux approches complémentaires :
+  - un éditeur visuel permettant de modifier les couleurs, les polices et différents paramètres sans écrire de code ;
+  - un éditeur avancé permettant d'écrire directement du CSS, du HTML ou du JavaScript personnalisé.
 
-- un éditeur visuel permettant de modifier les couleurs, les polices et différents paramètres sans écrire de code ;
-- un éditeur avancé permettant d'écrire directement du CSS, du HTML ou du JavaScript personnalisé.
-
-Le module permet également de :
-
-- gérer une bibliothèque de thèmes personnalisés ;
-- importer et exporter des thèmes ;
-- appliquer différents réglages typographiques ;
-- créer des thèmes réutilisables ;
-- prévisualiser les modifications avant leur application.
+* Le module permet également de :
+  - gérer une bibliothèque de thèmes personnalisés ;
+  - importer et exporter des thèmes ;
+  - appliquer différents réglages typographiques ;
+  - créer des thèmes réutilisables ;
+  - prévisualiser les modifications avant leur application.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage | Défaut | Description |
-|----------|--------|-------------|
-| `mode` | `visual` | Mode actif : éditeur visuel ou éditeur avancé. |
-| `importEnabled` | Activé | Affiche les fonctionnalités d'importation de thèmes. |
+| Réglage         | Description                                           |
+|-----------------|-------------------------------------------------------|
+| `mode`          | Mode actif : éditeur visuel ou éditeur avancé.        |
+| `importEnabled` | Affiche les fonctionnalités d'importation de thèmes.  |
 
 ---
 
@@ -324,7 +339,7 @@ Le module conserve sa propre bibliothèque de thèmes intégrée dans `themeMana
 
 Les thèmes intégrés ne sont volontairement pas fusionnés avec ceux présents dans `lib/themes`, afin d'éviter de modifier les thèmes déjà enregistrés par les utilisateurs.
 
-En revanche, le validateur CSS partagé (`themeValidator.js`) est utilisé pour vérifier les thèmes importés ainsi que le CSS personnalisé.
+En revanche, le validateur CSS partagé (`themeUtils.js`) est utilisé pour vérifier les thèmes importés ainsi que le CSS personnalisé.
 
 ---
 
@@ -375,7 +390,7 @@ Les vérifications concernent notamment :
 
 Le module refuse également les feuilles de style dépassant **50 Ko**.
 
-Le validateur partagé `themeValidator.js` est utilisé lors de l'importation ou de l'application de CSS provenant d'une source non fiable.
+Le validateur partagé `themeUtils.js` est utilisé lors de l'importation ou de l'application de CSS provenant d'une source non fiable.
 
 ---
 
@@ -791,52 +806,52 @@ Les fonctionnalités ci-dessous sont prévues dans la conception du module ou do
 
 ## Éditeur visuel
 
-### Stylisation directe depuis l'inspecteur
+### ~~Stylisation directe depuis l'inspecteur~~ ✅ Fait
 
-Après avoir sélectionné un élément avec l'inspecteur, permettre de modifier immédiatement son apparence sans passer par l'éditeur CSS.
+~~Après avoir sélectionné un élément avec l'inspecteur, permettre de modifier immédiatement son apparence sans passer par l'éditeur CSS.~~
 
-Actuellement, l'inspecteur se contente de récupérer le sélecteur CSS correspondant.
+> Zone "quick style" sous l'inspecteur : couleur du texte, couleur de fond
+> ou masquage de l'élément, appliqués et mémorisés en un clic
+> (`buildElementRule` dans `themeSafety.js`, règles persistées et
+> restaurées à chaque chargement).
 
 ---
 
-### Protection des zones critiques
+### ~~Protection des zones critiques~~ ✅ Fait
 
-Empêcher qu'un CSS personnalisé puisse détériorer certaines parties importantes d'AO3.
+~~Empêcher qu'un CSS personnalisé puisse détériorer certaines parties importantes d'AO3.~~
 
-Les protections envisagées concernent notamment :
-
-- le texte des œuvres ;
-- les zones essentielles de l'interface.
-
-À l'heure actuelle, seules les erreurs de syntaxe et les motifs dangereux sont détectés.
+> `findProtectedViolations()` bloque à l'Apply toute règle qui cacherait
+> #workskin, .userstuff, #chapters, body, html ou #main (display:none,
+> visibility:hidden, opacity:0, tailles nulles, scale(0)), y compris dans
+> les blocs @media. S'applique à l'éditeur CSS et aux règles de
+> l'inspecteur.
 
 ---
 
 ## Typographie
 
-### Aperçu en temps réel
+### ~~Aperçu en temps réel~~ ✅ Fait
 
-Afficher immédiatement les modifications lorsque l'utilisateur déplace :
+~~Afficher immédiatement les modifications lorsque l'utilisateur déplace les curseurs.~~
 
-- les curseurs de taille du texte ;
-- l'espacement des lignes ;
-- l'espacement des lettres.
-
-Actuellement, les changements ne deviennent visibles qu'après avoir utilisé **Apply**.
+> Les trois curseurs et les champs de police prévisualisent en direct sans
+> persister ; Apply enregistre, fermer le panneau sans Apply restaure la
+> configuration sauvegardée. Le Visual Builder fait de même pour ses
+> couleurs et curseurs.
 
 ---
 
 ## Accessibilité
 
-### Validation des couleurs
+### ~~Validation des couleurs~~ ✅ Fait
 
-Vérifier automatiquement que les couleurs choisies restent suffisamment lisibles.
+~~Vérifier automatiquement que les couleurs choisies restent suffisamment lisibles.~~
 
-Les améliorations prévues comprennent notamment :
-
-- un contrôle du contraste ;
-- des avertissements lorsque les couleurs sont difficiles à lire ;
-- des palettes adaptées aux personnes daltoniennes.
+> Contrôle de contraste WCAG en continu (texte/fond et liens/fond, avec
+> verdict AAA/AA/⚠ et conseil), et deux palettes daltonien-compatibles
+> (claire/sombre, base Okabe-Ito) en un clic. Les contrastes des palettes
+> fournies sont garantis par test (≥ 4.5:1).
 
 ---
 
@@ -940,7 +955,7 @@ Selon les fonctionnalités utilisées, le module peut s'appuyer sur plusieurs AP
 
 Le module utilise également :
 
-- `themeValidator.js` pour la validation du CSS provenant de sources non fiables ;
+- `themeUtils.js` pour la génération, l’analyse et la validation des thèmes ;
 - les helpers exposés par `_themeBuilder.js` pour la lecture, l'enregistrement et l'application des thèmes.
 
 ---
@@ -955,5 +970,4 @@ Notamment :
 - les feuilles de style contenant des motifs considérés comme dangereux sont automatiquement rejetées ;
 - les thèmes intégrés restent séparés de ceux présents dans `lib/themes` afin d'éviter toute incompatibilité avec les thèmes déjà enregistrés par les utilisateurs ;
 - les thèmes ne peuvent actuellement être importés que depuis un fichier JSON local.
-
 

@@ -90,38 +90,30 @@ AO3 Helper - Similar Fics Module
 # À quoi ça sert
 
 Le module **Similar Fics** ajoute un bouton **Similar Stories** sur la page d’une œuvre AO3.
-
 Ce bouton ouvre un panneau contenant des suggestions d’œuvres similaires à celle qui est actuellement consultée.
 
-Les recommandations sont principalement basées sur :
+* Les recommandations sont principalement basées sur :
+  - le fandom ;
+  - les relations ou pairings ;
+  - les tags partagés ;
+  - la longueur de l’œuvre ;
+  - l’auteur ;
+  - certaines métadonnées générales de la fic.
 
-* le fandom ;
-* les relations ou pairings ;
-* les tags partagés ;
-* la longueur de l’œuvre ;
-* l’auteur ;
-* certaines métadonnées générales de la fic.
-
-Le module permet ainsi de découvrir rapidement d’autres œuvres proches sans quitter la page actuelle.
-
-Les recommandations restent entièrement locales et reposent sur les informations accessibles sur AO3. Aucun service d’intelligence artificielle externe n’est utilisé.
+Le module permet ainsi de découvrir rapidement d’autres œuvres proches sans quitter la page actuelle. Les recommandations restent entièrement locales et reposent sur les informations accessibles sur AO3. Aucun service d’intelligence artificielle externe n’est utilisé.
 
 ---
 
 # Réglages utilisateur
 
-Les six réglages suivants existent dans le panneau de configuration, mais ils ne sont pas encore réellement connectés au fonctionnement du module.
-
-Modifier leur valeur ne change donc pas encore le comportement visible.
-
-| Réglage               | Par défaut                     | Ce que ça fait                                                                        |
-| --------------------- | ------------------------------ | ------------------------------------------------------------------------------------- |
-| `numResults`          | `10` *(pas encore actif)*      | Définit le nombre de résultats à afficher : 5, 10 ou 15.                              |
-| `showSimilarityScore` | Activé *(pas encore actif)*    | Affiche le pourcentage de correspondance entre l’œuvre actuelle et chaque suggestion. |
-| `highlightCommonTags` | Activé *(pas encore actif)*    | Met en évidence les tags partagés avec l’œuvre actuelle.                              |
-| `showSummary`         | Activé *(pas encore actif)*    | Affiche le résumé de chaque suggestion dans le panneau.                               |
-| `includeWIP`          | Désactivé *(pas encore actif)* | Inclut les œuvres en cours de publication.                                            |
-| `openInNewTab`        | Désactivé *(pas encore actif)* | Ouvre les suggestions dans un nouvel onglet.                                          |
+| Réglage               | Ce que ça fait                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `numResults`          | Définit le nombre de résultats à afficher : 5, 10 ou 15.                              |
+| `showSimilarityScore` | Affiche le pourcentage de correspondance entre l’œuvre actuelle et chaque suggestion. |
+| `highlightCommonTags` | Met en évidence les tags partagés avec l’œuvre actuelle.                              |
+| `showSummary`         | Affiche le résumé de chaque suggestion dans le panneau.                               |
+| `includeWIP`          | Inclut les œuvres en cours de publication.                                            |
+| `openInNewTab`        | Ouvre les suggestions dans un nouvel onglet.                                          |
 
 ---
 

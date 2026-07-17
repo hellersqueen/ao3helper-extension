@@ -22,6 +22,53 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
+import { findMatchingRule } from './tagRules.js';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   READY-MADE HIGHLIGHT PALETTES
+═══════════════════════════════════════════════════════════════════════════ */
+
+export const DEFAULT_PALETTE_NAME = 'default';
+
+export const PALETTES = {
+  default: [
+    { name: 'Yellow', bg: '#fef9c3', border: '#facc15' },
+    { name: 'Green',  bg: '#dcfce7', border: '#4ade80' },
+    { name: 'Blue',   bg: '#dbeafe', border: '#60a5fa' },
+    { name: 'Pink',   bg: '#fce7f3', border: '#f472b6' },
+    { name: 'Purple', bg: '#f3e8ff', border: '#c084fc' },
+    { name: 'Orange', bg: '#fff7ed', border: '#fb923c' },
+  ],
+  pastel: [
+    { name: 'Yellow', bg: '#fffbe6', border: '#ffe58f' },
+    { name: 'Green',  bg: '#e8f8f0', border: '#95dfb0' },
+    { name: 'Blue',   bg: '#e6f4ff', border: '#91caff' },
+    { name: 'Pink',   bg: '#fff0f6', border: '#ffadd2' },
+    { name: 'Purple', bg: '#f5f0ff', border: '#d3adf7' },
+    { name: 'Orange', bg: '#fff3e6', border: '#ffc177' },
+  ],
+  neon: [
+    { name: 'Yellow', bg: '#2b2b00', border: '#faff00' },
+    { name: 'Green',  bg: '#00330d', border: '#00ff66' },
+    { name: 'Blue',   bg: '#001a33', border: '#00c3ff' },
+    { name: 'Pink',   bg: '#330018', border: '#ff2e88' },
+    { name: 'Purple', bg: '#22002b', border: '#c400ff' },
+    { name: 'Orange', bg: '#331400', border: '#ff8800' },
+  ],
+  classic: [
+    { name: 'Yellow', bg: '#fff9c4', border: '#f9a825' },
+    { name: 'Green',  bg: '#c8e6c9', border: '#2e7d32' },
+    { name: 'Blue',   bg: '#bbdefb', border: '#1565c0' },
+    { name: 'Pink',   bg: '#f8bbd0', border: '#ad1457' },
+    { name: 'Purple', bg: '#e1bee7', border: '#6a1b9a' },
+    { name: 'Orange', bg: '#ffe0b2', border: '#ef6c00' },
+  ],
+};
+
+export function getPalette(name) {
+  return PALETTES[name] || PALETTES[DEFAULT_PALETTE_NAME];
+}
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -38,14 +85,10 @@ const STORAGE_KEY = `${NS}:tagHighlights`;
 const LEGACY_FANDOM_KEY      = `${NS}:fandomHighlights`;
 const LEGACY_MIGRATION_FLAG  = `${NS}:fandomHighlights:migratedToTagHighlights`;
 
-const PRESETS = [
-  { name: 'Yellow', bg: '#fef9c3', border: '#facc15' },
-  { name: 'Green',  bg: '#dcfce7', border: '#4ade80' },
-  { name: 'Blue',   bg: '#dbeafe', border: '#60a5fa' },
-  { name: 'Pink',   bg: '#fce7f3', border: '#f472b6' },
-  { name: 'Purple', bg: '#f3e8ff', border: '#c084fc' },
-  { name: 'Orange', bg: '#fff7ed', border: '#fb923c' },
-];
+// Legacy migration always matches against the original/default palette —
+// it's reading raw hex values saved before palettes existed, independent
+// of whatever palette the user has selected today.
+const LEGACY_PRESETS = getPalette('default');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -58,7 +101,7 @@ function nearestPresetIndex(hex) {
   const n = parseInt(m[1], 16);
   const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
   let best = 0, bestDist = Infinity;
-  PRESETS.forEach((p, idx) => {
+  LEGACY_PRESETS.forEach((p, idx) => {
     const pm = /^#?([0-9a-f]{6})$/i.exec(p.bg);
     if (!pm) return;
     const pn = parseInt(pm[1], 16);
@@ -139,47 +182,74 @@ register('tagHighlighting', {
 
   let rules = migrateLegacyFandomHighlights(loadRules());
 
+  // Palette + visual style are global settings (not per-rule) — kept simple
+  // so the right-click quick-add menu only ever has to pick a colour.
+  const PRESETS = getPalette(cfg('highlightPalette', 'default'));
+  const style   = cfg('highlightStyle', 'fill');
+
   /* ═══════════════════════════════════════════════════════════════════════
      FEATURE — HIGHLIGHT APPLICATION
   ═══════════════════════════════════════════════════════════════════════ */
 
-  function ruleMap() {
-    const m = new Map();
-    rules.forEach(r => m.set(r.pattern.toLowerCase(), r.colorIdx ?? 0));
-    return m;
+  function applyStyle(a, preset) {
+    if (style === 'bold') {
+      a.style.fontWeight = 'bold';
+      a.style.color = preset.border;
+    } else if (style === 'italic') {
+      a.style.fontStyle = 'italic';
+      a.style.color = preset.border;
+    } else if (style === 'border') {
+      a.style.border = `1px solid ${preset.border}`;
+      a.style.borderRadius = '3px';
+      a.style.padding = '0 3px';
+    } else if (style === 'symbol') {
+      a.style.color = preset.border;
+      const star = document.createElement('span');
+      star.className = `${NS}-tag-hl-symbol`;
+      star.textContent = '★ ';
+      a.prepend(star);
+    } else {
+      // 'fill' (default): filled background + border, as before.
+      a.style.background   = preset.bg;
+      a.style.borderColor  = preset.border;
+      a.style.borderWidth  = '1px';
+      a.style.borderStyle  = 'solid';
+      a.style.borderRadius = '3px';
+    }
   }
 
   function scan() {
-    const map = ruleMap();
-    if (!map.size) return;
+    if (!rules.length) return;
 
     document.querySelectorAll('.tags a.tag, ul.tags a, h5.fandoms a.tag, .fandoms a.tag, ul.fandom a.tag').forEach(a => {
       if (a.hasAttribute(HL_ATTR)) return;
 
-      const text = directText(a).toLowerCase();
-      if (!map.has(text)) return; // pas de règle pour ce tag — pas marqué : d'autres
+      const text = directText(a);
+      const rule = findMatchingRule(text, rules);
+      if (!rule) return; // pas de règle pour ce tag — pas marqué : d'autres
       // modules (ex. hiddenTags.js) peuvent encore réorganiser ce lien après notre
       // passage ; laisser la porte ouverte à un re-scan plus tard évite de rater
       // durablement une correspondance à cause d'un état transitoire de la mutation.
       a.setAttribute(HL_ATTR, '1');
 
-      const idx = map.get(text);
-      const preset = PRESETS[idx] || PRESETS[0];
-      a.style.background  = preset.bg;
-      a.style.borderColor = preset.border;
-      a.style.borderWidth = '1px';
-      a.style.borderStyle = 'solid';
-      a.style.borderRadius = '3px';
+      const preset = PRESETS[rule.colorIdx ?? 0] || PRESETS[0];
+      applyStyle(a, preset);
     });
   }
 
   function clearAll() {
     document.querySelectorAll(`[${HL_ATTR}]`).forEach(a => {
-      a.style.background  = '';
-      a.style.borderColor = '';
-      a.style.borderWidth = '';
-      a.style.borderStyle = '';
+      a.style.background   = '';
+      a.style.borderColor  = '';
+      a.style.borderWidth  = '';
+      a.style.borderStyle  = '';
       a.style.borderRadius = '';
+      a.style.padding      = '';
+      a.style.border       = '';
+      a.style.fontWeight   = '';
+      a.style.fontStyle    = '';
+      a.style.color        = '';
+      a.querySelector(`.${NS}-tag-hl-symbol`)?.remove();
       a.removeAttribute(HL_ATTR);
     });
   }

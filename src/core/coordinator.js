@@ -8,7 +8,7 @@
 import { getGlobalWindow } from '../../lib/utils/globals.js';
 import { getLogger } from '../../lib/utils/logger.js';
 import { EV_SETTINGS_CHANGED, EV_OPEN_HIDE_MANAGER } from '../../lib/utils/event-names.js';
-import { openAO3HPanel } from '../../lib/ui/panel/panel-index.js';
+import { openAO3HPanel } from '../../lib/ui/panel/lazy-panel.js';
 import { AO3H, Modules } from './lifecycle.js';
 
 // W at module level (used inside initCoordinator and its nested functions)
@@ -33,7 +33,8 @@ function initCoordinator() {
    * Creates and manages the dialog for hidden works import/export
    */
   function ensureHiddenWorksDialog() {
-    let dlg = document.getElementById(`${NS}-ie-dialog`);
+    /** @type {HTMLDialogElement|null} */
+    let dlg = /** @type {HTMLDialogElement|null} */ (document.getElementById(`${NS}-ie-dialog`));
     if (!dlg) {
       dlg = document.createElement('dialog');
       dlg.id = `${NS}-ie-dialog`;
@@ -117,8 +118,8 @@ function initCoordinator() {
       ? 'Choose what you want to do with your hidden-works list.'
       : 'The Hidden works module is not loaded on this page. Actions enable once the module loads.';
 
-    const exBtn = document.getElementById(`${NS}-ie-export`);
-    const imBtn = document.getElementById(`${NS}-ie-import`);
+    const exBtn = /** @type {HTMLButtonElement|null} */ (document.getElementById(`${NS}-ie-export`));
+    const imBtn = /** @type {HTMLButtonElement|null} */ (document.getElementById(`${NS}-ie-import`));
     const tryBtn = document.getElementById(`${NS}-ie-try`);
 
     if (exBtn) exBtn.disabled = !hasExport;
@@ -133,7 +134,8 @@ function initCoordinator() {
    */
   function openHiddenWorksDialog() {
     ensureHiddenWorksDialog();
-    const dlg = document.getElementById(`${NS}-ie-dialog`);
+    const dlg = /** @type {HTMLDialogElement|null} */ (document.getElementById(`${NS}-ie-dialog`));
+    if (!dlg) return;
     try { 
       dlg.showModal(); 
     } catch { 

@@ -36,12 +36,23 @@ tri/filtrage et navigation facilitée.
 | `showViewBookmarkLink` | activé | Lien "🔖 My Bookmark" sur les pages des fics déjà en favori |
 | `showCompletionBadge` | désactivé | Badge ✓/🔄 de complétion sur les favoris |
 | `showProgressRing` | désactivé | Petit anneau qui montre la progression de lecture |
+| `showPersonalRating` | activé | Note personnelle ★★★★★ locale à côté des notes |
+| `quickNoteOnWorkPage` | activé | Bouton 📝 de note rapide sous le titre de toute fic |
+| `staleReminderMonths` | `0` (jamais) | Rappel 🔔 pour les favoris non ouverts depuis 3/6/12 mois |
+| `hideBlockedUsersBookmarks` | activé | Cache les bookmarks publics des utilisateurs bloqués |
 
 ## Fichiers
 
 ### 1. `_bookmarkVault.js` — le chef d'orchestre
 
 - Met en route tous les autres fichiers de ce module, chacun indépendamment (si l'un a un problème, les autres continuent de fonctionner)
+
+### 1bis. Nouveaux fichiers (Chantier 4)
+
+- `vaultTools.js` — logique pure : exports CSV/HTML, détection des favoris anciens, recherche `&&`/`||`, convention "note importante" (`!`)
+- `personalRatings.js` — les étoiles personnelles locales (stockage + widget ★)
+- `richTextNotes.js` — l'édition enrichie et l'historique des versions des notes personnelles (5 max par fic)
+- `blockedBookmarks.js` — masque les bookmarks publics des utilisateurs de la liste de blocage
 
 ### 2. `organizationTools.js` — catégories et organisation
 
@@ -109,36 +120,39 @@ tri/filtrage et navigation facilitée.
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Masquer les favoris des personnes qu'on a bloquées — aucun lien avec le module de blocage n'existe dans le code
-- Exporter en CSV ou en HTML — seul le format JSON existe
-- Des rappels pour réviser les vieux favoris qu'on n'a pas consultés depuis longtemps (3/6/12 mois)
-- Une note personnelle en 5 étoiles, séparée des tags et des notes de texte
-- Détecter et fusionner les favoris en double
-- Un historique des versions d'une note, pour pouvoir revenir en arrière
-- Un affichage en tableau de cartes ("pinboard") pour parcourir les notes visuellement
-- Des modèles de notes tout prêts (carnet de lecture, citations, réactions)
-- Réordonner les favoris à la main par glisser-déposer
-- Un raccourci pour afficher rapidement les infos d'un favori sans quitter la page en cours
-- Des tags personnels séparés des tags AO3, utilisables sur n'importe quelle fic, pas seulement les favoris
-- Des dossiers de favoris intelligents qui se trient tout seuls selon des critères (fandom, longueur, statut...)
-- Modifier un favori rapidement directement depuis la liste, sans ouvrir sa page
-- Voir la date du favori en survolant la liste
-- Des suggestions de tags automatiques basées sur le contenu des notes et les habitudes de lecture
-- Mettre en favori automatiquement selon des règles personnelles (par exemple toujours favoriser les fics d'un auteur précis)
-- Une recherche avancée avec des opérateurs "et/ou" dans toutes les notes
-- Mettre en évidence certains tags choisis directement dans la liste des favoris
-- Écrire une note personnelle sur n'importe quelle fic, même si elle n'est pas mise en favori
-- Mettre automatiquement une fic en favori quand tu arrives presque à la fin (par exemple à 90% de lecture), sans avoir à cliquer toi-même sur le bouton
-- Une vue qui regroupe tous tes favoris d'une même série, pour voir d'un coup où tu en es dans chaque histoire de la série
-- Afficher une petite icône dans les résultats de recherche AO3 (pas seulement dans la liste des favoris) pour montrer qu'une fic a déjà une note personnelle
-- Modifier plusieurs favoris à la fois (changer leur tag, leur note ou les passer en privé d'un coup) — la sélection multiple ne sert aujourd'hui qu'à supprimer
-- Une mise en forme plus poussée dans les notes, façon markdown, avec des sections qu'on peut replier
-- Ajouter automatiquement un tag "en cours" selon que la fic est terminée ou non, avec des règles personnalisables
-- Avoir une note privée gardée seulement pour toi, en plus de la note publique visible sur AO3, avec un bouton pour passer de l'une à l'autre
-- Un mode spécial pour écrire des notes très vite pendant qu'on est en train de lire
-- Mettre en évidence visuellement une note importante (par une couleur ou une icône d'alerte), différent de l'épingler en haut de la liste
-- Garder une copie du résumé et des chiffres (mots, kudos...) de la fic au moment où tu la mets en favori, pour pouvoir comparer si elle change plus tard
-- Utiliser tes favoris pour te suggérer des fics similaires, en te basant sur ce que tu as déjà mis de côté
+Tous les items ci-dessous sont résolus — le détail (avec les raisons des
+écartés) est dans la section « Fonctionnalités non implémentées » plus bas.
+
+- ~~Masquer les favoris des personnes qu'on a bloquées~~ ✅ `blockedBookmarks.js` (liste de blocage de User Relationships)
+- ~~Exporter en CSV ou en HTML~~ ✅ sélecteur de format JSON/CSV/HTML sur le bouton Export
+- ~~Des rappels pour réviser les vieux favoris (3/6/12 mois)~~ ✅ réglage `staleReminderMonths` + bandeau 🔔 avec surlignage
+- ~~Une note personnelle en 5 étoiles~~ ✅ `personalRatings.js` (★ locales, listes + page de fic)
+- ~~Un historique des versions d'une note~~ ✅ intégré à `richTextNotes.js` (5 versions, restaurables depuis l'éditeur)
+- ~~Des modèles de notes tout prêts~~ ✅ 3 modèles dans l'éditeur (Reading log / Quotes / Reactions)
+- ~~Un raccourci pour afficher les infos d'un favori sans quitter la page~~ ✅ aperçu au survol du lien "🔖 My Bookmark"
+- ~~Une recherche avancée "et/ou" dans les notes~~ ✅ opérateurs `&&` et `||`
+- ~~Écrire une note personnelle sur n'importe quelle fic~~ ✅ bouton 📝 sur toute page de fic (`quickNoteOnWorkPage`)
+- ~~Une vue qui regroupe les favoris d'une même série~~ ✅ tri "Series"
+- ~~Modifier plusieurs favoris à la fois~~ ✅ actions en masse locales 📂 Catégorie + 📌 Pin (la partie serveur AO3 reste écartée)
+- ~~Un mode notes rapides pendant la lecture~~ ✅ même bouton 📝 sur la page de lecture
+- ~~Mettre en évidence une note importante~~ ✅ convention : note commençant par `!` (bordure + ⚠)
+- ~~Voir la date du favori en survolant la liste~~ ✅ déjà affichée nativement par AO3
+- ~~Icône dans les résultats de recherche AO3 pour les fics annotées~~ ✅ déjà fait (`statusIndicators` décore toutes les listes)
+- ~~Markdown + sections repliables dans les notes~~ ✅ déjà couvert (markdown simple + repli des notes longues + `<details>` de l'auto-fill)
+- ~~Tag "en cours" automatique selon la complétion~~ ✅ déjà fait (auto-fill : "WIP" / "Read up to chapter X")
+- ~~Note privée locale en plus de la note publique AO3~~ ✅ déjà l'architecture actuelle (note inline locale + note de bookmark AO3)
+- ~~Copie du résumé et des chiffres au moment du favori~~ ✅ déjà couvert (l'auto-fill fige titre/auteur/résumé/état dans la note)
+- ~~Détecter et fusionner les favoris en double~~ ❌ écarté (impossibles par construction : un favori par fic et par compte)
+- ~~Un affichage "pinboard" en cartes~~ ❌ écarté (refonte UI pour un gain esthétique)
+- ~~Réordonner par glisser-déposer~~ ❌ écarté (ordre contrôlé par le serveur AO3)
+- ~~Des tags personnels sur n'importe quelle fic~~ ❌ écarté (rôle des notes autonomes de `skipWorks` + catégories du Vault)
+- ~~Des dossiers intelligents auto-triés~~ ❌ écarté (auto-fandom existe déjà, les filtres AO3 couvrent le reste)
+- ~~Modifier un favori AO3 depuis la liste~~ ❌ écarté (écriture serveur fragile — la note locale s'édite déjà en ligne)
+- ~~Suggestions de tags automatiques~~ ❌ écarté (heuristique arbitraire)
+- ~~Mettre en favori automatiquement selon des règles~~ ❌ écarté (pas d'écriture automatique sur AO3)
+- ~~Mettre en évidence certains tags dans la liste des favoris~~ ❌ écarté (rôle du surlignage de `tagsDisplay`)
+- ~~Favori automatique à 90 % de lecture~~ ❌ écarté (pas d'écriture automatique sur AO3)
+- ~~Suggérer des fics similaires depuis les favoris~~ ❌ écarté (rôle du module `similarFics`)
 
 ## Explicitement écarté
 
@@ -223,53 +237,51 @@ AO3 Helper — Rich Text Notes
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Bookmark Vault** transforme la gestion des favoris AO3 en un véritable outil d’organisation.
 
-Il permet notamment de :
-
-* afficher des badges de statut sur les favoris ;
-* enrichir et modifier les notes associées aux favoris ;
-* créer des catégories personnalisées ;
-* filtrer et trier les favoris ;
-* épingler certains favoris en haut de la liste ;
-* sélectionner plusieurs favoris pour effectuer des actions groupées ;
-* faciliter la navigation entre une œuvre et son formulaire de favori ;
-* suivre la dernière lecture et la progression ;
-* repérer les œuvres supprimées ou restreintes ;
-* exporter les données locales des favoris ;
-* afficher des statistiques générales sur la bibliothèque de favoris.
+* Il permet notamment de :
+  - afficher des badges de statut sur les favoris ;
+  - enrichir et modifier les notes associées aux favoris ;
+  - créer des catégories personnalisées ;
+  - filtrer et trier les favoris ;
+  - épingler certains favoris en haut de la liste ;
+  - sélectionner plusieurs favoris pour effectuer des actions groupées ;
+  - faciliter la navigation entre une œuvre et son formulaire de favori ;
+  - suivre la dernière lecture et la progression ;
+  - repérer les œuvres supprimées ou restreintes ;
+  - exporter les données locales des favoris ;
+  - afficher des statistiques générales sur la bibliothèque de favoris.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                       | Défaut    | Description                                                                                                  |
-| ----------------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
-| `showPublicPrivateBadge`      | Activé    | Affiche un badge `⭐` ou `🔒` indiquant si le favori est public ou privé.                                     |
-| `showNoteIcon`                | Activé    | Affiche une icône `📝` lorsqu’un favori contient une note.                                                   |
-| `showLastReadDate`            | Désactivé | Affiche la dernière date de lecture sous la forme « Last read: X days ago ».                                 |
-| `bookmarkStatusFilterEnabled` | Désactivé | Active le filtre de statut dans les listes.                                                                  |
-| `bookmarkStatusFilterDefault` | `all`     | Définit la vue par défaut du filtre : tous, favorisés ou non favorisés.                                      |
-| `showStatusFilterCount`       | Désactivé | Affiche un compteur à côté du filtre de statut.                                                              |
-| `inlineNoteEditing`           | Activé    | Permet de modifier une note directement depuis une liste ou depuis la page de l’œuvre.                       |
-| `autoFillBookmarkForm`        | Activé    | Préremplit le titre, l’auteur, le résumé et les autres informations de l’œuvre dans le formulaire de favori. |
-| `createCategories`            | Activé    | Active la création de catégories personnalisées.                                                             |
-| `showCategoryLabels`          | Activé    | Affiche les étiquettes de catégorie sur les favoris.                                                         |
-| `filterByCategory`            | Activé    | Permet de filtrer les favoris selon leur catégorie.                                                          |
-| `hideDeletedWorks`            | Désactivé | Masque les œuvres supprimées ou restreintes au lieu d’afficher un avertissement `⚠️`.                        |
-| `pinBookmarks`                | Désactivé | Permet d’épingler des favoris en haut de la liste.                                                           |
-| `bulkSelection`               | Activé    | Active la sélection multiple et les actions groupées.                                                        |
-| `privateByDefault`            | Désactivé | Coche automatiquement l’option **Private** dans le formulaire de favori.                                     |
-| `assignToCategories`          | Activé    | Classe automatiquement les nouveaux favoris dans une catégorie selon leur fandom.                            |
-| `defaultSort`                 | `date`    | Définit le tri par défaut : date, titre, fandom ou note.                                                     |
-| `autoTagFandom`               | Désactivé | Ajoute automatiquement le premier tag de fandom au favori.                                                   |
-| `autoTagRating`               | Désactivé | Ajoute automatiquement le rating AO3 de l’œuvre.                                                             |
-| `showAnalyticsDashboard`      | Désactivé | Affiche un tableau de bord contenant des statistiques sur les favoris.                                       |
-| `showBackButton`              | Activé    | Affiche un bouton « ← Back to work » après la création ou la modification d’un favori.                       |
-| `showViewBookmarkLink`        | Activé    | Affiche un lien « 🔖 My Bookmark » sur les pages des œuvres déjà mises en favori.                            |
-| `showCompletionBadge`         | Désactivé | Affiche un badge `✓` ou `🔄` indiquant si l’œuvre est terminée ou en cours.                                  |
-| `showProgressRing`            | Désactivé | Affiche un anneau représentant la progression de lecture.                                                    |
+| Réglage                       | Description                                                                                                  |
+| ----------------------------- |--------------------------------------------------------------------------------------------------------------|
+| `showPublicPrivateBadge`      | Affiche un badge `⭐` ou `🔒` indiquant si le favori est public ou privé.                                   |
+| `showNoteIcon`                | Affiche une icône `📝` lorsqu’un favori contient une note.                                                  |
+| `showLastReadDate`            | Affiche la dernière date de lecture sous la forme « Last read: X days ago ».                                 |
+| `bookmarkStatusFilterEnabled` | Active le filtre de statut dans les listes.                                                                  |
+| `bookmarkStatusFilterDefault` | Définit la vue par défaut du filtre : tous, favorisés ou non favorisés.                                      |
+| `showStatusFilterCount`       | Affiche un compteur à côté du filtre de statut.                                                              |
+| `inlineNoteEditing`           | Permet de modifier une note directement depuis une liste ou depuis la page de l’œuvre.                       |
+| `autoFillBookmarkForm`        | Préremplit le titre, l’auteur, le résumé et les autres informations de l’œuvre dans le formulaire de favori. |
+| `createCategories`            | Active la création de catégories personnalisées.                                                             |
+| `showCategoryLabels`          | Affiche les étiquettes de catégorie sur les favoris.                                                         |
+| `filterByCategory`            | Permet de filtrer les favoris selon leur catégorie.                                                          |
+| `hideDeletedWorks`            | Masque les œuvres supprimées ou restreintes au lieu d’afficher un avertissement `⚠️`.                       |
+| `pinBookmarks`                | Permet d’épingler des favoris en haut de la liste.                                                           |
+| `bulkSelection`               | Active la sélection multiple et les actions groupées.                                                        |
+| `privateByDefault`            | Coche automatiquement l’option **Private** dans le formulaire de favori.                                     |
+| `assignToCategories`          | Classe automatiquement les nouveaux favoris dans une catégorie selon leur fandom.                            |
+| `defaultSort`                 | Définit le tri par défaut : date, titre, fandom ou note.                                                     |
+| `autoTagFandom`               | Ajoute automatiquement le premier tag de fandom au favori.                                                   |
+| `autoTagRating`               | Ajoute automatiquement le rating AO3 de l’œuvre.                                                             |
+| `showAnalyticsDashboard`      | Affiche un tableau de bord contenant des statistiques sur les favoris.                                       |
+| `showBackButton`              | Affiche un bouton « ← Back to work » après la création ou la modification d’un favori.                       |
+| `showViewBookmarkLink`        | Affiche un lien « 🔖 My Bookmark » sur les pages des œuvres déjà mises en favori.                           |
+| `showCompletionBadge`         | Affiche un badge `✓` ou `🔄` indiquant si l’œuvre est terminée ou en cours.                                 |
+| `showProgressRing`            | Affiche un anneau représentant la progression de lecture.                                                    |
 
 ---
 
@@ -1224,245 +1236,311 @@ Il définit notamment l’apparence :
 
 # Fonctionnalités non implémentées
 
-## Intégration avec le blocage
+## ~~Intégration avec le blocage~~ ✅ Fait
 
-Masquer les favoris créés par des personnes bloquées.
+~~Masquer les favoris créés par des personnes bloquées.~~
 
-Aucune intégration avec le module de blocage n’existe actuellement.
-
----
-
-## Formats d’export supplémentaires
-
-Permettre l’export des favoris dans les formats :
-
-* CSV ;
-* HTML.
-
-Seul le format JSON est actuellement disponible.
+> Ajouté : `blockedBookmarks.js` — sur les listes publiques de bookmarks,
+> les blurbs créés par un utilisateur de la liste de blocage de User
+> Relationships (`userBlocker:list`) sont masqués, avec réaction en direct
+> aux changements de la liste. Les pages de tes propres favoris ne sont pas
+> touchées. Réglage `hideBlockedUsersBookmarks` (activé par défaut).
 
 ---
 
-## Rappels d’entretien
+## ~~Formats d'export supplémentaires~~ ✅ Fait
 
-Afficher des rappels pour réviser les favoris qui n’ont pas été consultés depuis :
+~~Permettre l'export des favoris en CSV et HTML.~~
 
-* 3 mois ;
-* 6 mois ;
-* 12 mois.
-
----
-
-## Note personnelle sur cinq étoiles
-
-Ajouter une note personnelle sur cinq étoiles, distincte :
-
-* des tags ;
-* des notes textuelles ;
-* du rating AO3.
+> Le bouton Export propose désormais JSON / CSV / HTML (`vaultTools.js`) —
+> le HTML est une page autonome avec liens vers AO3, le CSV inclut les
+> notes de bookmark et les notes personnelles.
 
 ---
 
-## Détection des doublons
+## ~~Rappels d'entretien~~ ✅ Fait
 
-Détecter et fusionner les favoris en double.
+~~Afficher des rappels pour réviser les favoris non consultés depuis 3/6/12 mois.~~
 
----
-
-## Historique des notes
-
-Conserver les versions successives d’une note afin de pouvoir revenir à une version précédente.
-
----
-
-## Affichage Pinboard
-
-Ajouter une vue sous forme de cartes afin de parcourir visuellement les favoris et leurs notes.
+> Réglage `staleReminderMonths` (jamais / 3 / 6 / 12) : bandeau "🔔 X
+> bookmarks not opened for N+ months" sur la page des favoris, avec un
+> bouton qui surligne les fics concernées de la page. Basé sur les dates de
+> dernière ouverture suivies par `readingStatusTracking`.
 
 ---
 
-## Modèles de notes
+## ~~Note personnelle sur cinq étoiles~~ ✅ Fait
 
-Proposer des modèles prêts à utiliser, par exemple :
+~~Ajouter une note personnelle sur cinq étoiles, distincte des tags, des notes et du rating AO3.~~
 
-* carnet de lecture ;
-* citations ;
-* réactions.
-
----
-
-## Réorganisation manuelle
-
-Permettre de réordonner les favoris par glisser-déposer.
+> Ajouté : `personalRatings.js` — ★★★★★ locales à côté de chaque note
+> (listes de favoris et page de la fic), recliquer la même étoile efface.
+> Réglage `showPersonalRating`.
 
 ---
 
-## Aperçu rapide
+## ~~Détection des doublons~~ ❌ Écarté
 
-Ajouter un raccourci permettant d’afficher les informations détaillées d’un favori sans quitter la page actuelle.
+~~Détecter et fusionner les favoris en double.~~
 
----
-
-## Tags personnels globaux
-
-Créer des tags personnels distincts des tags AO3 et utilisables sur n’importe quelle œuvre, même lorsqu’elle n’est pas mise en favori.
+> Écarté : AO3 n'autorise qu'un favori par fic et par compte, et le cache
+> local est indexé par identifiant de fic — les doublons sont impossibles
+> par construction.
 
 ---
 
-## Dossiers intelligents
+## ~~Historique des notes~~ ✅ Fait
 
-Créer des catégories automatiques fondées sur des critères tels que :
+~~Conserver les versions successives d'une note afin de pouvoir revenir à une version précédente.~~
 
-* le fandom ;
-* la longueur ;
-* le statut de complétion ;
-* d’autres métadonnées.
-
----
-
-## Modification rapide d’un favori
-
-Permettre de modifier directement toutes les informations d’un favori depuis la liste, sans ouvrir sa page.
-
-La modification directe actuelle concerne principalement la note.
+> Intégré à `richTextNotes.js` — chaque sauvegarde conserve l'ancienne version
+> (5 max par fic), restaurables depuis le sélecteur "↩ Previous versions"
+> de l'éditeur.
 
 ---
 
-## Date du favori au survol
+## ~~Affichage Pinboard~~ ❌ Écarté
 
-Afficher la date de création du favori lorsqu’il est survolé dans une liste.
+~~Ajouter une vue sous forme de cartes afin de parcourir visuellement les favoris et leurs notes.~~
 
----
-
-## Suggestions automatiques de tags
-
-Suggérer des tags à partir :
-
-* du contenu des notes ;
-* des habitudes de lecture ;
-* des données de l’œuvre.
+> Écarté : refonte d'affichage complète pour un bénéfice surtout
+> esthétique — la liste AO3 enrichie (aperçus de notes, étoiles, badges,
+> catégories, tri) couvre déjà la consultation.
 
 ---
 
-## Mise en favori automatique
+## ~~Modèles de notes~~ ✅ Fait
 
-Permettre de créer automatiquement un favori selon des règles personnelles, par exemple pour toutes les œuvres d’un auteur choisi.
+~~Proposer des modèles prêts à utiliser (carnet de lecture, citations, réactions).~~
 
----
-
-## Recherche avancée dans les notes
-
-Ajouter des opérateurs de recherche tels que :
-
-* `ET`
-* `OU`
-
-afin d’effectuer des recherches complexes dans l’ensemble des notes.
+> Ajouté : trois boutons de modèles dans l'éditeur de note (📓 Reading log,
+> 💬 Quotes, 💭 Reactions), avec confirmation avant d'écraser une note
+> existante.
 
 ---
 
-## Mise en évidence des tags
+## ~~Réorganisation manuelle~~ ❌ Écarté
 
-Permettre de choisir certains tags à mettre visuellement en évidence dans les listes de favoris.
+~~Permettre de réordonner les favoris par glisser-déposer.~~
 
----
-
-## Notes sur les œuvres non favorites
-
-Permettre d’écrire une note personnelle sur n’importe quelle œuvre, même lorsqu’elle n’est pas mise en favori.
+> Écarté : l'ordre des favoris est contrôlé par AO3 côté serveur et
+> re-trié à chaque chargement/pagination — un ordre manuel ne survivrait
+> pas. Le tri client + l'épinglage en haut couvrent le besoin.
 
 ---
 
-## Mise en favori selon la progression
+## ~~Aperçu rapide~~ ✅ Fait
 
-Créer automatiquement un favori lorsque la progression de lecture atteint un seuil, par exemple 90 %.
+~~Afficher les informations détaillées d'un favori sans quitter la page actuelle.~~
 
----
-
-## Regroupement par série
-
-Ajouter une vue regroupant tous les favoris appartenant à une même série afin d’afficher la progression dans chaque œuvre de cette série.
+> Le lien "🔖 My Bookmark" des pages de fic affiche au survol la
+> visibilité du favori, un extrait de sa note AO3 et de la note
+> personnelle.
 
 ---
 
-## Icône dans les résultats de recherche
+## ~~Tags personnels globaux~~ ❌ Écarté
 
-Afficher une icône dans les résultats de recherche AO3 lorsqu’une œuvre possède déjà une note personnelle.
+~~Créer des tags personnels utilisables sur n'importe quelle œuvre, même non favorite.~~
 
----
-
-## Actions groupées avancées
-
-Permettre de modifier plusieurs favoris à la fois, notamment pour :
-
-* changer leurs tags ;
-* modifier leur note ;
-* les rendre privés ;
-* les rendre publics.
-
-La sélection multiple actuelle sert uniquement à la suppression.
+> Écarté (hors périmètre) : les annotations sur n'importe quelle fic sont
+> le rôle des notes autonomes de `skipWorks` ; les catégories du Vault
+> couvrent le classement des favoris. Dupliquer un troisième système de
+> tags créerait de la confusion.
 
 ---
 
-## Mise en forme avancée des notes
+## ~~Dossiers intelligents~~ ❌ Écarté
 
-Ajouter une syntaxe de type Markdown plus complète, avec notamment des sections repliables.
+~~Créer des catégories automatiques fondées sur des critères (fandom, longueur, statut...).~~
 
----
-
-## Tag automatique de progression
-
-Ajouter automatiquement un tag comme « en cours » selon que l’œuvre est terminée ou non.
-
-Les règles de cette attribution pourraient être personnalisables.
+> Écarté : l'auto-affectation par fandom existe déjà
+> (`assignToCategories`), et les filtres AO3 (tags de bookmark, y compris
+> ceux posés par l'auto-fill : WIP, tranches de longueur…) couvrent les
+> autres critères sans dupliquer un moteur de règles.
 
 ---
 
-## Note locale privée distincte
+## ~~Modification rapide d'un favori~~ ❌ Écarté
 
-Permettre de conserver deux notes séparées :
+~~Modifier directement toutes les informations d'un favori depuis la liste.~~
 
-* une note publique enregistrée sur AO3 ;
-* une note privée uniquement conservée localement.
-
-Un bouton permettrait de passer de l’une à l’autre.
-
----
-
-## Mode de prise de notes rapide
-
-Ajouter une interface spéciale permettant d’écrire rapidement des notes pendant la lecture.
+> Écarté : modifier un favori côté AO3 (tags, visibilité) exigerait de
+> rejouer le formulaire AO3 avec son jeton — fragile, avec risque de perte
+> du bookmark en cas d'échec. La note personnelle, elle, s'édite déjà en
+> ligne dans la liste.
 
 ---
 
-## Notes importantes
+## ~~Date du favori au survol~~ ✅ Déjà couvert
 
-Permettre de marquer une note comme importante à l’aide :
+~~Afficher la date de création du favori au survol dans une liste.~~
 
-* d’une couleur ;
-* d’une icône d’avertissement ;
-* d’un style particulier.
-
-Cette fonctionnalité serait différente de l’épinglage du favori.
+> AO3 affiche nativement la date de chaque bookmark sur les listes de
+> favoris — rien à ajouter.
 
 ---
 
-## Copie historique des métadonnées
+## ~~Suggestions automatiques de tags~~ ❌ Écarté
 
-Conserver une copie des informations de l’œuvre au moment de sa mise en favori, notamment :
+~~Suggérer des tags à partir du contenu des notes et des habitudes de lecture.~~
 
-* le résumé ;
-* le nombre de mots ;
-* le nombre de kudos ;
-* les autres statistiques.
-
-Cela permettrait de détecter les changements ultérieurs.
+> Écarté : heuristique spéculative aux résultats arbitraires ; l'auto-fill
+> pose déjà les tags objectifs (WIP, tranche de longueur, fandom, rating).
 
 ---
 
-## Suggestions d’œuvres similaires
+## ~~Mise en favori automatique~~ ❌ Écarté
 
-Utiliser les favoris existants pour suggérer des œuvres similaires à partir des habitudes et préférences de l’utilisateur.
+~~Créer automatiquement un favori selon des règles personnelles (par exemple tout un auteur).~~
+
+> Écarté : créer des favoris à l'insu de l'utilisateur exigerait des
+> écritures automatiques sur AO3 — contraire à la ligne du projet (aucune
+> action serveur automatique, cf. les téléchargements auto également
+> écartés).
+
+---
+
+## ~~Recherche avancée dans les notes~~ ✅ Fait
+
+~~Ajouter des opérateurs ET / OU pour des recherches complexes dans les notes.~~
+
+> La recherche de notes accepte désormais `a && b` (tous les termes) et
+> `a || b` (au moins un) — `noteQueryMatch` dans `vaultTools.js`.
+
+---
+
+## ~~Mise en évidence des tags~~ ❌ Écarté
+
+~~Choisir certains tags à mettre visuellement en évidence dans les listes de favoris.~~
+
+> Écarté (hors périmètre) : le surlignage de tags choisis existe déjà dans
+> `tagsDisplay` (tag highlighting) et s'applique aussi aux listes de
+> favoris — le dupliquer ici créerait deux réglages concurrents.
+
+---
+
+## ~~Notes sur les œuvres non favorites~~ ✅ Fait
+
+~~Écrire une note personnelle sur n'importe quelle œuvre, même non favorite.~~
+
+> Le bouton "📝 Note" des pages de fic (réglage `quickNoteOnWorkPage`)
+> fonctionne pour toute fic, favorite ou non — la note reste locale. Sur
+> les listes, les notes autonomes de `skipWorks` couvrent le même besoin.
+
+---
+
+## ~~Mise en favori selon la progression~~ ❌ Écarté
+
+~~Créer automatiquement un favori à 90 % de lecture.~~
+
+> Écarté : même raison que la mise en favori automatique — pas d'écriture
+> automatique sur AO3.
+
+---
+
+## ~~Regroupement par série~~ ✅ Fait
+
+~~Regrouper les favoris appartenant à une même série.~~
+
+> Ajouté : option de tri "Series" — les fics d'une même série deviennent
+> adjacentes dans la liste (les fics hors série passent à la fin).
+
+---
+
+## ~~Icône dans les résultats de recherche~~ ✅ Déjà fait (doc en retard)
+
+~~Afficher une icône dans les résultats AO3 quand une œuvre possède déjà une note personnelle.~~
+
+> `statusIndicators.js` décore déjà les listes générales (pas seulement
+> les favoris) : icône de note (`showNoteIcon`), badge public/privé, etc.
+
+---
+
+## ~~Actions groupées avancées~~ ✅ Fait (partie locale) / ❌ Écarté (partie serveur)
+
+~~Modifier plusieurs favoris à la fois (tags, note, visibilité).~~
+
+> Ajouté : la barre de sélection multiple propose désormais "📂 Category"
+> (affecter la sélection à une catégorie, créée au besoin) et "📌 Pin",
+> en plus de la suppression. La modification en masse côté AO3 (tags,
+> public/privé) reste écartée : écritures serveur fragiles (jeton de
+> formulaire), risque de perte de bookmarks.
+
+---
+
+## ~~Mise en forme avancée des notes~~ ✅ Déjà couvert
+
+~~Syntaxe Markdown plus complète, avec sections repliables.~~
+
+> Les notes personnelles acceptent le Markdown simple (gras, italique,
+> code) et `noteDisplay.js` rend les notes AO3 avec un Markdown contraint
+> + repli automatique des notes longues. L'auto-fill utilise déjà des
+> `<details>` repliables dans les notes AO3.
+
+---
+
+## ~~Tag automatique de progression~~ ✅ Déjà fait (doc en retard)
+
+~~Ajouter automatiquement un tag "en cours" selon la complétion.~~
+
+> L'auto-fill du formulaire pose déjà "WIP" et "Read up to chapter X" pour
+> les fics inachevées, et une tranche de longueur pour les complètes. La
+> personnalisation fine des libellés n'a pas été retenue (valeurs stables
+> nécessaires pour que les filtres AO3 restent utiles).
+
+---
+
+## ~~Note locale privée distincte~~ ✅ Déjà couvert
+
+~~Deux notes séparées : publique sur AO3, privée locale, avec bascule.~~
+
+> C'est l'architecture actuelle : la note du bookmark AO3 (publique ou
+> privée selon le réglage AO3) et la note personnelle inline (stockée
+> localement, jamais envoyée à AO3) coexistent et s'affichent côte à côte
+> sur les listes.
+
+---
+
+## ~~Mode de prise de notes rapide~~ ✅ Fait
+
+~~Interface pour écrire rapidement des notes pendant la lecture.~~
+
+> Le bouton "📝 Note" sous le titre de la fic (réglage
+> `quickNoteOnWorkPage`) ouvre l'éditeur inline (modèles, historique,
+> sauvegarde automatique) sans quitter la lecture.
+
+---
+
+## ~~Notes importantes~~ ✅ Fait
+
+~~Marquer une note comme importante (couleur, icône), distinct de l'épinglage.~~
+
+> Convention : une note personnelle commençant par `!` est mise en
+> évidence (bordure orange, fond teinté, icône ⚠) partout où son aperçu
+> apparaît.
+
+---
+
+## ~~Copie historique des métadonnées~~ ✅ Déjà couvert
+
+~~Conserver résumé et statistiques au moment de la mise en favori.~~
+
+> L'auto-fill fige déjà dans la note du bookmark le titre, l'auteur, le
+> résumé, l'état WIP/chapitres et la tranche de mots au moment de la mise
+> en favori — la comparaison avec l'état actuel se fait en rouvrant la
+> fic. Un instantané chiffré complet (kudos, hits…) n'a pas été retenu :
+> il ferait gonfler le stockage pour un usage marginal.
+
+---
+
+## ~~Suggestions d'œuvres similaires~~ ❌ Écarté
+
+~~Utiliser les favoris pour suggérer des œuvres similaires.~~
+
+> Écarté (hors périmètre) : la recommandation de fics est le rôle du
+> module `similarFics` (onglet Explore) — le Vault reste un outil de
+> gestion, pas un moteur de suggestion.
 
 ---
 

@@ -38,7 +38,8 @@ navigateur.
 
 - Envoie une copie des données vers le compte du navigateur (Chrome/Firefox), pour les retrouver sur un autre appareil
 - Récupère les données du compte du navigateur au démarrage, si elles sont plus récentes que celles déjà présentes sur l'appareil
-- En cas de différence entre deux appareils, garde toujours la version la plus récente
+- En cas de différence entre deux appareils qui ont chacun un historique, demande à l'utilisateur quelle version garder (sur un appareil qui n'a jamais synchronisé, la version distante est récupérée sans question)
+- Contient directement la décision de conflit et construit le message présentant les deux versions
 - Attend un petit moment avant d'envoyer les données, pour éviter de le faire à chaque tout petit changement
 
 ### 5. `dataTransfer.js` — exporter et importer
@@ -49,7 +50,13 @@ navigateur.
 - Affiche de petits messages pour dire si une action a réussi ou échoué
 - Construit les boutons visibles dans le panneau de réglages (exporter, importer, activer/désactiver la synchronisation)
 
-### 6. `backupAndSync.css`
+### 6. `versionMigration.js` — la migration des données entre versions
+
+- Détecte qu'AO3 Helper a changé de version depuis la dernière visite (version mémorisée sous `ao3h:version`)
+- Déplace les réglages enregistrés sous les anciens noms de modules (avant la vague de renommage : `downloadManager` → `ficDownloader`, `bookmarkManager` → `bookmarkVault`, etc.) vers leur nom actuel, puis supprime les vieilles clés
+- Les réglages déjà présents sous le nouveau nom gagnent toujours sur les anciens
+
+### 7. `backupAndSync.css`
 
 - Les styles visuels des boutons et des petits messages de ce module
 
@@ -58,24 +65,47 @@ navigateur.
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Voir la liste des sauvegardes automatiques et choisir laquelle restaurer, directement depuis le panneau (les sauvegardes existent, mais rien ne permet de les parcourir dans l'interface)
+- ~~Voir la liste des sauvegardes automatiques et choisir laquelle restaurer, directement depuis le panneau (les sauvegardes existent, mais rien ne permet de les parcourir dans l'interface)~~ ✅
+  Fait : section "Backups" du panneau — liste avec date, type, nombre de clés
+  et taille, bouton Restore par sauvegarde, suppression individuelle.
 
-- Un bouton "Sauvegarder maintenant" dans le panneau (la fonction existe déjà à l'intérieur du module, mais aucun bouton ne la déclenche)
+- ~~Un bouton "Sauvegarder maintenant" dans le panneau (la fonction existe déjà à l'intérieur du module, mais aucun bouton ne la déclenche)~~ ✅
+  Fait : bouton "☁️ Backup Now", avec choix du mode (standard, compressé,
+  chiffré, incrémental) et filtre de catégories optionnel.
 
-- Voir en un coup d'œil toutes les données sauvegardées, avec leur taille et leur état
+- ~~Voir en un coup d'œil toutes les données sauvegardées, avec leur taille et leur état~~ ✅
+  Fait : chaque sauvegarde affiche son type, son nombre de clés, sa taille et
+  une icône d'état (✓ valide / ⚠️ corrompue — vérification de structure, et
+  décompression réelle pour les sauvegardes gzip).
 
-- Chercher directement dans ses données sauvegardées
+- ~~Chercher directement dans ses données sauvegardées~~ ✅
+  Fait : le champ de recherche filtre par date affichée **et** par contenu
+  (noms de clés à l'intérieur des sauvegardes, catégories des sélectives).
 
-- Nettoyer ou mettre à jour automatiquement les données quand l'extension change de version
+- ~~Nettoyer ou mettre à jour automatiquement les données quand l'extension change de version~~ ✅
+  Fait : `versionMigration.js` — au changement de version, les réglages
+  enregistrés sous les anciens ids de modules sont déplacés vers les ids
+  actuels et les clés obsolètes sont supprimées.
 
-- Pouvoir choisir soi-même quelle version garder quand deux appareils ont des données différentes, plutôt que ce soit toujours la plus récente qui gagne automatiquement
+- ~~Pouvoir choisir soi-même quelle version garder quand deux appareils ont des données différentes, plutôt que ce soit toujours la plus récente qui gagne automatiquement~~ ✅
+  Fait : quand les deux appareils ont un historique de sync et que le distant
+  est plus récent, une boîte de dialogue propose de garder la version distante
+  ou la version locale (qui redevient alors prioritaire au prochain envoi).
 
 ---
 
-~~- Choisir de protéger une sauvegarde avec un mot de passe, de la compresser, ou de ne garder que ce qui a changé, directement depuis le panneau (ces façons de sauvegarder existent déjà à l'intérieur du module, mais rien ne permet de les choisir dans l'interface)~~
-~~- Choisir précisément quelles données sauvegarder, plutôt que tout d'un coup, directement depuis le panneau (ça existe déjà à l'intérieur du module, mais pas dans l'interface)~~
-~~- Un bouton pour tout effacer d'un coup~~
-~~- Vérifier que les données sauvegardées ne sont pas abîmées ou corrompues~~
+~~- Choisir de protéger une sauvegarde avec un mot de passe, de la compresser, ou de ne garder que ce qui a changé, directement depuis le panneau (ces façons de sauvegarder existent déjà à l'intérieur du module, mais rien ne permet de les choisir dans l'interface)~~ ✅
+  Fait : sélecteur "Manual backup mode" dans le panneau (standard / compressé
+  gzip / chiffré par mot de passe / incrémental), et restauration adaptée à
+  chaque type depuis la liste (mot de passe demandé pour le chiffré).
+~~- Choisir précisément quelles données sauvegarder, plutôt que tout d'un coup, directement depuis le panneau (ça existe déjà à l'intérieur du module, mais pas dans l'interface)~~ ✅
+  Fait : champ "Only these categories" — la sauvegarde devient sélective et ne
+  garde que les clés correspondantes.
+~~- Un bouton pour tout effacer d'un coup~~ ✅ (bouton "Clear All")
+~~- Vérifier que les données sauvegardées ne sont pas abîmées ou corrompues~~ ✅
+  Fait : validation de structure par type + icône d'état par sauvegarde ; une
+  sauvegarde corrompue ne peut pas être restaurée (message d'erreur), et
+  l'import de fichier ignore les entrées invalides.
 
 ## Explicitement écarté
 
@@ -402,7 +432,7 @@ Il constitue également la base des fonctionnalités avancées comme les sauvega
 
 #### Fonctionnalités
 
-##### Sauvegarde complète
+  * Sauvegarde complète
 
 Le module peut créer une sauvegarde complète de toutes les données utilisées par AO3 Helper.
 
@@ -414,7 +444,7 @@ Lors de cette opération, il :
 - convertit les données en JSON afin de produire une sauvegarde facilement réutilisable.
 
 
-##### Historique des sauvegardes
+* Historique des sauvegardes
 
 Chaque sauvegarde est enregistrée sous la forme d'un instantané daté.
 
@@ -426,7 +456,7 @@ Le système :
 - supprime automatiquement les plus anciennes lorsque la limite maximale est atteinte.
 
 
-##### Sauvegardes sélectives
+ * Sauvegardes sélectives
 
 Le module est conçu pour permettre de sauvegarder uniquement certaines catégories de données plutôt que l'intégralité de l'extension.
 
@@ -439,7 +469,7 @@ Les possibilités prévues sont notamment :
 
 Ces fonctionnalités existent dans la conception du module mais ne disposent actuellement pas d'une interface utilisateur.
 
-##### Restauration
+* Restauration
 
 Une sauvegarde existante peut être restaurée à tout moment.
 
@@ -452,7 +482,7 @@ Le processus comprend :
 - un avertissement indiquant que les données existantes seront écrasées.
 
 
-##### Sauvegardes chiffrées
+* Sauvegardes chiffrées
 
 Le module prévoit la possibilité de protéger une sauvegarde par mot de passe.
 
@@ -465,7 +495,7 @@ Le fonctionnement comprend :
 Cette fonctionnalité est présente dans les spécifications du module mais n'est pas encore exposée dans l'interface.
 
 
-##### Compression
+* Compression
 
 Les sauvegardes peuvent être compressées afin de réduire leur taille.
 
@@ -478,7 +508,7 @@ Le système prévoit :
 
 Cette fonctionnalité n'est actuellement pas accessible depuis l'interface utilisateur.
 
-##### Sauvegardes incrémentales
+* Sauvegardes incrémentales
 
 Le module prévoit également un mode de sauvegarde incrémentale.
 
@@ -495,7 +525,7 @@ Cette fonctionnalité fait partie des capacités prévues du module mais n'est p
 
 ##### Détails techniques
 
-###### Collecte des données
+  ###### Collecte des données
 
 Les données sauvegardées sont récupérées directement depuis `localStorage`.
 
@@ -506,7 +536,7 @@ Le module :
 - exclut les données internes de sauvegarde ;
 - sérialise le résultat au format JSON.
 
-####### Gestion des versions
+###### Gestion des versions
 
 Chaque sauvegarde constitue un instantané complet de l'état de l'extension à un moment précis.
 
@@ -519,7 +549,7 @@ Chaque instantané possède :
 Cela permet une restauration "point dans le temps" (point-in-time recovery).
 
 
-### Dépendances
+###### Dépendances
 
 Ce sous-module fournit les opérations de sauvegarde utilisées par :
 
@@ -544,7 +574,7 @@ La synchronisation est entièrement optionnelle et doit être activée par l'uti
 
 ## Fonctionnalités
 
-### Synchronisation via le navigateur
+* Synchronisation via le navigateur
 
 Le module utilise le stockage synchronisé fourni par le navigateur.
 
@@ -562,7 +592,7 @@ Le système :
 - garde les appareils synchronisés.
 
 
-### Activation utilisateur
+* Activation utilisateur
 
 La synchronisation est contrôlée par le réglage :
 
@@ -574,7 +604,7 @@ Lorsque cette option est désactivée :
 - aucune donnée distante n'est récupérée.
 
 
-### Synchronisation au démarrage
+* Synchronisation au démarrage
 
 Au lancement de l'extension, le module :
 
@@ -586,7 +616,7 @@ Au lancement de l'extension, le module :
 Le système utilise une stratégie **Last Write Wins**, c'est-à-dire que la version la plus récente est conservée automatiquement.
 
 
-### Synchronisation des modifications
+* Synchronisation des modifications
 
 Lorsque des données changent :
 
@@ -601,7 +631,7 @@ Cela permet :
 - d'éviter les appels inutiles ;
 - d'améliorer les performances.
 
-### Gestion des limites
+* Gestion des limites
 
 Le stockage synchronisé du navigateur possède une capacité limitée d'environ :
 
@@ -614,14 +644,6 @@ Le module :
 - évite les erreurs provoquées par un espace insuffisant.
 
 
-
-  ## Décisions de conception
-
-### Synchronisation GitHub
-
-Une synchronisation via **GitHub Gist** avait été envisagée.
-
-Cette approche a finalement été abandonnée au profit du stockage synchronisé natif du navigateur, beaucoup plus simple à utiliser pour la majorité des utilisateurs.
 
 
 ## Détails techniques
@@ -656,7 +678,7 @@ Ce sous-module permet :
 
 ## Fonctionnalités
 
-### Export des données
+* Export des données
 
 Le module peut exporter l'ensemble des données d'AO3 Helper.
 
@@ -676,7 +698,7 @@ Chaque export :
 - peut informer le reste de l'extension du nombre d'éléments exportés.
 
 
-### Import des données
+* Import des données
 
 Le module permet de restaurer une sauvegarde précédemment exportée.
 
@@ -689,7 +711,7 @@ Le processus comprend :
 - une notification indiquant le nombre d'éléments importés.
 
 
-### Validation des données
+* Validation des données
 
 Avant toute restauration, le module vérifie :
 
@@ -704,7 +726,7 @@ Le système gère également les erreurs provoquées par :
 - des données incompatibles.
 
 
-### Export des listes de fics
+* Export des listes de fics
 
 Le module peut également exporter les œuvres visibles sur une page AO3.
 
@@ -717,7 +739,7 @@ Formats disponibles :
 Les données exportées sont récupérées directement depuis le DOM.
 
 
-### Compilation des listes
+* Compilation des listes
 
 Pour chaque œuvre, le module peut récupérer :
 
@@ -753,7 +775,7 @@ Formats pris en charge :
 - modèle HTML personnalisable
 
 
-### Interface utilisateur
+#### Interface utilisateur
 
 Le sous-module construit les éléments visibles dans le panneau de configuration.
 
@@ -766,7 +788,7 @@ Il fournit notamment :
 - l'affichage de l'état de la synchronisation.
 
 
-### Retour visuel
+#### Retour visuel
 
 Le module informe l'utilisateur du déroulement des opérations.
 
@@ -839,64 +861,76 @@ instantanée sans attendre le prochain déclenchement automatique.~~
 ### ~~Vue détaillée des données~~ ✅ Fait
 
 ~~Afficher toutes les données sauvegardées avec leur taille et leur date de
-mise à jour.~~ (le statut « corrompue/valide » individuel n'est pas affiché —
-voir Vérification d'intégrité plus bas, toujours non implémentée.)
+mise à jour.~~
+
+> Chaque sauvegarde affiche désormais aussi son statut individuel
+> ✓ valide / ⚠️ corrompue (voir Vérification d'intégrité plus bas).
 
 ---
 
 ### ~~Recherche dans les sauvegardes~~ ✅ Fait
 
 ~~Permettre de rechercher directement une information à l'intérieur des
-sauvegardes existantes.~~ (recherche par date affichée uniquement, pas par
-contenu des données sauvegardées.)
+sauvegardes existantes.~~
+
+> La recherche couvre désormais la date affichée **et** le contenu : noms de
+> clés dans les données (ou le delta des incrémentales), catégories des
+> sauvegardes sélectives.
 
 ---
 
-### Migration des données
+### ~~Migration des données~~ ✅ Fait
 
-Détecter automatiquement les changements de version d'AO3 Helper afin de :
+~~Détecter automatiquement les changements de version d'AO3 Helper afin de
+nettoyer les anciennes données devenues inutiles, convertir automatiquement
+les anciennes structures de données et maintenir la compatibilité entre les
+versions.~~
 
-- nettoyer les anciennes données devenues inutiles ;
-- convertir automatiquement les anciennes structures de données ;
-- maintenir la compatibilité entre les versions.
+> Ajouté : `versionMigration.js`. Au changement de version (mémorisée sous
+> `ao3h:version`), les réglages stockés sous les anciens ids de modules
+> (`downloadManager`, `bookmarkManager`, `paginationManager`, etc. — la
+> liste vient des notes "Previously:" des configs du panneau) sont déplacés
+> vers l'id actuel, fusionnés sans écraser l'existant, puis les clés legacy
+> sont supprimées.
 
 ---
 
-### Résolution des conflits
+### ~~Résolution des conflits~~ ✅ Fait
 
-Lorsqu'une différence est détectée entre deux appareils synchronisés, permettre à l'utilisateur de choisir lui-même quelle version conserver.
+~~Lorsqu'une différence est détectée entre deux appareils synchronisés, permettre à l'utilisateur de choisir lui-même quelle version conserver.~~
 
-Aujourd'hui, le système applique automatiquement la stratégie **Last Write Wins**, qui conserve toujours la version la plus récente.
+> Ajouté dans `cloudSync.js`. Le restore silencieux ne se
+> produit plus que sur un appareil sans historique de sync ; sinon, une
+> boîte de dialogue présente les deux dates et laisse choisir (OK = version
+> distante, Annuler = garder le local, qui redevient prioritaire au prochain
+> envoi). L'ancien Last-Write-Wins aveugle est abandonné.
 
 ---
 
 ## Fonctionnalités avancées déjà prévues
 
-Les fonctionnalités suivantes existent déjà dans la logique interne du module, mais ne disposent pas encore d'une interface utilisateur.
+Les fonctionnalités suivantes existaient déjà dans la logique interne du module ; elles ont désormais leur interface dans le panneau.
 
-### Sauvegardes sélectives
+### ~~Sauvegardes sélectives~~ ✅ Fait
 
-Pouvoir choisir précisément quelles catégories de données doivent être sauvegardées.
+~~Pouvoir choisir précisément quelles catégories de données doivent être sauvegardées.~~
 
-Exemples :
-
-- réglages ;
-- préférences ;
-- historique ;
-- données de certains modules uniquement.
+> Ajouté : champ "Only these categories" à côté du bouton Backup Now — des
+> filtres de clés séparés par des virgules (ex. `readingList, filters`)
+> transforment la sauvegarde en sauvegarde sélective.
 
 ---
 
-### Modes de sauvegarde
+### ~~Modes de sauvegarde~~ ✅ Fait
 
-Choisir lors de la création d'une sauvegarde :
+~~Choisir lors de la création d'une sauvegarde : standard, compressée,
+protégée par mot de passe, ou incrémentale.~~
 
-- une sauvegarde standard ;
-- une sauvegarde compressée ;
-- une sauvegarde protégée par mot de passe ;
-- une sauvegarde incrémentale.
-
-Ces fonctionnalités existent déjà dans les spécifications de `backupOperations.js`.
+> Ajouté : sélecteur "Manual backup mode" dans le panneau. Chaque type se
+> restaure correctement depuis la liste : mot de passe demandé pour le
+> chiffré (AES-GCM/PBKDF2), décompression gzip pour le compressé,
+> application du delta (ajouts/modifications/suppressions) pour
+> l'incrémental.
 
 ---
 
@@ -908,13 +942,18 @@ Ces fonctionnalités existent déjà dans les spécifications de `backupOperatio
 
 ---
 
-### Vérification d'intégrité
+### ~~Vérification d'intégrité~~ ✅ Fait
 
-Contrôler automatiquement qu'une sauvegarde :
+~~Contrôler automatiquement qu'une sauvegarde n'est pas corrompue, possède
+une structure valide et peut être restaurée sans erreur.~~
 
-- n'est pas corrompue ;
-- possède une structure valide ;
-- peut être restaurée sans erreur.
+> Ajouté : chaque sauvegarde de la liste est validée selon son type
+> (structure des données, des octets chiffrés/compressés, du delta) avec une
+> icône ✓/⚠️ ; les sauvegardes gzip subissent en plus une décompression
+> réelle en arrière-plan. Une sauvegarde invalide ne peut pas être restaurée
+> et les imports de fichiers ignorent les entrées corrompues. Seule limite :
+> une sauvegarde chiffrée ne peut être vérifiée qu'en structure (la
+> déchiffrer exigerait le mot de passe).
 
 ---
 
@@ -934,7 +973,6 @@ Les choix suivants ont été pris volontairement au cours du développement.
     - cette limite serait rapidement dépassée.
   
   L'historique reste néanmoins sauvegardé localement et peut toujours être exporté manuellement avec le reste des données.
-
 
 
 

@@ -19,6 +19,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { CoreNavigation as Core } from './coreNavigation.js';
+import { normalizeStep } from './pageJumpTargets.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -32,7 +33,15 @@ const WRAP_CLASS = 'ao3h-en-wrap';
    FEATURE — ENHANCED PAGINATION CONTROLS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function buildEnhancedRow (current, max, showTen) {
+export function buildEnhancedRow (current, max, opts = {}) {
+  const {
+    showStep    = true,   // small quick-jump buttons (historic ±10)
+    step        = 10,     // configurable small jump
+    showBigStep = false,  // big quick-jump buttons
+    bigStep     = 50,     // configurable big jump
+    progressBar = true,   // thin position bar under the row
+  } = opts;
+
   const wrap  = document.createElement('div');
   wrap.className = WRAP_CLASS;
 
@@ -49,15 +58,29 @@ function buildEnhancedRow (current, max, showTen) {
   }
 
   wrap.appendChild(btn('« First', 1, 'First page'));
-  if (showTen) wrap.appendChild(btn('−10', current - 10, `Page ${current - 10}`));
+  if (showBigStep) wrap.appendChild(btn(`−${bigStep}`, current - bigStep, `Page ${current - bigStep}`));
+  if (showStep)    wrap.appendChild(btn(`−${step}`, current - step, `Page ${current - step}`));
   wrap.appendChild(btn('‹ Prev', current - 1, 'Previous page'));
   const cur       = document.createElement('span');
   cur.className   = 'ao3h-en-current';
   cur.textContent = `${current} / ${max}`;
   wrap.appendChild(cur);
   wrap.appendChild(btn('Next ›', current + 1, 'Next page'));
-  if (showTen) wrap.appendChild(btn('+10', current + 10, `Page ${current + 10}`));
+  if (showStep)    wrap.appendChild(btn(`+${step}`, current + step, `Page ${current + step}`));
+  if (showBigStep) wrap.appendChild(btn(`+${bigStep}`, current + bigStep, `Page ${current + bigStep}`));
   wrap.appendChild(btn('Last »', max, 'Last page'));
+
+  // Thin visual bar showing where the current page sits in the listing
+  if (progressBar) {
+    const track = document.createElement('div');
+    track.className = 'ao3h-en-progress';
+    const fill = document.createElement('div');
+    fill.className = 'ao3h-en-progress-fill';
+    fill.style.width = `${Math.round((current / Math.max(max, 1)) * 100)}%`;
+    track.title = `Page ${current} of ${max}`;
+    track.appendChild(fill);
+    wrap.appendChild(track);
+  }
 
   return wrap;
 }
@@ -78,11 +101,23 @@ export class EnhancedNavigation {
     const max      = Core.getMaxPage();
     if (max <= 1)  return;
 
-    const showTen  = this._opts.cfg ? this._opts.cfg('showPlusMinus10Buttons') : true;
+    const cfg  = this._opts.cfg || null;
+    const opts = {
+      showStep:    cfg ? cfg('showPlusMinus10Buttons', true) : true,
+      step:        normalizeStep(cfg ? cfg('quickJumpStep', 10) : 10, 10),
+      showBigStep: cfg ? cfg('showBigJumpButtons', false) : false,
+      bigStep:     normalizeStep(cfg ? cfg('bigJumpStep', 50) : 50, 50),
+      progressBar: cfg ? cfg('showPaginationProgressBar', true) : true,
+    };
+    const sticky = cfg ? cfg('stickyEnhancedNav', false) : false;
 
+    let first = true;
     document.querySelectorAll('ol.pagination, ul.pagination, .pagination').forEach(pg => {
       if (pg.previousElementSibling?.classList.contains(WRAP_CLASS)) return;
-      const row = buildEnhancedRow(current, max, showTen);
+      const row = buildEnhancedRow(current, max, opts);
+      // Only the top row sticks — a sticky bottom bar would cover the list
+      if (sticky && first) row.classList.add('ao3h-en-wrap--sticky');
+      first = false;
       pg.insertAdjacentElement('beforebegin', row);
       this._widgets.push(row);
     });

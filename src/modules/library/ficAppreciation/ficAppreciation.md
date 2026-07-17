@@ -348,47 +348,44 @@ AO3 Helper — Fic Appreciation › MultiStatusTracker sub-module
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Fic Appreciation** regroupe les outils permettant de suivre son appréciation personnelle d’une œuvre.
 
-Il remplace trois anciens modules qui géraient séparément :
+* Il remplace trois anciens modules qui géraient séparément :
+  - la complétion d’une fic ;
+  - le suivi des kudos ;
+  - la notation personnelle.
 
-* la complétion d’une fic ;
-* le suivi des kudos ;
-* la notation personnelle.
-
-Le module permet notamment de :
-
-* marquer une œuvre comme terminée ;
-* vérifier si un kudos a déjà été donné ;
-* donner rapidement un kudos depuis une liste ;
-* afficher la date d’un kudos ;
-* synchroniser les informations de kudos entre plusieurs onglets ;
-* attribuer une note personnelle de une à cinq étoiles ;
-* associer une note écrite à une notation ;
-* choisir parmi sept statuts de lecture ;
-* cacher certaines œuvres selon leur statut ;
-* afficher des statistiques de complétion, de kudos et de statuts ;
-* exporter les données personnelles liées aux kudos et aux statuts.
+* Le module permet notamment de :
+  - marquer une œuvre comme terminée ;
+  - vérifier si un kudos a déjà été donné ;
+  - donner rapidement un kudos depuis une liste ;
+  - afficher la date d’un kudos ;
+  - synchroniser les informations de kudos entre plusieurs onglets ;
+  - attribuer une note personnelle de une à cinq étoiles ;
+  - associer une note écrite à une notation ;
+  - choisir parmi sept statuts de lecture ;
+  - cacher certaines œuvres selon leur statut ;
+  - afficher des statistiques de complétion, de kudos et de statuts ;
+  - exporter les données personnelles liées aux kudos et aux statuts.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                  | Défaut    | Description                                                                                                |
-| ------------------------ | --------- | ---------------------------------------------------------------------------------------------------------- |
-| `showManualCheckButton`  | Désactivé | Ajoute sur la page d’une œuvre un bouton permettant de vérifier manuellement si un kudos a déjà été donné. |
-| `statusNotes`            | Activé    | Permet d’ajouter une note personnelle à certains statuts de lecture.                                       |
-| `hideStatusFilter`       | Aucun     | Définit les statuts de lecture à masquer dans les listes d’œuvres.                                         |
-| `completionNotes`        | Désactivé | Permet d’écrire une note lorsqu’une œuvre est marquée comme terminée.                                      |
-| `filterCompletedWorks`   | Activé    | Masque dans les listes les œuvres déjà marquées comme terminées.                                           |
-| `quickKudosButton`       | Désactivé | Ajoute un bouton permettant de donner un kudos directement depuis une liste, sans ouvrir l’œuvre.          |
-| `commentAssistOnRevisit` | Désactivé | Propose de laisser un commentaire lorsqu’une œuvre déjà kudosée est consultée de nouveau.                  |
-| `hideKudosedFilter`      | Désactivé | Masque dans les listes les œuvres auxquelles un kudos a déjà été donné.                                    |
-| `showRatingOnBlurbs`     | Activé    | Affiche la note personnelle en étoiles directement dans les listes.                                        |
-| `ratingNotes`            | Désactivé | Permet d’associer une note écrite à chaque notation en étoiles.                                            |
-| `kudosIcon`              | `🧡`      | Définit l’icône utilisée pour les boutons et badges de kudos.                                              |
-| `tooltipDateFormat`      | `long`    | Définit le format de la date du kudos : complet, court ou relatif.                                         |
+| Réglage                  | Description                                                                                                |
+| ------------------------ |------------------------------------------------------------------------------------------------------------|
+| `showManualCheckButton`  | Ajoute sur la page d’une œuvre un bouton permettant de vérifier manuellement si un kudos a déjà été donné. |
+| `statusNotes`            | Permet d’ajouter une note personnelle à certains statuts de lecture.                                       |
+| `hideStatusFilter`       | Définit les statuts de lecture à masquer dans les listes d’œuvres.                                         |
+| `completionNotes`        | Permet d’écrire une note lorsqu’une œuvre est marquée comme terminée.                                      |
+| `filterCompletedWorks`   | Masque dans les listes les œuvres déjà marquées comme terminées.                                           |
+| `quickKudosButton`       | Ajoute un bouton permettant de donner un kudos directement depuis une liste, sans ouvrir l’œuvre.          |
+| `commentAssistOnRevisit` | Propose de laisser un commentaire lorsqu’une œuvre déjà kudosée est consultée de nouveau.                  |
+| `hideKudosedFilter`      | Masque dans les listes les œuvres auxquelles un kudos a déjà été donné.                                    |
+| `showRatingOnBlurbs`     | Affiche la note personnelle en étoiles directement dans les listes.                                        |
+| `ratingNotes`            | Permet d’associer une note écrite à chaque notation en étoiles.                                            |
+| `kudosIcon`              | Définit l’icône utilisée pour les boutons et badges de kudos.                                              |
+| `tooltipDateFormat`      | Définit le format de la date du kudos : complet, court ou relatif.                                         |
 
 Le panneau affiche également une section **Sync & Refresh** proposant des options liées :
 

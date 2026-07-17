@@ -103,37 +103,35 @@ Les quatre fonctionnent bel et bien aujourd'hui dans
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Keyboard Shortcuts** ajoute des raccourcis clavier pour les actions courantes d'AO3 afin d'accélérer la navigation et les interactions sans utiliser la souris.
 
-Il permet notamment de :
-
-- passer au chapitre précédent ou suivant ;
-- passer à la page précédente ou suivante dans les listes de résultats ;
-- déclencher l'action **Surprise Me** ;
-- s'abonner à une œuvre ;
-- ajouter une œuvre aux favoris ;
-- marquer une œuvre pour plus tard ;
-- afficher une fenêtre d'aide listant tous les raccourcis disponibles ;
-- fournir une API permettant aux autres modules d'ajouter leurs propres raccourcis sans gérer eux-mêmes les événements clavier.
+* Il permet notamment de :
+  - passer au chapitre précédent ou suivant ;
+  - passer à la page précédente ou suivante dans les listes de résultats ;
+  - déclencher l'action **Surprise Me** ;
+  - s'abonner à une œuvre ;
+  - ajouter une œuvre aux favoris ;
+  - marquer une œuvre pour plus tard ;
+  - afficher une fenêtre d'aide listant tous les raccourcis disponibles ;
+  - fournir une API permettant aux autres modules d'ajouter leurs propres raccourcis sans gérer eux-mêmes les événements clavier.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage | Défaut | Description |
-|----------|---------|-------------|
-| `allShortcutsDisabled` | Désactivé | Désactive immédiatement tous les raccourcis clavier. |
-| `customizationEnabled` | Désactivé | Active la personnalisation des raccourcis *(fonctionnalité prévue mais non implémentée)*. |
-| `prevChapter` | `Ctrl+ArrowLeft` | Aller au chapitre précédent. |
-| `nextChapter` | `Ctrl+ArrowRight` | Aller au chapitre suivant. |
-| `prevPage` | `Shift+ArrowLeft` | Aller à la page précédente dans les listes de fics. |
-| `nextPage` | `Shift+ArrowRight` | Aller à la page suivante dans les listes de fics. |
-| `guide` | `?` | Ouvrir la fenêtre d'aide des raccourcis. |
-| `surpriseMe` | `Ctrl+Shift+R` | Déclencher **Surprise Me**. |
-| `subscribe` | `Ctrl+Shift+S` | S'abonner à une œuvre. |
-| `bookmark` | `Ctrl+Shift+B` | Ajouter une œuvre aux favoris. |
-| `markForLater` | `Ctrl+Shift+M` | Marquer une œuvre pour plus tard. |
+| Réglage                 | Défaut              | Description |
+|-------------------------|---------------------|-------------------------------------------------------|
+| `allShortcutsDisabled`  | Désactivé           | Désactive immédiatement tous les raccourcis clavier.  |
+| `customizationEnabled`  | Désactivé           | Active la personnalisation des raccourcis             |
+| `prevChapter`           | `Ctrl+ArrowLeft`    | Aller au chapitre précédent.                          |
+| `nextChapter`           | `Ctrl+ArrowRight`   | Aller au chapitre suivant.                            |
+| `prevPage`              | `Shift+ArrowLeft`   | Aller à la page précédente dans les listes de fics.   |
+| `nextPage`              | `Shift+ArrowRight`  | Aller à la page suivante dans les listes de fics.     |
+| `guide`                 | `?`                 | Ouvrir la fenêtre d'aide des raccourcis.              |
+| `surpriseMe`            | `Ctrl+Shift+R`      | Déclencher **Surprise Me**.                           |
+| `subscribe`             | `Ctrl+Shift+S`      | S'abonner à une œuvre.                                |
+| `bookmark`              | `Ctrl+Shift+B`      | Ajouter une œuvre aux favoris.                        |
+| `markForLater`          | `Ctrl+Shift+M`      | Marquer une œuvre pour plus tard.                     |
 
 ---
 

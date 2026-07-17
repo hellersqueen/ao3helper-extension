@@ -16,5 +16,5 @@
       "@styles/*": ["./lib/styles/*"]
     }
   },
-  "include": ["src/**/*.js", "tests/**/*.js", "vite-env.d.ts", "global.d.ts"]
+  "include": ["src/**/*.js", "tests/**/*.js", "environment.d.ts"]
 }

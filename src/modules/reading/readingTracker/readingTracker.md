@@ -174,45 +174,43 @@ AO3 Helper - Reading Tracker Module Coordinator
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Reading Tracker** suit l’historique et la progression de lecture sur AO3.
 
-Il permet notamment de :
-
-* enregistrer les œuvres déjà visitées ;
-* conserver la position de lecture dans une œuvre ;
-* suivre le chapitre en cours ;
-* estomper ou masquer les œuvres déjà vues dans les listes ;
-* exclure du marquage les favoris, les abonnements et les œuvres marquées pour plus tard ;
-* signaler les œuvres mises à jour depuis la dernière visite ;
-* reprendre une lecture au dernier chapitre ou à la dernière position enregistrée ;
-* rechercher, importer, exporter et nettoyer l’historique de lecture ;
-* fournir les données de lecture aux autres modules d’AO3 Helper.
+* Il permet notamment de :
+    - enregistrer les œuvres déjà visitées ;
+    - conserver la position de lecture dans une œuvre ;
+    - suivre le chapitre en cours ;
+    - estomper ou masquer les œuvres déjà vues dans les listes ;
+    - exclure du marquage les favoris, les abonnements et les œuvres marquées pour plus tard ;
+    - signaler les œuvres mises à jour depuis la dernière visite ;
+    - reprendre une lecture au dernier chapitre ou à la dernière position enregistrée ;
+    - rechercher, importer, exporter et nettoyer l’historique de lecture ;
+    - fournir les données de lecture aux autres modules d’AO3 Helper.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                   | Défaut    | Description                                                                              |
-| ------------------------- | --------- | ---------------------------------------------------------------------------------------- |
-| `seenMode`                | `mark`    | Définit comment afficher les œuvres déjà vues : `mark` les estompe et `hide` les masque. |
-| `exceptBookmarks`         | Activé    | Ne marque jamais comme vues les œuvres présentes dans les favoris.                       |
-| `exceptSubscribed`        | Activé    | Ne marque jamais comme vues les œuvres auxquelles l’utilisateur est abonné.              |
-| `exceptMFL`               | Activé    | Ne marque jamais comme vues les œuvres présentes dans la liste **Marked for Later**.     |
-| `searchHistory`           | Activé    | Active la recherche dans l’historique.                                                   |
-| `deleteEntry`             | Activé    | Permet de supprimer une entrée individuelle de l’historique.                             |
-| `exportHistory`           | Activé    | Permet d’exporter l’historique au format JSON.                                           |
-| `resumeToast`             | Activé    | Affiche un court message lorsqu’une lecture déjà commencée est reprise.                  |
-| `chapterBadge`            | Activé    | Affiche un badge cliquable `Ch X/Y` sur les œuvres en cours de lecture.                  |
-| `resumeBanner`            | Activé    | Affiche une bannière `📍 Reprendre au chapitre X` lors du retour sur une œuvre.          |
-| `lastReadTime`            | Activé    | Affiche depuis combien de temps l’œuvre n’a pas été lue dans la bannière de reprise.     |
-| `positionMarker`          | Activé    | Ajoute un repère à l’endroit exact où la lecture s’était arrêtée.                        |
-| `floatingBadge`           | Activé    | Affiche un badge flottant indiquant le pourcentage lu.                                   |
-| `seenWorksOpacity`        | `0.4`     | Définit l’opacité des œuvres estompées lorsqu’elles sont marquées comme vues.            |
-| `historyClearAll`         | Activé    | Affiche le bouton permettant d’effacer tout l’historique.                                |
-| `showClearProgressButton` | Activé    | Affiche un bouton permettant d’effacer la progression enregistrée pour une œuvre.        |
-| `updatedBadge`            | Activé    | Affiche un badge **Updated** sur les œuvres récemment mises à jour.                      |
-| `updatedOnlyMode`         | Désactivé | N’affiche que les œuvres mises à jour, notamment sur la page des abonnements.            |
+| Réglage                   | Description                                                                              |
+| ------------------------- |------------------------------------------------------------------------------------------|
+| `seenMode`                | Définit comment afficher les œuvres déjà vues : `mark` les estompe et `hide` les masque. |
+| `exceptBookmarks`         | Ne marque jamais comme vues les œuvres présentes dans les favoris.                       |
+| `exceptSubscribed`        | Ne marque jamais comme vues les œuvres auxquelles l’utilisateur est abonné.              |
+| `exceptMFL`               | Ne marque jamais comme vues les œuvres présentes dans la liste **Marked for Later**.     |
+| `searchHistory`           | Active la recherche dans l’historique.                                                   |
+| `deleteEntry`             | Permet de supprimer une entrée individuelle de l’historique.                             |
+| `exportHistory`           | Permet d’exporter l’historique au format JSON.                                           |
+| `resumeToast`             | Affiche un court message lorsqu’une lecture déjà commencée est reprise.                  |
+| `chapterBadge`            | Affiche un badge cliquable `Ch X/Y` sur les œuvres en cours de lecture.                  |
+| `resumeBanner`            | Affiche une bannière `📍 Reprendre au chapitre X` lors du retour sur une œuvre.         |
+| `lastReadTime`            | Affiche depuis combien de temps l’œuvre n’a pas été lue dans la bannière de reprise.     |
+| `positionMarker`          | Ajoute un repère à l’endroit exact où la lecture s’était arrêtée.                        |
+| `floatingBadge`           | Affiche un badge flottant indiquant le pourcentage lu.                                   |
+| `seenWorksOpacity`        | Définit l’opacité des œuvres estompées lorsqu’elles sont marquées comme vues.            |
+| `historyClearAll`         | Affiche le bouton permettant d’effacer tout l’historique.                                |
+| `showClearProgressButton` | Affiche un bouton permettant d’effacer la progression enregistrée pour une œuvre.        |
+| `updatedBadge`            | Affiche un badge **Updated** sur les œuvres récemment mises à jour.                      |
+| `updatedOnlyMode`         | N’affiche que les œuvres mises à jour, notamment sur la page des abonnements.            |
 
 ---
 

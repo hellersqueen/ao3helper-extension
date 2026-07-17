@@ -18,6 +18,10 @@
 /*#        |                                                 */
 /*===      ├─  06. Tags visibility — boutons show more/less  */
 /*#        |                                                 */
+/*======   ├─  07. External tag links (Fanlore/TV Tropes)    */
+/*#        |                                                 */
+/*=======  ├─  08. Custom tag separator                      */
+/*#        |                                                 */
 /*#        └─*/
 
 
@@ -55,36 +59,132 @@
   ═══════════════════════════════════════════════════════════════════════
     SECTION 02 — AUTO-HIDE NOISE TAGS
   ───────────────────────────────────────────────────────────────────────
-    Masque les tags "bruit" quand le filtre est actif.
+    Masque les tags "bruit" quand le filtre est actif. Le <li> reste dans
+    le DOM (pour garder la virgule générée par .commas li::after) mais son
+    contenu d'origine est masqué au profit d'une petite puce "show hidden
+    tag" qui permet de réafficher CE tag précis sans couper tout le filtre.
     ⚠️ Déclenchée par la classe JS sur <html>. Ne pas supprimer.
   ═══════════════════════════════════════════════════════════════════════
 */
 
-html.ao3h-noise-filter-on .ao3h-noise-tag-hidden { display: none !important; }
+/* Cas normal : le <li> englobant reste dans le flux (garde la virgule de
+   .commas li::after), seul son contenu d'origine est masqué. */
+html.ao3h-noise-filter-on li.ao3h-noise-tag-hidden > *:not(.ao3h-noise-tag-reveal) {
+  display: none !important;
+}
+
+html.ao3h-noise-filter-on li.ao3h-noise-tag-hidden.ao3h-noise-tag-revealed > *:not(.ao3h-noise-tag-reveal) {
+  display: inline !important;
+}
+
+html.ao3h-noise-filter-on li.ao3h-noise-tag-hidden.ao3h-noise-tag-revealed .ao3h-noise-tag-reveal {
+  display: none !important;
+}
+
+/* Repli rare : pas de <li> englobant trouvé — masquage direct, pas de puce "show". */
+html.ao3h-noise-filter-on .ao3h-noise-tag-hidden:not(li) {
+  display: none !important;
+}
+
+/* Style alternatif "blur" (réglage noiseTagStyle) : le tag reste visible mais
+   flouté, plutôt que complètement caché. Même mécanique de puce/réaffichage. */
+html.ao3h-noise-filter-on li.ao3h-noise-tag-blurred > *:not(.ao3h-noise-tag-reveal) {
+  filter: blur(4px);
+  transition: filter 0.15s ease;
+}
+
+html.ao3h-noise-filter-on li.ao3h-noise-tag-blurred.ao3h-noise-tag-revealed > *:not(.ao3h-noise-tag-reveal) {
+  filter: none;
+}
+
+html.ao3h-noise-filter-on li.ao3h-noise-tag-blurred.ao3h-noise-tag-revealed .ao3h-noise-tag-reveal {
+  display: none !important;
+}
+
+html.ao3h-noise-filter-on .ao3h-noise-tag-blurred:not(li) {
+  filter: blur(4px);
+}
+
+.ao3h-noise-tag-reveal {
+  font-size: 0.85em;
+  color: #999;
+  background: none;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.ao3h-noise-tag-reveal:hover,
+.ao3h-noise-tag-reveal:focus {
+  color: #666;
+  border-color: #999;
+}
 
 
 /*####
   ═══════════════════════════════════════════════════════════════════════
-    SECTION 03 — COMPACT MODE (TAGS/SUMMARY AU SURVOL)
+    SECTION 03 — COMPACT MODE (CHAQUE CATÉGORIE REPLIÉE SÉPARÉMENT)
   ───────────────────────────────────────────────────────────────────────
-    Réduit les tags et le résumé par défaut ; les révèle au survol/focus.
-    ⚠️ Déclenchée par la classe JS sur <html>. Ne pas supprimer.
+    Chaque catégorie de tags (warnings/relationships/characters/freeforms)
+    et le résumé se replient/déplient indépendamment — plus un seul bloc
+    commun. Une catégorie absente de la liste (réglage compactCat*) n'est
+    jamais repliée : elle reste toujours visible.
+    Répliés par : survol/focus, arrivée dans le viewport (scroll auto-expand,
+    optionnel), ou le raccourci Alt+T (tout ouvrir, mémorisé par page).
+    ⚠️ Classes posées par JS sur <html> (et .ao3h-cm-in-view sur le blurb) :
+    ne pas supprimer.
   ═══════════════════════════════════════════════════════════════════════
 */
 
-html.ao3h-compact-mode-on .blurb .tags,
-html.ao3h-compact-mode-on .blurb .summary {
+/* ── Résumé ── */
+html.ao3h-compact-mode-on.ao3h-cm-cat-summary .blurb .summary {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease, opacity 0.3s ease;
   opacity: 0.3;
 }
 
-html.ao3h-compact-mode-on .blurb:hover .tags,
-html.ao3h-compact-mode-on .blurb:hover .summary,
-html.ao3h-compact-mode-on .blurb:focus-within .tags,
-html.ao3h-compact-mode-on .blurb:focus-within .summary {
+html.ao3h-compact-mode-on.ao3h-cm-cat-summary .blurb:hover .summary,
+html.ao3h-compact-mode-on.ao3h-cm-cat-summary .blurb:focus-within .summary,
+html.ao3h-compact-mode-on.ao3h-cm-cat-summary .blurb.ao3h-cm-in-view .summary,
+html.ao3h-cm-force-open.ao3h-cm-cat-summary .blurb .summary {
   max-height: 500px;
+  opacity: 1;
+}
+
+/* ── Catégories de tags (chacune indépendante) ── */
+html.ao3h-compact-mode-on.ao3h-cm-cat-warnings .blurb .tags li.warnings,
+html.ao3h-compact-mode-on.ao3h-cm-cat-relationships .blurb .tags li.relationships,
+html.ao3h-compact-mode-on.ao3h-cm-cat-characters .blurb .tags li.characters,
+html.ao3h-compact-mode-on.ao3h-cm-cat-freeforms .blurb .tags li.freeforms {
+  display: inline-block;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0.3;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+html.ao3h-compact-mode-on.ao3h-cm-cat-warnings .blurb .tags li.warnings:hover,
+html.ao3h-compact-mode-on.ao3h-cm-cat-warnings .blurb .tags li.warnings:focus-within,
+html.ao3h-compact-mode-on.ao3h-cm-cat-warnings .blurb.ao3h-cm-in-view .tags li.warnings,
+html.ao3h-cm-force-open.ao3h-cm-cat-warnings .blurb .tags li.warnings,
+
+html.ao3h-compact-mode-on.ao3h-cm-cat-relationships .blurb .tags li.relationships:hover,
+html.ao3h-compact-mode-on.ao3h-cm-cat-relationships .blurb .tags li.relationships:focus-within,
+html.ao3h-compact-mode-on.ao3h-cm-cat-relationships .blurb.ao3h-cm-in-view .tags li.relationships,
+html.ao3h-cm-force-open.ao3h-cm-cat-relationships .blurb .tags li.relationships,
+
+html.ao3h-compact-mode-on.ao3h-cm-cat-characters .blurb .tags li.characters:hover,
+html.ao3h-compact-mode-on.ao3h-cm-cat-characters .blurb .tags li.characters:focus-within,
+html.ao3h-compact-mode-on.ao3h-cm-cat-characters .blurb.ao3h-cm-in-view .tags li.characters,
+html.ao3h-cm-force-open.ao3h-cm-cat-characters .blurb .tags li.characters,
+
+html.ao3h-compact-mode-on.ao3h-cm-cat-freeforms .blurb .tags li.freeforms:hover,
+html.ao3h-compact-mode-on.ao3h-cm-cat-freeforms .blurb .tags li.freeforms:focus-within,
+html.ao3h-compact-mode-on.ao3h-cm-cat-freeforms .blurb.ao3h-cm-in-view .tags li.freeforms,
+html.ao3h-cm-force-open.ao3h-cm-cat-freeforms .blurb .tags li.freeforms {
+  max-height: 60px;
   opacity: 1;
 }
 
@@ -133,6 +233,12 @@ html.ao3h-compact-mode-on .blurb:focus-within .summary {
   color: #991b1b;
 }
 
+/*- Style "symbol" (highlightStyle) : petite étoile devant le tag surligné,
+    au lieu d'un fond de couleur plein. */
+.ao3h-tag-hl-symbol {
+  font-size: 0.9em;
+}
+
 
 /*==
   ═══════════════════════════════════════════════════════════════════════
@@ -171,6 +277,36 @@ html.ao3h-compact-mode-on .blurb:focus-within .summary {
   color: #666;
 }
 
+/*- Boutons de tri automatique (A→Z / Length / ★ Important first) et
+    barre export/import de l'ordre des tags — même look que "Reset order". */
+.ao3h-tags-sort-buttons,
+.ao3h-tags-order-toolbar {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.ao3h-tags-sort-buttons button,
+.ao3h-tags-order-toolbar button {
+  font-size: 0.8em;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 1px 6px;
+  cursor: pointer;
+  color: #666;
+}
+
+.ao3h-tags-sort-buttons button:hover,
+.ao3h-tags-order-toolbar button:hover {
+  background: #f1f5fb;
+  color: #333;
+}
+
+.ao3h-tags-order-toolbar {
+  margin-top: 6px;
+}
+
 
 /*===
   ═══════════════════════════════════════════════════════════════════════
@@ -192,4 +328,42 @@ html.ao3h-compact-mode-on .blurb:focus-within .summary {
   margin: 1px 2px;
   color: #555;
   vertical-align: middle;
+}
+
+
+/*======
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 07 — EXTERNAL TAG LINKS (FANLORE / TV TROPES)
+  ───────────────────────────────────────────────────────────────────────
+    Petites icônes de recherche externe ajoutées après chaque tag.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-tag-extlinks {
+  display: inline-block;
+  margin-left: 3px;
+  font-size: 0.8em;
+  opacity: 0.55;
+}
+
+.ao3h-tag-extlinks a {
+  text-decoration: none;
+  margin: 0 1px;
+}
+
+.ao3h-tag-extlinks:hover { opacity: 1; }
+
+
+/*=======
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 08 — SÉPARATEUR DE TAGS PERSONNALISÉ
+  ───────────────────────────────────────────────────────────────────────
+    Remplace la virgule ", " générée par AO3 (.commas li::after) par le
+    séparateur choisi dans le réglage tagSeparator.
+    ⚠️ --ao3h-tag-sep est posée en style inline sur <html> par le JS.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+html.ao3h-tag-sep-on .commas li::after {
+  content: var(--ao3h-tag-sep) !important;
 }

@@ -214,32 +214,31 @@ AO3 Helper - Reading Formatter Module Coordinator
 
 Le module **Reading Formatter** regroupe les outils qui améliorent la mise en forme et le confort de lecture des fics sur AO3.
 
-Il permet notamment de :
-
-* nettoyer automatiquement le contenu du texte ;
-* corriger certaines imperfections typographiques ;
-* uniformiser les séparateurs de scène ;
-* masquer les images intégrées au texte ;
-* personnaliser l'alignement et l'espacement des paragraphes ;
-* utiliser une police sans empattements ;
-* activer un mode de lecture épuré ;
-* ajuster rapidement la largeur, la taille et l'espacement du texte grâce à un panneau flottant « Aa ».
+* Il permet notamment de :
+  - nettoyer automatiquement le contenu du texte ;
+  - corriger certaines imperfections typographiques ;
+  - uniformiser les séparateurs de scène ;
+  - masquer les images intégrées au texte ;
+  - personnaliser l'alignement et l'espacement des paragraphes ;
+  - utiliser une police sans empattements ;
+  - activer un mode de lecture épuré ;
+  - ajuster rapidement la largeur, la taille et l'espacement du texte grâce à un panneau flottant « Aa ».
 
 ---
 
 # Réglages utilisateur
 
-| Réglage               | Défaut    | Description                                                               |
-| --------------------- | --------- | ------------------------------------------------------------------------- |
-| `autoCleanFormatting` | Activé    | Corrige les doubles espaces et les sauts de ligne mal placés.             |
-| `removeBoldExcessive` | Désactivé | Retire le gras lorsqu'un paragraphe entier est en gras.                   |
-| `convertSlashItalic`  | Désactivé | Convertit le texte entre barres obliques (`/texte/`) en italique.         |
-| `unifySceneBreaks`    | Activé    | Uniformise les séparateurs de scène en `✦ ✦ ✦`.                           |
-| `hideEmbeddedImages`  | Désactivé | Masque les images intégrées au texte (mode texte seul).                   |
-| `sansSerifFont`       | Désactivé | Force une police sans empattements sur toute la fic.                      |
-| `cleanReadingMode`    | Désactivé | Réduit la largeur du texte et masque les éléments secondaires de la page. |
-| `textAlignment`       | `left`    | Définit l'alignement du texte : gauche, justifié ou centré.               |
-| `paragraphSpacing`    | `0.5em`   | Définit l'espace supplémentaire entre les paragraphes.                    |
+| Réglage               | Description                                                               |
+| --------------------- | --------------------------------------------------------------------------|
+| `autoCleanFormatting` | Corrige les doubles espaces et les sauts de ligne mal placés.             |
+| `removeBoldExcessive` | Retire le gras lorsqu'un paragraphe entier est en gras.                   |
+| `convertSlashItalic`  | Convertit le texte entre barres obliques (`/texte/`) en italique.         |
+| `unifySceneBreaks`    | Uniformise les séparateurs de scène en `✦ ✦ ✦`.                         |
+| `hideEmbeddedImages`  | Masque les images intégrées au texte (mode texte seul).                   |
+| `sansSerifFont`       | Force une police sans empattements sur toute la fic.                      |
+| `cleanReadingMode`    | Réduit la largeur du texte et masque les éléments secondaires de la page. |
+| `textAlignment`       | Définit l'alignement du texte : gauche, justifié ou centré.               |
+| `paragraphSpacing`    | Définit l'espace supplémentaire entre les paragraphes.                    |
 
 ---
 

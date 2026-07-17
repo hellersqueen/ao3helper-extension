@@ -49,3 +49,10 @@
   /*- ⚠️ Masqué volontairement — déclenché via .click() par le bouton Import */
   display: none;
 }
+
+/*- Sélecteur de modèles de règles */
+.ao3h-ws-templates {
+  display: block;
+  margin: 6px 0;
+  max-width: 100%;
+}

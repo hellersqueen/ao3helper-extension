@@ -191,42 +191,39 @@ AO3 Helper — Activity Panel › SessionHistory sub-module
   # activityPanel
   **Tab :** Library
 ═══════════════════════════════════════════════════════════════════════════
-# À quoi ça sert
 
+# À quoi ça sert
 Le module **Activity Panel** rassemble les données de lecture récoltées par les autres modules d’AO3 Helper afin de fournir une vue d’ensemble de l’activité de lecture.
 
-Il exploite notamment les données provenant :
+* Il exploite les données provenant :
+    - de l’historique de lecture ;
+    - des kudos ;
+    - des favoris ;
+    - des sessions de lecture enregistrées.
 
-* de l’historique de lecture ;
-* des kudos ;
-* des favoris ;
-* des sessions de lecture enregistrées.
+* Les résultats sont présentés sous forme de blocs affichés sur :
+    - le profil utilisateur ;
+    - la page de statistiques ;
+    - le tableau de bord d’AO3.
 
-Les résultats sont présentés sous forme de blocs affichés sur :
-
-* le profil utilisateur ;
-* la page de statistiques ;
-* le tableau de bord d’AO3.
-
-Le module permet notamment de :
-
-* calculer les principaux totaux de lecture ;
-* suivre les séries de jours consécutifs de lecture ;
-* débloquer des accomplissements ;
-* analyser les fandoms les plus lus ;
-* analyser les heures et périodes habituelles de lecture ;
-* détecter certaines tendances de lecture ;
-* afficher un bloc récapitulatif intitulé **Your Reading Insights** ;
-* enregistrer les sessions de lecture utilisées par les autres analyses.
+* Le module permet notamment de :
+    - calculer les principaux totaux de lecture ;
+    - suivre les séries de jours consécutifs de lecture ;
+    - débloquer des accomplissements ;
+    - analyser les fandoms les plus lus ;
+    - analyser les heures et périodes habituelles de lecture ;
+    - détecter certaines tendances de lecture ;
+    - afficher un bloc récapitulatif intitulé **Your Reading Insights** ;
+    - enregistrer les sessions de lecture utilisées par les autres analyses.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage               | Défaut                       | Description                                                                                                                               |
-| --------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `showTagCloud`        | Activé, mais non fonctionnel | Prévoit l’affichage d’un nuage visuel des tags les plus lus. Le réglage existe, mais aucun nuage de tags n’est actuellement affiché.      |
-| `readingAchievements` | Activé                       | Active les badges associés aux paliers et accomplissements de lecture, notamment les paliers de 10 000, 100 000 et 1 000 000 de mots lus. |
+| Réglage               | Description                                                                                                                               |
+|-----------------------| ------------------------------------------------------------------------------------------------------------------------------------------|
+| `showTagCloud`        | Prévoit l’affichage d’un nuage visuel des tags les plus lus. Le réglage existe, mais aucun nuage de tags n’est actuellement affiché.      |
+| `readingAchievements` | Active les badges associés aux paliers et accomplissements de lecture, notamment les paliers de 10 000, 100 000 et 1 000 000 de mots lus. |
 
 Le panneau de configuration contient également une section **Behaviour Settings** proposant des options liées à :
 

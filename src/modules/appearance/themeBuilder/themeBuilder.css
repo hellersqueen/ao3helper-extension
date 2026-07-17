@@ -277,3 +277,35 @@ select.ao3h-tb-select {
 .ao3h-vb-color-row-label { font-size: .8em; }
 /* Visual Builder trigger — stacked above Typography trigger */
 .ao3h-tb-trigger--visual { bottom: 186px; }
+
+
+/*+ ─────────────────────────────────────────────────────────
+    CONTRASTE, PALETTES DALTONIENNES, STYLE D'ÉLÉMENT (INSPECTEUR)
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-vb-contrast {
+  margin: 4px 0 8px;
+  font-size: 0.85em;
+}
+
+.ao3h-vb-contrast-line { padding: 1px 0; }
+.ao3h-vb-contrast--good { color: #2e7d32; }
+.ao3h-vb-contrast--ok   { color: #6d5200; }
+.ao3h-vb-contrast--low  { color: #a94442; font-weight: bold; }
+
+.ao3h-vb-el-style {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.ao3h-vb-el-style label {
+  margin-right: 10px;
+}
+
+#ao3h-vb-el-status {
+  margin-top: 4px;
+  font-size: 0.9em;
+}

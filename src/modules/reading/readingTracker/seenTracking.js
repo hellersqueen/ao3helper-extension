@@ -17,7 +17,7 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════

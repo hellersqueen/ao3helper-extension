@@ -195,30 +195,28 @@ AO3 Helper - Chapter Navigation Module Coordinator
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Chapter Navigation** regroupe tous les outils permettant de naviguer dans une œuvre pendant la lecture ainsi que depuis les listes de fics.
 
-Il permet notamment de :
-
-- conserver une barre de navigation toujours visible pendant la lecture ;
-- naviguer rapidement entre les chapitres ;
-- reprendre une œuvre au dernier chapitre lu ;
-- accéder directement au dernier chapitre disponible ;
-- faire défiler automatiquement la page ;
-- afficher le nombre de mots de chaque chapitre.
+* Il permet notamment de :
+    - conserver une barre de navigation toujours visible pendant la lecture ;
+    - naviguer rapidement entre les chapitres ;
+    - reprendre une œuvre au dernier chapitre lu ;
+    - accéder directement au dernier chapitre disponible ;
+    - faire défiler automatiquement la page ;
+    - afficher le nombre de mots de chaque chapitre.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage | Défaut | Description |
-|----------|--------|-------------|
-| `stickyNav` | Désactivé | Garde la barre Précédent / Suivant visible pendant la lecture. |
-| `resumeButton` | Activé | Affiche un bouton **Start** ou **Continue** sur les listes de fics. |
-| `lastChapterBtn` | Activé | Affiche un bouton **Last (Ch X)** sur les listes. |
-| `autoScrollShowControls` | Activé | Affiche les contrôles du défilement automatique. |
-| `autoScrollSpeed` | `50` | Vitesse du défilement automatique (pixels/seconde). |
-| `autoScrollAutoAdvance` | Désactivé | Passe automatiquement au chapitre suivant en fin de page. |
+| Réglage                   | Description                                                           |
+|---------------------------|-----------------------------------------------------------------------|
+| `stickyNav`               | Garde la barre Précédent / Suivant visible pendant la lecture.        |
+| `resumeButton`            | Affiche un bouton **Start** ou **Continue** sur les listes de fics.   |
+| `lastChapterBtn`          | Affiche un bouton **Last (Ch X)** sur les listes.                     |
+| `autoScrollShowControls`  | Affiche les contrôles du défilement automatique.                      |
+| `autoScrollSpeed`         | Vitesse du défilement automatique (pixels/seconde).                   |
+| `autoScrollAutoAdvance`   | Passe automatiquement au chapitre suivant en fin de page.             |
 
 ---
 

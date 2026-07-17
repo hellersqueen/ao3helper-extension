@@ -14,6 +14,7 @@ import { chromium } from 'playwright';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { existsSync } from 'node:fs';
+import { startBundleServer } from './bundle-server.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '../..');
@@ -37,6 +38,7 @@ async function main() {
     process.exit(1);
   }
 
+  const bundles = await startBundleServer();
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
@@ -44,6 +46,7 @@ async function main() {
   page.on('pageerror', (err) => consoleErrors.push(String(err)));
 
   await page.addInitScript({ path: gmShim });
+  await page.addInitScript({ content: `window.__AO3H_ASSET_BASE__ = ${JSON.stringify(bundles.baseURL)};` });
   await page.addInitScript({ path: distScript });
 
   console.log('Chargement de la page mock (bookmarks.html) avec AO3 Helper injecté...');
@@ -70,9 +73,52 @@ async function main() {
     const toggle = roots.first().locator('.ao3h-navlink');
     check('le menu contient son bouton de bascule (.ao3h-navlink)', await toggle.count() > 0);
 
+    check(
+      'le panneau lourd n’est pas créé avant une interaction utilisateur',
+      await page.locator('.ao3h-panel-backdrop').count() === 0,
+    );
+    check(
+      'le bundle du panneau n’est pas téléchargé avant une interaction utilisateur',
+      !bundles.requests.includes('ao3-helper.panel.js'),
+    );
+
     await toggle.click({ force: true }).catch(() => {});
     const isOpen = await roots.first().evaluate((el) => el.classList.contains('open')).catch(() => false);
     check('cliquer sur le bouton ouvre le menu (classe "open")', isOpen);
+
+    const settingsButton = roots.first().locator('.ao3h-icon-btn[data-module-name]').first();
+    await settingsButton.waitFor({ state: 'attached', timeout: 10000 }).catch(() => {});
+    // The fixture keeps AO3's dropdown visually hidden; dispatch through the
+    // real DOM element so the menu's delegated click handler still runs.
+    await settingsButton.evaluate((button) => button.click()).catch(() => {});
+    await page.locator('.ao3h-panel-backdrop').waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
+    check(
+      'le premier clic sur un réglage charge et affiche le panneau',
+      await page.locator('.ao3h-panel-backdrop').count() === 1,
+    );
+    check(
+      'le premier clic télécharge le bundle physique du panneau',
+      bundles.requests.includes('ao3-helper.panel.js'),
+    );
+
+    await page.waitForFunction(() => !!window.AO3H?.moduleLoader, null, { timeout: 10000 }).catch(() => {});
+    const routeModules = await page.evaluate(
+      () => window.AO3H?.moduleImplementations?.routeModules || [],
+    ).catch(() => []);
+    check(
+      'la route bookmarks charge seulement ses quatre modules activés par défaut',
+      ['hideByTags', 'skipWorks', 'seriesHelper', 'visualPreferences'].every((name) => routeModules.includes(name)) && routeModules.length === 4,
+    );
+    const filterWasDeferred = await page.evaluate(
+      () => window.AO3H?.moduleImplementations?.isLoaded?.('filterManager') === false,
+    ).catch(() => false);
+    check('un module désactivé compatible reste différé au démarrage', filterWasDeferred);
+
+    await page.evaluate(() => window.AO3H?.modules?.setEnabled?.('filterManager', true)).catch(() => {});
+    const filterLoadedOnDemand = await page.evaluate(
+      () => window.AO3H?.moduleImplementations?.isLoaded?.('filterManager') === true,
+    ).catch(() => false);
+    check('activer ce module charge son implémentation à la demande', filterLoadedOnDemand);
   }
 
   check('aucune exception JS non interceptée pendant le chargement', consoleErrors.length === 0);
@@ -81,6 +127,7 @@ async function main() {
   }
 
   await browser.close();
+  await bundles.close();
 
   if (failures > 0) {
     console.error(`\n${failures} vérification(s) échouée(s).`);

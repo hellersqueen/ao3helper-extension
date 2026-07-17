@@ -13,15 +13,27 @@ interpréter le nombre de mots brut.
 | Réglage | Par défaut | Ce que ça fait |
 |---|---|---|
 | `showPageEquiv` | désactivé | Affiche "~X pages" à côté du nombre de mots |
+| `wordsPerPage` | `275` | Combien de mots comptent pour une page |
+| `pageFormat` | `compact` | Format d'affichage des pages : "~123 pg" ou "~123 pages" |
 | `readSpeed` | `average` | La vitesse de lecture : lent (150 mots/min), moyen (250), rapide (400), ou personnalisé |
 | `customWPM` | `250` | Le nombre de mots par minute utilisé si la vitesse est réglée sur "personnalisé" |
 | `showEstimate` | activé | Interrupteur principal pour l'estimation du temps de lecture |
 | `estimateFicPage` | activé | Affiche le temps de lecture sur la page de la fic |
 | `estimatePerChapter` | activé | Affiche le temps de lecture par chapitre |
 | `estimateListings` | désactivé | Affiche le temps de lecture sur les listes |
-| `showLengthCategory` | activé | Affiche la catégorie de longueur (Short story/Novella/Novel) |
+| `showRemainingTime` | activé | Affiche "⏳ ~Xh left" sur les pages de chapitre (temps restant estimé) |
+| `showOneSitting` | désactivé | Marque "🛋 One sitting" les fics lisibles d'une traite |
+| `oneSittingMinutes` | `60` | Le seuil (minutes) pour le badge "une seule traite" |
+| `finishByTime` | (vide) | Heure cible "HH:MM" — badge ✅/🤏/⏰ "finissable avant cette heure" |
+| `showLengthCategory` | activé | Affiche la catégorie de longueur (Flash/Short story/Novella/Novel/Epic) |
+| `thresholdFlash` | `1000` | Seuil "Flash Fiction" |
 | `thresholdShort` | `17500` | Le nombre de mots en dessous duquel une fic est une "Short story" |
-| `thresholdNovella` | `60000` | Le nombre de mots en dessous duquel une fic est une "Novella" (au-delà, c'est un "Novel") |
+| `thresholdNovella` | `60000` | Le nombre de mots en dessous duquel une fic est une "Novella" |
+| `thresholdEpic` | `150000` | Au-delà, c'est un "Epic Novel" |
+| `showAvgChapterLength` | désactivé | Affiche "📊 ~X w/ch" (longueur moyenne d'un chapitre) sur la page de la fic |
+| `showSeriesTotal` | activé | Affiche le total de mots d'une série en haut de sa page |
+| `lengthGradient` | désactivé | Teinte les compteurs de mots des listes selon la longueur relative |
+| `customBooks` | (vide) | Tes propres livres de comparaison, un par ligne : "Titre: 50000" |
 
 ## Fichiers
 
@@ -31,16 +43,26 @@ interpréter le nombre de mots brut.
 
 ### 2. `lengthDisplay.js` — badges de longueur
 
-- Affiche un badge de catégorie (⚡ Short story / 📄 Novella / 📖 Novel) selon le nombre de mots, avec des seuils réglables
-- Compare le nombre de mots à un livre connu parmi une liste de 18 références (Harry Potter, 1984, Le Seigneur des Anneaux...)
-- Peut aussi afficher une estimation du nombre de pages
+- Affiche un badge de catégorie (🔥 Flash / ⚡ Short story / 📄 Novella / 📖 Novel / 📚 Epic) selon le nombre de mots, avec des seuils réglables
+- Compare le nombre de mots à un livre connu parmi 18 références (Harry Potter, 1984, Le Seigneur des Anneaux...), plus tes propres livres ajoutés dans le panneau
+- Peut aussi afficher une estimation du nombre de pages (mots/page et format réglables)
+- Peut afficher la longueur moyenne d'un chapitre sur la page d'une fic multi-chapitres
+- Sur une page de série, affiche le total de mots de toute la série
+- Peut teinter les compteurs de mots des listes (plus la fic est longue par rapport aux autres de la page, plus la teinte est marquée)
 
 ### 3. `readingTime.js` — temps de lecture estimé
 
 - Calcule un temps de lecture selon une vitesse choisie (lent, moyen, rapide, ou personnalisé)
 - Peut l'afficher sur la page de la fic, par chapitre, et/ou sur les listes
+- Peut marquer "🛋 One sitting" les fics lisibles d'une traite (seuil réglable)
+- Sur une page de chapitre, estime le temps restant avant la fin de la fic ("⏳ ~2h left")
+- Peut dire si la fic est finissable avant une heure cible ("⏰ by 23:00" : ✅ / 🤏 / ⏰)
 
-### 4. `workLength.css`
+### 4. `lengthMath.js` — calculs extraits
+
+- Les calculs purs derrière les badges : progression de chapitres, moyenne par chapitre, mots restants, verdict "finissable avant l'heure", teinte du dégradé, parsing des livres personnalisés, format des pages
+
+### 5. `workLength.css`
 
 - Les styles visuels des badges et indicateurs de temps
 
@@ -49,36 +71,56 @@ interpréter le nombre de mots brut.
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Filtrer les fics selon "je peux la finir en une seule fois"
-- Indiquer la longueur moyenne d'un chapitre
-- Additionner le nombre de mots total d'une série entière
-- Calculer automatiquement ta propre vitesse de lecture selon ton historique
-- Adapter l'estimation de pages selon l'appareil (téléphone, tablette, ordinateur)
-- Adapter l'estimation selon le genre ou le style d'écriture
-- Choisir soi-même combien de mots il y a par page — en ce moment c'est toujours fixé à 275
-- Un aperçu façon "impression papier"
-- Différents formats d'affichage pour les pages — en ce moment il n'y a qu'un seul format
-- Un mode "marathon de lecture" qui garde le temps total passé à lire plusieurs fics d'affilée
-- Un indicateur du temps qu'il reste avant de finir une fic en cours
-- Un chronomètre de session de lecture
-- Des suggestions de pauses pendant la lecture
-- Suivre l'évolution de ta vitesse de lecture au fil du temps
-- Comparer à des livres choisis par soi-même, pas juste les 18 déjà prévus
-- Se connecter à un site externe pour les infos de longueur, plutôt que la petite liste déjà intégrée
-- Un calcul pour savoir si on a le temps de finir une fic avant une heure précise (par exemple avant de se coucher), avec un badge du genre "tu peux finir !", "peut-être" ou "trop long"
+- ~~Filtrer les fics selon "je peux la finir en une seule fois"~~ ✅
+  Fait (sous forme de repère plutôt que de filtre) : badge "🛋 One sitting"
+  sur les fics dont le temps de lecture tient dans un seuil réglable
+  (`showOneSitting` + `oneSittingMinutes`, 60 min par défaut). Le masquage
+  des autres fics relève des filtres (`filterManager`), pas de ce module.
+- ~~Indiquer la longueur moyenne d'un chapitre~~ ✅
+  Fait : badge "📊 ~X w/ch" sur la page d'une fic multi-chapitres
+  (`showAvgChapterLength`).
+- ~~Additionner le nombre de mots total d'une série entière~~ ✅
+  Fait : bandeau "Σ X words across N works" en haut des pages de série
+  (`showSeriesTotal`), avec équivalent en pages si activé.
+- ~~Choisir soi-même combien de mots il y a par page — en ce moment c'est toujours fixé à 275~~ ✅
+  Fait : réglage `wordsPerPage` (275 par défaut).
+- ~~Différents formats d'affichage pour les pages — en ce moment il n'y a qu'un seul format~~ ✅
+  Fait : réglage `pageFormat` — compact ("~123 pg") ou complet ("~123 pages").
+- ~~Un indicateur du temps qu'il reste avant de finir une fic en cours~~ ✅
+  Fait : badge "⏳ ~Xh left" sur les pages de chapitre, estimé d'après les
+  chapitres restants (`showRemainingTime`).
+- ~~Comparer à des livres choisis par soi-même, pas juste les 18 déjà prévus~~ ✅
+  Fait : champ `customBooks` dans le panneau (un livre par ligne,
+  "Titre: 50000"), fusionné avec la liste intégrée pour la comparaison.
+- ~~Un calcul pour savoir si on a le temps de finir une fic avant une heure précise (par exemple avant de se coucher), avec un badge du genre "tu peux finir !", "peut-être" ou "trop long"~~ ✅
+  Fait : réglage `finishByTime` ("HH:MM") — badge ✅ "you can finish it" /
+  🤏 "it will be tight" (jusqu'à 20 % de dépassement) / ⏰ "too long", basé
+  sur le temps restant si on est en cours de fic.
 - ~~Plus de catégories de longueur (par exemple "Flash Fiction" pour les
   toutes petites ou "Epic Novel" pour les très longues), au lieu des 3
   catégories actuelles~~ ✅ Fait : 5 catégories désormais (Flash Fiction ≤
   1 000 mots, Short story, Novella, Novel, Epic Novel > 150 000 mots), tous
   les seuils réglables dans le panneau.
-- Un dégradé de couleur sur les listes pour repérer d'un coup d'œil les fics plus longues ou plus courtes que les autres
-- Filtrer directement les résultats selon une fourchette de nombre de mots (mini et maxi) — l'idée existe déjà, mais côté filtres (`filterManager`), pas dans ce module-ci
+- ~~Un dégradé de couleur sur les listes pour repérer d'un coup d'œil les fics plus longues ou plus courtes que les autres~~ ✅
+  Fait : réglage `lengthGradient` — le compteur de mots de chaque fic est
+  teinté proportionnellement à sa longueur par rapport aux autres fics de la
+  page (teinte neutre, sans connotation bien/mal).
 
 ## Explicitement écarté
 
 - Recevoir une recommandation sur la longueur "idéale" d'une fic — pour rester neutre
 - Donner à chaque fic une note de qualité globale (genre A/B/C/D) calculée automatiquement à partir des kudos, des favoris et des commentaires — écarté, jugé trop subjectif
 - Comparer deux ou trois fics côte à côte (mots, chapitres, kudos, vues, tags communs et différents) — écarté par manque d'intérêt de la part des utilisateurs
+- Calculer automatiquement ta propre vitesse de lecture selon ton historique — écarté : mesurer une vraie vitesse exigerait de suivre le temps de lecture actif (le temps de page ouverte surestime énormément) ; résultat peu fiable, le réglage `customWPM` couvre le besoin
+- Adapter l'estimation de pages selon l'appareil (téléphone, tablette, ordinateur) — écarté : c'est exactement ce que permet le réglage `wordsPerPage`, sans détection d'appareil fragile
+- Adapter l'estimation selon le genre ou le style d'écriture — écarté : aucun signal fiable du "style" dans les métadonnées AO3, résultat arbitraire
+- Un aperçu façon "impression papier" — écarté : hors du périmètre d'un module de statistiques ; le téléchargement PDF (`ficDownloader`) donne déjà une version imprimable
+- Un mode "marathon de lecture" (temps total passé à lire plusieurs fics d'affilée) — écarté : le suivi de sessions de lecture est le rôle de `readingTracker`, pas d'un module d'affichage de longueur
+- Un chronomètre de session de lecture — écarté : même raison (rôle de `readingTracker`)
+- Des suggestions de pauses pendant la lecture — écarté : intrusif et subjectif, hors périmètre
+- Suivre l'évolution de ta vitesse de lecture au fil du temps — écarté : dépend de la mesure automatique de vitesse, elle-même écartée comme peu fiable
+- Se connecter à un site externe pour les infos de longueur — écarté : dépendance réseau externe (vie privée + fragilité) pour un gain marginal, la liste locale + les livres personnalisés suffisent
+- Filtrer directement les résultats selon une fourchette de nombre de mots (mini et maxi) — écarté ici : c'est le rôle du module de filtres (`filterManager`), où l'idée est déjà répertoriée
 
 ## Précision
 
@@ -146,33 +188,31 @@ AO3 Helper - Reading Time Submodule
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Work Length** ajoute plusieurs indicateurs permettant d'estimer rapidement l'ampleur d'une œuvre sans devoir interpréter uniquement son nombre de mots.
 
-Il permet notamment de :
-
-- afficher une catégorie de longueur (Short Story, Novella ou Novel) ;
-- comparer la longueur d'une œuvre à des livres connus ;
-- afficher une estimation du nombre de pages ;
-- calculer un temps de lecture estimé ;
-- afficher ce temps sur la page d'une œuvre, par chapitre et/ou dans les listes.
+* Il permet notamment de :
+    - afficher une catégorie de longueur (Short Story, Novella ou Novel) ;
+    - comparer la longueur d'une œuvre à des livres connus ;
+    - afficher une estimation du nombre de pages ;
+    - calculer un temps de lecture estimé ;
+    - afficher ce temps sur la page d'une œuvre, par chapitre et/ou dans les listes.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage | Défaut | Description |
-|----------|--------|-------------|
-| `showPageEquiv` | Désactivé | Affiche une estimation du nombre de pages. |
-| `readSpeed` | `average` | Vitesse de lecture utilisée pour les estimations (`slow`, `average`, `fast` ou `custom`). |
-| `customWPM` | `250` | Nombre de mots par minute utilisé lorsque `readSpeed` vaut `custom`. |
-| `showEstimate` | Activé | Active l'ensemble des estimations de temps de lecture. |
-| `estimateFicPage` | Activé | Affiche le temps estimé sur la page de la fic. |
-| `estimatePerChapter` | Activé | Affiche un temps estimé pour chaque chapitre. |
-| `estimateListings` | Désactivé | Affiche les estimations directement dans les listes de fics. |
-| `showLengthCategory` | Activé | Affiche la catégorie de longueur de la fic. |
-| `thresholdShort` | `17500` | Nombre maximal de mots pour la catégorie **Short Story**. |
-| `thresholdNovella` | `60000` | Nombre maximal de mots pour la catégorie **Novella** (au-delà : **Novel**). |
+| Réglage               | Description                                                                               |
+|-----------------------|-------------------------------------------------------------------------------------------|
+| `showPageEquiv`       | Affiche une estimation du nombre de pages.                                                |
+| `readSpeed`           | Vitesse de lecture utilisée pour les estimations (`slow`, `average`, `fast` ou `custom`). |
+| `customWPM`           | Nombre de mots par minute utilisé lorsque `readSpeed` vaut `custom`.                      |
+| `showEstimate`        | Active l'ensemble des estimations de temps de lecture.                                    |
+| `estimateFicPage`     | Affiche le temps estimé sur la page de la fic.                                            |
+| `estimatePerChapter`  | Affiche un temps estimé pour chaque chapitre.                                             |
+| `estimateListings`    | Affiche les estimations directement dans les listes de fics.                              |
+| `showLengthCategory`  | Affiche la catégorie de longueur de la fic.                                               |
+| `thresholdShort`      | Nombre maximal de mots pour la catégorie **Short Story**.                                 |
+| `thresholdNovella`    | Nombre maximal de mots pour la catégorie **Novella** (au-delà : **Novel**).               |
 
 ---
 
@@ -455,69 +495,92 @@ Les fonctionnalités ci-dessous sont prévues dans la conception du module ou do
 
 ## Estimation de longueur
 
-### Filtre "Je peux la finir"
+### ~~Filtre "Je peux la finir"~~ ✅ Fait (en badge)
 
-Permettre de filtrer les œuvres selon qu'elles peuvent être lues en une seule session.
+~~Permettre de filtrer les œuvres selon qu'elles peuvent être lues en une seule session.~~
 
----
-
-### Longueur moyenne des chapitres
-
-Calculer automatiquement la longueur moyenne des chapitres d'une œuvre.
+> Badge "🛋 One sitting" quand le temps de lecture tient dans le seuil
+> réglable (`oneSittingMinutes`). Le filtrage par masquage reste du ressort
+> de Filter Manager.
 
 ---
 
-### Longueur des séries
+### ~~Longueur moyenne des chapitres~~ ✅ Fait
 
-Calculer le nombre total de mots d'une série complète.
+~~Calculer automatiquement la longueur moyenne des chapitres d'une œuvre.~~
 
----
-
-### Nombre de pages personnalisable
-
-Permettre à l'utilisateur de choisir combien de mots correspondent à une page.
-
-La valeur est actuellement fixée à **275 mots par page**.
+> Badge "📊 ~X w/ch" sur la page des fics multi-chapitres
+> (`showAvgChapterLength`).
 
 ---
 
-### Estimation adaptée à l'appareil
+### ~~Longueur des séries~~ ✅ Fait
 
-Adapter automatiquement le calcul du nombre de pages selon le type d'appareil utilisé :
+~~Calculer le nombre total de mots d'une série complète.~~
 
-- téléphone ;
-- tablette ;
-- ordinateur.
-
----
-
-### Estimation adaptée au style
-
-Adapter les estimations selon le genre ou le style d'écriture de l'œuvre.
+> Bandeau "Σ X words across N works" en haut des pages de série
+> (`showSeriesTotal`).
 
 ---
 
-### Aperçu papier
+### ~~Nombre de pages personnalisable~~ ✅ Fait
 
-Afficher une prévisualisation simulant la mise en page d'un livre imprimé.
+~~Permettre à l'utilisateur de choisir combien de mots correspondent à une page.~~
 
----
-
-### Formats d'affichage
-
-Proposer plusieurs styles d'affichage pour l'estimation du nombre de pages.
+> Réglage `wordsPerPage` (275 par défaut, 50–1000).
 
 ---
 
-### Comparaisons personnalisées
+### ~~Estimation adaptée à l'appareil~~ ❌ Écarté
 
-Permettre à l'utilisateur de comparer les œuvres avec ses propres livres de référence plutôt qu'avec la bibliothèque intégrée.
+~~Adapter automatiquement le calcul du nombre de pages selon le type d'appareil.~~
+
+> Écarté : `wordsPerPage` couvre exactement ce besoin, sans détection
+> d'appareil fragile ni comportement qui change tout seul.
 
 ---
 
-### Source externe
+### ~~Estimation adaptée au style~~ ❌ Écarté
 
-Récupérer automatiquement les informations de comparaison depuis un service externe au lieu d'utiliser uniquement la liste intégrée.
+~~Adapter les estimations selon le genre ou le style d'écriture de l'œuvre.~~
+
+> Écarté : aucun signal fiable du "style" dans les métadonnées AO3 — le
+> résultat serait arbitraire.
+
+---
+
+### ~~Aperçu papier~~ ❌ Écarté
+
+~~Afficher une prévisualisation simulant la mise en page d'un livre imprimé.~~
+
+> Écarté : hors du périmètre d'un module de statistiques ; le
+> téléchargement PDF (`ficDownloader`) fournit déjà une version imprimable.
+
+---
+
+### ~~Formats d'affichage~~ ✅ Fait
+
+~~Proposer plusieurs styles d'affichage pour l'estimation du nombre de pages.~~
+
+> Réglage `pageFormat` : compact ("~123 pg") ou complet ("~123 pages").
+
+---
+
+### ~~Comparaisons personnalisées~~ ✅ Fait
+
+~~Permettre à l'utilisateur de comparer les œuvres avec ses propres livres de référence.~~
+
+> Champ `customBooks` du panneau (un livre par ligne, "Titre: 50000"),
+> fusionné avec les 18 références intégrées.
+
+---
+
+### ~~Source externe~~ ❌ Écarté
+
+~~Récupérer automatiquement les informations de comparaison depuis un service externe.~~
+
+> Écarté : dépendance réseau externe (vie privée + fragilité) pour un gain
+> marginal — la liste locale plus les livres personnalisés suffisent.
 
 ---
 
@@ -533,69 +596,91 @@ Récupérer automatiquement les informations de comparaison depuis un service ex
 
 ---
 
-### Dégradé visuel
+### ~~Dégradé visuel~~ ✅ Fait
 
-Afficher un dégradé de couleurs permettant d'identifier rapidement les œuvres les plus courtes ou les plus longues dans les listes.
+~~Afficher un dégradé de couleurs permettant d'identifier rapidement les œuvres les plus courtes ou les plus longues dans les listes.~~
+
+> Réglage `lengthGradient` : teinte proportionnelle à la longueur relative
+> sur la page (teinte unique neutre, intensité croissante — pas de code
+> couleur bien/mal).
 
 ---
 
 ## Temps de lecture
 
-### Vitesse de lecture automatique
+### ~~Vitesse de lecture automatique~~ ❌ Écarté
 
-Calculer automatiquement la vitesse de lecture réelle de l'utilisateur à partir de son historique.
+~~Calculer automatiquement la vitesse de lecture réelle de l'utilisateur à partir de son historique.~~
 
----
-
-### Temps restant
-
-Afficher le temps restant avant la fin de la lecture d'une œuvre en cours.
+> Écarté : mesurer une vitesse réelle exigerait de suivre le temps de
+> lecture actif (le temps de page ouverte surestime énormément). Résultat
+> peu fiable — `customWPM` couvre le besoin.
 
 ---
 
-### Marathon de lecture
+### ~~Temps restant~~ ✅ Fait
 
-Conserver le temps total passé à lire plusieurs œuvres successivement.
+~~Afficher le temps restant avant la fin de la lecture d'une œuvre en cours.~~
 
----
-
-### Chronomètre
-
-Ajouter un chronomètre de session de lecture.
+> Badge "⏳ ~Xh left" sur les pages de chapitre, estimé au prorata des
+> chapitres restants (`showRemainingTime`).
 
 ---
 
-### Suggestions de pauses
+### ~~Marathon de lecture~~ ❌ Écarté
 
-Proposer automatiquement des pauses pendant les longues sessions de lecture.
+~~Conserver le temps total passé à lire plusieurs œuvres successivement.~~
 
----
-
-### Historique de vitesse
-
-Suivre l'évolution de la vitesse de lecture de l'utilisateur au fil du temps.
+> Écarté : le suivi de sessions de lecture est le rôle de `readingTracker` ;
+> dupliquer ce suivi ici créerait deux vérités concurrentes.
 
 ---
 
-### "Puis-je finir cette fic ?"
+### ~~Chronomètre~~ ❌ Écarté
 
-Calculer automatiquement si une œuvre peut être terminée avant une heure donnée.
+~~Ajouter un chronomètre de session de lecture.~~
 
-Exemple :
+> Écarté : même raison — rôle de `readingTracker`.
 
-- ✅ Tu peux finir
-- 🟡 Peut-être
-- ❌ Trop long
+---
+
+### ~~Suggestions de pauses~~ ❌ Écarté
+
+~~Proposer automatiquement des pauses pendant les longues sessions de lecture.~~
+
+> Écarté : intrusif et subjectif, hors du périmètre d'un module
+> d'affichage de statistiques.
+
+---
+
+### ~~Historique de vitesse~~ ❌ Écarté
+
+~~Suivre l'évolution de la vitesse de lecture de l'utilisateur au fil du temps.~~
+
+> Écarté : dépend de la mesure automatique de vitesse, elle-même écartée
+> comme peu fiable.
+
+---
+
+### ~~"Puis-je finir cette fic ?"~~ ✅ Fait
+
+~~Calculer automatiquement si une œuvre peut être terminée avant une heure donnée.~~
+
+> Réglage `finishByTime` ("HH:MM") : badge ✅ "you can finish it" /
+> 🤏 "it will be tight" (jusqu'à 20 % de dépassement) / ⏰ "too long",
+> calculé sur le temps restant quand on est en cours de fic. Une heure déjà
+> passée vise le lendemain.
 
 ---
 
 ## Intégration avec les filtres
 
-### Filtre par longueur
+### ~~Filtre par longueur~~ ❌ Écarté (hors périmètre)
 
-Filtrer directement les œuvres selon une plage de nombre de mots.
+~~Filtrer directement les œuvres selon une plage de nombre de mots.~~
 
-Cette idée existe déjà dans le module **Filter Manager** et ne fait donc pas partie des responsabilités de **Work Length**.
+> Cette idée existe déjà dans le module **Filter Manager** et ne fait donc
+> pas partie des responsabilités de **Work Length**.
 
 ---
 

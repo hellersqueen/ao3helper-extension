@@ -1071,3 +1071,91 @@
 .ao3h-offline-read-btn:hover {
   filter: brightness(0.85);
 }
+
+
+/*+ ─────────────────────────────────────────────────────────
+    AVERTISSEMENT STOCKAGE HORS-LIGNE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-offline-storage-warn {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 480px;
+  padding: 10px 14px;
+  background: #8a6d1a;
+  color: #fff;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-fdl-radius);
+
+  font-size: 0.85em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/*- Bouton de fermeture de l'avertissement */
+.ao3h-offline-storage-warn-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1em;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+
+/*+ ─────────────────────────────────────────────────────────
+    BIBLIOTHÈQUE HORS-LIGNE (SECTION DU PANNEAU)
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-dl-offline-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+
+.ao3h-dl-offline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee;
+  font-size: 12px;
+}
+
+.ao3h-dl-offline-row:last-child { border-bottom: none; }
+
+.ao3h-dl-offline-row-info {
+  color: var(--ao3h-bs-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ao3h-dl-offline-row-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ao3h-dl-offline-empty {
+  padding: 10px;
+  text-align: center;
+  color: var(--ao3h-bs-text-muted);
+  font-size: 12px;
+}
+
+/*- Total de la bibliothèque proche de la limite de stockage */
+.ao3h-dl-offline-total--warn {
+  color: #a94442;
+  font-weight: bold;
+}

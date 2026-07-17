@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { countHiddenBlurbs, renderHiddenCounter } from './hiddenCounter.js';
 
 const NS = 'ao3h';
@@ -95,5 +95,29 @@ describe('renderHiddenCounter', () => {
     const second = renderHiddenCounter({ doc: document, NS, count: 2, enabled: true, el: first });
     expect(second).not.toBe(null);
     expect(second.isConnected).toBe(true);
+  });
+});
+
+describe('renderHiddenCounter — bouton "↻ Re-scan"', () => {
+  it('ajoute le bouton quand onRescan est fourni et le déclenche au clic', () => {
+    const onRescan = vi.fn();
+    const el = renderHiddenCounter({ doc: document, NS, count: 3, enabled: true, el: null, onRescan });
+    const btn = el.querySelector(`.${NS}-hbt-rescan`);
+    expect(btn).not.toBeNull();
+    btn.click();
+    expect(onRescan).toHaveBeenCalledTimes(1);
+  });
+
+  it('ne duplique pas le bouton lors des mises à jour successives', () => {
+    const onRescan = vi.fn();
+    let el = renderHiddenCounter({ doc: document, NS, count: 3, enabled: true, el: null, onRescan });
+    el = renderHiddenCounter({ doc: document, NS, count: 5, enabled: true, el, onRescan });
+    expect(el.querySelectorAll(`.${NS}-hbt-rescan`).length).toBe(1);
+    expect(el.textContent).toContain('5 works hidden');
+  });
+
+  it('pas de bouton sans onRescan', () => {
+    const el = renderHiddenCounter({ doc: document, NS, count: 2, enabled: true, el: null });
+    expect(el.querySelector(`.${NS}-hbt-rescan`)).toBeNull();
   });
 });

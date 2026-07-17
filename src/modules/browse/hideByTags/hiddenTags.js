@@ -145,13 +145,35 @@ export class HiddenTags {
     this._lsSet(LS_KEY_COLLAPSED, [...set]);
   }
 
-  /** Returns the canonical forms of hidden tags found in `scope`. */
-  reasonsFor (scope, hiddenSet) {
+  /**
+   * Returns the hidden entries matched by the tags found in `scope`.
+   * - matchMode 'exact' (default): a blurb tag must equal the entry.
+   * - matchMode 'contains': a blurb tag only has to contain the entry.
+   * - entries with " + " are AND-combos: every part must match a blurb tag
+   *   (e.g. "harry potter + time travel" hides only works carrying both).
+   */
+  reasonsFor (scope, hiddenSet, { matchMode = 'exact' } = {}) {
     if (!(hiddenSet instanceof Set)) return [];
-    const canon = Array.from(scope.querySelectorAll('a.tag'))
+    const blurbTags = Array.from(scope.querySelectorAll('a.tag'))
       .map(a => this.canonicalFromAnchor(a))
       .filter(Boolean);
-    return canon.filter(t => hiddenSet.has(t));
+    if (!blurbTags.length) return [];
+    const tagSet = new Set(blurbTags);
+
+    const matchOne = (entry) => matchMode === 'contains'
+      ? blurbTags.some(t => t.includes(entry))
+      : tagSet.has(entry);
+
+    const reasons = [];
+    for (const entry of hiddenSet) {
+      if (entry.includes(' + ')) {
+        const parts = entry.split(' + ').map(s => s.trim()).filter(Boolean);
+        if (parts.length && parts.every(matchOne)) reasons.push(entry);
+      } else if (matchOne(entry)) {
+        reasons.push(entry);
+      }
+    }
+    return reasons;
   }
 
 
@@ -183,7 +205,7 @@ export class HiddenTags {
         if (canon) {
           const ico = document.createElement('span');
           ico.className  = `${NS}-hide-ico`;
-          ico.title      = 'Hide this tag from results';
+          ico.title      = 'Hide this tag from results (Shift+click: hide only for today)';
           ico.setAttribute('role', 'button');
           ico.setAttribute('aria-label', `Hide tag "${canon}"`);
           ico.dataset.tag = canon;
@@ -568,9 +590,9 @@ export class HiddenTags {
 
   /**
    * Attach click-delegate handlers for the inline hide icons and alt+click on tags.
-   * @param {{ onTagHidden: Function, toast: Function }} callbacks
+   * @param {{ onTagHidden: Function, onTempHide?: Function, toast: Function }} callbacks
    */
-  attachDelegates ({ onTagHidden, toast }) {
+  attachDelegates ({ onTagHidden, onTempHide, toast }) {
     if (this._delegatesAttached) return;
     this._delegatesAttached = true;
     this._delegateController = new AbortController();
@@ -582,6 +604,11 @@ export class HiddenTags {
       e.preventDefault(); e.stopPropagation();
       const canon = (ico.dataset.tag || '').trim();
       if (!canon) return;
+      // Shift+click: hide only until the end of the day (no blacklist entry)
+      if (e.shiftKey && typeof onTempHide === 'function') {
+        await onTempHide(canon);
+        return;
+      }
       await this.addHiddenTag(canon);
       await onTagHidden();
       toast(`Hidden: ${canon}`);

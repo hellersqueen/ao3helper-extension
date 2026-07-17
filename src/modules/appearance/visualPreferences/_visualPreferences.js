@@ -35,10 +35,6 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 
 import styles from './visualPreferences.css?inline';
-import statsHidingStyles from './styles/stats-hiding.css?inline';
-import headerCleanupStyles from './styles/header-cleanup.css?inline';
-import datesHidingStyles from './styles/dates-hiding.css?inline';
-import chaptersListCleanupStyles from './styles/chapters-list-cleanup.css?inline';
 
 import { StatsVisibility } from './statsVisibility.js';
 import { DatesTimestamps } from './datesTimestamps.js';
@@ -47,6 +43,10 @@ import { StatsDisplayFormat } from './statsDisplayFormat.js';
 import { HoverReveal } from './hoverReveal.js';
 import { VisibilityPresets } from './visibilityPresets.js';
 import { StatsOnChaptersList } from './statsOnChaptersList.js';
+import { LayoutDensity } from './layoutDensity.js';
+import { BlurbSectionOrder, DEFAULT_ORDER as DEFAULT_BLURB_ORDER } from './blurbSectionOrder.js';
+import { GridView } from './gridView.js';
+import { WordOccurrenceCounter } from './wordOccurrenceCounter.js';
 
 
 
@@ -54,12 +54,8 @@ import { StatsOnChaptersList } from './statsOnChaptersList.js';
    MODULE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
-// Same order as the legacy CSS bundle had (bundler supprimé en Phase 27)
+// All visual-preference rules now live in one stylesheet.
 css(styles, 'ao3h-visualPreferences');
-css(statsHidingStyles, 'ao3h-visualPreferences-stats-hiding');
-css(headerCleanupStyles, 'ao3h-visualPreferences-header-cleanup');
-css(datesHidingStyles, 'ao3h-visualPreferences-dates-hiding');
-css(chaptersListCleanupStyles, 'ao3h-visualPreferences-chapters-list-cleanup');
 
 const W    = getGlobalWindow();
 const NS   = (AO3H.env && AO3H.env.NS) || 'ao3h';
@@ -80,6 +76,11 @@ const DEFAULTS = {
   statsAsIcons:            false,
   statsIconsMode:          'icons',
   relativeDates:           false,
+  dateAgeColoring:         false,
+  layoutDensity:           'comfortable', // 'compact' | 'comfortable' | 'spacious'
+  blurbSectionOrder:       DEFAULT_BLURB_ORDER.join(','),
+  gridView:                false,
+  wordOccurrenceCounter:   false,
 };
 
 
@@ -118,6 +119,10 @@ class VisualPreferences {
       hoverReveal:          new HoverReveal(),
       visibilityPresets:    new VisibilityPresets(),
       statsOnChaptersList:  new StatsOnChaptersList(),
+      layoutDensity:        new LayoutDensity(),
+      blurbSectionOrder:    new BlurbSectionOrder(),
+      gridView:             new GridView(),
+      wordOccurrenceCounter: new WordOccurrenceCounter(),
     };
   }
 
@@ -206,6 +211,12 @@ class VisualPreferences {
     this.components.statsDisplayFormat.apply(state);
     this.components.hoverReveal.apply(state);
     this.components.statsOnChaptersList.apply(state.hideStatsOnChaptersList);
+    this.components.layoutDensity.apply(state.layoutDensity);
+    this.components.blurbSectionOrder.apply(
+      String(state.blurbSectionOrder || DEFAULT_BLURB_ORDER.join(',')).split(',').map(s => s.trim()).filter(Boolean)
+    );
+    this.components.gridView.apply(state.gridView);
+    this.components.wordOccurrenceCounter.apply(state.wordOccurrenceCounter);
   }
 
   setup() {

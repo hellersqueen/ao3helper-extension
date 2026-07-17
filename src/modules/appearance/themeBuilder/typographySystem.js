@@ -75,7 +75,8 @@ function buildCSS (config) {
   `;
 }
 
-function applyTypography (config) {
+// Écrit le style sans persister — utilisé par l'aperçu en direct des curseurs
+function previewTypography (config) {
   let el = document.getElementById(STYLE_ID);
   if (!el) {
     el = document.createElement('style');
@@ -83,6 +84,10 @@ function applyTypography (config) {
     document.head.appendChild(el);
   }
   el.textContent = buildCSS(config);
+}
+
+function applyTypography (config) {
+  previewTypography(config);
   lsSet(TYPO_SK, config);
 }
 
@@ -138,13 +143,30 @@ function openPanel () {
   `;
   document.body.appendChild(panelEl);
 
-  // ── Live update labels ────────────────────────────────────────────────
+  // ── Live update labels + live preview ─────────────────────────────────
   const fsRange = /** @type {HTMLInputElement} */ (panelEl.querySelector(`#${NS}-tb-font-size`));
   const lhRange = /** @type {HTMLInputElement} */ (panelEl.querySelector(`#${NS}-tb-line-height`));
   const lsRange = /** @type {HTMLInputElement} */ (panelEl.querySelector(`#${NS}-tb-letter-spacing`));
-  fsRange.addEventListener('input', () => { panelEl.querySelector(`#${NS}-tb-fs-val`).textContent = `${fsRange.value}em`; });
-  lhRange.addEventListener('input', () => { panelEl.querySelector(`#${NS}-tb-lh-val`).textContent = lhRange.value; });
-  lsRange.addEventListener('input', () => { panelEl.querySelector(`#${NS}-tb-ls-val`).textContent = `${lsRange.value}em`; });
+
+  // Aperçu en direct : chaque mouvement de curseur (ou changement de police)
+  // s'applique immédiatement, sans persister — Apply enregistre, Reset annule.
+  function collectCurrent () {
+    return {
+      preset:             panelEl.querySelector(`#${NS}-tb-preset-sel`).value,
+      fontFamily:         panelEl.querySelector(`#${NS}-tb-font-family`).value,
+      fontFamilyHeading:  panelEl.querySelector(`#${NS}-tb-font-family-heading`).value,
+      fontSize:           parseFloat(fsRange.value),
+      lineHeight:         parseFloat(lhRange.value),
+      letterSpacing:      parseFloat(lsRange.value),
+    };
+  }
+  const livePreview = () => previewTypography(collectCurrent());
+
+  fsRange.addEventListener('input', () => { panelEl.querySelector(`#${NS}-tb-fs-val`).textContent = `${fsRange.value}em`; livePreview(); });
+  lhRange.addEventListener('input', () => { panelEl.querySelector(`#${NS}-tb-lh-val`).textContent = lhRange.value; livePreview(); });
+  lsRange.addEventListener('input', () => { panelEl.querySelector(`#${NS}-tb-ls-val`).textContent = `${lsRange.value}em`; livePreview(); });
+  panelEl.querySelector(`#${NS}-tb-font-family`).addEventListener('input', livePreview);
+  panelEl.querySelector(`#${NS}-tb-font-family-heading`).addEventListener('input', livePreview);
 
   // ── Preset selection fills fields ─────────────────────────────────────
   const presetSelect = /** @type {HTMLSelectElement} */ (panelEl.querySelector(`#${NS}-tb-preset-sel`));
@@ -183,6 +205,10 @@ function openPanel () {
   });
 
   panelEl.querySelector(`.${NS}-tb-panel-close`).addEventListener('click', () => {
+    // Fermer sans Apply : on revient à la configuration enregistrée
+    const savedCfg = lsGet(TYPO_SK);
+    if (savedCfg) previewTypography(savedCfg);
+    else document.getElementById(STYLE_ID)?.remove();
     panelEl?.remove(); panelEl = null;
   });
 }

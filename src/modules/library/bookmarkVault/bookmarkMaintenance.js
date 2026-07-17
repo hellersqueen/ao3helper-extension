@@ -19,7 +19,9 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { downloadJSON, downloadFile } from '../../../../lib/utils/json-file.js';
+import { vaultToCSV, vaultToHTML, findStaleBookmarks } from './vaultTools.js';
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
 import { relativeDate } from '../../../../lib/utils/format-date.js';
@@ -38,6 +40,7 @@ const BM_DATA_KEY  = 'ao3h:bookmarkVault:data';
 const DEFAULTS = {
   privateByDefault:        false,
   showAnalyticsDashboard:  false,
+  staleReminderMonths:     0, // 0 = off; 3/6/12 = remind about unopened bookmarks
 };
 
 const cfg = makeCfg('bookmarkVault', DEFAULTS);
@@ -61,15 +64,27 @@ function applyPrivateDefault () {
    FEATURE — EXPORT AND BACKUP RECENCY
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function doExport () {
-  const data = (() => {
-    try { return JSON.parse(localStorage.getItem(BM_DATA_KEY) || '{}'); }
-    catch (_) { return {}; }
-  })();
-  downloadJSON(
-    { exported: new Date().toISOString(), bookmarks: data },
-    `ao3h-bookmarks-${new Date().toISOString().slice(0, 10)}.json`
-  );
+function _loadVault () {
+  try { return JSON.parse(localStorage.getItem(BM_DATA_KEY) || '{}'); }
+  catch (_) { return {}; }
+}
+
+function _loadInlineNotes () {
+  try { return JSON.parse(localStorage.getItem('ao3h:bookmarkVault:inlineNotes') || '{}'); }
+  catch (_) { return {}; }
+}
+
+function doExport (format = 'json') {
+  const data  = _loadVault();
+  const stamp = new Date().toISOString().slice(0, 10);
+
+  if (format === 'csv') {
+    downloadFile(vaultToCSV(data, _loadInlineNotes()), `ao3h-bookmarks-${stamp}.csv`, 'text/csv;charset=utf-8');
+  } else if (format === 'html') {
+    downloadFile(vaultToHTML(data, _loadInlineNotes()), `ao3h-bookmarks-${stamp}.html`, 'text/html;charset=utf-8');
+  } else {
+    downloadJSON({ exported: new Date().toISOString(), bookmarks: data }, `ao3h-bookmarks-${stamp}.json`);
+  }
   localStorage.setItem(EXPORT_KEY, String(Date.now()));
 }
 
@@ -152,6 +167,48 @@ function injectAnalyticsDashboard () {
   if (anchor) anchor.insertAdjacentElement('afterend', panel);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — STALE-BOOKMARK REMINDER
+═══════════════════════════════════════════════════════════════════════════ */
+
+function injectStaleReminder () {
+  const months = parseInt(String(cfg('staleReminderMonths') ?? 0), 10) || 0;
+  if (months <= 0) return;
+  if (!/\/users\/[^/]+\/bookmarks/.test(location.pathname)) return;
+  if (document.getElementById(`${NS}-bm-stale`)) return;
+
+  const lastRead = (() => {
+    try { return JSON.parse(localStorage.getItem('ao3h:bookmarkVault:lastRead') || '{}'); }
+    catch (_) { return {}; }
+  })();
+  const stale = new Set(findStaleBookmarks(_loadVault(), lastRead, months));
+  if (!stale.size) return;
+
+  const banner = document.createElement('div');
+  banner.id = `${NS}-bm-stale`;
+  const text = document.createElement('span');
+  text.textContent = `🔔 ${stale.size} bookmark${stale.size !== 1 ? 's' : ''} not opened for ${months}+ months — worth a revisit?`;
+  banner.appendChild(text);
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = `${NS}-bm-stale-btn`;
+  btn.textContent = 'Highlight on this page';
+  btn.addEventListener('click', () => {
+    let found = 0;
+    document.querySelectorAll('li.bookmark.blurb, li.work.blurb').forEach(blurb => {
+      const wid = extractWorkIdFromBlurb(blurb);
+      if (wid && stale.has(String(wid))) { blurb.classList.add(`${NS}-bm-stale-hl`); found++; }
+    });
+    btn.textContent = found ? `${found} highlighted here` : 'None on this page';
+    btn.disabled = true;
+  });
+  banner.appendChild(btn);
+
+  const anchor = document.querySelector('#main h2.heading, #main h3.heading');
+  if (anchor) anchor.insertAdjacentElement('afterend', banner);
+}
+
 function injectExportBadge () {
   if (!/\/users\/[^/]+\/bookmarks/.test(location.pathname)) return;
   const heading = document.querySelector('#main h2.heading, #main h3.heading');
@@ -162,13 +219,23 @@ function injectExportBadge () {
   refreshBadge(badge);
   heading.appendChild(badge);
 
+  const fmtSel = document.createElement('select');
+  fmtSel.className = `${NS}-export-fmt`;
+  ['json', 'csv', 'html'].forEach(fmt => {
+    const opt = document.createElement('option');
+    opt.value = fmt;
+    opt.textContent = fmt.toUpperCase();
+    fmtSel.appendChild(opt);
+  });
+
   const exportBtn = document.createElement('button');
   exportBtn.className   = `${NS}-export-btn`;
   exportBtn.textContent = '↓ Export';
   exportBtn.addEventListener('click', () => {
-    doExport();
+    doExport(fmtSel.value);
     refreshBadge(badge);
   });
+  heading.appendChild(fmtSel);
   heading.appendChild(exportBtn);
 }
 
@@ -193,6 +260,7 @@ register(MOD, {
     applyPrivateDefault();
     injectExportBadge();
     injectAnalyticsDashboard();
+    injectStaleReminder();
 
     // Only watch for the bookmark form opening dynamically if the feature is on
     if (cfg('privateByDefault')) {
@@ -204,6 +272,8 @@ register(MOD, {
     active = false;
     obs?.disconnect();
     document.getElementById(`${NS}-bm-analytics`)?.remove();
-    document.querySelectorAll(`.${NS}-export-badge, .${NS}-export-btn`).forEach(el => el.remove());
+    document.getElementById(`${NS}-bm-stale`)?.remove();
+    document.querySelectorAll(`.${NS}-export-badge, .${NS}-export-btn, .${NS}-export-fmt`).forEach(el => el.remove());
+    document.querySelectorAll(`.${NS}-bm-stale-hl`).forEach(el => el.classList.remove(`${NS}-bm-stale-hl`));
   };
 });

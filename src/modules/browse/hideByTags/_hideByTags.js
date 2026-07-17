@@ -41,6 +41,8 @@ import { HiddenTags } from './hiddenTags.js';
 import { NopeWords } from './nopeWords.js';
 import { WhitelistExceptions } from './whitelistExceptions.js';
 import { countHiddenBlurbs, renderHiddenCounter } from './hiddenCounter.js';
+import { addTempHide, getActiveTempHides } from './tempHides.js';
+import { getCustomNoiseWords, isNoiseTag, mergeNoisePatterns, NOISE_PATTERNS } from '../tagsDisplay/noiseTagUtils.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP
@@ -72,15 +74,21 @@ const MOD = 'hideByTags';
 
 const DEFAULTS = {
   hideMode:              'hide',
+  tagMatchMode:          'exact', // 'exact' | 'contains'
   whitelistEnabled:      true,
   showWhitelistBadge:    true,
   whitelistMode:         'show',
   textFilterEnabled:     true,
   nopeHideMode:          'hide',
+  nopeWholeWords:        false,
   nopeTargetSummaries:   true,
   nopeTargetNotes:       true,
   nopeTargetTitles:      false,
   showHiddenCounter:     true,
+  dimOpacity:            25,    // % opacity of soft-hidden works
+  dimBlur:               false, // additional blur on soft-hidden works
+  protectBookmarked:     false, // never hide works saved in Bookmark Vault
+  hideNoiseTaggedWorks:  false, // hide works carrying a tagsDisplay "noise" tag
 };
 
 function loadSettings () { return loadModuleSettings(MOD); }
@@ -125,6 +133,7 @@ function updateHiddenCounter (s) {
     doc: document, NS, count,
     enabled: s.showHiddenCounter ?? true,
     el: counterEl,
+    onRescan: () => run(),
   });
 }
 
@@ -146,9 +155,31 @@ async function processList () {
 
   const hiddenList = await hiddenTagsInst.getHidden();
   const hiddenSet  = new Set(hiddenList);
+  // Day-scoped hides (Shift+click on the 🚫 icon) join the permanent list
+  getActiveTempHides().forEach(tag => hiddenSet.add(tag));
 
   const s = loadSettings();
   const hideMode    = s.hideMode ?? 'hide';
+  const matchMode   = s.tagMatchMode === 'contains' ? 'contains' : 'exact';
+
+  // Soft-hide appearance: configurable opacity + optional blur (CSS-driven)
+  const opacity = Math.min(Math.max(parseInt(String(s.dimOpacity ?? 25), 10) || 25, 5), 90);
+  document.documentElement.style.setProperty(`--${NS}-hbt-dim-opacity`, String(opacity / 100));
+  document.documentElement.classList.toggle(`${NS}-hbt-dim-blur`, !!s.dimBlur);
+
+  // Works saved in Bookmark Vault are never hidden when protection is on
+  let vaultIds = null;
+  if (s.protectBookmarked) {
+    try {
+      const data = JSON.parse(localStorage.getItem('ao3h:bookmarkVault:data') || '{}');
+      vaultIds = new Set(Object.keys(data && typeof data === 'object' ? data : {}));
+    } catch { vaultIds = null; }
+  }
+
+  // tagsDisplay "noise tag" integration: works carrying a noise tag get hidden
+  const noisePatterns = s.hideNoiseTaggedWorks
+    ? mergeNoisePatterns(NOISE_PATTERNS, getCustomNoiseWords())
+    : null;
   const wlEnabled   = !!(s.whitelistEnabled ?? true);
   let wlSet = new Set(), showWLBadge = false, wlMode = 'show';
   if (wlEnabled) {
@@ -187,9 +218,22 @@ async function processList () {
   blurbs.forEach(blurb => {
     const scopeForTags = blurb.querySelector(`.${NS}-cut`) || blurb;
 
+    // Bookmark Vault protection: never hide a work the user has saved
+    if (vaultIds?.size) {
+      const workId = hiddenTagsInst.getWorkIdFromBlurb(blurb);
+      if (workId && vaultIds.has(String(workId))) {
+        hiddenTagsInst.clearWLHighlights(blurb);
+        blurb.classList.remove(`${NS}-dimmed`);
+        blurb.querySelector(`.${NS}-dim-strip`)?.remove();
+        if (blurb.classList.contains(`${NS}-wrapped`)) hiddenTagsInst.unwrapWork(blurb);
+        else hiddenTagsInst.forceShow(blurb);
+        return;
+      }
+    }
+
     // NOPE words check
     if (textFilterEnabled && nopeWords.length > 0) {
-      const matchedWord = nopeWordsInst.matchesNope(blurb, nopeWords, nopeTargets);
+      const matchedWord = nopeWordsInst.matchesNope(blurb, nopeWords, nopeTargets, { wholeWords: !!s.nopeWholeWords });
       if (matchedWord) {
         hiddenTagsInst.clearWLHighlights(blurb);
         if (nopeHideMode === 'dim') {
@@ -205,7 +249,15 @@ async function processList () {
       }
     }
 
-    const reasons = hiddenTagsInst.reasonsFor(scopeForTags, hiddenSet);
+    const reasons = hiddenTagsInst.reasonsFor(scopeForTags, hiddenSet, { matchMode });
+
+    // tagsDisplay integration: a "noise" tag on the work counts as a reason
+    if (noisePatterns) {
+      const noiseTag = Array.from(scopeForTags.querySelectorAll('a.tag'))
+        .map(a => a.textContent.trim())
+        .find(text => text && isNoiseTag(text, noisePatterns));
+      if (noiseTag) reasons.push(`noise tag: ${noiseTag}`);
+    }
 
     if (reasons.length === 0) {
       hiddenTagsInst.clearWLHighlights(blurb);
@@ -379,6 +431,13 @@ function toast (msg) {
   liveRegion?.announce?.(msg);
 }
 
+// Shift+click on a 🚫 icon: hide the tag only until the end of the day
+async function tempHideTag (canon) {
+  addTempHide(canon);
+  await processList();
+  toast(`Hidden until end of day: ${canon}`);
+}
+
 // ── Always-on manager exposure ────────────────────────────────────────────
 
 function openManager () {
@@ -462,10 +521,11 @@ register('hideByTags', { title: 'Hide By Tags', enabledByDefault: true }, async 
         downloadJSON(list, 'ao3h-hidden-tags.json');
       });
       GM_registerMenuCommand('AO3 Helper: Import hidden tags (JSON)…', openManager);
+      GM_registerMenuCommand('AO3 Helper: Re-scan page for hidden tags/words', () => { run(); toast('Page re-scanned'); });
     }
 
     if (enabled) {
-      hiddenTagsInst.attachDelegates({ onTagHidden: processList, toast });
+      hiddenTagsInst.attachDelegates({ onTagHidden: processList, onTempHide: tempHideTag, toast });
       run();
       if (!observerActive) {
         listObserver = observe(document.body, debounce(run, 250));
@@ -480,7 +540,7 @@ register('hideByTags', { title: 'Hide By Tags', enabledByDefault: true }, async 
     enabled = !!val;
 
     if (enabled && !wasEnabled) {
-      hiddenTagsInst.attachDelegates({ onTagHidden: processList, toast });
+      hiddenTagsInst.attachDelegates({ onTagHidden: processList, onTempHide: tempHideTag, toast });
       run();
       if (!observerActive) {
         listObserver = observe(document.body, debounce(run, 250));

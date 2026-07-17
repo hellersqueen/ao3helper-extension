@@ -20,7 +20,7 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { loadItems, saveItems } from './laterShelfStore.js';
-import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { createBulkSelect } from '../../../../lib/ui/bulk-select.js';

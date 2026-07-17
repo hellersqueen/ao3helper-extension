@@ -22,7 +22,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
-import { ThemeValidator } from '../../../../lib/themes/engine/themeValidator.js';
+import { ThemeValidator } from '../../../../lib/themes/engine/themeUtils.js';
 
 
 

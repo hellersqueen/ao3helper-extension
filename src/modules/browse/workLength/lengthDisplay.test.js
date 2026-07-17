@@ -65,3 +65,102 @@ describe('buildBadgeHTML — inclut la classe de catégorie correspondante', () 
     expect(html).toContain('ao3h-wl-badge');
   });
 });
+
+describe('buildBadgeHTML — pages : mots/page réglable et format d\'affichage', () => {
+  it('utilise wordsPerPage pour le calcul', () => {
+    const ld = makeInstance({ showPageEquiv: true, wordsPerPage: 100 });
+    const html = ld.buildBadgeHTML(1000);
+    expect(html).toContain('~10 pg');
+  });
+
+  it('retombe sur 275 mots/page par défaut', () => {
+    const ld = makeInstance({ showPageEquiv: true });
+    expect(ld.buildBadgeHTML(2750)).toContain('~10 pg');
+  });
+
+  it('respecte le format "full"', () => {
+    const ld = makeInstance({ showPageEquiv: true, wordsPerPage: 100, pageFormat: 'full' });
+    expect(ld.buildBadgeHTML(1000)).toContain('~10 pages');
+  });
+});
+
+describe('getBooks — livres de comparaison personnalisés', () => {
+  it('fusionne les livres persos avec la liste intégrée', () => {
+    const ld = makeInstance({ customBooks: 'Mon Livre: 55000' });
+    const books = ld.getBooks();
+    expect(books.length).toBe(19); // 18 intégrés + 1 perso
+    expect(books[books.length - 1]).toEqual({ title: 'Mon Livre', words: 55000 });
+  });
+
+  it('un livre perso plus proche gagne la comparaison', () => {
+    const ld = makeInstance({ customBooks: 'Pile Poil: 55000' });
+    expect(ld.findClosestBook(55100).title).toBe('Pile Poil');
+  });
+
+  it('sans customBooks, la liste intégrée reste inchangée', () => {
+    expect(makeInstance().getBooks().length).toBe(18);
+  });
+});
+
+describe('applyGradient — dégradé de longueur sur les listes', () => {
+  function seedListing(counts) {
+    document.body.innerHTML = counts.map(c => `
+      <li class="blurb"><dl class="stats"><dd class="words">${c.toLocaleString('en-US')}</dd></dl></li>`).join('');
+  }
+
+  it('teinte les compteurs, plus fort pour le plus long', () => {
+    seedListing([1000, 100000]);
+    const ld = makeInstance({ lengthGradient: true });
+    ld.applyGradient();
+    const dds = document.querySelectorAll('dd.words');
+    expect(dds[0].classList.contains('ao3h-wl-gradient')).toBe(true);
+    expect(dds[0].style.backgroundColor).not.toBe(dds[1].style.backgroundColor);
+    document.body.innerHTML = '';
+  });
+
+  it('inactif quand le réglage est désactivé ou avec moins de 2 fics', () => {
+    seedListing([1000, 100000]);
+    makeInstance({ lengthGradient: false }).applyGradient();
+    expect(document.querySelector('.ao3h-wl-gradient')).toBeNull();
+
+    seedListing([1000]);
+    makeInstance({ lengthGradient: true }).applyGradient();
+    expect(document.querySelector('.ao3h-wl-gradient')).toBeNull();
+    document.body.innerHTML = '';
+  });
+});
+
+describe('injectAvgChapterLength / injectSeriesTotal', () => {
+  it('ajoute "~X w/ch" sur une page multi-chapitres', () => {
+    document.body.innerHTML = `
+      <dl class="stats"><dd class="words">30,000</dd><dd class="chapters">10/12</dd></dl>`;
+    makeInstance({ showAvgChapterLength: true }).injectAvgChapterLength();
+    const badge = document.querySelector('.ao3h-wl-avgch');
+    expect(badge).not.toBeNull();
+    // toLocaleString dépend de la locale du runtime — on normalise les séparateurs
+    expect(badge.textContent.replace(/[\s  ,]/g, '')).toContain('3000w/ch');
+    document.body.innerHTML = '';
+  });
+
+  it('rien sur une fic à chapitre unique ou réglage désactivé', () => {
+    document.body.innerHTML = `
+      <dl class="stats"><dd class="words">30,000</dd><dd class="chapters">1/1</dd></dl>`;
+    makeInstance({ showAvgChapterLength: true }).injectAvgChapterLength();
+    expect(document.querySelector('.ao3h-wl-avgch')).toBeNull();
+    makeInstance({ showAvgChapterLength: false }).injectAvgChapterLength();
+    expect(document.querySelector('.ao3h-wl-avgch')).toBeNull();
+    document.body.innerHTML = '';
+  });
+
+  it('additionne les mots d\'une page de série', () => {
+    document.body.innerHTML = `
+      <div id="main"><h2 class="heading">Ma Série</h2>
+      <li class="blurb"><dl class="stats"><dd class="words">10,000</dd></dl></li>
+      <li class="blurb"><dl class="stats"><dd class="words">25,000</dd></dl></li></div>`;
+    makeInstance({}).injectSeriesTotal();
+    const banner = document.querySelector('.ao3h-wl-series-total');
+    expect(banner).not.toBeNull();
+    expect(banner.textContent.replace(/[\s  ,]/g, '')).toContain('35000wordsacross2works');
+    document.body.innerHTML = '';
+  });
+});

@@ -24,7 +24,7 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { cfg } from './laterShelfStore.js';
-import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { sendNotification, requestNotifyPermission } from '../../../../lib/utils/notifications.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 

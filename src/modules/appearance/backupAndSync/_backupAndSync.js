@@ -40,6 +40,7 @@ import { AutoBackup } from './automateBackup.js';
 import { BackupOperations } from './backupOperations.js';
 import { CloudSync } from './cloudSync.js';
 import { ImportExportLists } from './dataTransfer.js';
+import { runVersionMigrations } from './versionMigration.js';
 
 
 
@@ -89,6 +90,16 @@ register(
   async function init () {
     const BACKUPS_KEY = `ao3h:${MOD}:backups`;
     const instances   = [];
+
+    // ── Version-change migrations (legacy module-id settings cleanup) ──────
+    try {
+      const migration = runVersionMigrations(AO3H.env?.VERSION || '0');
+      if (migration.ran && migration.migrated.length) {
+        console.info(`${LOG} migrated ${migration.migrated.length} legacy setting key(s) (${migration.from || 'first run'} → ${migration.to})`);
+      }
+    } catch (err) {
+      console.warn(`${LOG} version migration failed:`, err);
+    }
 
     // Shared backups array — passed by reference to all submodules so they
     // stay in sync without re-reading localStorage on each operation.

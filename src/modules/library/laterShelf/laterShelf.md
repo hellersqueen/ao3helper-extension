@@ -208,23 +208,22 @@ AO3 Helper - Work Reminders Submodule
 
 Le module **Later Shelf** améliore la liste **Marked for Later** d’AO3 afin de faciliter l’ajout, le repérage, l’organisation et le suivi des œuvres à lire plus tard.
 
-Il permet notamment de :
-
-* ajouter ou retirer rapidement une œuvre de la liste ;
-* afficher un badge sur les œuvres déjà sauvegardées ;
-* améliorer la page **Marked for Later** avec un compteur, des dates, des tris et des filtres ;
-* sélectionner plusieurs œuvres afin de les retirer en une seule action ;
-* programmer un rappel pour une œuvre ;
-* recevoir une notification du navigateur lorsqu’un rappel arrive à échéance.
+* Il permet notamment de :
+  - ajouter ou retirer rapidement une œuvre de la liste ;
+  - afficher un badge sur les œuvres déjà sauvegardées ;
+  - améliorer la page **Marked for Later** avec un compteur, des dates, des tris et des filtres ;
+  - sélectionner plusieurs œuvres afin de les retirer en une seule action ;
+  - programmer un rappel pour une œuvre ;
+  - recevoir une notification du navigateur lorsqu’un rappel arrive à échéance.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage            | Défaut    | Description                                                                     |
-| ------------------ | --------- | ------------------------------------------------------------------------------- |
-| `showQuickButton`  | Activé    | Affiche le bouton `📌 Save for later` sur les œuvres présentes dans les listes. |
-| `remindersEnabled` | Désactivé | Active les rappels programmés et les notifications du navigateur.               |
+| Réglage            | Description                                                                     |
+| ------------------ |---------------------------------------------------------------------------------|
+| `showQuickButton`  | Affiche le bouton `📌 Save for later` sur les œuvres présentes dans les listes.|
+| `remindersEnabled` | Active les rappels programmés et les notifications du navigateur.               |
 
 Le panneau affiche également une section **Sync & Refresh** proposant des options liées :
 

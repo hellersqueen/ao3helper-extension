@@ -16,7 +16,7 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { buildKudosRatioBadge } from '../../../../lib/ui/engagement-badge.js';
+import { buildKudosRatioBadge } from '../../../../lib/ui/badges.js';
 import { getBlurbStats, getWorkPageStats } from '../../../../lib/ao3/work-stats.js';
 
 

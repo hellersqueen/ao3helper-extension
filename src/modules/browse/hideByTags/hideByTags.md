@@ -21,8 +21,14 @@ texte libre pour couvrir ce que les tags ne couvrent pas.
 | `nopeTargetSummaries` | activé | Cherche les mots interdits dans les résumés |
 | `nopeTargetNotes` | activé | Cherche les mots interdits dans les notes d'auteur |
 | `nopeTargetTitles` | désactivé | Cherche les mots interdits dans les titres |
-| `quickAddIcon` | activé | Icône 🚫 au survol d'un tag, pour l'ajouter rapidement à la liste noire |
-| `showHiddenCounter` | activé | Affiche un bandeau "X fics cachées" au-dessus des résultats |
+| `nopeWholeWords` | désactivé | Ne reconnaît un mot interdit que s'il est entier ("art" ≠ "heart") |
+| `tagMatchMode` | `exact` | Correspondance des tags : exacte, ou "le tag contient le texte" |
+| `dimOpacity` | `25` | Opacité (%) des fics atténuées |
+| `dimBlur` | désactivé | Floute en plus le contenu des fics atténuées |
+| `protectBookmarked` | désactivé | Ne cache jamais les fics enregistrées dans Bookmark Vault |
+| `hideNoiseTaggedWorks` | désactivé | Cache les fics portant un tag "bruit" détecté par Tags Display |
+| `quickAddIcon` | activé | Icône 🚫 au survol d'un tag, pour l'ajouter rapidement à la liste noire (Shift+clic : caché seulement pour la journée) |
+| `showHiddenCounter` | activé | Affiche un bandeau "X fics cachées" au-dessus des résultats, avec un bouton "↻ Re-scan" |
 
 ## Fichiers
 
@@ -54,8 +60,14 @@ texte libre pour couvrir ce que les tags ne couvrent pas.
 
 - Compte les fics actuellement repliées ou atténuées sur la page
 - Affiche (ou retire) un petit bandeau "🚫 X fics cachées" au-dessus des résultats
+- Le bandeau porte un bouton "↻ Re-scan" pour revérifier la page sans la recharger
 
-### 6. `hideByTags.css`
+### 6. `tempHides.js` — masquages du jour
+
+- Garde les tags cachés temporairement (Shift+clic sur l'icône 🚫) avec leur heure d'expiration : la fin de la journée en cours
+- Purge automatiquement les entrées expirées à chaque lecture
+
+### 7. `hideByTags.css`
 
 - Les styles visuels du gestionnaire, des groupes, du repli des fics, de la whitelist et des petits messages
 
@@ -69,39 +81,56 @@ vraiment dans ce module (pas de code pour ça) :
   à chaque passage de `processList()` ; réglage `showHiddenCounter` pour le
   désactiver.
 
-- Voir en permanence, dans le menu de l'extension, combien de tags sont dans ta liste noire
+- ~~Voir en permanence, dans le menu de l'extension, combien de tags sont dans ta liste noire~~ ✅
+  Fait (déjà présent, doc en retard) : les titres des sections du panneau
+  affichent en permanence "X hidden", "X exceptions", "X words".
 
 - ~~Un bouton pour tout effacer d'un coup dans la liste noire de tags~~ ✅
   Fait : bouton "Clear All" dans le gestionnaire de tags cachés (avec
   confirmation), vide aussi les groupes associés.
 
-- Choisir si un tag doit correspondre exactement ou juste "contenir" un morceau de texte — en ce moment c'est toujours une correspondance exacte
+- ~~Choisir si un tag doit correspondre exactement ou juste "contenir" un morceau de texte — en ce moment c'est toujours une correspondance exacte~~ ✅
+  Fait : réglage `tagMatchMode` (exact / contient) dans le panneau.
 
-- Reconnaître automatiquement les tags qui veulent dire la même chose sur AO3, pour ne pas avoir à tous les ajouter un par un
+- ~~Reconnaître un mot interdit seulement quand c'est un mot entier, pas juste un bout caché dans un mot plus long~~ ✅
+  Fait : réglage `nopeWholeWords` — "art" ne matche plus "heart".
 
-- Reconnaître un mot interdit seulement quand c'est un mot entier, pas juste un bout caché dans un mot plus long
+- ~~Chercher avec des motifs compliqués comme des jokers ou des expressions techniques~~ ✅
+  Fait : un mot interdit peut contenir `*` (joker) ou être écrit `/…/`
+  (expression régulière, insensible à la casse ; un motif invalide retombe
+  sur la recherche simple).
 
-- Chercher avec des motifs compliqués comme des jokers ou des expressions techniques
+- ~~Un masquage juste pour la journée, qui s'efface tout seul après~~ ✅
+  Fait : Shift+clic sur l'icône 🚫 d'un tag le cache jusqu'à la fin de la
+  journée, sans l'ajouter à la liste noire (`tempHides.js`).
 
-- Un masquage juste pour la journée, qui s'efface tout seul après
+- ~~Choisir à quel point une fic est rendue transparente quand elle est atténuée — en ce moment c'est toujours pareil pour tout le monde~~ ✅
+  Fait : réglage `dimOpacity` (5–90 %).
 
-- Ajouter un tag en cliquant n'importe où sur le résumé d'une fic, pas seulement sur le tag
+- ~~Ajouter un effet flou en plus de la transparence~~ ✅
+  Fait : réglage `dimBlur` — le contenu atténué est flouté (le bandeau de
+  raison reste net, le survol rétablit la lecture).
 
-- Choisir à quel point une fic est rendue transparente quand elle est atténuée — en ce moment c'est toujours pareil pour tout le monde
+- ~~Cacher une fic seulement si plusieurs tags précis sont présents en même temps, pas juste un seul~~ ✅
+  Fait : une entrée de la liste noire comme "tag A + tag B" ne cache une fic
+  que si tous les tags de la combinaison sont présents.
 
-- Ajouter un effet flou en plus de la transparence
+- ~~Un badge qui indique qu'un mot interdit a été trouvé sur une fic, en plus de la cacher ou l'atténuer~~ ✅
+  Déjà couvert : le bandeau de repli affiche ⛔ "mot" en mode masquage, et le
+  bandeau d'atténuation affiche "⛔ Soft-hidden — NOPE word: mot".
 
-- Cacher une fic seulement si plusieurs tags précis sont présents en même temps, pas juste un seul
+- ~~Toujours montrer les fics déjà mises en favori ou en bookmark, même si elles ont un tag dans la liste noire~~ ✅
+  Fait : réglage `protectBookmarked` — les fics enregistrées dans Bookmark
+  Vault (le suivi local des favoris) ne sont jamais cachées.
 
-- Une liste de mots à éviter déjà toute prête par défaut, en plus de celle qu'on construit soi-même
+- ~~Un bouton pour revérifier manuellement les mots interdits sur la page, sans avoir à la recharger~~ ✅
+  Fait : bouton "↻ Re-scan" sur le bandeau compteur + commande de menu
+  Tampermonkey "Re-scan page for hidden tags/words".
 
-- Un badge qui indique qu'un mot interdit a été trouvé sur une fic, en plus de la cacher ou l'atténuer
-
-- Toujours montrer les fics déjà mises en favori ou en bookmark, même si elles ont un tag dans la liste noire
-
-- Un bouton pour revérifier manuellement les mots interdits sur la page, sans avoir à la recharger
-
-- Cacher automatiquement une fic dès qu'un de ses tags a été repéré comme gênant par le module qui gère l'affichage des tags, sans avoir à l'ajouter soi-même à la liste noire
+- ~~Cacher automatiquement une fic dès qu'un de ses tags a été repéré comme gênant par le module qui gère l'affichage des tags, sans avoir à l'ajouter soi-même à la liste noire~~ ✅
+  Fait : réglage `hideNoiseTaggedWorks` — les fics portant un tag "bruit"
+  (détection de Tags Display : motifs intégrés + mots personnalisés) sont
+  cachées comme si le tag était en liste noire.
 
 ---
 
@@ -120,6 +149,9 @@ vraiment dans ce module (pas de code pour ça) :
 ## Explicitement écarté
 
 - Fusionner ce module avec `skipWorks` (le masquage manuel avec notes) — refusé, les deux ont des buts trop différents : ici c'est automatique selon des tags, `skipWorks` c'est manuel, fic par fic, avec une note personnelle
+- Reconnaître automatiquement les tags qui veulent dire la même chose sur AO3 — écarté : AO3 n'expose pas les synonymes d'un tag sur les pages de listes, il faudrait une requête réseau par tag pour les découvrir (coûteux pour les serveurs et fragile) ; le mode "contient" et les groupes de tags couvrent déjà la plupart des variantes
+- Ajouter un tag en cliquant n'importe où sur le résumé d'une fic — écarté : le résumé sert à lire, sélectionner du texte et suivre des liens ; un clic "n'importe où" provoquerait des ajouts accidentels, et on ne saurait pas quel tag ajouter ; l'icône 🚫 par tag (ou Alt+clic) reste le geste explicite
+- Une liste de mots à éviter déjà toute prête par défaut — écarté : choisir à la place de l'utilisateur ce qui doit être filtré est un choix éditorial ; la liste doit rester personnelle (même logique de neutralité que les autres modules)
 
 
 
@@ -169,14 +201,12 @@ AO3 Helper - Hide By Tags Module Coordinator
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Hide By Tags** masque ou atténue automatiquement les œuvres contenant des tags ou des mots-clés que l'utilisateur ne souhaite pas voir.
 
-Il combine trois systèmes complémentaires :
-
-- une liste noire de tags ;
-- une liste blanche permettant de sauver certaines œuvres malgré la présence d'un tag interdit ;
-- un filtre de mots-clés capable d'analyser le contenu des blurbs lorsque les tags ne suffisent pas.
+* Il combine trois systèmes complémentaires :
+  - une liste noire de tags ;
+  - une liste blanche permettant de sauver certaines œuvres malgré la présence d'un tag interdit ;
+  - un filtre de mots-clés capable d'analyser le contenu des blurbs lorsque les tags ne suffisent pas.
 
 Le module permet également d'ajouter rapidement de nouveaux tags à la liste noire directement depuis les pages AO3.
 
@@ -184,18 +214,18 @@ Le module permet également d'ajouter rapidement de nouveaux tags à la liste no
 
 # Réglages utilisateur
 
-| Réglage | Défaut | Description |
-|----------|--------|-------------|
-| `hideMode` | `hide` | Détermine si les œuvres sont complètement repliées ou simplement atténuées lorsqu'un tag interdit est trouvé. |
-| `whitelistEnabled` | Activé | Active le système d'exceptions basé sur la liste blanche. |
-| `showWhitelistBadge` | Activé | Affiche un badge 🟢 sur les œuvres sauvées par une exception. |
-| `whitelistMode` | `show` | Affiche automatiquement les œuvres sauvées ou les laisse repliées avec une indication. |
-| `textFilterEnabled` | Activé | Active le filtre de mots-clés. |
-| `nopeHideMode` | `hide` | Détermine le comportement lorsqu'un mot interdit est détecté. |
-| `nopeTargetSummaries` | Activé | Analyse les résumés. |
-| `nopeTargetNotes` | Activé | Analyse les notes d'auteur. |
-| `nopeTargetTitles` | Désactivé | Analyse les titres des œuvres. |
-| `quickAddIcon` | Activé | Affiche une icône 🚫 au survol des tags afin de les ajouter rapidement à la liste noire. |
+| Réglage               | Description                                                                                                     |
+|-----------------------|-----------------------------------------------------------------------------------------------------------------|
+| `hideMode`            |  Détermine si les œuvres sont complètement repliées ou simplement atténuées lorsqu'un tag interdit est trouvé.  |
+| `whitelistEnabled`    | Active le système d'exceptions basé sur la liste blanche.                                                       |
+| `showWhitelistBadge`  |  Affiche un badge 🟢 sur les œuvres sauvées par une exception.                                                 |
+| `whitelistMode`       | Affiche automatiquement les œuvres sauvées ou les laisse repliées avec une indication.                          |
+| `textFilterEnabled`   |  Active le filtre de mots-clés.                                                                                 |
+| `nopeHideMode`        | Détermine le comportement lorsqu'un mot interdit est détecté.                                                   |
+| `nopeTargetSummaries` | Analyse les résumés.                                                                                            |
+| `nopeTargetNotes`     | Analyse les notes d'auteur.                                                                                     |
+| `nopeTargetTitles`    | Analyse les titres des œuvres.                                                                                  |
+| `quickAddIcon`        | Affiche une icône 🚫 au survol des tags afin de les ajouter rapidement à la liste noire.                       |
 
 ---
 
@@ -661,142 +691,163 @@ Les fonctionnalités ci-dessous sont prévues dans la conception du module ou do
 
 ## Liste noire de tags
 
-### Compteur d'œuvres masquées
+### ~~Compteur d'œuvres masquées~~ ✅ Fait
 
-Afficher au-dessus des résultats un compteur indiquant :
+~~Afficher au-dessus des résultats un compteur d'œuvres masquées/atténuées.~~
 
-- le nombre d'œuvres actuellement masquées ;
-- le nombre d'œuvres atténuées.
-
-Exemple :
-
-> **12 œuvres masquées par Hide By Tags**
+> Bandeau "🚫 X works hidden because of your tag filters" au-dessus de
+> `#main` (`hiddenCounter.js`), désactivable via `showHiddenCounter`.
 
 ---
 
-### Compteur dans le menu
+### ~~Compteur dans le menu~~ ✅ Fait
 
-Afficher en permanence, dans le menu d'AO3 Helper :
+~~Afficher en permanence, dans le menu d'AO3 Helper, le nombre de tags de la
+liste noire et de mots interdits enregistrés.~~
 
-- le nombre de tags présents dans la liste noire ;
-- le nombre de mots interdits enregistrés.
-
----
-
-### Suppression complète
-
-Ajouter un bouton permettant de vider entièrement la liste noire en une seule opération.
+> Les titres de sections du panneau affichent en continu "X hidden",
+> "X exceptions" et "X words" (`updateSectionCounts`).
 
 ---
 
-### Modes de correspondance
+### ~~Suppression complète~~ ✅ Fait
 
-Permettre de choisir, pour chaque tag ou globalement, la méthode de comparaison.
+~~Ajouter un bouton permettant de vider entièrement la liste noire en une seule opération.~~
 
-Modes prévus :
-
-- correspondance exacte ;
-- correspondance partielle ("contient").
-
-Actuellement, les tags utilisent uniquement une correspondance exacte.
+> Bouton "Clear All" (avec confirmation) dans le gestionnaire, qui vide
+> aussi les groupes associés.
 
 ---
 
-### Équivalences de tags AO3
+### ~~Modes de correspondance~~ ✅ Fait
 
-Reconnaître automatiquement les tags équivalents utilisés par AO3.
+~~Permettre de choisir la méthode de comparaison : exacte ou partielle ("contient").~~
 
-L'utilisateur n'aurait plus besoin d'ajouter plusieurs variantes d'un même tag.
-
----
-
-### Ajout rapide étendu
-
-Permettre d'ajouter un tag interdit directement depuis d'autres éléments du blurb, sans devoir cliquer uniquement sur le tag lui-même.
+> Réglage global `tagMatchMode` (exact / contains) dans le panneau, câblé
+> dans `reasonsFor()`. Le choix par tag individuel n'a pas été retenu (une
+> entrée "contient" globale suffit, et le réglage par tag compliquerait le
+> gestionnaire).
 
 ---
 
-### Masquage conditionnel
+### ~~Équivalences de tags AO3~~ ❌ Écarté
 
-Pouvoir masquer une œuvre uniquement lorsqu'une combinaison précise de plusieurs tags est présente.
+~~Reconnaître automatiquement les tags équivalents utilisés par AO3.~~
 
-Exemple :
+> Écarté : AO3 n'expose pas les synonymes sur les pages de listes — il
+> faudrait une requête réseau par tag (coûteux et fragile). Le mode
+> "contient" et les groupes de tags couvrent la plupart des variantes.
 
-- Tag A **ET**
-- Tag B
+---
 
-au lieu de masquer dès qu'un seul tag est détecté.
+### ~~Ajout rapide étendu~~ ❌ Écarté
+
+~~Permettre d'ajouter un tag interdit depuis d'autres éléments du blurb.~~
+
+> Écarté : un clic "n'importe où" (résumé…) entrerait en conflit avec la
+> lecture, la sélection de texte et les liens, et l'intention (quel tag ?)
+> serait ambiguë. L'icône 🚫 par tag et Alt+clic restent les gestes
+> explicites.
+
+---
+
+### ~~Masquage conditionnel~~ ✅ Fait
+
+~~Pouvoir masquer une œuvre uniquement lorsqu'une combinaison précise de plusieurs tags est présente (Tag A ET Tag B).~~
+
+> Une entrée de liste noire "tag a + tag b" ne masque que les œuvres
+> portant tous les tags de la combinaison (fonctionne aussi en mode
+> "contient").
 
 ---
 
 ## Filtre de mots-clés
 
-### Correspondance par mot entier
+### ~~Correspondance par mot entier~~ ✅ Fait
 
-Permettre de détecter uniquement des mots complets plutôt que de simples portions de texte.
+~~Permettre de détecter uniquement des mots complets plutôt que de simples portions de texte.~~
 
----
-
-### Expressions avancées
-
-Ajouter un moteur de recherche plus puissant prenant en charge :
-
-- des jokers (wildcards) ;
-- des motifs avancés ;
-- des expressions techniques.
+> Réglage `nopeWholeWords` : "art" ne matche plus "heart".
 
 ---
 
-### Liste prédéfinie
+### ~~Expressions avancées~~ ✅ Fait
 
-Fournir une liste de mots interdits par défaut afin d'aider les nouveaux utilisateurs.
+~~Ajouter un moteur de recherche plus puissant (jokers, motifs avancés, expressions techniques).~~
 
----
-
-### Badge de détection
-
-Afficher un badge indiquant quel mot interdit a été détecté sur une œuvre.
-
-Ce badge viendrait compléter le masquage ou l'atténuation déjà appliqués.
+> Un mot interdit peut contenir `*` (joker) ou être écrit `/…/` (expression
+> régulière, insensible à la casse). Un motif invalide retombe sans erreur
+> sur la recherche de sous-chaîne.
 
 ---
 
-### Vérification manuelle
+### ~~Liste prédéfinie~~ ❌ Écarté
 
-Ajouter un bouton permettant de relancer l'analyse textuelle de la page sans devoir la recharger.
+~~Fournir une liste de mots interdits par défaut afin d'aider les nouveaux utilisateurs.~~
+
+> Écarté : présélectionner ce qui doit être filtré est un choix éditorial ;
+> la liste doit rester personnelle (même principe de neutralité que le
+> reste du projet).
+
+---
+
+### ~~Badge de détection~~ ✅ Déjà couvert
+
+~~Afficher un badge indiquant quel mot interdit a été détecté sur une œuvre.~~
+
+> Le bandeau de repli affiche ⛔ "mot" (mode masquage) et le bandeau
+> d'atténuation affiche "⛔ Soft-hidden — NOPE word: mot" — le mot détecté
+> est donc toujours visible.
+
+---
+
+### ~~Vérification manuelle~~ ✅ Fait
+
+~~Ajouter un bouton permettant de relancer l'analyse textuelle de la page sans devoir la recharger.~~
+
+> Bouton "↻ Re-scan" sur le bandeau compteur + commande de menu
+> Tampermonkey "Re-scan page for hidden tags/words".
 
 ---
 
 ## Apparence
 
-### Intensité de l'atténuation
+### ~~Intensité de l'atténuation~~ ✅ Fait
 
-Permettre de choisir précisément le niveau d'opacité appliqué aux œuvres atténuées.
+~~Permettre de choisir précisément le niveau d'opacité appliqué aux œuvres atténuées.~~
+
+> Réglage `dimOpacity` (5–90 %), appliqué via une variable CSS.
 
 ---
 
-### Effet de flou
+### ~~Effet de flou~~ ✅ Fait
 
-Ajouter un effet de flou pouvant être utilisé à la place ou en complément de l'opacité réduite.
+~~Ajouter un effet de flou pouvant être utilisé à la place ou en complément de l'opacité réduite.~~
+
+> Réglage `dimBlur` : le contenu atténué est flouté (2.5px), le bandeau de
+> raison reste net et le survol rétablit la lecture.
 
 ---
 
 ## Intégration avec d'autres modules
 
-### Protection des favoris
+### ~~Protection des favoris~~ ✅ Fait
 
-Toujours laisser visibles :
+~~Toujours laisser visibles les bookmarks et œuvres favorites, même lorsqu'elles correspondent à un tag interdit.~~
 
-- les Bookmarks ;
-- les œuvres favorites ;
-
-même lorsqu'elles correspondent à un tag interdit.
+> Réglage `protectBookmarked` : les œuvres présentes dans le suivi local de
+> Bookmark Vault (`ao3h:bookmarkVault:data`) ne sont jamais masquées ni
+> atténuées.
 
 ---
 
-### Détection automatique depuis Tags Display
+### ~~Détection automatique depuis Tags Display~~ ✅ Fait
 
-Masquer automatiquement une œuvre lorsqu'un autre module identifie un tag problématique, sans que l'utilisateur ait besoin d'ajouter ce tag à sa liste noire.
+~~Masquer automatiquement une œuvre lorsqu'un autre module identifie un tag problématique.~~
+
+> Réglage `hideNoiseTaggedWorks` : les œuvres portant un tag "bruit"
+> (détection de Tags Display — motifs intégrés + mots personnalisés de
+> l'utilisateur) sont traitées comme si le tag était en liste noire.
 
 ---
 

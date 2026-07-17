@@ -339,19 +339,16 @@ AO3 Helper - Works Filter Manager Submodule
   **Tab :** Browse
 ═══════════════════════════════════════════════════════════════════════════
 
-
 # À quoi ça sert
-
 Le module **Filter Manager** enrichit le système de filtres natif d'AO3 afin de rendre les recherches plus rapides, plus flexibles et plus personnalisables.
 
-Il permet notamment de :
-
-- enregistrer et réutiliser des presets de filtres ;
-- appliquer rapidement des filtres fréquents ;
-- afficher des badges de langue ;
-- avertir lorsqu'un avertissement officiel est exclu ;
-- masquer automatiquement certaines œuvres selon l'historique de l'utilisateur ;
-- gérer des groupes de tags équivalents.
+* Il permet notamment de :
+  - enregistrer et réutiliser des presets de filtres ;
+  - appliquer rapidement des filtres fréquents ;
+  - afficher des badges de langue ;
+  - avertir lorsqu'un avertissement officiel est exclu ;
+  - masquer automatiquement certaines œuvres selon l'historique de l'utilisateur ;
+  - gérer des groupes de tags équivalents.
 
 Le module complète les filtres déjà proposés par AO3 sans chercher à les remplacer.
 
@@ -359,30 +356,30 @@ Le module complète les filtres déjà proposés par AO3 sans chercher à les re
 
 # Réglages utilisateur
 
-| Réglage | Défaut | Description |
-|----------|--------|-------------|
-| `starredPresetsFirst` | Activé | Affiche les presets favoris en tête de liste. |
-| `presetHoverPreview` | Activé | Affiche un aperçu du contenu d'un preset au survol. |
-| `rememberLastPresetByFandom` | Activé | Sélectionne automatiquement le dernier preset utilisé pour le fandom actuel. |
-| `showExpandPreset` | Activé | Affiche le bouton **Edit as chips** à côté du bouton Apply. |
-| `selectedLanguages` | Toutes | Définit les langues affichées. |
-| `showLanguageBadge` | Désactivé | Affiche un badge indiquant la langue des œuvres. |
-| `clickBadgeToFilter` | Activé | Permet de filtrer par langue en cliquant sur le badge. |
-| `warnExcludedWarning` | Activé | Affiche une bannière lorsqu'un avertissement officiel est exclu. |
-| `excludeWarningRemoveButton` | Activé | Affiche un bouton permettant de retirer facilement cette exclusion. |
-| `tagBundlesEnabled` | Désactivé | Active les groupes de tags équivalents. |
-| `useBuiltinTropeBundles` | Activé | Utilise les groupes de tags intégrés (Slow Burn, Enemies to Lovers, etc.). |
-| `quickFilterOneshot` | Activé | Active le filtre rapide **One-shots only**. |
-| `quickFilterCrossover` | Activé | Active le filtre rapide **Hide crossovers**. |
-| `hideKudosed` | Désactivé | Masque les œuvres déjà kudosées. |
-| `hideSubscribed` | Désactivé | Masque les œuvres déjà suivies. |
-| `hideBookmarked` | Désactivé | Masque les œuvres déjà enregistrées en favoris. |
-| `hideMFL` | Désactivé | Masque les œuvres présentes dans **Marked for Later**. |
-| `hideReadSeries` | Désactivé | Masque les séries entièrement lues. |
-| `showHiddenCount` | Activé | Affiche le nombre d'œuvres masquées par les filtres d'historique. |
-| `rememberFilters` | Activé | Conserve les filtres actifs entre les sessions. |
-| `oneshotDefault` | `all` | Comportement par défaut du filtre One-shots. |
-| `crossoverDefault` | `all` | Comportement par défaut du filtre Crossovers. |
+| Réglage                       | Description                                                                   |
+|-------------------------------|-------------------------------------------------------------------------------|
+| `starredPresetsFirst`         | Affiche les presets favoris en tête de liste.                                 |
+| `presetHoverPreview`          | Affiche un aperçu du contenu d'un preset au survol.                           |
+| `rememberLastPresetByFandom`  | Sélectionne automatiquement le dernier preset utilisé pour le fandom actuel.  |
+| `showExpandPreset`            | Affiche le bouton **Edit as chips** à côté du bouton Apply.                   |
+| `selectedLanguages`           | Définit les langues affichées.                                                |
+| `showLanguageBadge`           | Affiche un badge indiquant la langue des œuvres.                              |
+| `clickBadgeToFilter`          | Permet de filtrer par langue en cliquant sur le badge.                        |
+| `warnExcludedWarning`         | Affiche une bannière lorsqu'un avertissement officiel est exclu.              |
+| `excludeWarningRemoveButton`  | Affiche un bouton permettant de retirer facilement cette exclusion.           |
+| `tagBundlesEnabled`           | Active les groupes de tags équivalents.                                       |
+| `useBuiltinTropeBundles`      | Utilise les groupes de tags intégrés (Slow Burn, Enemies to Lovers, etc.).    |
+| `quickFilterOneshot`          | Active le filtre rapide **One-shots only**.                                   |
+| `quickFilterCrossover`        | Active le filtre rapide **Hide crossovers**.                                  |
+| `hideKudosed`                 | Masque les œuvres déjà kudosées.                                              |
+| `hideSubscribed`              |  Masque les œuvres déjà suivies.                                              |
+| `hideBookmarked`              | Masque les œuvres déjà enregistrées en favoris.                               |
+| `hideMFL`                     |  Masque les œuvres présentes dans **Marked for Later**.                       |
+| `hideReadSeries`              | Masque les séries entièrement lues.                                           |
+| `showHiddenCount`             |  Affiche le nombre d'œuvres masquées par les filtres d'historique.            |
+| `rememberFilters`             | Conserve les filtres actifs entre les sessions.                               |
+| `oneshotDefault`              | Comportement par défaut du filtre One-shots.                                  |
+| `crossoverDefault`            | Comportement par défaut du filtre Crossovers.                                 |
 
 ---
 

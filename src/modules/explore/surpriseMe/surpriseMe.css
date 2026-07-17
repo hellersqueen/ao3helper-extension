@@ -32,6 +32,12 @@
         ├─  ❌ Le message "liste vide"
         │     → SECTION 03 — MESSAGE VIDE
 
+        ├─  📋 La liste de plusieurs tirages (resultCount > 1)
+        │     → SECTION 04 — LISTE DE PLUSIEURS TIRAGES
+
+        ├─  🕘 L'historique des tirages (panneau de réglages)
+        │     → SECTION 05 — PANNEAU : HISTORIQUE
+
         ────────────────────────────────────────────────────────────── */
 
 
@@ -44,6 +50,10 @@
 /*####     ├─  02. Carte de preview                          */
 /*#        |                                                 */
 /*=        ├─  03. Message vide                              */
+/*#        |                                                 */
+/*#####    ├─  04. Liste de plusieurs tirages                 */
+/*#        |                                                 */
+/*######   ├─  05. Panneau : historique des tirages           */
 /*#        |                                                 */
 /*#        └─*/
 
@@ -156,4 +166,94 @@
   color: #900;
   font-size: 12px;
   font-style: italic;
+}
+
+
+/*#####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — LISTE DE PLUSIEURS TIRAGES (resultCount > 1)
+  ───────────────────────────────────────────────────────────────────────
+    La liste affichée quand plusieurs works sont tirés d'un coup.
+    ⚠️ .ao3h-random-multi et ses enfants sont injectés par JS (surpriseMe.js).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-random-multi {
+  margin: 8px 0;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fafafa;
+  font-size: 13px;
+  max-width: 600px;
+}
+
+.ao3h-random-multi-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ao3h-random-multi-item {
+  padding: 6px 0;
+  border-bottom: 1px solid #e3e3e3;
+}
+
+.ao3h-random-multi-item:last-child { border-bottom: none; }
+
+.ao3h-random-multi-item label {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.ao3h-random-multi-meta {
+  display: block;
+  margin-left: 20px;
+  color: #666;
+  font-size: 11px;
+}
+
+
+/*######
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — PANNEAU DE RÉGLAGES : HISTORIQUE DES TIRAGES
+  ───────────────────────────────────────────────────────────────────────
+    Rendu dans le panneau de configuration (surpriseMe-config.js), pas sur
+    AO3 lui-même — même logique que les autres modules qui stylent leur
+    propre section de panneau dans leur .css (voir backupAndSync.css).
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-sm-history-empty {
+  color: #777;
+  font-style: italic;
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+.ao3h-sm-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.ao3h-sm-history-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #e3e3e3;
+  font-size: 12px;
+}
+
+.ao3h-sm-history-list li:last-child { border-bottom: none; }
+
+.ao3h-sm-history-date {
+  color: #888;
+  white-space: nowrap;
+  font-size: 11px;
 }

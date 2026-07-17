@@ -49,15 +49,27 @@ const MOD  = 'workLength';
 
 const DEFAULTS = {
   showPageEquiv:      false,
+  wordsPerPage:       275,
+  pageFormat:         'compact', // 'compact' (~X pg) | 'full' (~X pages)
   readSpeed:          'average',
   customWPM:          250,
   showEstimate:       true,
   estimateFicPage:    true,
   estimatePerChapter: true,
   estimateListings:   false,
+  showRemainingTime:  true,
+  showOneSitting:     false,
+  oneSittingMinutes:  60,
+  finishByTime:       '',    // "HH:MM" — empty disables the finish-by badge
   showLengthCategory: true,
+  thresholdFlash:     1000,
   thresholdShort:     17500,
   thresholdNovella:   60000,
+  thresholdEpic:      150000,
+  showAvgChapterLength: false,
+  showSeriesTotal:    true,
+  lengthGradient:     false,
+  customBooks:        '',    // one per line: "Title: 50000"
 };
 
 

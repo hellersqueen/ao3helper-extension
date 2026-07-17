@@ -89,27 +89,26 @@ AO3 Helper — Fanfic Binge Mode
 
 Le module **Fanfic Binge Mode** accompagne les sessions de lecture intensive en facilitant l’enchaînement entre plusieurs fics.
 
-Il permet notamment de :
-
-* afficher une fenêtre de continuation à la fin d’une œuvre ;
-* effectuer rapidement des actions après la lecture ;
-* rediriger automatiquement l’utilisateur après un compte à rebours ;
-* retrouver les dernières œuvres lues depuis la page d’accueil ;
-* proposer des œuvres à lire ensuite ;
-* créer une file d’attente personnelle ;
-* réorganiser et prioriser les œuvres placées dans cette file.
+* Il permet notamment de :
+  - afficher une fenêtre de continuation à la fin d’une œuvre ;
+  - effectuer rapidement des actions après la lecture ;
+  - rediriger automatiquement l’utilisateur après un compte à rebours ;
+  - retrouver les dernières œuvres lues depuis la page d’accueil ;
+  - proposer des œuvres à lire ensuite ;
+  - créer une file d’attente personnelle ;
+  - réorganiser et prioriser les œuvres placées dans cette file.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                      | Défaut    | Description                                                                                                              |
-| ---------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `continueReadingModal`       | Activé    | Affiche une fenêtre « Continue Reading? » lorsque l’utilisateur arrive presque à la fin du dernier chapitre d’une œuvre. |
-| `autoAdvanceDelay`           | `0`       | Définit le délai, en secondes, avant une redirection automatique. La valeur `0` désactive cette fonctionnalité.          |
-| `showHomepagePanel`          | Activé    | Affiche un bloc « Continue Reading » sur la page d’accueil avec les dernières œuvres lues.                               |
-| `showPostReadingSuggestions` | Activé    | Affiche des suggestions de lecture sous le contenu d’une œuvre terminée.                                                 |
-| `queueEnabled`               | Désactivé | Active la file d’attente de lecture, le bouton « + Queue » et son panneau de gestion.                                    |
+| Réglage                      | Description                                                                                                              |
+| ---------------------------- |--------------------------------------------------------------------------------------------------------------------------|
+| `continueReadingModal`       | Affiche une fenêtre « Continue Reading? » lorsque l’utilisateur arrive presque à la fin du dernier chapitre d’une œuvre. |
+| `autoAdvanceDelay`           | Définit le délai, en secondes, avant une redirection automatique. La valeur `0` désactive cette fonctionnalité.          |
+| `showHomepagePanel`          | Affiche un bloc « Continue Reading » sur la page d’accueil avec les dernières œuvres lues.                               |
+| `showPostReadingSuggestions` | Affiche des suggestions de lecture sous le contenu d’une œuvre terminée.                                                 |
+| `queueEnabled`               | Active la file d’attente de lecture, le bouton « + Queue » et son panneau de gestion.                                    |
 
 ---
 

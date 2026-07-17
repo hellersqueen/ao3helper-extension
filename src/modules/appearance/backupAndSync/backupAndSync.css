@@ -259,3 +259,14 @@
   color: var(--ao3h-bs-text-muted);
   font-size: 12px;
 }
+
+/*- Icône d'état (intégrité) d'une sauvegarde dans la liste du panneau */
+.ao3h-bas-row-status {
+  flex-shrink: 0;
+  color: #5a8a5a;
+  font-weight: bold;
+}
+
+.ao3h-bas-row-status--bad {
+  color: #a94442;
+}

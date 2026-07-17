@@ -145,24 +145,20 @@ AO3 Helper - Hidden Gems Submodule
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
+Le module **Fic Engagement** ajoute des indicateurs permettant d'évaluer rapidement le niveau d'engagement d'une œuvre, indépendamment de sa popularité brute. Plutôt que de se baser uniquement sur le nombre de kudos ou de vues, il calcule plusieurs ratios afin d'aider à repérer les œuvres suscitant un fort engagement de la part des lecteurs.
 
-Le module **Fic Engagement** ajoute des indicateurs permettant d'évaluer rapidement le niveau d'engagement d'une œuvre, indépendamment de sa popularité brute.
-
-Plutôt que de se baser uniquement sur le nombre de kudos ou de vues, il calcule plusieurs ratios afin d'aider à repérer les œuvres suscitant un fort engagement de la part des lecteurs.
-
-Le module permet notamment de :
-
-- afficher plusieurs métriques d'engagement sous chaque œuvre ;
-- mettre en évidence les œuvres peu connues mais particulièrement appréciées ;
-- colorer les indicateurs selon leur niveau d'engagement.
+* Le module permet notamment de :
+  - afficher plusieurs métriques d'engagement sous chaque œuvre ;
+  - mettre en évidence les œuvres peu connues mais particulièrement appréciées ;
+  - colorer les indicateurs selon leur niveau d'engagement.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage | Défaut | Description |
-|----------|--------|-------------|
-| `colorCodeMetrics` | Désactivé | Colore les badges selon leur niveau d'engagement. |
+| Réglage            | Description                                       |
+|--------------------|---------------------------------------------------|
+| `colorCodeMetrics` | Colore les badges selon leur niveau d'engagement. |
 
 ---
 

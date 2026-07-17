@@ -35,6 +35,9 @@ import { detectUser } from '../../../../lib/utils/user-detector.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { makeListReorderable, applySavedOrder } from '../../../../lib/ui/drag-reorder.js';
+import { computeDiversity, computeRereadPercent, computeReaderProfile, computeYearRecap } from './dashboardStats.js';
 import styles from './readingDashboard.css?inline';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -58,6 +61,22 @@ const MAX_RECENT_WORKS = 10;
 const MAX_WIP_WORKS = 10;
 const MAX_FANDOMS = 6;
 const MAX_TAGS = 8;
+
+const DEFAULTS = {
+  showRecentWorks: true,
+  showWipTracker: true,
+  showTopFandoms: true,
+  showTopTags: true,
+  showQuickLinks: true,
+  recentWorksCount: MAX_RECENT_WORKS,
+  topFandomsCount: MAX_FANDOMS,
+};
+
+const cfg = makeCfg(MOD_ID, DEFAULTS);
+
+function intSetting(key, fallback) {
+  return parseInt(String(cfg(key) ?? fallback), 10) || fallback;
+}
 
 function log(...args) {
   console.log(LOG_PREFIX, ...args);
@@ -201,6 +220,7 @@ function updateDataFromCurrentWork(data) {
   // Update or insert work entry
   let works = data.works || [];
   const existingIndex = works.findIndex((w) => w && w.id === workId);
+  const previousVisitCount = existingIndex !== -1 ? (works[existingIndex].visitCount || 1) : 0;
 
   const newEntry = {
     id: workId,
@@ -210,6 +230,7 @@ function updateDataFromCurrentWork(data) {
     tags,
     completed,
     lastVisited: now,
+    visitCount: previousVisitCount + 1,
   };
 
   if (existingIndex !== -1) {
@@ -387,6 +408,120 @@ function buildCountsList(countEntries, max, { title, emptyText }) {
   return section;
 }
 
+function buildTagCloudSection(countEntries, max, { title, emptyText }) {
+  const section = document.createElement('div');
+  section.className = 'ao3h-dashboard-section';
+
+  const h = document.createElement('h3');
+  h.className = 'ao3h-dashboard-section-title';
+  h.textContent = title;
+  section.appendChild(h);
+
+  if (!countEntries || !countEntries.length) {
+    const p = document.createElement('p');
+    p.className = 'ao3h-dashboard-empty';
+    p.textContent = emptyText || 'No data yet.';
+    section.appendChild(p);
+    return section;
+  }
+
+  const entries = countEntries.slice(0, max);
+  const maxCount = Math.max(...entries.map(([, count]) => count));
+  const minCount = Math.min(...entries.map(([, count]) => count));
+  const spread = Math.max(maxCount - minCount, 1);
+
+  const cloud = document.createElement('div');
+  cloud.className = 'ao3h-dashboard-tagcloud';
+
+  entries.forEach(([key, count]) => {
+    const span = document.createElement('span');
+    span.className = 'ao3h-dashboard-tagcloud-item';
+    // Scale font size between 0.8em and 1.6em by relative frequency.
+    const ratio = (count - minCount) / spread;
+    span.style.fontSize = `${(0.8 + ratio * 0.8).toFixed(2)}em`;
+    span.textContent = key;
+    span.title = `${count} visit${count > 1 ? 's' : ''}`;
+    cloud.appendChild(span);
+  });
+
+  section.appendChild(cloud);
+  return section;
+}
+
+function buildInsightsSection(data) {
+  const works = (data && data.works) || [];
+  const section = document.createElement('div');
+  section.className = 'ao3h-dashboard-section';
+
+  const h = document.createElement('h3');
+  h.className = 'ao3h-dashboard-section-title';
+  h.textContent = 'Reading insights';
+  section.appendChild(h);
+
+  if (!works.length) {
+    const p = document.createElement('p');
+    p.className = 'ao3h-dashboard-empty';
+    p.textContent = 'Insights will appear here as you read.';
+    section.appendChild(p);
+    return section;
+  }
+
+  const diversity = computeDiversity(works);
+  const rereadPercent = computeRereadPercent(works);
+  const profile = computeReaderProfile(works);
+
+  const list = document.createElement('ul');
+  list.className = 'ao3h-dashboard-insights-list';
+
+  function addLine(text) {
+    const li = document.createElement('li');
+    li.textContent = text;
+    list.appendChild(li);
+  }
+
+  addLine(`You've read across ${diversity.fandomCount} fandom${diversity.fandomCount === 1 ? '' : 's'} and ${diversity.tagCount} different tags recently.`);
+  addLine(`${rereadPercent}% of the works in your recent history are re-reads.`);
+  if (profile) addLine(`${profile.label} — ${profile.detail}`);
+
+  section.appendChild(list);
+  return section;
+}
+
+function buildYearRecapSection(data) {
+  const recap = computeYearRecap((data && data.works) || []);
+  const section = document.createElement('div');
+  section.className = 'ao3h-dashboard-section';
+
+  const h = document.createElement('h3');
+  h.className = 'ao3h-dashboard-section-title';
+  h.textContent = `Your ${recap.year} in fics`;
+  section.appendChild(h);
+
+  if (!recap.totalWorks) {
+    const p = document.createElement('p');
+    p.className = 'ao3h-dashboard-empty';
+    p.textContent = `No visits recorded for ${recap.year} yet.`;
+    section.appendChild(p);
+    return section;
+  }
+
+  const list = document.createElement('ul');
+  list.className = 'ao3h-dashboard-insights-list';
+
+  function addLine(text) {
+    const li = document.createElement('li');
+    li.textContent = text;
+    list.appendChild(li);
+  }
+
+  addLine(`${recap.totalWorks} work${recap.totalWorks === 1 ? '' : 's'} visited (${recap.completedCount} completed, ${recap.wipCount} still in progress).`);
+  addLine(`${recap.distinctFandoms} fandom${recap.distinctFandoms === 1 ? '' : 's'} and ${recap.distinctTags} tags explored.`);
+  if (recap.topFandom) addLine(`Most-visited fandom: ${recap.topFandom}.`);
+
+  section.appendChild(list);
+  return section;
+}
+
 function getUsername() {
   const u = detectUser();
   if (u) return u;
@@ -505,8 +640,13 @@ function buildContinueReadingSection(data) {
   return section;
 }
 
+let dragCleanup = null;
+
 function renderDashboardPanel(data) {
   if (!isHomePage()) return;
+
+  dragCleanup?.();
+  dragCleanup = null;
 
   const panel = createOrGetPanelContainer();
   clearPanel(panel);
@@ -520,44 +660,74 @@ function renderDashboardPanel(data) {
   wrapper.className = 'ao3h-dashboard-grid';
 
   const works = (data && data.works) || [];
-
   const sortedWorks = works.slice().sort((a, b) => (b.lastVisited || 0) - (a.lastVisited || 0));
-  const recentWorksSection = buildWorksList(sortedWorks, MAX_RECENT_WORKS, {
-    title: 'Last opened works',
-    emptyText: 'Open a few fics and they will appear here.',
-  });
 
-  const wipWorks = sortedWorks.filter((w) => !w.completed);
-  const wipSection = buildWorksList(wipWorks, MAX_WIP_WORKS, {
-    title: 'Works in progress you visited',
-    emptyText: 'Recently visited WIPs will appear here.',
-  });
+  const recentWorksCount = intSetting('recentWorksCount', MAX_RECENT_WORKS);
+  const topFandomsCount = intSetting('topFandomsCount', MAX_FANDOMS);
 
-  const fandomCountsSorted = sortCountsDescending(data.fandomCounts || {});
-  const fandomSection = buildCountsList(fandomCountsSorted, MAX_FANDOMS, {
-    title: 'Your top fandoms',
-    emptyText: 'Your fandom history will appear here as you read.',
-  });
+  // Each block carries a stable data-block-id so its position can be
+  // persisted (see data.blockOrder) and restored across sessions/reloads.
+  const blocks = [];
 
-  const tagCountsSorted = sortCountsDescending(data.tagCounts || {});
-  const tagsSection = buildCountsList(tagCountsSorted, MAX_TAGS, {
-    title: 'Your top tags',
-    emptyText: 'Your favorite tropes will appear here as you read.',
-  });
-
-  const quickLinksSection = buildQuickLinksSection();
-
-  // "Continue Reading" widget — inserted first if data available
   const continueSection = buildContinueReadingSection(data);
-  if (continueSection) wrapper.appendChild(continueSection);
+  if (continueSection) blocks.push(['continueReading', continueSection]);
 
-  wrapper.appendChild(recentWorksSection);
-  wrapper.appendChild(wipSection);
-  wrapper.appendChild(fandomSection);
-  wrapper.appendChild(tagsSection);
+  blocks.push(['insights', buildInsightsSection(data)]);
+  blocks.push(['yearRecap', buildYearRecapSection(data)]);
+
+  if (cfg('showRecentWorks')) {
+    blocks.push(['recentWorks', buildWorksList(sortedWorks, recentWorksCount, {
+      title: 'Last opened works',
+      emptyText: 'Open a few fics and they will appear here.',
+    })]);
+  }
+
+  if (cfg('showWipTracker')) {
+    const wipWorks = sortedWorks.filter((w) => !w.completed);
+    blocks.push(['wipTracker', buildWorksList(wipWorks, MAX_WIP_WORKS, {
+      title: 'Works in progress you visited',
+      emptyText: 'Recently visited WIPs will appear here.',
+    })]);
+  }
+
+  if (cfg('showTopFandoms')) {
+    const fandomCountsSorted = sortCountsDescending(data.fandomCounts || {});
+    blocks.push(['topFandoms', buildCountsList(fandomCountsSorted, topFandomsCount, {
+      title: 'Your top fandoms',
+      emptyText: 'Your fandom history will appear here as you read.',
+    })]);
+  }
+
+  if (cfg('showTopTags')) {
+    const tagCountsSorted = sortCountsDescending(data.tagCounts || {});
+    blocks.push(['topTags', buildTagCloudSection(tagCountsSorted, MAX_TAGS, {
+      title: 'Your top tags',
+      emptyText: 'Your favorite tropes will appear here as you read.',
+    })]);
+  }
+
+  blocks.forEach(([id, el]) => {
+    el.dataset.blockId = id;
+    wrapper.appendChild(el);
+  });
+
+  applySavedOrder(wrapper, data.blockOrder || [], (el) => el.dataset.blockId, ':scope > .ao3h-dashboard-section');
+
+  dragCleanup = makeListReorderable(wrapper, {
+    itemSelector: ':scope > .ao3h-dashboard-section',
+    getItemKey: (el) => el.dataset.blockId,
+    onOrderChanged: (order) => {
+      const current = loadData();
+      current.blockOrder = order;
+      saveData(current);
+    },
+  });
 
   panel.appendChild(wrapper);
-  panel.appendChild(quickLinksSection);
+
+  if (cfg('showQuickLinks')) {
+    panel.appendChild(buildQuickLinksSection());
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -579,6 +749,8 @@ function init(/* context */) {
   return function dispose() {
     log('stopped');
     html.classList.remove(ROOT_CLASS);
+    dragCleanup?.();
+    dragCleanup = null;
     const panel = document.getElementById(PANEL_ID);
     if (panel && panel.parentNode) {
       panel.parentNode.removeChild(panel);

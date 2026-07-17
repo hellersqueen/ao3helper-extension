@@ -18,9 +18,10 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { upsertChapterBadgePart, removeChapterBadgePartsByKey } from '../../../../lib/ui/chapter-badge.js';
+import { upsertChapterBadgePart, removeChapterBadgePartsByKey } from '../../../../lib/ui/badges.js';
 import { onReady, observe, countWords } from '../../../../lib/utils/index.js';
 import { getChapterProse } from '../../../../lib/ao3/work-page.js';
+import { parseChapterProgress, remainingWordsAfterChapter, canFinishBy } from './lengthMath.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -70,7 +71,66 @@ export class ReadingTime {
     const { NS } = this;
     const wpm = this.getWPM();
     const min = words / wpm;
-    return `<span class="${NS}-wl-time" title="Reading time @ ${wpm} wpm">⏱ ${this.formatTime(min)}</span>`;
+    let html = `<span class="${NS}-wl-time" title="Reading time @ ${wpm} wpm">⏱ ${this.formatTime(min)}</span>`;
+
+    // "Readable in one sitting" marker (threshold configurable)
+    if (this.cfg('showOneSitting')) {
+      const limit = parseInt(String(this.cfg('oneSittingMinutes') ?? 60), 10) || 60;
+      if (min <= limit) {
+        html += `<span class="${NS}-wl-onesit" title="Readable in one sitting (≤ ${limit} min)">🛋 One sitting</span>`;
+      }
+    }
+    return html;
+  }
+
+  /** Current chapter number when viewing a single chapter (null otherwise). */
+  getCurrentChapterNumber() {
+    if (document.querySelectorAll('#chapters > .chapter').length !== 1) return null;
+    const heading = document.querySelector('#chapters .chapter .title, #chapters .chapter h3.title');
+    const m = heading?.textContent.match(/Chapter\s+(\d+)/i);
+    return m ? parseInt(m[1], 10) : null;
+  }
+
+  /** "⏳ ~2h10min left" after the current chapter, on chapter-by-chapter view. */
+  injectRemainingTime(statEl) {
+    if (this.cfg('showRemainingTime') === false || !this.cfg('showEstimate')) return;
+    if (statEl.querySelector(`.${this.NS}-wl-remaining`)) return;
+    const chaptersEl = document.querySelector('dl.stats dd.chapters');
+    const progress   = chaptersEl ? parseChapterProgress(chaptersEl.textContent) : null;
+    const current    = this.getCurrentChapterNumber();
+    if (!progress || !current || progress.published < 2) return;
+
+    const left = remainingWordsAfterChapter(this.parseWordCount(statEl), current, progress.published);
+    if (left === null || left < 100) return;
+    const min = left / this.getWPM();
+    statEl.insertAdjacentHTML('beforeend',
+      `<span class="${this.NS}-wl-remaining" title="Estimated time left after chapter ${current}/${progress.published}">⏳ ~${this.formatTime(min)} left</span>`);
+  }
+
+  /** "⏰ by 23:00 ✅" verdict against the configured finish-by time. */
+  injectFinishBy(statEl) {
+    const target = String(this.cfg('finishByTime') || '').trim();
+    if (!target || !this.cfg('showEstimate')) return;
+    if (statEl.querySelector(`.${this.NS}-wl-finishby`)) return;
+
+    // Use the remaining estimate when on a chapter view, else the whole work
+    const chaptersEl = document.querySelector('dl.stats dd.chapters');
+    const progress   = chaptersEl ? parseChapterProgress(chaptersEl.textContent) : null;
+    const current    = this.getCurrentChapterNumber();
+    const words      = this.parseWordCount(statEl);
+    const effective  = (progress && current)
+      ? remainingWordsAfterChapter(words, current, progress.published) ?? words
+      : words;
+
+    const verdict = canFinishBy(effective / this.getWPM(), target);
+    if (!verdict) return;
+    const marks = {
+      yes:   { icon: '✅', label: 'you can finish it' },
+      maybe: { icon: '🤏', label: 'it will be tight' },
+      no:    { icon: '⏰', label: 'too long' },
+    }[verdict];
+    statEl.insertAdjacentHTML('beforeend',
+      `<span class="${this.NS}-wl-finishby ${this.NS}-wl-finishby--${verdict}" title="Finish before ${target}? ${marks.label}">${marks.icon} by ${target}</span>`);
   }
 
   injectTimeBadge(ddEl, onWorkPage = false) {
@@ -115,12 +175,16 @@ export class ReadingTime {
     if (isWork) {
       // #chapters peut ne pas encore être parsé quand ce module boote (surtout
       // sur un gros work) — injectPerChapter() n'a pas de retry, contrairement
-      // à chapterWordCount ; sans ce report, le badge partagé (lib/ui/chapter-badge.js)
+      // à chapterWordCount ; sans ce report, le badge partagé (lib/ui/badges.js)
       // ne reçoit jamais sa partie « temps de lecture » sur un chargement lent.
       onReady(() => {
         if (!active) return;
         const stat = document.querySelector('dl.stats dd.words');
-        if (stat) this.injectTimeBadge(stat, true);
+        if (stat) {
+          this.injectTimeBadge(stat, true);
+          this.injectRemainingTime(stat);
+          this.injectFinishBy(stat);
+        }
         this.injectPerChapter();
       });
     } else {
@@ -146,7 +210,7 @@ export class ReadingTime {
 
   reset() {
     const { NS } = this;
-    document.querySelectorAll(`.${NS}-wl-time`).forEach(el => el.remove());
+    document.querySelectorAll(`.${NS}-wl-time, .${NS}-wl-onesit, .${NS}-wl-remaining, .${NS}-wl-finishby`).forEach(el => el.remove());
     removeChapterBadgePartsByKey('time');
   }
 }

@@ -30,6 +30,12 @@
         │     → SECTION 04 — LIENS RAPIDES
         │     → variable : --ao3h-rd-quicklink-color
 
+        ├─  ☁️ Le nuage de tags et les blocs "insights"
+        │     → SECTION 05 — NUAGE DE TAGS ET INSIGHTS
+
+        ├─  ⠿ Les poignées de glisser-déposer des blocs
+        │     → SECTION 06 — RÉORGANISATION DES BLOCS
+
         ────────────────────────────────────────────────────────────── */
 
 
@@ -44,6 +50,10 @@
 /*=        ├─  03. Textes et liens                           */
 /*#        |                                                 */
 /*==       ├─  04. Liens rapides                             */
+/*#        |                                                 */
+/*#####    ├─  05. Nuage de tags et insights                 */
+/*#        |                                                 */
+/*######   ├─  06. Réorganisation des blocs                  */
 /*#        |                                                 */
 /*#        └─*/
 
@@ -239,4 +249,69 @@ html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-quicklink {
 
 html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-quicklink:hover {
   background: var(--ao3h-rd-quicklink-hover-bg);
+}
+
+
+/*#####
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — NUAGE DE TAGS ET INSIGHTS
+  ───────────────────────────────────────────────────────────────────────
+    Le nuage de tags (taille de police proportionnelle à la fréquence) et
+    les listes de texte des blocs "Reading insights" / "Your ... in fics".
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-tagcloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em 0.6em;
+  align-items: baseline;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-tagcloud-item {
+  color: var(--ao3h-rd-link-color);
+  line-height: 1.2;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-insights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-insights-list li {
+  margin-bottom: 0.35em;
+  font-size: 0.82em;
+  color: var(--ao3h-rd-text-muted);
+}
+
+
+/*######
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — RÉORGANISATION DES BLOCS (GLISSER-DÉPOSER)
+  ───────────────────────────────────────────────────────────────────────
+    Poignée de glisser-déposer injectée par lib/ui/drag-reorder.js sur
+    chaque bloc de la grille (.ao3h-dashboard-section).
+    ⚠️ .ao3h-drag-handle / .ao3h-dragging sont posées par ce script partagé.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-section {
+  position: relative;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-drag-handle {
+  cursor: grab;
+  color: var(--ao3h-rd-text-muted);
+  font-size: 0.85em;
+  margin-right: 0.3em;
+  user-select: none;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-drag-handle:active {
+  cursor: grabbing;
+}
+
+html.ao3h-dashboard-enabled #ao3h-dashboard-panel .ao3h-dashboard-section.ao3h-dragging {
+  opacity: 0.4;
 }

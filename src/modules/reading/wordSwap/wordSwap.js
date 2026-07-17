@@ -35,6 +35,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet, onReady, observe } from '../../../../lib/utils/index.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { characterNameRule, deadnameRule, sensitiveWordRule, RULE_PACKS, packRules } from './ruleTemplates.js';
 import styles from './wordSwap.css?inline';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -193,6 +194,55 @@ function renderRulesPanel(container) {
         addBtn.className = 'ao3h-btn ao3h-ws-add';
         addBtn.textContent = '+ Add Rule';
         container.appendChild(addBtn);
+
+        // ── Ready-made templates ────────────────────────────────────────
+        const tplSel = document.createElement('select');
+        tplSel.className = 'ao3h-ws-templates';
+        tplSel.innerHTML = `
+            <option value="">— Insert a template —</option>
+            <option value="character">Normalize a character name…</option>
+            <option value="deadname">Replace a deadname…</option>
+            <option value="sensitive">Soften a sensitive word…</option>
+            ${RULE_PACKS.map(p => `<option value="pack:${p.id}">${escHtml(p.label)} (${p.pairs.length} rules)</option>`).join('')}`;
+        container.appendChild(tplSel);
+
+        tplSel.addEventListener('change', () => {
+            const choice = tplSel.value;
+            tplSel.value = '';
+            if (!choice) return;
+            const r = loadRules();
+
+            if (choice === 'character') {
+                const variants = W.prompt('Variants of the name to normalize (comma-separated):', 'Zoë, Zoey');
+                if (!variants) return;
+                const canonical = W.prompt('Replace them all with:', '');
+                const rule = characterNameRule(variants, canonical);
+                if (!rule) return;
+                r.push(rule);
+            } else if (choice === 'deadname') {
+                const from = W.prompt('Name to replace:');
+                if (!from) return;
+                const to = W.prompt('Replace with:');
+                const rule = deadnameRule(from, to);
+                if (!rule) return;
+                r.push(rule);
+            } else if (choice === 'sensitive') {
+                const word = W.prompt('Word to soften in the text:');
+                if (!word) return;
+                const repl = W.prompt('Replace it with (empty = ▓▓▓):', '');
+                const rule = sensitiveWordRule(word, repl);
+                if (!rule) return;
+                r.push(rule);
+            } else if (choice.startsWith('pack:')) {
+                const rules = packRules(choice.slice(5));
+                if (!rules.length) return;
+                // Skip pairs the user already has a rule for
+                const existing = new Set(r.map(x => x.find.toLowerCase()));
+                rules.forEach(rule => { if (!existing.has(rule.find.toLowerCase())) r.push(rule); });
+            }
+
+            save(r); rebuild();
+        });
 
         const prevSec = document.createElement('div');
         prevSec.className = 'ao3h-ws-preview-section';

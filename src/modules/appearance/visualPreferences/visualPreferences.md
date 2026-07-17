@@ -32,6 +32,11 @@ console du navigateur.
 | `statsAsIcons` | désactivé | Affiche les statistiques sous forme d'icônes plutôt que de texte |
 | `statsIconsMode` | `icons` | Icônes seules, ou icônes avec légende |
 | `relativeDates` | désactivé | Affiche les dates de façon relative ("il y a 4 ans") plutôt qu'une date précise |
+| `dateAgeColoring` | désactivé | Colore les dates selon leur ancienneté (aujourd'hui / semaine / mois / plus vieux) |
+| `layoutDensity` | `comfortable` | Densité d'espacement des listes : compact / confortable / spacieux |
+| `gridView` | désactivé | Affiche les listes de fics en grille de cartes plutôt qu'en liste |
+| `blurbSectionOrder` | `header,tags,summary,stats` | L'ordre d'affichage des sections d'une fic dans les listes |
+| `wordOccurrenceCounter` | désactivé | Sur une page de fic, ajoute un champ pour compter les occurrences d'un mot dans le texte |
 
 ## Fichiers
 
@@ -57,6 +62,7 @@ console du navigateur.
 
 - Peut afficher les statistiques sous forme d'icônes plutôt que de texte, avec ou sans légende
 - Peut afficher les dates de façon relative ("il y a 4 ans") plutôt qu'une date précise
+- Peut colorer les dates selon leur ancienneté (aujourd'hui / semaine / mois / plus vieux), y compris en même temps que l'affichage relatif
 
 ### 6. `hoverReveal.js` — révéler au survol
 
@@ -70,7 +76,29 @@ console du navigateur.
 
 - Peut cacher les statistiques affichées dans le menu déroulant des chapitres d'une fic
 
-### 9. `visualPreferences.css`
+### 9. `layoutDensity.js` — densité de l'espacement
+
+- Une seule case à trois positions (compact / confortable / spacieux) qui s'applique aux listes de fics et couvre à la fois "un mode compact pour les listings" et "un réglage de densité pour tout le site" — les deux idées se recoupaient, une seule implémentation suffit
+
+### 10. `blurbSectionOrder.js` — ordre des sections d'une fic dans les listes
+
+- Réorganise visuellement (via `order` CSS) le titre/en-tête, les tags, le résumé et les statistiques d'une fic dans les listes, selon l'ordre choisi
+- Garde toujours ensemble chaque titre de section (invisible, pour les lecteurs d'écran) et son contenu, pour ne pas casser la navigation par landmarks
+
+### 11. `gridView.js` — affichage en grille de cartes
+
+- Transforme les listes de fics en grille de cartes qui s'adapte à la largeur de l'écran, sans toucher au contenu ni à l'ordre à l'intérieur de chaque fic
+
+### 12. `wordOccurrenceCounter.js` et `wordOccurrenceMath.js` — compteur d'occurrences
+
+- Sur la page d'une fic, ajoute un champ pour taper un nom de personnage (ou n'importe quel mot ou expression) et voir combien de fois il apparaît dans le texte des chapitres déjà chargés
+- Compte en mot entier, insensible à la casse ; se souvient du dernier mot cherché
+
+### 13. `dateAgeMath.js` — calcul de l'ancienneté d'une date
+
+- Calcule si une date correspond à "aujourd'hui", "cette semaine", "ce mois-ci" ou "plus vieux", utilisé par `statsDisplayFormat.js` pour la coloration des dates
+
+### 14. `visualPreferences.css`
 
 - Les styles visuels de tous les fichiers ci-dessus
 
@@ -80,17 +108,34 @@ Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
 
-- Un mode compact pour les listings (favoris, historique, "à lire plus tard"...)
+- ~~Un mode compact pour les listings (favoris, historique, "à lire plus tard"...)~~ ✅
+  Fait, fusionné avec le réglage de densité globale ci-dessous (`layoutDensity.js`) :
+  les deux idées revenaient au même besoin, une seule case à trois positions
+  (compact / confortable / spacieux) couvre les deux à la fois.
 
-- Réorganiser l'ordre des informations affichées sur les listes de fics (titre, résumé, tags, statistiques...)
+- ~~Réorganiser l'ordre des informations affichées sur les listes de fics (titre, résumé, tags, statistiques...)~~ ✅
+  Fait : réglage `blurbSectionOrder` (texte séparé par des virgules,
+  ex. `stats,tags,summary,header`), appliqué via `order` CSS
+  (`blurbSectionOrder.js`). Chaque titre de section (invisible, pour les
+  lecteurs d'écran) reste toujours collé à son contenu.
 
-- Colorer les dates selon leur ancienneté (aujourd'hui, cette semaine, plus vieux) plutôt que juste changer le texte
+- ~~Colorer les dates selon leur ancienneté (aujourd'hui, cette semaine, plus vieux) plutôt que juste changer le texte~~ ✅
+  Fait : réglage `dateAgeColoring` (`dateAgeMath.js` +
+  `statsDisplayFormat.js`) — fonctionne sur les listes et les pages de fic,
+  y compris en même temps que l'affichage en dates relatives.
 
-- Un réglage de densité pour tout le site (compact / confortable / spacieux), pas seulement pour les listings
+- ~~Un réglage de densité pour tout le site (compact / confortable / spacieux), pas seulement pour les listings~~ ✅
+  Fait : voir "mode compact pour les listings" ci-dessus — `layoutDensity.js`
+  couvre les deux idées d'un seul coup.
 
-- Un affichage en grille de cartes (façon Pinterest) pour les résultats de recherche, en plus de la liste classique
+- ~~Un affichage en grille de cartes (façon Pinterest) pour les résultats de recherche, en plus de la liste classique~~ ✅
+  Fait : réglage `gridView` (`gridView.js`) — purement visuel (CSS), le
+  contenu et l'ordre à l'intérieur de chaque fic ne changent pas.
 
-- Compter combien de fois le nom d'un personnage (ou un autre mot choisi) apparaît dans le texte d'une fic
+- ~~Compter combien de fois le nom d'un personnage (ou un autre mot choisi) apparaît dans le texte d'une fic~~ ✅
+  Fait : réglage `wordOccurrenceCounter` — champ de recherche sur la page
+  d'une fic, comptage en mot entier insensible à la casse
+  (`wordOccurrenceMath.js` + `wordOccurrenceCounter.js`).
 
 ---
 
@@ -180,7 +225,7 @@ AO3 Helper - Minimal Header Submodule
 
     Toggles a streamlined header style on AO3 by adding/removing the
     `ao3h-minimal-header` class on <html>. Visual rules live in
-    styles/header-cleanup.css.
+    visualPreferences.css (section « Header cleanup »).
 
     Keys managed:
         - minimalHeader → ao3h-minimal-header
@@ -255,43 +300,37 @@ AO3 Helper - Visibility Presets Submodule
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Visual Preferences** permet de personnaliser l'affichage d'AO3 afin d'offrir une expérience de lecture plus confortable et moins influencée par les statistiques.
 
-Il permet notamment de :
-
-- masquer individuellement les différentes statistiques des œuvres ;
-- masquer les différentes dates affichées par AO3 ;
-- réduire l'en-tête du site ;
-- modifier la présentation des statistiques ;
-- afficher les dates sous une forme relative ;
-- révéler temporairement les informations masquées au survol ;
-- appliquer rapidement des préréglages d'affichage.
-
-> **Migration**
->
-> Les fonctionnalités de mise en valeur des fandoms ont été déplacées vers `browse/tagsDisplay/tagHighlighting.js`, où elles sont désormais regroupées avec le système de surlignage des tags favoris et bénéficient d'une interface graphique.
+* Il permet notamment de :
+    - masquer individuellement les différentes statistiques des œuvres ;
+    - masquer les différentes dates affichées par AO3 ;
+    - réduire l'en-tête du site ;
+    - modifier la présentation des statistiques ;
+    - afficher les dates sous une forme relative ;
+    - révéler temporairement les informations masquées au survol ;
+    - appliquer rapidement des préréglages d'affichage.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage | Défaut | Description |
-|----------|--------|-------------|
-| `hideWordCount` | Désactivé | Masque le nombre de mots. |
-| `hideKudosCount` | Désactivé | Masque le nombre de kudos. |
-| `hideCommentsCount` | Désactivé | Masque le nombre de commentaires. |
-| `hideBookmarksCount` | Désactivé | Masque le nombre de favoris. |
-| `hideHits` | Désactivé | Masque le nombre de vues. |
-| `hidePublishedDate` | Désactivé | Masque la date de publication. |
-| `hideUpdatedDate` | Désactivé | Masque la date de mise à jour. |
-| `hideCompletedDate` | Désactivé | Masque la date de fin. |
-| `hideChapterDates` | Désactivé | Masque les dates des chapitres. |
-| `minimalHeader` | Désactivé | Active un en-tête minimaliste. |
-| `hideStatsOnChaptersList` | Désactivé | Masque les statistiques affichées dans la liste des chapitres. |
-| `statsAsIcons` | Désactivé | Remplace les statistiques textuelles par des icônes. |
-| `statsIconsMode` | `icons` | Définit le mode d'affichage des icônes (`icons` ou `icons-text`). |
-| `relativeDates` | Désactivé | Affiche les dates sous une forme relative ("il y a 4 ans"). |
+| Réglage                   | Description                                                       |
+|---------------------------|-------------------------------------------------------------------|
+| `hideWordCount`           | Masque le nombre de mots.                                         |
+| `hideKudosCount`          | Masque le nombre de kudos.                                        |
+| `hideCommentsCount`       | Masque le nombre de commentaires.                                 |
+| `hideBookmarksCount`      | Masque le nombre de favoris.                                      |
+| `hideHits`                | Masque le nombre de vues.                                         |
+| `hidePublishedDate`       | Masque la date de publication.                                    |
+| `hideUpdatedDate`         | Masque la date de mise à jour.                                    |
+| `hideCompletedDate`       | Masque la date de fin.                                            |
+| `hideChapterDates`        | Masque les dates des chapitres.                                   |
+| `minimalHeader`           | Active un en-tête minimaliste.                                    |
+| `hideStatsOnChaptersList` | Masque les statistiques affichées dans la liste des chapitres.    |
+| `statsAsIcons`            | Remplace les statistiques textuelles par des icônes.              |
+| `statsIconsMode`          | Définit le mode d'affichage des icônes (`icons` ou `icons-text`). |
+| `relativeDates`           | Affiche les dates sous une forme relative ("il y a 4 ans").       |
 
 ---
 
@@ -552,7 +591,7 @@ sur l'élément `<html>`.
 
 Les règles visuelles correspondantes sont définies dans :
 
-`styles/header-cleanup.css`
+`visualPreferences.css` (section « Header cleanup »)
 
 ---
 
@@ -837,76 +876,68 @@ Les fonctionnalités ci-dessous sont prévues dans la conception du module ou do
 
 ## Présentation des listes
 
-### Mode compact
+### ~~Mode compact~~ ✅ Fait (fusionné avec la densité de l'interface)
 
-Ajouter un mode compact pour les différentes listes d'œuvres.
+~~Ajouter un mode compact pour les différentes listes d'œuvres (favoris, historique, Marked for Later...).~~
 
-Les pages concernées comprennent notamment :
-
-- les favoris ;
-- l'historique ;
-- Marked for Later ;
-- les autres listes similaires.
+> Ce besoin et celui de "Densité de l'interface" plus bas se recoupaient
+> entièrement — implémentés ensemble comme un seul réglage à trois
+> positions (`layoutDensity.js`), voir plus bas.
 
 ---
 
-### Réorganisation des informations
+### ~~Réorganisation des informations~~ ✅ Fait
 
-Permettre de modifier librement l'ordre des informations affichées sur les listes.
+~~Permettre de modifier librement l'ordre des informations affichées sur les listes (titre, résumé, tags, statistiques...).~~
 
-Les éléments concernés comprennent notamment :
-
-- le titre ;
-- le résumé ;
-- les tags ;
-- les statistiques ;
-- les autres métadonnées.
+> Réglage `blurbSectionOrder` : ordre choisi parmi header/tags/summary/stats,
+> appliqué en CSS (`order` flexbox) par `blurbSectionOrder.js`. Chaque titre
+> de section invisible (repère pour lecteur d'écran) reste toujours associé
+> à son contenu, pour ne pas casser la navigation par landmarks.
 
 ---
 
-### Affichage en grille
+### ~~Affichage en grille~~ ✅ Fait
 
-Ajouter une présentation alternative sous forme de cartes, inspirée d'un affichage de type Pinterest.
+~~Ajouter une présentation alternative sous forme de cartes, inspirée d'un affichage de type Pinterest.~~
 
-Cette présentation viendrait compléter la liste classique des résultats de recherche.
+> Réglage `gridView` (`gridView.js`) : grille de cartes qui s'adapte à la
+> largeur de l'écran, purement visuelle — le contenu et son ordre à
+> l'intérieur de chaque fic ne changent pas.
 
 ---
 
 ## Dates
 
-### Coloration selon l'ancienneté
+### ~~Coloration selon l'ancienneté~~ ✅ Fait
 
-Permettre de modifier automatiquement la couleur des dates selon leur ancienneté.
+~~Permettre de modifier automatiquement la couleur des dates selon leur ancienneté (aujourd'hui, cette semaine, plus ancien).~~
 
-Exemples :
-
-- aujourd'hui ;
-- cette semaine ;
-- plus ancien.
-
-Cette fonctionnalité compléterait le système actuel de dates relatives.
+> Réglage `dateAgeColoring` (`dateAgeMath.js`, appliqué par
+> `statsDisplayFormat.js`) — fonctionne sur les listes et les pages de fic,
+> compatible avec l'affichage en dates relatives déjà existant.
 
 ---
 
-## Densité de l'interface
+## ~~Densité de l'interface~~ ✅ Fait
 
-Ajouter un réglage global permettant de choisir la densité de l'ensemble du site.
+~~Ajouter un réglage global permettant de choisir la densité de l'ensemble du site (Compact / Confortable / Spacieux).~~
 
-Les modes envisagés comprennent :
-
-- Compact ;
-- Confortable ;
-- Spacieux.
-
-Contrairement au mode compact des listes, ce réglage s'appliquerait à toute l'interface d'AO3.
+> Réglage `layoutDensity` (`layoutDensity.js`) — une seule case à trois
+> positions, qui couvre à la fois ce besoin et le "mode compact des listes"
+> ci-dessus (les deux demandaient le même résultat visuel).
 
 ---
 
 ## Analyse du texte
 
-### Comptage personnalisé
+### ~~Comptage personnalisé~~ ✅ Fait
 
-Permettre de compter automatiquement le nombre d'occurrences d'un mot ou du nom d'un personnage à l'intérieur d'une œuvre.
+~~Permettre de compter automatiquement le nombre d'occurrences d'un mot ou du nom d'un personnage à l'intérieur d'une œuvre.~~
+
+> Réglage `wordOccurrenceCounter` : champ de recherche sur la page d'une
+> fic, comptage en mot entier insensible à la casse sur le texte des
+> chapitres déjà chargés (`wordOccurrenceMath.js` + `wordOccurrenceCounter.js`).
 
 
 # Décisions de conception
@@ -994,7 +1025,7 @@ Le module s'appuie sur plusieurs feuilles de style pour appliquer les préféren
 Notamment :
 
 - `visualPreferences.css`
-- `styles/header-cleanup.css` (pour le mode d'en-tête minimaliste)
+- la section « Header cleanup » de `visualPreferences.css` (pour le mode d'en-tête minimaliste)
 
 ---
 
@@ -1011,6 +1042,5 @@ Il ne modifie jamais :
 Toutes les préférences sont purement visuelles et peuvent être activées ou désactivées à tout moment.
 
 Certaines fonctionnalités, comme la révélation au survol, dépendent automatiquement des autres sous-modules et ne disposent volontairement d'aucun réglage indépendant.
-
 
 

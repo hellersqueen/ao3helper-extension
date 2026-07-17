@@ -200,6 +200,63 @@ export class OrganizationTools {
       blurb.dataset.bvOrgDone = '1';
     });
     this._bulkSelect.scan();
+    this._extendBulkBar();
+  }
+
+  _bulkSelected () {
+    return Array.from(D.querySelectorAll('.ao3h-bv-bulk-chk:checked'))
+      .map(c => c.closest('li.work.blurb, li.bookmark.blurb'))
+      .filter(Boolean);
+  }
+
+  /** Local bulk actions besides Remove: assign to a category, pin. */
+  _extendBulkBar () {
+    const bar = D.getElementById('ao3h-bv-bulk-bar');
+    if (!bar || bar.querySelector('.ao3h-bv-bulk-cat')) return;
+
+    const feedback = (btn, text, original) => {
+      btn.textContent = text;
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    };
+
+    const catBtn = D.createElement('button');
+    catBtn.className   = 'ao3h-bv-bulk-cat';
+    catBtn.textContent = '📂 Category';
+    catBtn.title = 'Assign the selected bookmarks to a category (created if needed)';
+    catBtn.addEventListener('click', () => {
+      const selected = this._bulkSelected();
+      if (!selected.length) { feedback(catBtn, 'Select works first', '📂 Category'); return; }
+      const name = (window.prompt('Assign selected bookmarks to category:') || '').trim();
+      if (!name) return;
+      const cats = this._loadCats();
+      let cat = cats.find(c => c.name.toLowerCase() === name.toLowerCase());
+      if (!cat) { cat = { id: `cat_${Date.now()}`, name, color: '#c00040', workIds: [] }; cats.push(cat); }
+      let added = 0;
+      selected.forEach(blurb => {
+        const wid = this._getWorkId(blurb);
+        if (wid && !cat.workIds.includes(wid)) { cat.workIds.push(wid); added++; }
+      });
+      this._saveCats(cats);
+      feedback(catBtn, `✓ ${added} added to "${cat.name}"`, '📂 Category');
+    });
+
+    const pinBtn = D.createElement('button');
+    pinBtn.className   = 'ao3h-bv-bulk-pin';
+    pinBtn.textContent = '📌 Pin';
+    pinBtn.title = 'Pin the selected bookmarks';
+    pinBtn.addEventListener('click', () => {
+      const selected = this._bulkSelected();
+      if (!selected.length) { feedback(pinBtn, 'Select works first', '📌 Pin'); return; }
+      const pinned = this._loadPinned();
+      selected.forEach(blurb => {
+        const wid = this._getWorkId(blurb);
+        if (wid) pinned.add(wid);
+      });
+      this._savePinned(pinned);
+      feedback(pinBtn, `✓ ${selected.length} pinned`, '📌 Pin');
+    });
+
+    bar.append(catBtn, pinBtn);
   }
 
   _injectPinButtons (blurbs) {
@@ -252,6 +309,7 @@ export class OrganizationTools {
       { val: 'date',   lbl: 'Date added' },
       { val: 'title',  lbl: 'Title' },
       { val: 'fandom', lbl: 'Fandom' },
+      { val: 'series', lbl: 'Series' },
     ].forEach(o => {
       const opt = D.createElement('option');
       opt.value = o.val; opt.textContent = o.lbl;
@@ -279,6 +337,12 @@ export class OrganizationTools {
         const fa = (a.querySelector('h5.fandoms a')?.textContent || '').toLowerCase();
         const fb = (b.querySelector('h5.fandoms a')?.textContent || '').toLowerCase();
         return fa.localeCompare(fb);
+      }
+      if (mode === 'series') {
+        // Works of one series end up adjacent; standalone works sort last
+        const sa = (a.querySelector('ul.series a, .series a')?.textContent || '￿').toLowerCase();
+        const sb = (b.querySelector('ul.series a, .series a')?.textContent || '￿').toLowerCase();
+        return sa.localeCompare(sb);
       }
       return 0; // date: keep original order
     });

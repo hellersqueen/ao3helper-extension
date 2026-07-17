@@ -91,6 +91,18 @@ try {
   const Modules = (()=>{
     // name => { meta, init, enabledKey, enabledKeyAlt, _booted, _dispose }
     const list = new Map();
+    let lastMainThreadYield = performance?.now?.() ?? Date.now();
+
+    async function yieldIfNeeded() {
+      const now = performance?.now?.() ?? Date.now();
+      if (now - lastMainThreadYield < 16) return;
+      if (globalThis.scheduler?.postTask) {
+        await globalThis.scheduler.postTask(() => {}, { priority: 'background' });
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+      lastMainThreadYield = performance?.now?.() ?? Date.now();
+    }
 
     function _disposer(ret){
       if (typeof ret === 'function') return ret;
@@ -132,6 +144,7 @@ try {
         for (const [childName, child] of list) {
           if (child.meta?.parent === name && !child._booted && _effectiveOn(child)) {
             await bootOne(childName);
+            await yieldIfNeeded();
           }
         }
 
@@ -200,7 +213,7 @@ try {
           W.AO3H.moduleLoader.handleLateRegistration(name);
         } else {
           // Fallback: rebuild menu when new module is registered
-          if (typeof W.AO3H?.menu?.rebuild === 'function') {
+          if (!W.AO3H?.__batchRegistering && typeof W.AO3H?.menu?.rebuild === 'function') {
             W.AO3H.menu.rebuild();
           }
         }
@@ -215,12 +228,16 @@ try {
         // Skip children — they'll be booted by their parent's cascade
         if (m.meta?.parent) continue;
         if (_effectiveOn(m)) await bootOne(name);
+        await yieldIfNeeded();
       }
     }
     async function stopAll(){ for (const [name] of list) await stopOne(name); }
 
     async function setEnabled(name, val){
       const m = list.get(name); if (!m) return;
+      if (val && typeof AO3H?.moduleImplementations?.ensureLoaded === 'function') {
+        await AO3H.moduleImplementations.ensureLoaded(name);
+      }
       await Flags.set(m.enabledKey, !!val);
       if (m.enabledKeyAlt !== m.enabledKey) await Flags.set(m.enabledKeyAlt, !!val);
       // Watchers call _refresh; 

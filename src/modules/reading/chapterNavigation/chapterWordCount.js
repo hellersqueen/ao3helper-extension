@@ -21,7 +21,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Routes } from '../../../../lib/ao3/routes.js';
 import { observe, countWords } from '../../../../lib/utils/index.js';
-import { upsertChapterBadgePart, removeChapterBadgePartsByKey } from '../../../../lib/ui/chapter-badge.js';
+import { upsertChapterBadgePart, removeChapterBadgePartsByKey } from '../../../../lib/ui/badges.js';
 import { getChapterProse } from '../../../../lib/ao3/work-page.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════

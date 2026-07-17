@@ -52,6 +52,25 @@ const WARNING_ICONS = {
 
 const WARNING_SELECTOR = 'li.warnings a.tag, .warning.tags a, dd.warning.tags a';
 
+export const SENSITIVE_WARNINGS = [
+  'Graphic Depictions Of Violence',
+  'Major Character Death',
+  'Underage',
+  'Rape/Non-Con',
+];
+
+// Returns the first matching sensitive warning's text, or null.
+export function blurbHasSensitiveWarning(blurbEl, sensitiveList = SENSITIVE_WARNINGS) {
+  if (!blurbEl || typeof blurbEl.querySelectorAll !== 'function') return null;
+  const tags = blurbEl.querySelectorAll(WARNING_SELECTOR);
+  for (const tag of tags) {
+    // Warning conversion keeps the original text in this dataset attribute.
+    const text = tag.dataset?.ao3hOriginalText || tag.textContent.trim();
+    if (sensitiveList.includes(text)) return text;
+  }
+  return null;
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — WARNING CONVERSION AND RESTORATION
@@ -105,6 +124,24 @@ function restoreAll () {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — CONFIRM BEFORE OPENING A WORK WITH A SENSITIVE WARNING
+═══════════════════════════════════════════════════════════════════════════ */
+
+const TITLE_LINK_SELECTOR = '.header .heading a[href*="/works/"]';
+
+function onTitleLinkClick (e) {
+  const link = e.target.closest(TITLE_LINK_SELECTOR);
+  if (!link) return;
+  const blurb = link.closest('li.blurb') || link.closest('li');
+  const warning = blurbHasSensitiveWarning(blurb);
+  if (!warning) return;
+  if (!confirm(`This work is tagged "${warning}". Open it anyway?`)) {
+    e.preventDefault();
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
    FEATURE LIFECYCLE
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -114,7 +151,16 @@ register(MOD, {
   enabledByDefault : true,
 }, async function init () {
 
-  if (!cfg('compactWarnings', true)) return () => {};
+  // Confirm-before-open is independent of the icon/text/badge conversion —
+  // it can run even when compactWarnings is off.
+  const confirmSensitive = cfg('confirmSensitiveWarnings', false);
+  if (confirmSensitive) document.addEventListener('click', onTitleLinkClick, true);
+
+  if (!cfg('compactWarnings', true)) {
+    return () => {
+      if (confirmSensitive) document.removeEventListener('click', onTitleLinkClick, true);
+    };
+  }
 
   const style = cfg('archiveWarningsStyle', 'icon');
 
@@ -126,5 +172,6 @@ register(MOD, {
   return () => {
     obs.disconnect();
     restoreAll();
+    if (confirmSensitive) document.removeEventListener('click', onTitleLinkClick, true);
   };
 });

@@ -115,28 +115,27 @@ AO3 Helper - Fic Actions Module
 
 Le module **Fic Actions** améliore les boutons d’action associés aux œuvres sur AO3, aussi bien sur la page d’une fic que dans les listes de résultats.
 
-Il permet notamment de :
-
-* réorganiser les boutons d’action par glisser-déposer ;
-* mémoriser un ordre personnalisé pour les prochaines visites ;
-* masquer individuellement les boutons **Share**, **Bookmark** et **Subscribe** ;
-* dupliquer le bouton **Subscribe** en bas de la page d’une œuvre ;
-* s’abonner directement depuis une liste sans ouvrir la fic ;
-* afficher un indicateur sur les œuvres auxquelles l’utilisateur est déjà abonné.
+* Il permet notamment de :
+  - réorganiser les boutons d’action par glisser-déposer ;
+  - mémoriser un ordre personnalisé pour les prochaines visites ;
+  - masquer individuellement les boutons **Share**, **Bookmark** et **Subscribe** ;
+  - dupliquer le bouton **Subscribe** en bas de la page d’une œuvre ;
+  - s’abonner directement depuis une liste sans ouvrir la fic ;
+  - afficher un indicateur sur les œuvres auxquelles l’utilisateur est déjà abonné.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                  | Défaut    | Description                                                                   |
-| ------------------------ | --------- | ----------------------------------------------------------------------------- |
-| `buttonReordering`       | Désactivé | Active le glisser-déposer pour réorganiser les boutons d’action.              |
-| `subscribeButtonBottom`  | Désactivé | Duplique le bouton **Subscribe** en bas de la page d’une œuvre.               |
-| `subscribeFromListings`  | Désactivé | Ajoute un bouton d’abonnement rapide sur les œuvres affichées dans une liste. |
-| `showSubscriptionStatus` | Désactivé | Affiche un badge `🔔 Subscribed` sur les œuvres déjà suivies.                 |
-| `hideShare`              | Désactivé | Masque le bouton **Share**.                                                   |
-| `hideBookmark`           | Désactivé | Masque le bouton **Bookmark**.                                                |
-| `hideSubscribe`          | Désactivé | Masque le bouton **Subscribe**.                                               |
+| Réglage                  | Description                                                                   |
+| ------------------------ |-------------------------------------------------------------------------------|
+| `buttonReordering`       | Active le glisser-déposer pour réorganiser les boutons d’action.              |
+| `subscribeButtonBottom`  | Duplique le bouton **Subscribe** en bas de la page d’une œuvre.               |
+| `subscribeFromListings`  | Ajoute un bouton d’abonnement rapide sur les œuvres affichées dans une liste. |
+| `showSubscriptionStatus` | Affiche un badge `🔔 Subscribed` sur les œuvres déjà suivies.                 |
+| `hideShare`              | Masque le bouton **Share**.                                                   |
+| `hideBookmark`           | Masque le bouton **Bookmark**.                                                |
+| `hideSubscribe`          | Masque le bouton **Subscribe**.                                               |
 
 ---
 

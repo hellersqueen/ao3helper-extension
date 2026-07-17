@@ -20,7 +20,7 @@ Notes
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
-import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════

@@ -194,21 +194,19 @@ AO3 Helper - Speech Engine Submodule
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Text To Speech** lit les œuvres à voix haute directement dans le navigateur à l’aide de l’API de synthèse vocale du système.
 
-Il fournit un panneau de contrôle flottant permettant notamment de :
-
-* démarrer, mettre en pause ou arrêter la lecture ;
-* choisir la voix utilisée ;
-* modifier la vitesse de lecture ;
-* suivre la progression phrase par phrase ;
-* surligner le paragraphe en cours de lecture ;
-* faire défiler automatiquement la page ;
-* ignorer certaines parties de l’œuvre ;
-* corriger la prononciation de mots particuliers ;
-* utiliser une minuterie de sommeil ;
-* passer automatiquement au chapitre suivant.
+* Il fournit un panneau de contrôle flottant permettant notamment de :
+    - démarrer, mettre en pause ou arrêter la lecture ;
+    - choisir la voix utilisée ;
+    - modifier la vitesse de lecture ;
+    - suivre la progression phrase par phrase ;
+    - surligner le paragraphe en cours de lecture ;
+    - faire défiler automatiquement la page ;
+    - ignorer certaines parties de l’œuvre ;
+    - corriger la prononciation de mots particuliers ;
+    - utiliser une minuterie de sommeil ;
+    - passer automatiquement au chapitre suivant.
 
 Tout le traitement est effectué localement dans le navigateur. Aucun service de synthèse vocale externe n’est utilisé.
 
@@ -216,17 +214,17 @@ Tout le traitement est effectué localement dans le navigateur. Aucun service de
 
 # Réglages utilisateur
 
-| Réglage             | Défaut          | Description                                                                                                                      |
-| ------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `voice`             | Voix du système | Définit la voix utilisée pour la lecture.                                                                                        |
-| `playbackSpeed`     | `1`             | Définit la vitesse de lecture, de `0.5×` à `2×`.                                                                                 |
-| `stopOnPageChange`  | Activé          | Arrête automatiquement la lecture lorsque l’utilisateur change de page.                                                          |
-| `autoNextChapter`   | Activé          | Ouvre et lit automatiquement le chapitre suivant à la fin du chapitre actuel.                                                    |
-| `highlightSentence` | Activé          | Active le suivi visuel du passage en cours de lecture. L’implémentation actuelle surligne le paragraphe contenant la phrase lue. |
-| `autoScroll`        | Activé          | Fait défiler automatiquement la page afin de garder le passage en cours visible.                                                 |
-| `skipAuthorNotes`   | Activé          | Ignore les notes de l’auteur placées au début ou à la fin du chapitre.                                                           |
-| `skipSummary`       | Activé          | Ignore le résumé et les éléments de préface.                                                                                     |
-| `floatingPanel`     | Activé          | Affiche le panneau de lecture flottant.                                                                                          |
+| Réglage             | Description                                                                                                                      |
+|---------------------|--------------------------------------------------------------------------------------------------------------------------------- |
+| `voice`             | Définit la voix utilisée pour la lecture.                                                                                        |
+| `playbackSpeed`     | Définit la vitesse de lecture, de `0.5×` à `2×`.                                                                                 |
+| `stopOnPageChange`  | Arrête automatiquement la lecture lorsque l’utilisateur change de page.                                                          |
+| `autoNextChapter`   | Ouvre et lit automatiquement le chapitre suivant à la fin du chapitre actuel.                                                    |
+| `highlightSentence` | Active le suivi visuel du passage en cours de lecture. L’implémentation actuelle surligne le paragraphe contenant la phrase lue. |
+| `autoScroll`        | Fait défiler automatiquement la page afin de garder le passage en cours visible.                                                 |
+| `skipAuthorNotes`   | Ignore les notes de l’auteur placées au début ou à la fin du chapitre.                                                           |
+| `skipSummary`       | Ignore le résumé et les éléments de préface.                                                                                     |
+| `floatingPanel`     | Affiche le panneau de lecture flottant.                                                                                          |
 
 ---
 

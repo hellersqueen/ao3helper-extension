@@ -21,6 +21,13 @@ import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
+import {
+  contrastRatio,
+  contrastVerdict,
+  COLORBLIND_PALETTES,
+  buildElementRule,
+  findProtectedViolations,
+} from './themeSafety.js';
 
 
 
@@ -34,6 +41,8 @@ const MOD  = 'visualBuilder';
 const LOG  = `[AO3H][${MOD}]`;
 const VISUAL_SK  = `${NS}:tb:visual`;
 const PREVIEW_ID = `${NS}-tb-visual-preview`;
+const ELEMENT_RULES_SK = `${NS}:tb:elementRules`;
+const ELEMENT_STYLE_ID = `${NS}-tb-element-rules`;
 
 function getShared () { return W.AO3H_ThemeBuilder || null; }
 function applyCSS (css) { getShared()?.applyCSS(css, 'visual'); }
@@ -81,6 +90,31 @@ function applyPreview (config) {
 
 function removePreview () {
   document.getElementById(PREVIEW_ID)?.remove();
+}
+
+/* ── Persistent per-element rules built from the inspector ─────────────── */
+
+function applyElementRules () {
+  const css = lsGet(ELEMENT_RULES_SK) || '';
+  let el = document.getElementById(ELEMENT_STYLE_ID);
+  if (!css) { el?.remove(); return; }
+  if (!el) {
+    el = document.createElement('style');
+    el.id = ELEMENT_STYLE_ID;
+    document.head.appendChild(el);
+  }
+  el.textContent = css;
+}
+
+function appendElementRule (rule) {
+  const css = (lsGet(ELEMENT_RULES_SK) || '');
+  lsSet(ELEMENT_RULES_SK, css ? `${css}\n${rule}` : rule);
+  applyElementRules();
+}
+
+function clearElementRules () {
+  lsSet(ELEMENT_RULES_SK, '');
+  applyElementRules();
 }
 
 
@@ -165,6 +199,10 @@ function openPanel () {
     ${colorRow('Text', 'textColor', saved.textColor)}
     ${colorRow('Links', 'linkColor', saved.linkColor)}
     ${colorRow('Header bg', 'headerBg', saved.headerBg)}
+    <div id="${NS}-vb-contrast" class="${NS}-vb-contrast" aria-live="polite"></div>
+    <div class="${NS}-tb-row">
+      ${COLORBLIND_PALETTES.map(p => `<button class="${NS}-tb-btn" data-palette="${p.id}">${p.label}</button>`).join('')}
+    </div>
 
     <div class="${NS}-tb-section">
       <div class="${NS}-tb-section-title">Reading area</div>
@@ -181,6 +219,16 @@ function openPanel () {
       <div class="${NS}-tb-row">
         <button class="${NS}-tb-btn" data-action="inspector">🎯 Pick element</button>
       </div>
+      <div class="${NS}-vb-el-style" id="${NS}-vb-el-style">
+        <label>Text <input type="color" id="${NS}-vb-el-color" value="#333333"></label>
+        <label>Background <input type="color" id="${NS}-vb-el-bg" value="#ffffff"></label>
+        <label><input type="checkbox" id="${NS}-vb-el-hide"> Hide element</label>
+        <div class="${NS}-tb-row">
+          <button class="${NS}-tb-btn" data-action="style-element">Apply to element</button>
+          <button class="${NS}-tb-btn" data-action="clear-element-rules">Clear element styles</button>
+        </div>
+        <div id="${NS}-vb-el-status" aria-live="polite"></div>
+      </div>
     </div>
 
     <div class="${NS}-tb-row">
@@ -191,11 +239,51 @@ function openPanel () {
   `;
   document.body.appendChild(panelEl);
 
-  // ── Live labels ───────────────────────────────────────────────────────
+  // ── Live labels + live preview ────────────────────────────────────────
   const fsR = panelEl.querySelector(`#${NS}-vb-font-size`);
   const lhR = panelEl.querySelector(`#${NS}-vb-line-height`);
-  fsR.addEventListener('input', () => { panelEl.querySelector(`#${NS}-vb-fs-val`).textContent = `${fsR.value}em`; });
-  lhR.addEventListener('input', () => { panelEl.querySelector(`#${NS}-vb-lh-val`).textContent = lhR.value; });
+  // Sliders and color pickers preview live — no need to press Apply to see
+  // the result (Apply persists, Reset discards).
+  const livePreview = () => { applyPreview(collectConfig()); updateContrast(); };
+  fsR.addEventListener('input', () => { panelEl.querySelector(`#${NS}-vb-fs-val`).textContent = `${fsR.value}em`; livePreview(); });
+  lhR.addEventListener('input', () => { panelEl.querySelector(`#${NS}-vb-lh-val`).textContent = lhR.value; livePreview(); });
+  panelEl.querySelectorAll('input[type="color"][data-field]').forEach(inp => {
+    inp.addEventListener('input', livePreview);
+  });
+
+  // ── Contrast check (WCAG) ─────────────────────────────────────────────
+  const contrastEl = panelEl.querySelector(`#${NS}-vb-contrast`);
+  function updateContrast () {
+    const c = collectConfig();
+    const checks = [
+      { label: 'text/background',  ratio: contrastRatio(c.textColor, c.bgColor) },
+      { label: 'links/background', ratio: contrastRatio(c.linkColor, c.bgColor) },
+    ];
+    contrastEl.innerHTML = '';
+    checks.forEach(({ label, ratio }) => {
+      if (!Number.isFinite(ratio)) return;
+      const verdict = contrastVerdict(ratio);
+      const line = document.createElement('div');
+      line.className = `${NS}-vb-contrast-line ${NS}-vb-contrast--${verdict}`;
+      const mark = verdict === 'low' ? '⚠' : '✓';
+      const hint = verdict === 'low' ? ' — aim for ≥ 4.5:1' : verdict === 'ok' ? ' (AA)' : ' (AAA)';
+      line.textContent = `${mark} ${label}: ${ratio.toFixed(1)}:1${hint}`;
+      contrastEl.appendChild(line);
+    });
+  }
+
+  // ── Colorblind-safe palettes ──────────────────────────────────────────
+  panelEl.querySelectorAll('[data-palette]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const palette = COLORBLIND_PALETTES.find(p => p.id === btn.dataset.palette);
+      if (!palette) return;
+      Object.entries(palette.colors).forEach(([field, value]) => {
+        const inp = panelEl.querySelector(`[data-field="${field}"]`);
+        if (inp) inp.value = value;
+      });
+      livePreview();
+    });
+  });
 
   // ── Actions ───────────────────────────────────────────────────────────
   function collectConfig () {
@@ -234,8 +322,32 @@ function openPanel () {
     startInspector(inspectorInfo);
   });
 
+  // ── Quick element styling from the picked selector ────────────────────
+  const elStatus = panelEl.querySelector(`#${NS}-vb-el-status`);
+  panelEl.querySelector('[data-action="style-element"]').addEventListener('click', () => {
+    const rule = buildElementRule(inspectorInfo.value, {
+      textColor: panelEl.querySelector(`#${NS}-vb-el-color`).value,
+      bgColor:   panelEl.querySelector(`#${NS}-vb-el-bg`).value,
+      hide:      panelEl.querySelector(`#${NS}-vb-el-hide`).checked,
+    });
+    if (!rule) { elStatus.textContent = '⚠ Pick an element first.'; return; }
+    // The zone protection applies here too — no hiding the fic text
+    const violations = findProtectedViolations(rule);
+    if (violations.length) { elStatus.textContent = '⛔ ' + violations[0]; return; }
+    appendElementRule(rule);
+    elStatus.textContent = `✓ Applied to ${inspectorInfo.value}`;
+  });
+
+  panelEl.querySelector('[data-action="clear-element-rules"]').addEventListener('click', () => {
+    clearElementRules();
+    elStatus.textContent = 'Element styles cleared.';
+  });
+
+  updateContrast();
+
   panelEl.querySelector(`.${NS}-tb-panel-close`).addEventListener('click', () => {
     stopInspector();
+    removePreview(); // fermer sans Apply annule l'aperçu en direct
     panelEl?.remove(); panelEl = null;
   });
 }
@@ -271,6 +383,8 @@ register(
     let active = true;
     onReady(() => {
       if (!active) return;
+      // Re-apply the persisted per-element rules built with the inspector
+      applyElementRules();
       triggerBtn = document.createElement('button');
       triggerBtn.className = `${NS}-tb-trigger ${NS}-tb-trigger--visual`;
       triggerBtn.textContent = '🖌';
@@ -284,6 +398,7 @@ register(
       active = false;
       stopInspector();
       removePreview();
+      document.getElementById(ELEMENT_STYLE_ID)?.remove();
       document.removeEventListener('mousemove', onHover);
       document.removeEventListener('click', onClick, true);
       panelEl?.remove();

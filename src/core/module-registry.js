@@ -29,9 +29,9 @@ const log = getLogger('module-registry');
 export const MODULE_DEFINITIONS = [
     // ─── FALLBACK (keep in sync with lib/ui/tab-registry.js) ─────────
     // � Browse
-    ['hideByTags',            'Hide By Tags',            'browse',      false],
+    ['hideByTags',            'Hide By Tags',            'browse',      true],
     ['filterManager',         'Filter Manager',          'browse',      false],
-    ['skipWorks',             'Skip Works',              'browse',      false],
+    ['skipWorks',             'Skip Works',              'browse',      true],
     ['pageControls',          'Page Controls',           'browse',      false],
     ['ficEngagement',         'Fic Engagement',          'browse',      false],
     ['workLength',            'Work Length',             'browse',      false],
@@ -64,11 +64,11 @@ export const MODULE_DEFINITIONS = [
     ['mainNavigation',        'Main Navigation',         'navigate',    false],
     ['keyboardShortcuts',     'Keyboard Shortcuts',      'navigate',    false],
     ['userRelationships',     'User Relationships',      'navigate',    false],
-    ['seriesHelper',          'Series Helper',           'navigate',    false],
+    ['seriesHelper',          'Series Helper',           'navigate',    true],
     ['commentKit',            'Comment Kit',             'navigate',    false],
     ['ficActions',            'Fic Actions',             'navigate',    false],
     // 🎨 Appearance & Tools
-    ['visualPreferences',     'Visual Preferences',      'appearance',  false],
+    ['visualPreferences',     'Visual Preferences',      'appearance',  true],
     ['themeBuilder',          'Theme Builder',           'appearance',  false],
     ['backupAndSync',         'Backup & Sync',           'appearance',  false],
     ['ficDownloader',         'Fic Downloader',          'appearance',  false],
@@ -101,21 +101,27 @@ function initRegistry() {
   }
 
 
-  moduleDefs.forEach(([id, title, group, enabledByDefault], index) => {
-    const existing = modules.all?.().find(m => m.name === id);
-    if (!existing) {
-      modules.register(id, {
-        title,
-        group,
-        enabledByDefault,
-        order: index + 1,
-        description: `${title} module`
-      }, () => {
-        log.debug(`Module stub: ${id} (#${index + 1})`);
-        return () => {};
-      });
-    }
-  });
+  W.AO3H.__batchRegistering = true;
+  try {
+    moduleDefs.forEach(([id, title, group, enabledByDefault], index) => {
+      const existing = modules.all?.().find(m => m.name === id);
+      if (!existing) {
+        modules.register(id, {
+          title,
+          group,
+          enabledByDefault,
+          order: index + 1,
+          description: `${title} module`
+        }, () => {
+          log.debug(`Module stub: ${id} (#${index + 1})`);
+          return () => {};
+        });
+      }
+    });
+  } finally {
+    W.AO3H.__batchRegistering = false;
+  }
+  W.AO3H.menu?.rebuild?.();
 
   log.info(`Module registry initialized: ${moduleDefs.length} modules`);
 }

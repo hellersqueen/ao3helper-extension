@@ -46,7 +46,7 @@
     SECTION 02 — TEMPS PAR CHAPITRE
   ───────────────────────────────────────────────────────────────────────
     Le temps par chapitre est injecté dans le badge partagé
-    .ao3h-chapter-badge (voir lib/ui/chapter-badge.js), stylé dans
+    .ao3h-chapter-badge (voir lib/ui/badges.js), stylé dans
     reading/chapterNavigation/chapterNavigation.css.
   ═══════════════════════════════════════════════════════════════════════
 */
@@ -140,4 +140,44 @@
 .ao3h-wl-cat--epic {
   /*- 🔴 Rouge foncé — Epic Novel */
   color: #b91c1c;
+}
+
+
+/*+ ─────────────────────────────────────────────────────────
+    NOUVEAUX BADGES : UNE TRAITE, TEMPS RESTANT, FINIR-AVANT,
+    MOYENNE/CHAPITRE, TOTAL SÉRIE, DÉGRADÉ DE LONGUEUR
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-wl-onesit,
+.ao3h-wl-remaining,
+.ao3h-wl-avgch,
+.ao3h-wl-finishby {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #eef2f7;
+  color: #33536b;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.ao3h-wl-onesit { background: #e8f5e9; color: #2e7d32; }
+
+.ao3h-wl-finishby--yes   { background: #e8f5e9; color: #2e7d32; }
+.ao3h-wl-finishby--maybe { background: #fff8e1; color: #8d6e00; }
+.ao3h-wl-finishby--no    { background: #fdecea; color: #a94442; }
+
+.ao3h-wl-series-total {
+  margin: 8px 0 12px;
+  padding: 6px 12px;
+  border-left: 3px solid #33536b;
+  background: #eef2f7;
+  color: #33536b;
+  font-size: 0.95em;
+}
+
+.ao3h-wl-gradient {
+  border-radius: 3px;
+  padding: 0 4px;
+  transition: background-color 0.2s;
 }

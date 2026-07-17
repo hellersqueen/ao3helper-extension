@@ -18,6 +18,9 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { observe } from '../../../../lib/utils/index.js';
+import { dateAgeBucket } from './dateAgeMath.js';
+
+const AGE_BUCKETS = ['today', 'week', 'month', 'older'];
 
 
 
@@ -29,6 +32,7 @@ export class StatsDisplayFormat {
   constructor() {
     this._observer  = null;
     this._originalDateTitles = new WeakMap();
+    this._activeFlags = { relativeDates: false, dateAgeColoring: false };
   }
 
 
@@ -39,11 +43,20 @@ export class StatsDisplayFormat {
   // Called by the coordinator with the full visualPreferences state object.
   apply(state) {
     this.reset();
+    this._activeFlags = {
+      relativeDates:   !!state.relativeDates,
+      dateAgeColoring: !!state.dateAgeColoring,
+    };
     if (state.statsAsIcons) {
       this._applyStatsAsIcons(state.statsIconsMode || 'icons');
     }
     if (state.relativeDates) {
       this._applyRelativeDates();
+    }
+    if (state.dateAgeColoring) {
+      this._applyDateAgeColoring();
+    }
+    if (state.relativeDates || state.dateAgeColoring) {
       this._observeForDynamicContent();
     }
   }
@@ -100,11 +113,38 @@ export class StatsDisplayFormat {
     return 'today';
   }
 
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — DATE AGE COLORING
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  // Targets both work-page stats and listing blurb dates.
+  _dateElements () {
+    return document.querySelectorAll(
+      'dl.stats dd.published, dl.stats dd.status, li.blurb p.datetime'
+    );
+  }
+
+  _applyDateAgeColoring () {
+    this._dateElements().forEach(el => {
+      // Read the original date text — untouched even if relativeDates also
+      // ran first and replaced el.textContent with "3 days ago".
+      const raw = el.dataset.ao3hOriginalDate || el.textContent.trim();
+      const bucket = dateAgeBucket(raw);
+      if (!bucket) return;
+      AGE_BUCKETS.forEach(b => el.classList.remove(`ao3h-date-age-${b}`));
+      el.classList.add(`ao3h-date-age-${bucket}`);
+      el.dataset.ao3hDateAged = '1';
+    });
+  }
+
   _observeForDynamicContent() {
     if (this._observer) return;
     const main = document.getElementById('main');
     if (!main) return;
-    this._observer = observe(main, { childList: true, subtree: true }, () => this._applyRelativeDates());
+    this._observer = observe(main, { childList: true, subtree: true }, () => {
+      if (this._activeFlags.relativeDates) this._applyRelativeDates();
+      if (this._activeFlags.dateAgeColoring) this._applyDateAgeColoring();
+    });
   }
 
 
@@ -128,6 +168,10 @@ export class StatsDisplayFormat {
     document.querySelectorAll('[data-ao3h-title-added]').forEach(el => {
       el.removeAttribute('title');
       delete el.dataset.ao3hTitleAdded;
+    });
+    document.querySelectorAll('[data-ao3h-date-aged]').forEach(el => {
+      AGE_BUCKETS.forEach(b => el.classList.remove(`ao3h-date-age-${b}`));
+      delete el.dataset.ao3hDateAged;
     });
 
     if (this._observer) {

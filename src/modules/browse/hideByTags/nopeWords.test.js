@@ -1,6 +1,6 @@
 // @ts-nocheck — fichier de test, pas typé au même niveau que le code produit.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { NopeWords } from './nopeWords.js';
+import { NopeWords, matchesNopeEntry } from './nopeWords.js';
 
 function fakeStorage(initial = {}) {
   const data = { ...initial };
@@ -68,5 +68,57 @@ describe('NopeWords.openManager — comportement préservé par rapport à l\'an
     // Pas d'assertion sur downloadJSON ici (non mocké) — on vérifie juste
     // que le clic ne lève pas d'exception et que le bouton existe.
     expect(() => document.querySelector('.ao3h-ul-export').click()).not.toThrow();
+  });
+});
+
+describe('matchesNopeEntry — modes de correspondance avancés', () => {
+  it('sous-chaîne simple par défaut', () => {
+    expect(matchesNopeEntry('my heart aches', 'art')).toBe(true);
+    expect(matchesNopeEntry('my heart aches', 'zzz')).toBe(false);
+  });
+
+  it('mots entiers : "art" ne matche plus "heart"', () => {
+    expect(matchesNopeEntry('my heart aches', 'art', { wholeWords: true })).toBe(false);
+    expect(matchesNopeEntry('modern art gallery', 'art', { wholeWords: true })).toBe(true);
+    expect(matchesNopeEntry('art. and more', 'art', { wholeWords: true })).toBe(true);
+  });
+
+  it('joker * : "her*t" matche "her heart"', () => {
+    expect(matchesNopeEntry('follow her heart', 'her*t')).toBe(true);
+    expect(matchesNopeEntry('nothing here', 'xyz*t')).toBe(false);
+  });
+
+  it('syntaxe /regex/ (insensible à la casse)', () => {
+    expect(matchesNopeEntry('Major Character Death', '/major.+death/')).toBe(true);
+    expect(matchesNopeEntry('happy ending', '/major.+death/')).toBe(false);
+  });
+
+  it('une regex invalide retombe sur la sous-chaîne sans lever', () => {
+    expect(() => matchesNopeEntry('abc', '/[unclosed/')).not.toThrow();
+    expect(matchesNopeEntry('abc /[unclosed/ def', '/[unclosed/')).toBe(true);
+  });
+
+  it('entrée vide : jamais de match', () => {
+    expect(matchesNopeEntry('anything', '')).toBe(false);
+  });
+});
+
+describe('matchesNope — option wholeWords de bout en bout', () => {
+  function blurbWithSummary(text) {
+    const li = document.createElement('li');
+    li.className = 'blurb';
+    li.innerHTML = `<blockquote class="userstuff summary">${text}</blockquote>`;
+    document.body.appendChild(li);
+    return li;
+  }
+
+  it('respecte wholeWords sur le texte du résumé', () => {
+    const nw = new NopeWords({ NS: 'ao3h', Storage: fakeStorage(), UserLS: null, KeyboardNav: {} });
+    const blurb = blurbWithSummary('her heart was racing');
+    const targets = { summaries: true, notes: false, titles: false };
+
+    expect(nw.matchesNope(blurb, ['art'], targets)).toBe('art');
+    expect(nw.matchesNope(blurb, ['art'], targets, { wholeWords: true })).toBeNull();
+    expect(nw.matchesNope(blurb, ['heart'], targets, { wholeWords: true })).toBe('heart');
   });
 });

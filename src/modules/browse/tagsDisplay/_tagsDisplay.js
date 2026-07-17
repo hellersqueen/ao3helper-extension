@@ -19,6 +19,9 @@ AO3 Helper — Tags Display Coordinator
     - tagHighlighting.js: configurable favourite-tag highlighting
     - tagsReordering.js: drag-and-drop tag ordering on work pages
     - tagsVisibility.js: long-list truncation on listing pages
+    - externalTagLinks.js: Fanlore/TV Tropes search links appended to tags
+    - tagSeparatorStyle.js: custom separator between displayed tags
+    - tagImportancePromotion.js: promotes highlighted tags within their category
 
     Notes
 
@@ -39,6 +42,7 @@ import { Storage } from '../../../../lib/storage/index.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { css } from '../../../../lib/utils/index.js';
 import styles from './tagsDisplay.css?inline';
+import { DEFAULT_SEPARATOR } from './tagSeparatorStyle.js';
 
 import './archiveWarningsDisplay.js';
 import './autoHideNoiseTags.js';
@@ -46,6 +50,9 @@ import './compactModeTags.js';
 import './tagHighlighting.js';
 import './tagsReordering.js';
 import './tagsVisibility.js';
+import './externalTagLinks.js';
+import './tagSeparatorStyle.js';
+import './tagImportancePromotion.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -57,12 +64,29 @@ css(styles, 'ao3h-tagsDisplay');
 const MOD  = 'tagsDisplay';
 
 const DEFAULTS = {
-  autoHideNoiseTags    : false,
-  compactMode          : false,
-  highlightFavoriteTags: true,
-  highlightColor       : 0,
-  archiveWarningsStyle : 'badge',
-  maxTagsVisible       : 0,
+  autoHideNoiseTags       : false,
+  noiseTagStyle           : 'hide',
+  compactMode             : false,
+  compactCatWarnings      : true,
+  compactCatRelationships : true,
+  compactCatCharacters    : true,
+  compactCatFreeforms     : true,
+  compactCatSummary       : true,
+  compactModeAutoExpandScroll: false,
+  highlightFavoriteTags   : true,
+  highlightColor          : 0,
+  highlightPalette        : 'default',
+  highlightStyle          : 'fill',
+  archiveWarningsStyle    : 'badge',
+  maxTagsVisible          : 0,
+  hideTagsWarnings        : false,
+  hideTagsRelationships   : false,
+  hideTagsCharacters      : false,
+  hideTagsFreeforms       : false,
+  tagSeparator            : DEFAULT_SEPARATOR,
+  promoteHighlightedTags  : false,
+  confirmSensitiveWarnings: false,
+  tagExternalLinks        : false,
 };
 
 
@@ -87,11 +111,28 @@ async function syncFlags () {
 
   await Promise.all([
     Flags.set(`mod:${MOD}:autoHideNoiseTags`,     bool('autoHideNoiseTags')),
+    Flags.set(`mod:${MOD}:noiseTagStyle`,         str('noiseTagStyle')),
     Flags.set(`mod:${MOD}:compactMode`,           bool('compactMode')),
+    Flags.set(`mod:${MOD}:compactCatWarnings`,      bool('compactCatWarnings')),
+    Flags.set(`mod:${MOD}:compactCatRelationships`, bool('compactCatRelationships')),
+    Flags.set(`mod:${MOD}:compactCatCharacters`,    bool('compactCatCharacters')),
+    Flags.set(`mod:${MOD}:compactCatFreeforms`,     bool('compactCatFreeforms')),
+    Flags.set(`mod:${MOD}:compactCatSummary`,       bool('compactCatSummary')),
+    Flags.set(`mod:${MOD}:compactModeAutoExpandScroll`, bool('compactModeAutoExpandScroll')),
     Flags.set(`mod:${MOD}:highlightFavoriteTags`, bool('highlightFavoriteTags')),
     Flags.set(`mod:${MOD}:highlightColor`,        int('highlightColor')),
+    Flags.set(`mod:${MOD}:highlightPalette`,      str('highlightPalette')),
+    Flags.set(`mod:${MOD}:highlightStyle`,        str('highlightStyle')),
     Flags.set(`mod:${MOD}:archiveWarningsStyle`,  str('archiveWarningsStyle')),
     Flags.set(`mod:${MOD}:maxTagsVisible`,        int('maxTagsVisible')),
+    Flags.set(`mod:${MOD}:hideTagsWarnings`,      bool('hideTagsWarnings')),
+    Flags.set(`mod:${MOD}:hideTagsRelationships`, bool('hideTagsRelationships')),
+    Flags.set(`mod:${MOD}:hideTagsCharacters`,    bool('hideTagsCharacters')),
+    Flags.set(`mod:${MOD}:hideTagsFreeforms`,     bool('hideTagsFreeforms')),
+    Flags.set(`mod:${MOD}:tagSeparator`,          str('tagSeparator')),
+    Flags.set(`mod:${MOD}:promoteHighlightedTags`, bool('promoteHighlightedTags')),
+    Flags.set(`mod:${MOD}:confirmSensitiveWarnings`, bool('confirmSensitiveWarnings')),
+    Flags.set(`mod:${MOD}:tagExternalLinks`,         bool('tagExternalLinks')),
   ]);
 }
 

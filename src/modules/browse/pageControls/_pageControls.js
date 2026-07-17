@@ -39,6 +39,7 @@ import { CoreNavigation } from './coreNavigation.js';
 import { WorksPerPage } from './worksPerPage.js';
 import { EnhancedNavigation } from './enhancedNavigation.js';
 import { BackToTop } from './backToTop.js';
+import { InfiniteScroll } from './infiniteScroll.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -52,6 +53,15 @@ const LOG  = `[AO3H][${MOD}]`;
 
 const DEFAULTS = {
   showPlusMinus10Buttons : true,
+  quickJumpStep          : 10,
+  showBigJumpButtons     : false,
+  bigJumpStep            : 50,
+  showRandomPageButton   : true,
+  showPercentJumpButtons : true,
+  rememberRecentPages    : true,
+  pageInputPosition      : 'below', // 'below' | 'above' the pagination block
+  showPaginationProgressBar : true,
+  stickyEnhancedNav      : false,
   worksPerPageEnabled    : true,
   worksPerPage           : 20,
   infiniteScrollEnabled  : false,
@@ -89,24 +99,31 @@ async function init() {
 
   const diOpts = { cfg };
 
-  const coreNav  = new CoreNavigation(diOpts);
+  // Infinite scroll replaces the jump-to-page controls (they'd point at
+  // pages the appended list has already absorbed).
+  const infinite = cfg('infiniteScrollEnabled');
+
+  const coreNav  = infinite ? null : new CoreNavigation(diOpts);
   const wpp      = cfg('worksPerPageEnabled')
                      ? new WorksPerPage(diOpts)
                      : null;
-  const enhanced = new EnhancedNavigation(diOpts);
+  const enhanced = infinite ? null : new EnhancedNavigation(diOpts);
+  const infScroll = infinite ? new InfiniteScroll(diOpts) : null;
   const backToTop = cfg('showBackToTopButton')
                      ? new BackToTop(diOpts)
                      : null;
 
-  coreNav.setup();
+  coreNav?.setup();
   wpp?.setup();
-  enhanced.setup();
+  enhanced?.setup();
+  infScroll?.setup();
   backToTop?.setup();
 
   return function cleanup () {
     backToTop?.teardown();
-    enhanced.teardown();
+    infScroll?.teardown();
+    enhanced?.teardown();
     wpp?.teardown();
-    coreNav.teardown();
+    coreNav?.teardown();
   };
 }

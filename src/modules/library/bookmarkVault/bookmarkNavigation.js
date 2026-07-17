@@ -100,6 +100,18 @@ function injectViewBookmarkLink () {
   btn.href        = `/bookmarks?bookmark_search[bookmarkable_id]=${workId}&bookmark_search[bookmarkable_type]=Work`;
   btn.textContent = '🔖 My Bookmark';
   btn.className   = `${NS}-view-bm`;
+
+  // Quick preview on hover: bookmark visibility, note excerpt, personal note
+  const bm = bookmarkData[workId];
+  const inlineNote = (() => {
+    try { return (JSON.parse(localStorage.getItem('ao3h:bookmarkVault:inlineNotes') || '{}'))[workId] || ''; }
+    catch (_) { return ''; }
+  })();
+  const parts = [`${bm.pub ? 'Public' : 'Private'} bookmark`];
+  if (bm.notes)    parts.push(`Note: ${String(bm.notes).slice(0, 120)}`);
+  if (inlineNote)  parts.push(`Personal: ${inlineNote.slice(0, 120)}`);
+  btn.title = parts.join('\n');
+
   li.appendChild(btn);
   actions.appendChild(li);
 }

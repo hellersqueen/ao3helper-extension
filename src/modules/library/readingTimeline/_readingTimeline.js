@@ -44,9 +44,11 @@ css(styles, 'ao3h-readingTimeline');
 const MOD = 'readingTimeline';
 
 const DEFAULTS = {
-  defaultView:   'year',   // 'year' | 'month'
-  heatmapColor:  'green',  // 'green' | 'purple' | 'orange' | 'blue'
-  calendarRange: 5,        // number of years shown in year selector
+  defaultView:      'year',   // 'year' | 'month'
+  heatmapColor:     'green',  // 'green' | 'purple' | 'orange' | 'blue'
+  calendarRange:    5,        // number of years shown in year selector
+  heatmapIntensity: 'medium', // 'low' | 'medium' | 'high'
+  hideReadWorks:    false,    // hide instead of highlight on listing pages
 };
 
 const cfg = makeCfg(MOD, DEFAULTS);
@@ -75,7 +77,8 @@ register(MOD, {
                     /^\/users\/[^/]+\/bookmarks/.test(path) ||
                     /^\/pseuds\/[^/]+\/works$/.test(path);
   if (isListing) {
-    analytics.highlightReadWorksOnPage({ highlight: true, hide: false });
+    const hide = !!cfg('hideReadWorks');
+    analytics.highlightReadWorksOnPage({ highlight: !hide, hide });
   }
 
   if (/^\/users\/[^/]+\/readings/.test(path)) {
@@ -83,9 +86,10 @@ register(MOD, {
   }
 
   const viz = new TimelineVisualization({
-    heatmapColor:  cfg('heatmapColor'),
-    defaultView:   cfg('defaultView'),
-    calendarRange: parseInt(cfg('calendarRange'), 10) || 5,
+    heatmapColor:     cfg('heatmapColor'),
+    defaultView:      cfg('defaultView'),
+    calendarRange:    parseInt(cfg('calendarRange'), 10) || 5,
+    heatmapIntensity: cfg('heatmapIntensity'),
     analytics,
   });
   viz.injectMenuButton();

@@ -83,6 +83,19 @@
   background: #888;
 }
 
+/*+ ───────────────────────────────────────────────────────────
+    AUTEUR DU FIC SKIPPÉ
+  ─────────────────────────────────────────────────────────────
+      └─ Petit texte "by [auteur]" à côté du titre.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-skipworks-author {
+  /*- 🎨 Gris pâle, plus discret que le titre */
+  color: #999;
+  font-size: 11px;
+  margin-left: 6px;
+}
+
 
 /*###
   ═══════════════════════════════════════════════════════════════════════
@@ -308,6 +321,9 @@
   gap: .5em;
   align-items: center;
   min-width: 0;
+
+  /*- 👆 Curseur pointer = indique qu'un double-clic révèle temporairement la fic */
+  cursor: pointer;
 }
 
 .ao3h-m5-hidebar .label {
@@ -348,6 +364,42 @@
 }
 
 /*+ ───────────────────────────────────────────────────────────
+    HIDE BAR — VARIANTE COMPACTE ("banner" / "dim" / "note")
+  ─────────────────────────────────────────────────────────────
+      └─ Une seule ligne, boutons plus petits, raison tronquée
+         avec le texte complet visible via title=.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5-hidebar--banner {
+  padding: 3px 8px;
+  font-size: 10px;
+  gap: 6px;
+}
+
+.ao3h-m5-hidebar--banner .reason-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.ao3h-m5-hidebar--banner .ao3h-m5-btn {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    STYLE "DIM" — CONTENU ATTÉNUÉ PLUTÔT QUE REMPLACÉ
+  ─────────────────────────────────────────────────────────────
+      └─ Le blurb original reste visible, juste estompé ; la
+         barre compacte apparaît en dessous.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5-dimmed > :not(.ao3h-m5-hidebar) {
+  opacity: .35;
+}
+
+/*+ ───────────────────────────────────────────────────────────
     BOUTON "HIDE" FLOTTANT
   ─────────────────────────────────────────────────────────────
       └─ Bouton flottant à droite du blurb pour masquer un fic.
@@ -367,6 +419,64 @@
 
 .ao3h-m5-hide-btn:hover {
   background: #f1f5fb;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON "HIDE" — VARIANTE "BOTTOM" (hideButtonPosition)
+  ─────────────────────────────────────────────────────────────
+      └─ Placé après dl.stats plutôt que flottant près du titre :
+         annule le float/margin négatif pensés pour l'emplacement
+         par défaut, s'affiche en ligne à la place.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5-hide-btn--bottom {
+  float: none;
+  display: inline-block;
+  margin: 4px 0 0;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    BOUTON "NOTE" (📝) — NOTE PRIVÉE SANS MASQUAGE
+  ─────────────────────────────────────────────────────────────
+      └─ À côté du bouton Hide ; ouvre le même picker mais
+         enregistre isHidden:false — une note sans masquer.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5-note-btn {
+  float: right;
+  margin-right: 4px;
+  margin-top: -20px;
+  border: 1px solid #cfd6e2;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0 6px 5px;
+  cursor: pointer;
+  font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.ao3h-m5-note-btn:hover {
+  background: #f1f5fb;
+}
+
+.ao3h-m5-note-btn--bottom {
+  float: none;
+  display: inline-block;
+  margin: 4px 0 0 4px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    PASTILLE "A UNE NOTE" (badge, œuvre non masquée)
+  ─────────────────────────────────────────────────────────────
+      └─ Affichée quand une œuvre non masquée porte une note
+         privée. Le texte complet apparaît via title= au survol ;
+         cliquer rouvre le picker pour la modifier.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-m5-note-badge {
+  display: inline-block;
+  margin-left: 4px;
+  cursor: pointer;
+  font-size: 12px;
 }
 
 /*+ ───────────────────────────────────────────────────────────

@@ -21,7 +21,8 @@ import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
-import { ThemeValidator } from '../../../../lib/themes/engine/themeValidator.js';
+import { ThemeValidator } from '../../../../lib/themes/engine/themeUtils.js';
+import { findProtectedViolations } from './themeSafety.js';
 
 
 
@@ -405,13 +406,21 @@ function renderPanel () {
       return;
     }
     if (activeType === 'css') {
-      // Contrôle de sécurité (lib/themes/engine/themeValidator.js) — distinct
+      // Contrôle de sécurité (lib/themes/engine/themeUtils.js) — distinct
       // du linter de syntaxe validateCSS() ci-dessous ; bloque plutôt que
       // d'avertir, car c'est un motif dangereux et non une simple coquille.
       try {
         ThemeValidator.validate(code);
       } catch (err) {
         statusEl.textContent = '⛔ ' + err.message;
+        statusEl.className = `${NS}-tb-css-status ${NS}-tb-css-warn`;
+        return;
+      }
+      // Zone protection: refuse rules that would blank out the fic text or
+      // the page itself (distinct from the syntax linter below).
+      const violations = findProtectedViolations(code);
+      if (violations.length > 0) {
+        statusEl.textContent = '⛔ ' + violations[0];
         statusEl.className = `${NS}-tb-css-status ${NS}-tb-css-warn`;
         return;
       }

@@ -13,38 +13,51 @@ directement.
 
 | Réglage | Par défaut | Ce que ça fait |
 |---|---|---|
-| `showPreviewBeforeOpen` | désactivé | Affiche titre/résumé/statistiques avant d'ouvrir la fic |
+| `showPreviewBeforeOpen` | désactivé | Affiche titre/résumé/statistiques avant d'ouvrir la fic (ignoré si plusieurs fics sont tirées d'un coup) |
 | `completedOnly` | désactivé | Ne choisit que parmi les fics terminées |
-| `showDetails` | activé *(pas encore actif)* | Réservé pour une future section "Analysis & Recommendations" |
-| `enableRecommendations` | activé *(pas encore actif)* | idem |
-| `maxResults` | `10` *(pas encore actif)* | idem |
+| `resultCount` | `1` | Nombre de fics tirées d'un coup (1 à 10) ; au-delà de 1, affiche une liste au lieu d'un aperçu unique ✅ |
+| `minWords` | `0` | Longueur minimale en mots ; `0` = pas de minimum ✅ |
+| `drawScope` | `page` | `page` = cette page seulement, `allPages` = cette page + jusqu'à 4 pages suivantes de la même liste ✅ |
 
 ## Fichiers
 
-### `surpriseMe.js` — tout le module en un seul fichier
+### `surpriseMe.js` — coordinateur : bouton, tirage, aperçu(s), API partagée
 
 - Ignore les fics déjà cachées par d'autres modules et celles déjà marquées comme lues
-- Peut ne choisir que parmi les fics terminées, si le réglage est activé
-- Peut montrer un aperçu (titre, auteur, mots, kudos, résumé) avant d'ouvrir vraiment la fic, avec des boutons "Open", "Reroll" et "Close"
+- Peut ne choisir que parmi les fics terminées et/ou au-dessus d'un nombre de mots minimum, si les réglages sont activés
+- Peut élargir le tirage aux pages suivantes de la même liste (`drawScope: allPages`)
+- Tire une seule fic (aperçu "Open"/"Reroll"/"Close"/"Add to Later Shelf") ou plusieurs à la fois (liste à cocher avec ajout groupé à "à lire plus tard")
+- Évite de retirer une fic tirée récemment (fenêtre glissante des 20 derniers tirages), via `drawHistory.js`
 - Peut être déclenché par le raccourci clavier Ctrl+Shift+R du module des raccourcis
 - Affiche un petit message si aucune fic ne correspond aux critères
 
+### `candidateSelection.js` — sélection des candidates (pur, testable)
+
+- Détection des fics terminées, extraction du nombre de mots, filtrage par ces deux critères
+- Échantillonnage aléatoire sans doublon (`pickRandomSample`), utilisé pour le tirage simple comme pour le tirage multiple
+
+### `drawHistory.js` — historique des tirages (localStorage)
+
+- Enregistre chaque fic tirée (id, titre, lien, date), plafonné à 50 entrées
+- Expose l'ensemble des IDs tirés récemment (20 derniers) pour éviter les répétitions immédiates
+- Relu par le panneau de réglages (`lib/ui/panel/configs/explore/surpriseMe-config.js`) pour afficher/vider l'historique
+
 ### `surpriseMe.css`
 
-- Les styles visuels du bouton, de la carte d'aperçu et du message "liste vide"
+- Les styles visuels du bouton, de la carte d'aperçu simple, de la liste de tirage multiple et du message "liste vide"
+- Les styles de la section "Recent draws" du panneau de réglages
 
 ## Specs non implémentés
 
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Une section "Analyse et recommandations" est prévue dans les réglages, mais rien n'est vraiment branché derrière pour l'instant
-- Proposer une liste de 5 à 10 fics au hasard d'un coup pour choisir parmi elles, au lieu d'en tirer une seule à la fois
-- Ajouter automatiquement plusieurs fics tirées au hasard dans "à lire plus tard" d'un coup
-- Choisir la zone où piocher au hasard (seulement ce fandom, tous les fandoms, ou juste cette page)
-- Exclure les fics qu'on a abandonnées en cours de route, pas seulement celles déjà lues jusqu'au bout
-- Exclure les fics trop courtes selon un nombre de mots minimum
-- Garder un historique des fics tirées au hasard précédemment
+- ~~Une section "Analyse et recommandations" est prévue dans les réglages, mais rien n'est vraiment branché derrière pour l'instant~~ ✅ Retirée des réglages plutôt qu'implémentée — voir "Explicitement écarté"
+- ~~Proposer une liste de 5 à 10 fics au hasard d'un coup pour choisir parmi elles, au lieu d'en tirer une seule à la fois~~ ✅ Réglage `resultCount` (1 à 10) : au-delà de 1, une liste à cocher remplace l'aperçu unique
+- ~~Ajouter automatiquement plusieurs fics tirées au hasard dans "à lire plus tard" d'un coup~~ ✅ Bouton "Add checked to Later Shelf" dans la liste de tirage multiple (et "Add to Later Shelf" sur l'aperçu simple)
+- ~~Choisir la zone où piocher au hasard (seulement ce fandom, tous les fandoms, ou juste cette page)~~ ✅ Réglage `drawScope` : `page` (cette page) ou `allPages` (cette page + jusqu'à 4 pages suivantes de la même liste) — voir précision ci-dessous
+- ~~Exclure les fics trop courtes selon un nombre de mots minimum~~ ✅ Réglage `minWords`
+- ~~Garder un historique des fics tirées au hasard précédemment~~ ✅ `drawHistory.js` + section "Recent draws" dans le panneau (avec bouton "Clear History")
 
 ## Explicitement écarté
 
@@ -54,6 +67,21 @@ vraiment dans ce module (pas de code pour ça) :
 - Un bouton "I'm Feeling Lucky" séparé — ça ferait doublon avec le bouton dé déjà présent
 - Ajouter directement la fic tirée au hasard dans une file d'attente de lecture — ce n'est pas le rôle de ce module
 - Pouvoir activer ou désactiver le bouton seulement sur certaines pages — il reste disponible partout, c'est plus simple
+- **La section "Analyse et recommandations" prévue dans les réglages** (`showDetails`, `enableRecommendations`, `maxResults`) — un vrai moteur de recommandations demanderait de pondérer les fics (par ressemblance, popularité...), ce qui contredit directement les décisions déjà prises pour ce module ("Absence de pondération", "Absence de similarité" ci-dessous). Les trois réglages fantômes ont été retirés du panneau plutôt que branchés à un comportement qui n'a pas sa place ici.
+- **Exclure les fics abandonnées en cours de route** — aucun module de l'extension ne suit aujourd'hui un statut "abandonné" (le suivi de lecture, `readingTracker`, liste lui-même cette fonctionnalité comme non implémentée). Sans producteur de cette donnée, il n'y a rien à lire pour exclure ces fics. À revisiter si `readingTracker` ajoute un jour ce statut.
+
+## Précision — zone de tirage (`drawScope`)
+
+Techniquement, AO3 ne propose pas de vraie distinction "ce fandom / tous les
+fandoms" depuis une page de listing : la page affichée EST déjà la liste
+d'un fandom, d'une recherche ou d'une étagère précise. `allPages` élargit
+donc le tirage aux pages suivantes de cette même liste (jusqu'à 4 pages
+en plus de la page courante), ce qui correspond en pratique à "tout le
+fandom/toute la recherche affichée" plutôt qu'à une page seule. Sur ces
+pages récupérées en plus, seuls les filtres qui ne dépendent pas de
+l'affichage (déjà lue, terminée, mots) s'appliquent — le masquage par
+tags/mots interdits d'autres modules ne peut pas être vérifié puisque ces
+fics ne sont jamais affichées sur la page courante.
 
 ## Précision
 
@@ -81,20 +109,17 @@ code.
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Surprise Me** ajoute un bouton **🎲 Random Work** sur les listes d’œuvres AO3.
-
 Lorsqu’il est utilisé, le module choisit au hasard une œuvre parmi celles actuellement affichées sur la page, puis ouvre directement sa page.
 
 Il fonctionne notamment sur :
-
-* les pages de tags ;
-* les résultats de recherche ;
-* les bookmarks ;
-* la liste **Marked for Later** ;
-* l’historique ;
-* les collections ;
-* les autres listings compatibles.
+  - les pages de tags ;
+  - les résultats de recherche ;
+  - les bookmarks ;
+  - la liste **Marked for Later** ;
+  - l’historique ;
+  - les collections ;
+  - les autres listings compatibles.
 
 Le tirage est réellement aléatoire parmi les œuvres admissibles présentes sur la page.
 
@@ -102,22 +127,24 @@ Le tirage est réellement aléatoire parmi les œuvres admissibles présentes su
 
 # Réglages utilisateur
 
-| Réglage                 | Par défaut                  | Ce que ça fait                                                   |
-| ----------------------- | --------------------------- | ---------------------------------------------------------------- |
-| `showPreviewBeforeOpen` | Désactivé                   | Affiche un aperçu de l’œuvre avant de l’ouvrir.                  |
-| `completedOnly`         | Désactivé                   | Limite le tirage aux œuvres terminées.                           |
-| `showDetails`           | Activé *(pas encore actif)* | Réservé à une future section d’analyse et de recommandations.    |
-| `enableRecommendations` | Activé *(pas encore actif)* | Réservé à une future section d’analyse et de recommandations.    |
-| `maxResults`            | `10` *(pas encore actif)*   | Définit une future limite de résultats pour les recommandations. |
+| Réglage                 |  Ce que ça fait                                                  |
+|-------------------------|------------------------------------------------------------------|
+| `showPreviewBeforeOpen` | Affiche un aperçu de l’œuvre avant de l’ouvrir (ignoré si `resultCount` > 1). |
+| `completedOnly`         | Limite le tirage aux œuvres terminées.                           |
+| `resultCount`           | Nombre d’œuvres tirées d’un coup (1 à 10).                       |
+| `minWords`              | Longueur minimale en mots (`0` = pas de minimum).                |
+| `drawScope`             | `page` (cette page) ou `allPages` (cette page + pages suivantes de la même liste). |
 
 ---
 
 # Structure du module
 
-Le module est composé d’un seul fichier fonctionnel ainsi que d’une feuille de style.
+Le module est composé de trois fichiers fonctionnels ainsi que d’une feuille de style.
 
 ```text
-surpriseMe.js
+surpriseMe.js            (coordinateur : bouton, tirage, aperçus, API partagée)
+candidateSelection.js    (filtrage/échantillonnage des candidates — pur, testable)
+drawHistory.js           (historique des tirages, localStorage)
 surpriseMe.css
 ```
 
@@ -162,12 +189,13 @@ Le tirage est réellement aléatoire dans le code actuel.
 
 ### Œuvres visibles
 
-Le module choisit uniquement parmi les œuvres présentes sur la page courante.
+Par défaut (`drawScope: page`), le module choisit uniquement parmi les œuvres présentes sur la page courante.
 
-Il ne parcourt pas automatiquement :
+Avec `drawScope: allPages`, il récupère aussi jusqu’à 4 pages suivantes de la même liste (même recherche, même fandom, même étagère) avant de tirer — voir "Zone du tirage élargie" plus bas.
 
-* les autres pages de résultats ;
-* l’ensemble du fandom ;
+Il ne parcourt jamais :
+
+* d’autres fandoms ou recherches que ceux de la page courante ;
 * toute la bibliothèque AO3.
 
 ---
@@ -246,8 +274,56 @@ Cela peut arriver lorsque :
 
 * toutes les œuvres visibles sont déjà lues ;
 * toutes les œuvres sont masquées ;
-* le filtre `completedOnly` exclut tous les résultats ;
+* le filtre `completedOnly` ou `minWords` exclut tous les résultats ;
 * aucune fiche d’œuvre compatible n’est présente.
+
+---
+
+### Tirage multiple (`resultCount`)
+
+Quand `resultCount` est réglé au-dessus de 1, le module ne tire plus une
+seule œuvre mais un lot (jusqu’à 10), affiché sous forme de liste avec, pour
+chacune : titre (lien direct), auteur, mots, kudos, et une case à cocher.
+
+La liste propose trois actions groupées : **Add checked to Later Shelf**,
+**Reroll** (retire un nouveau lot) et **Close**.
+
+---
+
+### Ajout à Later Shelf
+
+Aussi bien l’aperçu simple (bouton **📌 Add to Later Shelf**) que la liste
+multiple (bouton **📌 Add checked to Later Shelf**) peuvent ajouter une ou
+plusieurs œuvres tirées directement à l’étagère "à lire plus tard", sans
+avoir à ouvrir chaque œuvre pour cliquer son propre bouton.
+
+---
+
+### Zone du tirage élargie (`drawScope`)
+
+Avec `drawScope: allPages`, le module récupère (par requête réseau vers la
+même URL avec un `page` différent) jusqu’à 4 pages suivantes de la liste
+courante avant de tirer, en plus de la page affichée.
+
+---
+
+### Longueur minimale (`minWords`)
+
+Un réglage numérique exclut les œuvres en dessous d’un nombre de mots donné.
+`0` (par défaut) désactive ce filtre.
+
+---
+
+### Historique des tirages
+
+Chaque œuvre tirée (simple ou dans un lot) est enregistrée avec son id, son
+titre, son lien et la date du tirage — jusqu’à 50 entrées conservées.
+
+Les 20 tirages les plus récents ne peuvent pas être retirés à nouveau
+immédiatement, ce qui évite de proposer deux fois de suite la même œuvre.
+
+L’historique est consultable et vidable depuis le panneau de réglages du
+module, section "Recent draws".
 
 ---
 
@@ -263,9 +339,11 @@ Le module parcourt les fiches d’œuvres présentes dans le DOM et construit un
 
 Avant le tirage, il peut retirer :
 
-* les fiches masquées ;
+* les fiches masquées (page courante seulement) ;
 * les œuvres déjà lues ;
-* les œuvres incomplètes lorsque `completedOnly` est activé.
+* les œuvres incomplètes lorsque `completedOnly` est activé ;
+* les œuvres en dessous du seuil `minWords` ;
+* les œuvres tirées parmi les 20 derniers tirages (`drawHistory.js`), pour éviter une répétition immédiate.
 
 ---
 
@@ -309,79 +387,63 @@ Il définit notamment l’apparence :
 
 # Fonctionnalités non implémentées
 
-Les fonctionnalités ci-dessous sont prévues dans la conception du module ou mentionnées dans d’autres documents, mais ne disposent pas encore d’une implémentation complète.
+Cette section listait des idées prévues dans la conception du module mais
+sans implémentation. Statut à jour ci-dessous ; le détail de chaque
+fonctionnalité livrée est décrit plus haut, dans "Fonctionnalités".
 
 ---
 
-## Analyse et recommandations
+## ~~Analyse et recommandations~~ ✅ Écartée (voir Décisions de conception)
 
-Une future section **Analysis & Recommendations** est prévue dans les réglages.
-
-Les options suivantes lui sont réservées :
-
-* `showDetails`
-* `enableRecommendations`
-* `maxResults`
-
-Elles existent actuellement dans la configuration, mais aucun comportement réel n’est encore branché derrière elles.
+Une section **Analysis & Recommendations** était prévue dans les réglages,
+avec `showDetails`, `enableRecommendations` et `maxResults` réservés mais
+inactifs. Un vrai moteur de recommandations demanderait de pondérer les
+œuvres (ressemblance, popularité...), ce qui contredit "Absence de
+pondération" et "Absence de similarité" ci-dessous. Les trois réglages
+fantômes ont été retirés du panneau plutôt que branchés à un comportement
+hors-sujet pour ce module.
 
 ---
 
-## Sélection multiple
+## ~~Sélection multiple~~ ✅ Implémentée
 
-Proposer plusieurs œuvres tirées au hasard en une seule fois.
-
-Par exemple :
-
-* 5 œuvres ;
-* 10 œuvres.
-
-L’utilisateur pourrait ensuite choisir parmi cette sélection.
+Réglage `resultCount` (1 à 10) — voir "Tirage multiple" plus haut.
 
 ---
 
-## Ajout multiple à Marked for Later
+## ~~Ajout multiple à Marked for Later~~ ✅ Implémentée
 
-Ajouter automatiquement plusieurs œuvres tirées au hasard à **Marked for Later** en une seule opération.
-
----
-
-## Zone du tirage
-
-Permettre de choisir la portée du tirage.
-
-Exemples :
-
-* seulement la page actuelle ;
-* tout le fandom ;
-* plusieurs fandoms ;
-* une autre zone définie par l’utilisateur.
+Boutons **Add to Later Shelf** / **Add checked to Later Shelf** — voir
+"Ajout à Later Shelf" plus haut.
 
 ---
 
-## Exclusion des œuvres abandonnées
+## ~~Zone du tirage~~ ✅ Implémentée (partiellement, par nécessité technique)
 
-Exclure les œuvres marquées comme abandonnées, et pas seulement celles déjà lues jusqu’au bout.
-
----
-
-## Longueur minimale
-
-Ajouter un filtre permettant d’ignorer les œuvres trop courtes.
-
-Le seuil pourrait être défini en nombre minimal de mots.
+Réglage `drawScope` (`page` / `allPages`) — voir "Zone du tirage élargie"
+plus haut et la précision en tête de fichier sur la correspondance
+"fandom/recherche affichée" plutôt qu’un multi-fandom au sens strict.
 
 ---
 
-## Historique des tirages
+## ~~Exclusion des œuvres abandonnées~~ ✅ Écartée (faute de donnée source)
 
-Conserver la liste des œuvres tirées précédemment.
+Aucun module ne suit aujourd’hui un statut "abandonné" — `readingTracker`
+liste lui-même cette fonctionnalité comme non implémentée. Rien à lire pour
+exclure ces œuvres tant que ce statut n’existe nulle part dans l’extension.
 
-Cela permettrait notamment :
+---
 
-* d’éviter les répétitions ;
-* de retrouver une œuvre proposée plus tôt ;
-* de consulter l’historique des tirages.
+## ~~Longueur minimale~~ ✅ Implémentée
+
+Réglage `minWords` — voir "Longueur minimale" plus haut.
+
+---
+
+## ~~Historique des tirages~~ ✅ Implémentée
+
+`drawHistory.js` + section "Recent draws" du panneau de réglages — voir
+"Historique des tirages" plus haut.
 
 ---
 
@@ -454,5 +516,27 @@ Cette responsabilité appartient à d’autres modules.
 Le bouton n’est pas configurable page par page.
 
 Lorsqu’il est activé, il reste disponible sur toutes les pages de listings compatibles afin de conserver un comportement simple et prévisible.
+
+---
+
+## Aucune section "Analyse et recommandations"
+
+Les réglages `showDetails`, `enableRecommendations` et `maxResults`,
+existants mais inactifs, ont été retirés plutôt qu’implémentés.
+
+Un vrai moteur de recommandations demanderait de pondérer les œuvres selon
+leur ressemblance, leur popularité ou leurs statistiques — ce qui contredit
+directement "Absence de pondération" et "Absence de similarité" ci-dessus.
+
+---
+
+## Aucune exclusion des œuvres abandonnées
+
+Aucun module de l’extension ne suit aujourd’hui un statut "abandonné" des
+œuvres — `readingTracker` liste lui-même cette fonctionnalité comme non
+implémentée.
+
+Sans producteur de cette donnée, il n’y a rien à lire pour exclure ces
+œuvres du tirage. À revisiter si `readingTracker` ajoute un jour ce statut.
 
 

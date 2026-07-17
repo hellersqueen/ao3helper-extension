@@ -40,10 +40,22 @@ cocher.
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Des modèles tout prêts pour normaliser automatiquement les variantes d'un nom de personnage
-- Un modèle spécial tout prêt pour remplacer un deadname
-- Remplacer directement des mots sensibles dans le texte par autre chose, au lieu de cacher toute la fic
-- Des modèles tout prêts pour corriger des fautes de frappe qui reviennent souvent, ou pour adapter l'orthographe britannique vers l'américaine (ou l'inverse)
+- ~~Des modèles tout prêts pour normaliser automatiquement les variantes d'un nom de personnage~~ ✅
+  Fait : modèle "Normalize a character name…" dans le sélecteur de modèles —
+  on saisit les variantes (séparées par des virgules) et l'orthographe
+  cible, une règle regex mot-entier est créée (`ruleTemplates.js`).
+- ~~Un modèle spécial tout prêt pour remplacer un deadname~~ ✅
+  Fait : modèle "Replace a deadname…" — deux questions (nom à remplacer,
+  nom choisi), règle mot-entier insensible à la casse, catégorie "names".
+- ~~Remplacer directement des mots sensibles dans le texte par autre chose, au lieu de cacher toute la fic~~ ✅
+  Fait : modèle "Soften a sensitive word…" — remplace le mot dans le texte
+  par l'expression choisie (ou ▓▓▓ si on laisse vide), catégorie
+  "sensitive". Complémentaire de `hideByTags` qui, lui, masque des fics.
+- ~~Des modèles tout prêts pour corriger des fautes de frappe qui reviennent souvent, ou pour adapter l'orthographe britannique vers l'américaine (ou l'inverse)~~ ✅
+  Fait : trois packs insérables en un clic — "UK → US spelling",
+  "US → UK spelling" (10 paires chacun) et "Common typo fixes" (10 fautes
+  courantes) ; les paires déjà couvertes par une règle existante sont
+  ignorées à l'insertion.
 
 ## Explicitement écarté
 
@@ -90,17 +102,15 @@ AO3 Helper - Word Swap
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Word Swap** remplace automatiquement des mots ou des expressions à l'intérieur du texte des œuvres selon des règles définies par l'utilisateur.
 
-Il permet notamment de :
-
-* remplacer rapidement `Y/N` par son propre prénom ;
-* créer des règles de remplacement personnalisées ;
-* organiser les règles par catégories ;
-* tester les remplacements dans un aperçu en direct ;
-* importer ou exporter toutes les règles ;
-* appliquer automatiquement les remplacements aux chapitres chargés dynamiquement.
+* Il permet notamment de :
+    - remplacer rapidement `Y/N` par son propre prénom ;
+    - créer des règles de remplacement personnalisées ;
+    - organiser les règles par catégories ;
+    - tester les remplacements dans un aperçu en direct ;
+    - importer ou exporter toutes les règles ;
+    - appliquer automatiquement les remplacements aux chapitres chargés dynamiquement.
 
 Les remplacements s'appliquent uniquement au texte des œuvres et ne modifient jamais l'interface d'AO3.
 
@@ -108,9 +118,9 @@ Les remplacements s'appliquent uniquement au texte des œuvres et ne modifient j
 
 # Réglages utilisateur
 
-| Réglage         | Défaut | Description                                                                             |
-| --------------- | ------ | --------------------------------------------------------------------------------------- |
-| `yourFirstName` | Vide   | Prénom utilisé par le raccourci rapide remplaçant `Y/N` par le prénom de l'utilisateur. |
+| Réglage         | Description                                                                             |
+| --------------- |-----------------------------------------------------------------------------------------|
+| `yourFirstName` | Prénom utilisé par le raccourci rapide remplaçant `Y/N` par le prénom de l'utilisateur. |
 
 Les règles de remplacement ne sont pas gérées par des cases à cocher.
 
@@ -374,31 +384,42 @@ Les fonctionnalités ci-dessous sont mentionnées dans d'autres documents du pro
 
 ---
 
-## Modèles de personnages
+## ~~Modèles de personnages~~ ✅ Fait
 
-Fournir des modèles prêts à l'emploi permettant de normaliser automatiquement les différentes variantes d'un nom de personnage.
+~~Fournir des modèles prêts à l'emploi permettant de normaliser automatiquement les différentes variantes d'un nom de personnage.~~
 
----
-
-## Modèle de remplacement de deadname
-
-Ajouter un modèle prédéfini destiné au remplacement automatique d'un deadname.
+> Modèle "Normalize a character name…" (`characterNameRule` dans
+> `ruleTemplates.js`) : variantes séparées par des virgules → une règle
+> regex alternée, mot entier, insensible à la casse.
 
 ---
 
-## Remplacement des mots sensibles
+## ~~Modèle de remplacement de deadname~~ ✅ Fait
 
-Permettre de remplacer directement certains mots sensibles par d'autres expressions, plutôt que de masquer entièrement une œuvre.
+~~Ajouter un modèle prédéfini destiné au remplacement automatique d'un deadname.~~
+
+> Modèle "Replace a deadname…" (`deadnameRule`) : règle mot-entier
+> insensible à la casse, rangée dans la catégorie "names".
 
 ---
 
-## Modèles de correction
+## ~~Remplacement des mots sensibles~~ ✅ Fait
 
-Fournir des modèles prêts à l'emploi permettant notamment :
+~~Permettre de remplacer directement certains mots sensibles par d'autres expressions, plutôt que de masquer entièrement une œuvre.~~
 
-* de corriger automatiquement des fautes de frappe fréquentes ;
-* de convertir automatiquement l'orthographe britannique vers l'orthographe américaine ;
-* de convertir automatiquement l'orthographe américaine vers l'orthographe britannique.
+> Modèle "Soften a sensitive word…" (`sensitiveWordRule`) : remplacement
+> choisi, ou ▓▓▓ par défaut. L'approche "cacher la fic entière" reste du
+> ressort de `hideByTags`.
+
+---
+
+## ~~Modèles de correction~~ ✅ Fait
+
+~~Fournir des modèles prêts à l'emploi (fautes fréquentes, UK→US, US→UK).~~
+
+> Trois packs (`RULE_PACKS` / `packRules`) : UK→US, US→UK (10 paires
+> symétriques) et fautes courantes (10). Insertion en un clic depuis le
+> sélecteur de modèles, sans doublonner les règles existantes.
 
 ---
 

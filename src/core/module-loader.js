@@ -47,6 +47,7 @@ function initModuleLoader() {
       
       // Boot all enabled modules
       await Modules.bootAll();
+      performance.mark?.('ao3h:modules:ready');
       
       // Log registered modules for debugging
       logRegisteredModules();

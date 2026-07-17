@@ -18,6 +18,10 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { downloadFile } from '../../../../lib/utils/json-file.js';
+import { getBookmarkVaultNote } from '../../../../lib/storage/keys.js';
+import { computeMilestones, getHeatmapLevel } from './timelineStats.js';
+import { getAnnotation, setAnnotation } from './dateAnnotations.js';
+import { loadPresets, savePreset, getPreset, deletePreset } from './filterPresets.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -32,9 +36,9 @@ const HEATMAP_PALETTES = {
 
 export class TimelineVisualization {
   /**
-   * @param {{ heatmapColor?: string, defaultView?: string, calendarRange?: number, analytics: import('./historyAnalytics.js').HistoryAnalytics }} opts
+   * @param {{ heatmapColor?: string, defaultView?: string, calendarRange?: number, heatmapIntensity?: string, analytics: import('./historyAnalytics.js').HistoryAnalytics }} opts
    */
-  constructor ({ heatmapColor, defaultView = 'year', calendarRange = 5, analytics }) {
+  constructor ({ heatmapColor, defaultView = 'year', calendarRange = 5, heatmapIntensity = 'medium', analytics }) {
     this.analytics     = analytics;
     this.panel         = null;
     this.heatmapData   = {};
@@ -42,7 +46,9 @@ export class TimelineVisualization {
     this.currentMonth  = new Date().getMonth();
     this.currentView   = defaultView;
     this.calendarRange = calendarRange;
+    this.intensity     = heatmapIntensity;
     this.palette       = HEATMAP_PALETTES[heatmapColor] || HEATMAP_PALETTES.green;
+    this.searchQuery   = '';
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -57,12 +63,7 @@ export class TimelineVisualization {
   }
 
   getHeatmapColor (count) {
-    const p = this.palette;
-    if (count === 0) return p[0];
-    if (count === 1) return p[1];
-    if (count === 2) return p[2];
-    if (count <= 4)  return p[3];
-    return p[4];
+    return this.palette[getHeatmapLevel(count, this.intensity)];
   }
 
   /** Build and return the heatmap grid DOM element for the given data/view. */
@@ -71,6 +72,7 @@ export class TimelineVisualization {
     this.currentYear  = year;
     this.currentView  = view;
     this.currentMonth = month;
+    this.milestones   = computeMilestones(this.analytics?.heatmapData || heatmapData);
 
     const container = document.createElement('div');
     container.className = 'ao3h-timeline-heatmap';
@@ -81,6 +83,33 @@ export class TimelineVisualization {
       container.appendChild(this._buildYearGrid(heatmapData, year));
     }
     return container;
+  }
+
+  /** True when a day's works match the current search query. Used to
+   *  highlight matching cells without hiding the rest of the calendar. */
+  _matchesSearch (works) {
+    if (!this.searchQuery) return false;
+    const q = this.searchQuery.toLowerCase();
+    return (works || []).some(w =>
+      w.title.toLowerCase().includes(q) ||
+      w.author.toLowerCase().includes(q) ||
+      w.tags.some(t => t.toLowerCase().includes(q))
+    );
+  }
+
+  /** Applies the milestone/annotation/search-match modifier classes and
+   *  tooltip suffix shared by both the year and month cell builders. */
+  _decorateCell (cell, dateKey, works) {
+    if (this.milestones?.[dateKey]) {
+      cell.classList.add('ao3h-heatmap-cell--milestone');
+      cell.title += ` — ${this.milestones[dateKey]}`;
+    }
+    if (getAnnotation(dateKey)) {
+      cell.classList.add('ao3h-heatmap-cell--annotated');
+    }
+    if (this._matchesSearch(works)) {
+      cell.classList.add('ao3h-heatmap-cell--search-match');
+    }
   }
 
   /** Year-view: GitHub-style contribution graph (columns = weeks, rows = weekdays). */
@@ -119,15 +148,17 @@ export class TimelineVisualization {
 
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       const dateKey    = this.getDateKey(d);
-      const worksCount = heatmapData[dateKey]?.length || 0;
+      const works      = heatmapData[dateKey] || [];
+      const worksCount = works.length;
 
       const cell        = document.createElement('div');
       cell.className    = 'ao3h-heatmap-cell ao3h-heatmap-cell--year';
       cell.dataset.date = dateKey;
       cell.title        = `${dateKey}: ${worksCount} work(s)`;
       cell.style.background = this.getHeatmapColor(worksCount);
+      this._decorateCell(cell, dateKey, works);
       cell.addEventListener('click', () => {
-        this._showDateDetails(dateKey, heatmapData[dateKey] || []);
+        this._showDateDetails(dateKey, works);
       });
 
       grid.appendChild(cell);
@@ -171,7 +202,8 @@ export class TimelineVisualization {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     for (let day = 1; day <= daysInMonth; day++) {
       const dateKey    = this.getDateKey(new Date(year, month, day));
-      const worksCount = heatmapData[dateKey]?.length || 0;
+      const works      = heatmapData[dateKey] || [];
+      const worksCount = works.length;
 
       const cell        = document.createElement('div');
       cell.className    = `ao3h-heatmap-cell ao3h-heatmap-cell--month${worksCount > 0 ? ' ao3h-heatmap-cell--filled' : ''}`;
@@ -179,8 +211,9 @@ export class TimelineVisualization {
       cell.title        = `${dateKey}: ${worksCount} work(s)`;
       cell.style.background = this.getHeatmapColor(worksCount);
       cell.textContent = String(day);
+      this._decorateCell(cell, dateKey, works);
       cell.addEventListener('click', () => {
-        this._showDateDetails(dateKey, heatmapData[dateKey] || []);
+        this._showDateDetails(dateKey, works);
       });
 
       grid.appendChild(cell);
@@ -204,23 +237,12 @@ export class TimelineVisualization {
     }
   }
 
-  /** Filter heatmapData by a search query, then re-render. */
+  /** Highlights days matching a search query (a ring around the cell) without
+   *  hiding the rest of the calendar — keeps the full activity picture while
+   *  making matches stand out, rather than filtering days away. */
   filterBySearch (query, fullHeatmapData, year, view = 'year', month = 0) {
-    if (!query.trim()) {
-      this.updateHeatmap(fullHeatmapData, year, view, month);
-      return;
-    }
-    const lower    = query.toLowerCase();
-    const filtered = {};
-    Object.entries(fullHeatmapData).forEach(([date, works]) => {
-      const matches = works.filter(w =>
-        w.title.toLowerCase().includes(lower) ||
-        w.author.toLowerCase().includes(lower) ||
-        w.tags.some(t => t.toLowerCase().includes(lower))
-      );
-      if (matches.length) filtered[date] = matches;
-    });
-    this.updateHeatmap(filtered, year, view, month);
+    this.searchQuery = query.trim();
+    this.updateHeatmap(fullHeatmapData, year, view, month);
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -337,6 +359,84 @@ export class TimelineVisualization {
     dateBox.appendChild(rangeSelect);
     dateBox.appendChild(customRange);
 
+    // Saved filter presets
+    const presetBox = document.createElement('div');
+    presetBox.className = 'ao3h-filter-preset-box';
+    const presetLbl = document.createElement('div');
+    presetLbl.textContent = 'Saved Filters';
+    presetLbl.className = 'ao3h-filter-group-label';
+    presetBox.appendChild(presetLbl);
+
+    const presetSelect = document.createElement('select');
+    presetSelect.className = 'ao3h-filter-preset-select';
+    const presetPlaceholder = document.createElement('option');
+    presetPlaceholder.value = '';
+    presetPlaceholder.textContent = '— Load a saved filter —';
+    presetSelect.appendChild(presetPlaceholder);
+
+    const refreshPresetOptions = () => {
+      const selected = presetSelect.value;
+      const presets  = loadPresets();
+      presetSelect.innerHTML = '';
+      presetSelect.appendChild(presetPlaceholder);
+      presets.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.name; opt.textContent = p.name;
+        presetSelect.appendChild(opt);
+      });
+      presetSelect.value = presets.some(p => p.name === selected) ? selected : '';
+    };
+    refreshPresetOptions();
+
+    const formRefs = {
+      fandomInput: fandomGroup.input, authorInput: authorGroup.input,
+      ratingChecks, statusRadios, wcMinInput: wcMin.input, wcMaxInput: wcMax.input,
+      rangeSelect, dateFromInput: dateFrom.input, dateToInput: dateTo.input, customRange,
+    };
+
+    presetSelect.addEventListener('change', () => {
+      if (!presetSelect.value) return;
+      const preset = getPreset(presetSelect.value);
+      if (!preset) return;
+      this._applyCriteriaToForm(preset.criteria, formRefs);
+      this._lastFiltered = this._applyFilterCriteria(this._getHeatmapData?.() || {}, preset.criteria);
+      this.updateHeatmap(this._lastFiltered, this.currentYear, this.currentView, this.currentMonth);
+    });
+
+    const presetNameInput = document.createElement('input');
+    presetNameInput.type = 'text';
+    presetNameInput.placeholder = 'Name this filter…';
+    presetNameInput.className = 'ao3h-filter-preset-name-input';
+
+    const savePresetBtn = document.createElement('button');
+    savePresetBtn.textContent = 'Save Filter';
+    savePresetBtn.className = 'ao3h-filter-secondary-btn';
+    savePresetBtn.addEventListener('click', () => {
+      if (!presetNameInput.value.trim()) return;
+      const criteria = this._collectFilterCriteria({
+        fandomInput: fandomGroup.input, authorInput: authorGroup.input,
+        ratingChecks, statusRadios, wcMin: wcMin.input, wcMax: wcMax.input,
+        rangeSelect, dateFrom: dateFrom.input, dateTo: dateTo.input,
+      });
+      savePreset(presetNameInput.value, criteria);
+      presetNameInput.value = '';
+      refreshPresetOptions();
+    });
+
+    const deletePresetBtn = document.createElement('button');
+    deletePresetBtn.textContent = 'Delete Selected';
+    deletePresetBtn.className = 'ao3h-filter-secondary-btn';
+    deletePresetBtn.addEventListener('click', () => {
+      if (!presetSelect.value) return;
+      deletePreset(presetSelect.value);
+      refreshPresetOptions();
+    });
+
+    presetBox.appendChild(presetSelect);
+    presetBox.appendChild(presetNameInput);
+    presetBox.appendChild(savePresetBtn);
+    presetBox.appendChild(deletePresetBtn);
+
     // Buttons
     const btnBox = document.createElement('div');
     btnBox.className = 'ao3h-filter-btn-box';
@@ -395,10 +495,32 @@ export class TimelineVisualization {
     body.appendChild(statusBox);
     body.appendChild(wcBox);
     body.appendChild(dateBox);
+    body.appendChild(presetBox);
     body.appendChild(btnBox);
     wrap.appendChild(body);
 
     return wrap;
+  }
+
+  /** Repopulates the filter form fields from a saved preset's criteria
+   *  (the inverse of _collectFilterCriteria). */
+  _applyCriteriaToForm (criteria, { fandomInput, authorInput, ratingChecks, statusRadios, wcMinInput, wcMaxInput, rangeSelect, dateFromInput, dateToInput, customRange }) {
+    fandomInput.value = criteria.fandom || '';
+    authorInput.value = criteria.author || '';
+    Object.entries(ratingChecks).forEach(([r, cb]) => { cb.checked = (criteria.ratings || []).includes(r); });
+    Object.entries(statusRadios).forEach(([s, rb]) => { rb.checked = s === (criteria.status || 'All'); });
+    wcMinInput.value = criteria.wcMin ?? '';
+    wcMaxInput.value = criteria.wcMax ?? '';
+    if (criteria.dateStart || criteria.dateEnd) {
+      rangeSelect.value = 'custom';
+      customRange.style.display = 'flex';
+      dateFromInput.value = criteria.dateStart ? new Date(criteria.dateStart).toISOString().slice(0, 10) : '';
+      dateToInput.value   = criteria.dateEnd   ? new Date(criteria.dateEnd).toISOString().slice(0, 10)   : '';
+    } else {
+      rangeSelect.value = 'all';
+      customRange.style.display = 'none';
+      dateFromInput.value = ''; dateToInput.value = '';
+    }
   }
 
   /** Create a labeled text input group. Returns { wrap, input }. */
@@ -524,6 +646,64 @@ export class TimelineVisualization {
     downloadFile(csv, `ao3-timeline-filtered-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
   }
 
+  /** Renders the current year's heatmap to a canvas and downloads it as a
+   *  PNG — drawn from heatmapData directly (not a DOM screenshot), so no
+   *  screenshot library is needed. PDF export was left out: it would need a
+   *  PDF-generation dependency, which conflicts with keeping the bundle lean. */
+  exportPNG () {
+    const year        = this.currentYear;
+    const data         = this._lastFiltered || this.analytics.heatmapData;
+    const cellSize     = 12;
+    const gap          = 3;
+    const leftMargin   = 26;
+    const topMargin    = 20;
+
+    const jan1       = new Date(year, 0, 1);
+    const offset     = (jan1.getDay() + 6) % 7; // 0 = Monday
+    const startDate  = new Date(year, 0, 1);
+    const endDate    = new Date(year, 11, 31);
+    const totalDays  = offset + Math.round((endDate.getTime() - startDate.getTime()) / 86_400_000) + 1;
+    const cols       = Math.ceil(totalDays / 7);
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = leftMargin + cols * (cellSize + gap);
+    canvas.height = topMargin + 7 * (cellSize + gap);
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#333333';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(`Reading activity — ${year}`, leftMargin, 14);
+
+    ctx.font = '9px sans-serif';
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach((label, row) => {
+      ctx.fillText(label, 0, topMargin + row * (cellSize + gap) + cellSize - 2);
+    });
+
+    let dayIndex = offset;
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const dateKey = this.getDateKey(d);
+      const count   = data[dateKey]?.length || 0;
+      const col     = Math.floor(dayIndex / 7);
+      const row     = dayIndex % 7;
+      ctx.fillStyle = this.getHeatmapColor(count);
+      ctx.fillRect(leftMargin + col * (cellSize + gap), topMargin + row * (cellSize + gap), cellSize, cellSize);
+      dayIndex++;
+    }
+
+    canvas.toBlob(blob => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ao3-timeline-${year}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
   /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — PANEL AND CONTROLS
   ═════════════════════════════════════════════════════════════════════════ */
@@ -611,11 +791,14 @@ export class TimelineVisualization {
     });
     const exportBtn = this._btn('Export JSON', false);
     exportBtn.addEventListener('click', () => this.analytics.exportJSON());
+    const exportPngBtn = this._btn('Export PNG', false);
+    exportPngBtn.addEventListener('click', () => this.exportPNG());
     controls.appendChild(toggle);
     controls.appendChild(yearSel);
     controls.appendChild(monthSel);
     controls.appendChild(search);
     controls.appendChild(exportBtn);
+    controls.appendChild(exportPngBtn);
     return controls;
   }
 
@@ -628,13 +811,26 @@ export class TimelineVisualization {
 
   _showDateDetails (dateKey, works) {
     const detailsPanel = this.panel.querySelector('.ao3h-timeline-details');
-    if (!works.length) { detailsPanel.style.display = 'none'; return; }
+    const existingNote  = getAnnotation(dateKey);
+    if (!works.length && !existingNote) { detailsPanel.style.display = 'none'; return; }
     detailsPanel.style.display = 'block';
     detailsPanel.innerHTML = '';
+
     const h = document.createElement('h3');
     h.className = 'ao3h-timeline-details-heading';
-    h.textContent = `${dateKey} — ${works.length} work(s) read`;
+    h.textContent = works.length ? `${dateKey} — ${works.length} work(s) read` : dateKey;
     detailsPanel.appendChild(h);
+
+    const milestone = this.milestones?.[dateKey];
+    if (milestone) {
+      const banner = document.createElement('div');
+      banner.className = 'ao3h-timeline-milestone-banner';
+      banner.textContent = milestone;
+      detailsPanel.appendChild(banner);
+    }
+
+    detailsPanel.appendChild(this._buildAnnotationEditor(dateKey, existingNote));
+
     works.forEach(work => {
       const item = document.createElement('div');
       item.className = 'ao3h-timeline-work-item';
@@ -651,8 +847,50 @@ export class TimelineVisualization {
       meta.textContent = `by ${work.author} • ${work.fandom} • ${work.rating} • ${work.wordCount.toLocaleString()} words`;
       item.appendChild(title);
       item.appendChild(meta);
+
+      const bookmarkNote = getBookmarkVaultNote(String(work.workId));
+      if (bookmarkNote) {
+        const noteEl = document.createElement('div');
+        noteEl.className = 'ao3h-timeline-work-bookmark-note';
+        noteEl.textContent = `📌 ${bookmarkNote}`;
+        item.appendChild(noteEl);
+      }
+
       detailsPanel.appendChild(item);
     });
+  }
+
+  /** Small editable note field for a single date ("holiday binge-read"). */
+  _buildAnnotationEditor (dateKey, existingNote) {
+    const wrap = document.createElement('div');
+    wrap.className = 'ao3h-timeline-annotation';
+
+    const input = document.createElement('input');
+    input.type        = 'text';
+    input.maxLength   = 140;
+    input.placeholder = 'Add a note for this day (e.g. "holiday binge-read")';
+    input.className   = 'ao3h-timeline-annotation-input';
+    input.value       = existingNote || '';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save note';
+    saveBtn.className   = 'ao3h-timeline-annotation-save';
+    saveBtn.addEventListener('click', () => {
+      setAnnotation(dateKey, input.value);
+      this._refreshCellAnnotationState(dateKey);
+    });
+
+    wrap.appendChild(input);
+    wrap.appendChild(saveBtn);
+    return wrap;
+  }
+
+  /** Toggle the annotated-marker class on a single cell after saving a note,
+   *  without a full grid re-render. */
+  _refreshCellAnnotationState (dateKey) {
+    const cell = this.panel?.querySelector(`.ao3h-heatmap-cell[data-date="${dateKey}"]`);
+    if (!cell) return;
+    cell.classList.toggle('ao3h-heatmap-cell--annotated', !!getAnnotation(dateKey));
   }
 
   _refresh () {

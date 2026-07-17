@@ -3,14 +3,14 @@
   "version": "1.1.0",
   "description": "Enhanced AO3 experience with modern UI and features",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node scripts/split-userscript.mjs",
     "dev": "vite build --watch",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "node tests/e2e/menu-boot.mjs",
+    "test:e2e": "node tests/e2e/menu-boot.mjs && node tests/e2e/route-loading.mjs",
     "typecheck": "tsc --noEmit",
     "docs": "echo \"📖 Documentation disponible dans le dossier docs/\"",
     "help": "echo \"Commands: npm run build (userscript Vite), npm run dev (build watch), npm test (vitest), npm run docs (documentation)\""
@@ -35,7 +35,7 @@
     "vitest": "^4.0.18"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "repository": {
     "type": "git",

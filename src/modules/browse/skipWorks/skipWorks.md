@@ -13,47 +13,95 @@ cible une fic à la fois, avec un bouton "Hide".
 
 | Réglage | Par défaut | Ce que ça fait |
 |---|---|---|
-| `displayMode` | `dim` | Comment afficher une fic cachée : bloc gris avec la note, ou suppression complète |
+| `displayMode` | `dim` | Comment afficher une fic cachée : `block` (bloc gris), `banner` (compact, une ligne), `dim` (fic visible mais atténuée), `note` (fic intacte, juste annotée), ou `remove` (suppression complète) |
+| `confirmBeforeHide` | désactivé | Demande confirmation avant de cacher via le raccourci clavier (Shift/Alt/Ctrl-clic) uniquement |
+| `hideButtonText` | `Hide` | Le texte affiché sur le bouton de masquage |
+| `hideButtonPosition` | `title` | Où placer le bouton : `title` (près du titre) ou `bottom` (en bas du blurb, après les statistiques) |
 
 Les raisons rapides proposées dans la petite fenêtre, ainsi que la liste
 des fics cachées, se gèrent depuis le panneau de configuration.
 
 ## Fichiers
 
-### `skipWorks.js` — tout le module en un seul fichier
+### `skipWorks.js` — le coordinateur du module
 
-- Ajoute un bouton "Hide" sur chaque fic d'une liste
+- Ajoute un bouton "Hide" (texte et position personnalisables) sur chaque fic d'une liste, ainsi qu'un petit bouton "📝" pour ajouter une note privée sans cacher la fic
 - Un clic ouvre une petite fenêtre avec des raisons rapides déjà prêtes (personnalisables), plus un champ de texte libre
-- Une fic cachée s'affiche en gris avec la note, ou disparaît complètement (au choix), avec des boutons "Show" (révéler temporairement), "Edit" (changer la note) et "Unhide" (démasquer pour de bon)
+- Une fic cachée s'affiche selon l'un des 5 styles (`skipWorksHelpers.js`), avec des boutons "Show" (révéler temporairement), "Edit" (changer la note) et "Unhide" (démasquer pour de bon) — sauf le style "note", qui n'a pas de "Show" puisque rien n'est réellement caché
 - Garde en mémoire la liste des fics cachées, séparément pour chaque compte utilisateur
-- Permet d'exporter ou d'importer cette liste dans un fichier
+- Permet d'exporter ou d'importer cette liste dans un fichier, et synchronise automatiquement entre appareils via un miroir `localStorage` que le module `backupAndSync` récupère tout seul (`hiddenWorksMirror.js`)
 
 ### `skipWorks.css`
 
-- Les styles visuels du bouton, de la fenêtre de choix et du panneau de réglages
+- Les styles visuels des boutons, des différents styles de barre de masquage, du badge de note privée, de la fenêtre de choix et du panneau de réglages
 
 ## Specs non implémentés
 
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Chercher une fic cachée par son titre ou son auteur dans la liste — il n'y a pas de barre de recherche
-- Reconnaître toute seule les fics qui ont des notes d'auteur (au début ou à la fin) et les cacher ou mettre un badge d'avertissement dessus
-- Garder la liste des fics cachées synchronisée automatiquement entre plusieurs appareils grâce à un autre module de sauvegarde
-- Pouvoir double-cliquer sur une fic cachée pour la remontrer tout de suite
-- Cacher automatiquement des fics selon des mots-clés, sans avoir à cliquer sur "Hide" soi-même
-- Avoir plusieurs styles différents pour afficher la raison d'un masquage
-- Choisir où placer le bouton "Hide" ou changer son texte
-- Demander une confirmation avant de cacher une fic
-- Des règles automatiques qui cachent une fic toute seule (par exemple par tag ou par auteur), sans avoir à cliquer sur "Hide" à chaque fois
-- Écrire une note privée sur une fic sans la cacher — en ce moment, une note n'existe que collée à un masquage
-- Surligner des passages ou poser des petits marque-pages dans le texte d'une fic pendant qu'on la lit
+- ~~Chercher une fic cachée par son titre ou son auteur dans la liste — il n'y a pas de barre de recherche~~ ✅
+  Ajout d'une barre de recherche dans le panneau, au-dessus de la liste des fics cachées.
+  Elle filtre par titre, auteur, note ou identifiant/numéro d'œuvre (`filterHiddenWorks` dans
+  `lib/ui/panel/configs/browse/skipWorks-config.js`, avec ses tests dans le fichier voisin).
+  Comme le titre et l'auteur n'étaient pas enregistrés avant, `skipWorks.js` les capture
+  maintenant depuis le blurb au moment du masquage (`skipWorksHelpers.js` → `extractWorkMeta`) et les
+  stocke dans IndexedDB à côté de la note ; les entrées masquées avant cette mise à jour restent
+  cherchables par note/id (repli sur "Work #12345" à l'affichage). L'import JSON préserve aussi
+  ces champs s'ils sont présents dans le fichier importé.
+- Reconnaître toute seule les fics qui ont des notes d'auteur — *déplacé vers "Explicitement écarté" : voir plus bas.*
+- ~~Garder la liste des fics cachées synchronisée automatiquement entre plusieurs appareils~~ ✅
+  `skipWorks` stocke ses données dans IndexedDB, mais `backupAndSync` ne sait lire que des clés
+  `localStorage` contenant "ao3h" (aucun mécanisme d'enregistrement générique, aucun support
+  IndexedDB — vérifié dans son code). Plutôt que de faire dépendre `skipWorks` de
+  `backupAndSync` (les modules de ce projet restent indépendants les uns des autres),
+  `skipWorks` recopie sa liste dans une clé `localStorage` miroir à chaque changement
+  (`hiddenWorksMirror.js`) ; `backupAndSync` la récupère automatiquement dans ses sauvegardes
+  et sa synchro cloud, sans aucune modification de son côté. Au chargement de la page, le miroir
+  est fusionné avec IndexedDB (le plus récent gagne, par `updatedAt`) — voir `reconcileWithMirror()`.
+- ~~Pouvoir double-cliquer sur une fic cachée pour la remontrer tout de suite~~ ✅
+  Un double-clic n'importe où sur la barre grise "Hidden: ..." (sauf sur les boutons Edit/Show/
+  Unhide, qui gardent leur propre comportement au simple clic) révèle la fic temporairement,
+  exactement comme le bouton Show. Le hit-test est dans `skipWorksHelpers.js`
+  (`isHideBarRevealTarget`, avec ses tests) ; un `title="Double-click to reveal"` + curseur
+  pointer sur la zone signalent la fonctionnalité.
+- Cacher automatiquement des fics selon des mots-clés — *déplacé vers "Explicitement écarté" : voir plus bas.*
+- ~~Avoir plusieurs styles différents pour afficher la raison d'un masquage~~ ✅
+  5 styles au lieu de 2 : `block` (bloc gris, inchangé), `banner` (même chose en compact, une
+  ligne), `dim` (la fic reste visible mais atténuée, la barre apparaît en dessous), `note` (la
+  fic reste intacte, juste annotée — pas de bouton Show puisque rien n'est masqué), et `remove`
+  (inchangé). Logique de résolution dans `skipWorksHelpers.js`, avec ses tests.
+  `reapplyDisplayMode()` a aussi été généralisé pour gérer tous les changements de style à la
+  volée (avant : seulement `block ↔ remove`).
+- ~~Choisir où placer le bouton "Hide" ou changer son texte~~ ✅
+  Réglages `hideButtonText` (texte libre) et `hideButtonPosition` (`title` près du titre, ou
+  `bottom` après les statistiques, ancré sur `dl.stats` — le même point d'ancrage que
+  `laterShelf` utilise déjà pour ses propres ajouts). Logique dans `skipWorksHelpers.js`.
+  **Pas fait** : "près des actions Bookmark/Mark for Later" et "dans un menu d'actions" — voir
+  "Explicitement écarté".
+- ~~Demander une confirmation avant de cacher une fic~~ ✅
+  Réglage `confirmBeforeHide` (décoché par défaut) dans le panneau. Ne s'applique qu'au
+  raccourci clavier (Shift/Alt/Ctrl-clic) qui saute le popup de raison — choisir une raison
+  dans le popup compte déjà comme une confirmation, donc ce cas-là n'en redemande pas une.
+- Des règles automatiques qui cachent une fic toute seule — *déplacé vers "Explicitement écarté" : voir plus bas (fait double emploi avec `hideByTags`).*
+- ~~Écrire une note privée sur une fic sans la cacher~~ ✅
+  Petit bouton "📝" à côté de "Hide" sur chaque fic : ouvre le même picker, mais enregistre
+  `isHidden:false` avec un marqueur `isStandaloneNote:true` dédié (`skipWorksHelpers.js`).
+  Ce marqueur explicite était nécessaire : Unhide garde volontairement la note d'un ancien
+  masquage (pour un re-masquage rapide via le raccourci clavier), donc "isHidden:false + une
+  note" seul aurait fait apparaître le badge 📝 sur toutes les fics démasquées par le passé, pas
+  seulement celles où l'utilisateur a explicitement demandé une note. Une section "Private
+  Notes" dédiée dans le panneau liste ces notes avec un bouton pour les retirer.
+- Surligner des passages ou poser des petits marque-pages — *déjà tranché plus bas dans "Décisions de conception" (Outils de lecture séparés) : hors de portée de ce module.*
 
 ## Explicitement écarté
 
 - Avoir une liste figée de raisons de masquage toutes prêtes, plutôt que des raisons personnalisables — jugé trop restrictif pour convenir à tout le monde
 - Pouvoir cacher plusieurs fics d'un coup avec une seule action groupée — abandonné
 - Fusionner ce module avec `hideByTags` — refusé explicitement : les buts sont trop différents, ici le masquage est manuel et volontaire, alors que `hideByTags` cache automatiquement selon des critères
+- Reconnaître automatiquement les fics avec une note d'auteur — les notes d'auteur (début/fin de fic) n'apparaissent pas dans le HTML des pages de listing, seulement sur la page de l'œuvre elle-même ; il faudrait charger chaque page d'œuvre juste pour vérifier, ce qui est coûteux en requêtes et s'apparente à du scraping systématique — hors de portée pour ce module
+- Masquage automatique par mots-clés, et règles automatiques par tag/auteur/fandom/relation — ce module existe précisément pour le masquage **manuel et volontaire**, œuvre par œuvre (voir "Masquage manuel comme responsabilité principale" plus bas) ; le masquage automatique par mots-clés existe déjà dans `hideByTags` (NOPE Words) et par tag dans `hideByTags` (Hidden Tags) — dupliquer cette logique ici irait à l'encontre de la séparation des responsabilités déjà actée avec `hideByTags`
+- Bouton "Hide" placé près des actions Bookmark/Mark for Later, ou dans un menu d'actions — AO3 n'affiche ces boutons qu'aux utilisateurs connectés et notre environnement de test (mock) ne les reproduit pas, donc aucun sélecteur fiable n'a pu être identifié ni vérifié ; `title` (près du titre) et `bottom` (après `dl.stats`, un point d'ancrage déjà éprouvé ailleurs dans le code) couvrent déjà le besoin sans risquer un bouton qui disparaît silencieusement sur certaines pages
 
 
 
@@ -105,18 +153,14 @@ AO3 Helper - Skip Works
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
+Le module **Skip Works** permet de masquer manuellement une œuvre précise depuis les listes AO3. Contrairement à `hideByTags`, qui masque automatiquement les œuvres selon leurs tags ou leur contenu, `skipWorks` fonctionne œuvre par œuvre. L’utilisateur choisit volontairement de masquer une fic et peut enregistrer une note privée pour expliquer cette décision.
 
-Le module **Skip Works** permet de masquer manuellement une œuvre précise depuis les listes AO3.
-
-Contrairement à `hideByTags`, qui masque automatiquement les œuvres selon leurs tags ou leur contenu, `skipWorks` fonctionne œuvre par œuvre. L’utilisateur choisit volontairement de masquer une fic et peut enregistrer une note privée pour expliquer cette décision.
-
-Exemples de raisons :
-
-* crossover ;
-* déjà lu ;
-* abandonné ;
-* ne m’intéresse pas ;
-* raison personnalisée.
+* Exemples de raisons :
+  - crossover ;
+  - déjà lu ;
+  - abandonné ;
+  - ne m’intéresse pas ;
+  - raison personnalisée.
 
 Une œuvre masquée peut être atténuée avec sa note visible ou être complètement retirée de la page.
 
@@ -124,9 +168,9 @@ Une œuvre masquée peut être atténuée avec sa note visible ou être complèt
 
 # Réglages utilisateur
 
-| Réglage       | Défaut | Description                                                                                             |
-| ------------- | ------ | ------------------------------------------------------------------------------------------------------- |
-| `displayMode` | `dim`  | Détermine si une œuvre masquée apparaît sous forme de bloc gris avec sa note ou disparaît complètement. |
+| Réglage       | Description                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| `displayMode` | Détermine si une œuvre masquée apparaît sous forme de bloc gris avec sa note ou disparaît complètement. |
 
 Les raisons rapides proposées dans la fenêtre de masquage sont personnalisables depuis le panneau de configuration.
 
@@ -136,11 +180,16 @@ La liste des œuvres masquées est également accessible depuis ce panneau.
 
 # Structure du module
 
-Le module est composé d’un seul fichier fonctionnel ainsi que d’une feuille de style.
+⚠️ Cette section et les suivantes (jusqu'à "Décisions de conception") décrivent l'état du
+module avant Chantier 4 — `skipWorks.js` reste le coordinateur central, mais plusieurs bouts de
+logique testable en ont depuis été extraits dans des fichiers séparés (voir "Fichiers" et
+"Réglages utilisateur" en haut de ce document, à jour).
 
 ```text
 skipWorks.js
 skipWorks.css
+skipWorksHelpers.js
+hiddenWorksMirror.js
 ```
 
 ---
@@ -437,63 +486,62 @@ Les fonctionnalités ci-dessous sont prévues dans la conception du module ou do
 
 ## Gestion des œuvres masquées
 
-### Recherche dans la liste
+### ~~Recherche dans la liste~~ ✅
 
-Ajouter une barre de recherche dans la liste des œuvres masquées.
-
-La recherche pourrait utiliser notamment :
+Ajouté : une barre de recherche au-dessus de la liste des œuvres masquées, dans le panneau
+de configuration. Elle filtre en direct (300 ms de debounce) sur :
 
 * le titre de l’œuvre ;
 * le nom de l’auteur ;
 * le contenu de la note ;
-* l’identifiant de l’œuvre.
+* l’identifiant de l’œuvre (et son simple numéro).
+
+Titre et auteur sont désormais capturés depuis le blurb au moment du clic sur **Hide** et
+conservés dans IndexedDB à côté de la note, pour que la recherche et l'affichage de la liste
+(qui montre maintenant le vrai titre + "by auteur" au lieu de juste "Work #12345") aient de
+quoi travailler.
 
 ---
 
-### Synchronisation entre appareils
+### ~~Synchronisation entre appareils~~ ✅
 
-Permettre à la liste des œuvres masquées d’être synchronisée automatiquement entre plusieurs appareils grâce au module de sauvegarde et de synchronisation.
+Ajouté via un miroir `localStorage` (`hiddenWorksMirror.js`) que le module `backupAndSync`
+récupère automatiquement dans ses sauvegardes et sa synchronisation cloud, sans qu'aucune
+modification n'ait été nécessaire côté `backupAndSync` (il scanne déjà toute clé `localStorage`
+contenant "ao3h"). Au chargement de la page, `reconcileWithMirror()` fusionne le miroir avec
+IndexedDB : pour chaque œuvre, la version la plus récente (`updatedAt`) l'emporte.
 
-Cette synchronisation devrait préserver :
-
-* les œuvres masquées ;
-* les notes associées ;
-* les raisons rapides ;
-* les données propres à chaque utilisateur AO3.
-
----
-
-### Double-clic pour révéler
-
-Permettre de double-cliquer sur une œuvre masquée afin de la révéler temporairement.
-
-Cette action fonctionnerait comme le bouton **Show** et ne modifierait pas son état enregistré.
+Préserve les œuvres masquées et leurs notes. **Ne préserve pas** les raisons rapides
+(prédéfinies) — celles-ci restent `localStorage` simple, déjà couvertes par le scan générique
+de `backupAndSync` sans besoin de miroir dédié.
 
 ---
 
-### Plusieurs styles d’affichage
+### ~~Double-clic pour révéler~~ ✅
 
-Ajouter plusieurs styles visuels pour présenter la raison du masquage.
-
-Les possibilités pourraient inclure :
-
-* un bloc gris ;
-* un bandeau compact ;
-* une petite note sous le titre ;
-* une icône avec une infobulle ;
-* une œuvre atténuée sans remplacement complet du blurb.
+Ajouté : un double-clic sur la barre grise d'une œuvre masquée (en dehors des boutons
+Edit/Show/Unhide) la révèle temporairement, exactement comme le bouton **Show** — sans
+modifier son état enregistré.
 
 ---
 
-### Confirmation avant le masquage
+### ~~Plusieurs styles d’affichage~~ ✅
 
-Ajouter un réglage permettant de demander une confirmation avant de masquer une œuvre.
+Ajouté : `block` (bloc gris, inchangé), `banner` (bandeau compact, une ligne), `dim` (œuvre
+atténuée sans remplacement complet du blurb — la barre apparaît en dessous), et `note` (petite
+note, œuvre intacte, sans bouton Show puisque rien n'est masqué). "Icône avec infobulle" n'a pas
+été retenu séparément : le style `banner` avec `title=` sur la raison tronquée en tient déjà lieu.
+Logique de résolution dans `skipWorksHelpers.js`.
 
-Cette confirmation pourrait être utilisée :
+---
 
-* pour tous les masquages ;
-* uniquement lorsqu’aucune note n’est fournie ;
-* uniquement lors de l’utilisation d’un raccourci clavier.
+### ~~Confirmation avant le masquage~~ ✅
+
+Ajouté : réglage `confirmBeforeHide` (case à cocher, décochée par défaut). Parmi les trois
+usages envisagés, c'est le troisième qui a été retenu — **uniquement lors de l'utilisation
+d'un raccourci clavier** (Shift/Alt/Ctrl-clic) — car c'est le seul chemin qui masque une œuvre
+sans aucune autre étape intermédiaire ; choisir une raison dans le popup sert déjà de
+confirmation implicite pour les autres masquages.
 
 ---
 
@@ -501,84 +549,51 @@ Cette confirmation pourrait être utilisée :
 
 ### Détection des notes d’auteur
 
-Reconnaître automatiquement les œuvres contenant :
-
-* des notes d’auteur au début ;
-* des notes d’auteur à la fin.
-
-Selon le réglage choisi, le module pourrait :
-
-* masquer automatiquement l’œuvre ;
-* afficher un badge d’avertissement ;
-* demander à l’utilisateur s’il souhaite la masquer.
+> Déplacé vers "Décisions de conception" — les notes d'auteur n'apparaissent pas dans le HTML
+> des pages de listing, seulement sur la page de l'œuvre elle-même.
 
 ---
 
 ### Masquage par mots-clés
 
-Permettre de masquer automatiquement une œuvre lorsqu’un mot-clé précis est détecté.
-
-Cette fonctionnalité fonctionnerait sans avoir à cliquer manuellement sur **Hide**.
+> Déplacé vers "Décisions de conception" — cette fonctionnalité existe déjà dans `hideByTags`
+> (NOPE Words) ; la dupliquer ici irait à l'encontre de la séparation des responsabilités entre
+> les deux modules.
 
 ---
 
 ### Règles automatiques
 
-Ajouter un système de règles capable de masquer automatiquement les œuvres selon certains critères.
-
-Exemples :
-
-* un tag précis ;
-* un auteur ;
-* un fandom ;
-* une relation ;
-* une catégorie ;
-* un mot-clé.
-
-Cette fonctionnalité resterait distincte du masquage manuel principal.
+> Déplacé vers "Décisions de conception" — même raison : `hideByTags` couvre déjà le masquage
+> automatique par tag/auteur/fandom/relation/catégorie.
 
 ---
 
 ## Personnalisation
 
-### Position du bouton
+### ~~Position du bouton~~ ✅ *(scope réduit)*
 
-Permettre de choisir où afficher le bouton **Hide** dans le blurb.
-
-Exemples :
-
-* près du titre ;
-* près des actions Bookmark et Mark for Later ;
-* en bas du blurb ;
-* dans un menu d’actions.
+Réglage `hideButtonPosition` : `title` (près du titre, inchangé) ou `bottom` (en bas du blurb,
+ancré sur `dl.stats`). **Pas fait** : "près des actions Bookmark/Mark for Later" et "dans un
+menu d'actions" — voir "Décisions de conception" (pas de sélecteur fiable disponible pour
+tester/vérifier ces zones, qui ne s'affichent qu'aux utilisateurs connectés).
 
 ---
 
-### Texte du bouton
+### ~~Texte du bouton~~ ✅
 
-Permettre de remplacer le texte **Hide** par un libellé personnalisé.
-
-Exemples :
-
-* Skip
-* Masquer
-* Ignorer
-* Not for me
+Réglage `hideButtonText`, champ libre (défaut "Hide").
 
 ---
 
 ## Notes indépendantes
 
-### Notes sans masquage
+### ~~Notes sans masquage~~ ✅
 
-Permettre d’écrire une note privée sur une œuvre sans devoir la masquer.
-
-La note pourrait être conservée et affichée séparément du système de masquage.
-
-Cette fonctionnalité nécessiterait de distinguer :
-
-* les notes associées à un masquage ;
-* les notes personnelles sans masquage.
+Petit bouton "📝" à côté de "Hide" : ouvre le même picker de raison, mais enregistre
+`isHidden:false` avec un marqueur `isStandaloneNote:true` (`skipWorksHelpers.js`) qui distingue
+explicitement une note volontaire d'un simple reliquat de note gardé après un Unhide. Une
+section "Private Notes" du panneau liste ces œuvres avec un bouton pour retirer la note.
 
 ---
 
@@ -637,14 +652,30 @@ Cette séparation permet de conserver des responsabilités claires.
 
 ## Masquage manuel comme responsabilité principale
 
-Les systèmes de règles automatiques, de mots-clés et de détection par tags ne constituent pas la fonction centrale de ce module.
+Les systèmes de règles automatiques, de mots-clés et de détection par tags ne constituent pas la fonction centrale de ce module — et ne le deviendront pas.
 
-Ils peuvent être envisagés comme extensions futures, mais le comportement principal reste :
+Le masquage automatique par mots-clés existe déjà dans `hideByTags` (NOPE Words), et le masquage par tag existe déjà dans `hideByTags` (Hidden Tags). Dupliquer cette logique dans `skipWorks` créerait deux façons concurrentes de faire la même chose et irait à l'encontre de la séparation des responsabilités déjà actée dans "Séparation avec Hide By Tags" ci-dessus. Le comportement principal reste, et restera :
 
 1. l’utilisateur choisit une œuvre ;
 2. il clique sur **Hide** ;
 3. il ajoute éventuellement une note ;
 4. le module mémorise ce choix.
+
+---
+
+## Détection des notes d'auteur non implémentable ici
+
+Reconnaître automatiquement les œuvres contenant une note d'auteur (au début ou à la fin) a été écarté.
+
+Les notes d'auteur n'apparaissent dans le HTML que sur la page de l'œuvre elle-même — jamais sur les pages de listing où `skipWorks` s'exécute. Le seul moyen de savoir si une œuvre a une note serait de charger la page de chaque œuvre juste pour vérifier, ce qui multiplierait les requêtes réseau pour un simple badge et s'apparenterait à du scraping systématique de toutes les œuvres affichées.
+
+---
+
+## Bouton "Hide" limité à deux emplacements
+
+Le bouton ne peut être placé qu'à deux endroits : près du titre (`title`, par défaut) ou en bas du blurb (`bottom`, ancré sur `dl.stats`).
+
+"Près des actions Bookmark/Mark for Later" et "dans un menu d'actions" n'ont pas été implémentés : ces zones ne s'affichent qu'aux utilisateurs AO3 connectés, et l'environnement de test local (`ao3-mock/`) ne les reproduit pas. Sans sélecteur vérifiable, ajouter ces positions aurait risqué un bouton qui disparaît silencieusement sur certaines pages plutôt que d'échouer proprement.
 
 ---
 
@@ -663,8 +694,11 @@ Ses responsabilités sont réparties entre les fichiers suivants :
 
 | Fichier         | Responsabilité principale                                                                                                         |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `skipWorks.js`  | Gère l'ensemble des fonctionnalités du module : masquage, notes, stockage, migrations, import/export et panneau de configuration. |
+| `skipWorks.js`  | Coordinateur : masquage, notes, stockage, migrations, import/export et intégration avec le panneau de configuration. |
 | `skipWorks.css` | Définit l'apparence de tous les éléments visuels du module.                                                                       |
+| `skipWorksHelpers.js` | Fonctions pures : métadonnées du blurb, double-clic, style d'affichage, placement du bouton et notes autonomes. |
+| `hiddenWorksMirror.js` | Fonctions pures : miroir `localStorage` pour la synchro entre appareils via `backupAndSync`, et fusion des listes en cas de conflit. |
+| `lib/ui/panel/configs/browse/skipWorks-config.js` | Panneau de configuration (liste, notes privées, presets, recherche, import/export). |
 
 ---
 
@@ -725,13 +759,14 @@ ao3h-hiddenWorksDB
 
 # Données enregistrées
 
-Pour chaque œuvre masquée, le module conserve notamment :
+Pour chaque œuvre, le module conserve notamment :
 
-* l'identifiant de l'œuvre ;
-* son état de masquage ;
-* la note personnalisée ;
-* les informations nécessaires à son affichage ;
-* les données utilisées par le panneau de configuration.
+* l'identifiant de l'œuvre (`workId`) ;
+* son état de masquage (`isHidden`) ;
+* la note personnalisée (`reason`) ;
+* le titre et l'auteur (`title`, `author`), capturés au moment de l'action pour la recherche et l'affichage dans le panneau ;
+* un marqueur `isStandaloneNote` distinguant une note volontaire (bouton 📝) d'un reliquat de note gardé après un Unhide ;
+* un horodatage `updatedAt`, utilisé pour résoudre les conflits lors de la fusion avec le miroir `localStorage` de synchronisation entre appareils.
 
 Les raisons rapides sont également enregistrées séparément pour chaque utilisateur.
 
@@ -739,19 +774,13 @@ Les raisons rapides sont également enregistrées séparément pour chaque utili
 
 # Limites connues
 
-Le module présente actuellement plusieurs limitations de conception.
+Le module présente les limitations de conception suivantes — volontaires, voir "Décisions de conception" :
 
-Notamment :
+* les œuvres sont masquées uniquement après une action volontaire de l'utilisateur (pas de règles automatiques — voir "Masquage manuel comme responsabilité principale") ;
+* le bouton "Hide" ne peut être placé qu'à deux emplacements (près du titre ou en bas du blurb) — pas près des actions Bookmark/Mark for Later, qui ne sont pas fiablement détectables ;
+* la détection automatique des notes d'auteur n'est pas possible depuis les pages de listing (l'information n'y est pas présente).
 
-* les notes ne peuvent pas exister indépendamment d'un masquage ;
-* le bouton **Hide** possède un emplacement fixe ;
-* son texte ne peut pas être personnalisé ;
-* les œuvres sont masquées uniquement après une action volontaire de l'utilisateur ;
-* les règles automatiques de masquage ne sont pas prises en charge ;
-* aucune synchronisation entre appareils n'est actuellement disponible ;
-* la recherche dans la liste des œuvres masquées n'est pas encore implémentée.
-
-Ces limitations pourront évoluer avec les futures versions du module.
-
-
+Les limitations suivantes ont été résolues durant Chantier 4 : les notes peuvent désormais
+exister indépendamment d'un masquage (bouton 📝), le texte du bouton "Hide" est personnalisable,
+et la synchronisation entre appareils est disponible via `backupAndSync`.
 

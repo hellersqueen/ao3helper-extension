@@ -7,7 +7,8 @@ Purpose
 
 Notes
     The minimalHeader preference toggles ao3h-minimal-header on the document
-    root. Presentation rules are defined in styles/header-cleanup.css.
+    root. Presentation rules are defined in the Header Cleanup section of
+    visualPreferences.css.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 

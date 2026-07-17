@@ -25,7 +25,7 @@ import { register } from '../../../core/lifecycle.js';
 import { loadItems, saveItems, cfg } from './laterShelfStore.js';
 import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
 import { observe } from '../../../../lib/utils/index.js';
-import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════

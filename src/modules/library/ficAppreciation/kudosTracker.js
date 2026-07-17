@@ -21,7 +21,7 @@ Notes
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { EV_KUDOS_GIVEN } from '../../../../lib/utils/event-names.js';
 import { giveKudos } from '../../../../lib/ao3/actions.js';
-import { appendHeadingBadge } from '../../../../lib/ui/status-badge.js';
+import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════

@@ -3,8 +3,13 @@ import monkey from 'vite-plugin-monkey';
 import { fileURLToPath, URL } from 'node:url';
 
 const r = (p) => fileURLToPath(new URL(p, import.meta.url));
+const assetBase = String(process.env.AO3H_ASSET_BASE || '').replace(/\/$/, '');
+const assetHost = (() => { try { return assetBase ? new URL(assetBase).hostname : null; } catch { return null; } })();
 
 export default defineConfig({
+  define: {
+    __AO3H_BUILD_ASSET_BASE__: JSON.stringify(assetBase),
+  },
   resolve: {
     alias: {
       '@core': r('./src/core'),
@@ -20,6 +25,12 @@ export default defineConfig({
   plugins: [
     monkey({
       entry: 'src/main.js',
+      build: {
+        // Dynamic imports are the boot-performance boundary. Inline the tiny
+        // loader so the generated userscript also works when injected directly
+        // (and does not depend on a CDN @require at document-start).
+        systemjs: 'inline',
+      },
       userscript: {
         name: 'AO3 Helper',
         namespace: 'http://tampermonkey.net/',
@@ -34,8 +45,9 @@ export default defineConfig({
           'GM_getValue',
           'GM_setValue',
           'GM_deleteValue',
+          'GM_info',
         ],
-        connect: ['127.0.0.1', 'localhost'],
+        connect: ['127.0.0.1', 'localhost', ...(assetHost ? [assetHost] : [])],
         'run-at': 'document-start',
         noframes: true,
       },

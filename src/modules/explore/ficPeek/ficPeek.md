@@ -92,40 +92,37 @@ AO3 Helper - Fic Peek Module
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Fic Peek** ajoute un bouton **Preview** sur les œuvres affichées dans les listes AO3 afin de pouvoir lire un extrait sans ouvrir leur page.
 
-Il permet notamment de :
+* Il permet de :
+  - juger rapidement le style d’écriture d’une œuvre ;
+  - lire un extrait directement dans la liste ;
+  - afficher ou masquer l’aperçu sans quitter la page ;
+  - déclencher l’aperçu au clic ou au survol ;
+  - masquer temporairement l’extrait avec un mode sans divulgâcheur ;
+  - éviter de télécharger plusieurs fois le même aperçu pendant une session.
 
-* juger rapidement le style d’écriture d’une œuvre ;
-* lire un extrait directement dans la liste ;
-* afficher ou masquer l’aperçu sans quitter la page ;
-* déclencher l’aperçu au clic ou au survol ;
-* masquer temporairement l’extrait avec un mode sans divulgâcheur ;
-* éviter de télécharger plusieurs fois le même aperçu pendant une session.
-
-Le module fonctionne notamment sur :
-
-* les résultats de recherche ;
-* les pages de tags ;
-* les listes de favoris ;
-* les listings de bookmarks ;
-* les autres pages contenant des fiches d’œuvres AO3.
+* Le module fonctionne sur :
+  - les résultats de recherche ;
+  - les pages de tags ;
+  - les listes de favoris ;
+  - les listings de bookmarks ;
+  - les autres pages contenant des fiches d’œuvres AO3.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                 | Par défaut                  | Ce que ça fait                                                                                       |
-| ----------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `hoverMode`             | Désactivé                   | Affiche l’extrait au survol de la souris plutôt qu’après un clic.                                    |
-| `hoverDelay`            | `300`                       | Définit le délai, en millisecondes, avant l’affichage de l’aperçu en mode survol.                    |
-| `spoilerFreeMode`       | Désactivé                   | Floute l’extrait et affiche un bouton permettant de le révéler.                                      |
-| `excerptMode`           | `paragraph`                 | Définit la longueur de l’extrait : premier paragraphe, 100 mots, 250 mots ou longueur personnalisée. |
-| `excerptCustomWords`    | `150`                       | Définit le nombre de mots lorsque le mode personnalisé est sélectionné.                              |
-| `showDetails`           | Activé *(pas encore actif)* | Réservé à une future section d’analyse et de recommandations.                                        |
-| `enableRecommendations` | Activé *(pas encore actif)* | Réservé à une future section d’analyse et de recommandations.                                        |
-| `maxResults`            | `10` *(pas encore actif)*   | Définit une future limite de résultats pour les recommandations.                                     |
+| Réglage                 |  Ce que ça fait                                                                                      |
+| ----------------------- | --------------------------- ------------------------------------------------------------------------ |
+| `hoverMode`             | Affiche l’extrait au survol de la souris plutôt qu’après un clic.                                    |
+| `hoverDelay`            | Définit le délai, en millisecondes, avant l’affichage de l’aperçu en mode survol.                    |
+| `spoilerFreeMode`       | Floute l’extrait et affiche un bouton permettant de le révéler.                                      |
+| `excerptMode`           | Définit la longueur de l’extrait : premier paragraphe, 100 mots, 250 mots ou longueur personnalisée. |
+| `excerptCustomWords`    | Définit le nombre de mots lorsque le mode personnalisé est sélectionné.                              |
+| `showDetails`           | Réservé à une future section d’analyse et de recommandations.                                        |
+| `enableRecommendations` | Réservé à une future section d’analyse et de recommandations.                                        |
+| `maxResults`            | Définit une future limite de résultats pour les recommandations.                                     |
 
 ---
 

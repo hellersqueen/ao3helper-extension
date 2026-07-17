@@ -49,11 +49,35 @@ const MOD = 'collapseAuthorNotes';
 const LOG = `[AO3H][${MOD}]`;
 const ENABLE_KEY = `mod:${MOD}:enabled`;
 
+export const WARNING_RE = /\b(tw|cw|trigger\s*warning|content\s*warning)\b/i;
+
+export function containsWarningText (text) {
+  return WARNING_RE.test(String(text || ''));
+}
+
+export function matchesKeywords (text, keywordsCsv) {
+  const haystack = String(text || '').toLowerCase();
+  return String(keywordsCsv || '')
+    .split(',')
+    .map(keyword => keyword.trim().toLowerCase())
+    .filter(Boolean)
+    .some(keyword => haystack.includes(keyword));
+}
+
+export function exceedsMinLength (text, minChars) {
+  const min = parseInt(String(minChars), 10);
+  if (!Number.isFinite(min) || min <= 0) return true;
+  return String(text || '').trim().length >= min;
+}
+
 const DEFAULTS = {
   autoCollapseBeginning:    false,  // ☐ Replier automatiquement les notes de début
   autoCollapseEnd:          false,  // ☐ Replier automatiquement les notes de fin
+  autoCollapseMinChars:     0,      // 0 = replier quelle que soit la longueur ; sinon seuil en caractères
   autoExpandWarnings:       true,   // ☑ Toujours déplier les notes contenant TW/CW
+  autoExpandKeywords:       '',     // mots-clés perso (séparés par des virgules) qui gardent une note dépliée
   hideCollectionBanners:    false,  // ☐ Masquer les bandeaux de collection (collection/cadeau/défi)
+  clearStatesOnDisable:     false,  // ☐ Oublier les préférences repli/dépli quand le module est désactivé
 };
 
 const cfg = makeCfg(MOD);
@@ -112,10 +136,8 @@ function anchorTargets (suffix) {
   return false;
 }
 
-const WARNING_RE = /\b(tw|cw|trigger\s*warning|content\s*warning)\b/i;
-
 function containsWarning (el) {
-  return WARNING_RE.test(el.textContent || '');
+  return containsWarningText(el.textContent);
 }
 
 function $$ (sel, root = document) {
@@ -228,14 +250,20 @@ function wireToggle (notesEl, suffix) {
   // ── Determine initial state ──
   const saved     = loadState(suffix);
   const anchored  = anchorTargets(suffix);
+  const noteText  = notesEl.textContent || '';
   const hasWarn   = cfg('autoExpandWarnings', true) && containsWarning(notesEl);
-  const autoPref  = suffix === 'pre'
+  // User-chosen keep-open keywords, on top of the TW/CW detection
+  const hasKeyword = matchesKeywords(noteText, cfg('autoExpandKeywords', ''));
+  // Auto-collapse only applies past the configured length (0 = always)
+  const autoPref  = (suffix === 'pre'
     ? cfg('autoCollapseBeginning', false)
-    : cfg('autoCollapseEnd', false);
+    : cfg('autoCollapseEnd', false))
+    && exceedsMinLength(noteText, cfg('autoCollapseMinChars', 0));
 
   let startExpanded;
   if (anchored)          startExpanded = true;   // URL anchor wins
   else if (hasWarn)      startExpanded = true;   // warnings always visible
+  else if (hasKeyword)   startExpanded = true;   // user keywords keep it open
   else if (saved !== null) startExpanded = saved; // user's saved choice
   else                   startExpanded = !autoPref; // setting default
 
@@ -327,7 +355,11 @@ register(MOD, {
 
   // Live toggle via flags
   unwatchEnable = Flags?.watch(ENABLE_KEY, (val) => {
-    if (!val) cleanup();
+    if (!val) {
+      // Optionally forget every saved collapse preference on disable
+      if (cfg('clearStatesOnDisable', false)) clearAllStates();
+      cleanup();
+    }
     else { process(); }
   }) ?? null;
 

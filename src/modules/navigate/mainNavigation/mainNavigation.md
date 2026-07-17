@@ -109,25 +109,24 @@ AO3 Helper - Main Navigation Module Coordinator
 
 Le module **Main Navigation** améliore la barre de navigation principale d’AO3 affichée en haut des pages.
 
-Il permet notamment de :
-
-* ajouter des liens rapides vers les favoris, les œuvres marquées pour plus tard et l’historique ;
-* choisir si les menus s’ouvrent au survol ou uniquement au clic ;
-* ajouter jusqu’à cinq liens personnalisés ;
-* adapter automatiquement certains liens selon l’utilisateur connecté ;
-* éviter les conflits avec la page d’historique des kudos.
+* Il permet notamment de :
+  - ajouter des liens rapides vers les favoris, les œuvres marquées pour plus tard et l’historique ;
+  - choisir si les menus s’ouvrent au survol ou uniquement au clic ;
+  - ajouter jusqu’à cinq liens personnalisés ;
+  - adapter automatiquement certains liens selon l’utilisateur connecté ;
+  - éviter les conflits avec la page d’historique des kudos.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                               | Défaut    | Description                                                                                         |
-| ------------------------------------- | --------- | --------------------------------------------------------------------------------------------------- |
-| `addNavLinks`                         | Activé    | Ajoute les liens **Bookmarks**, **Marked for Later** et **Historique** dans la barre de navigation. |
-| `menuActivation`                      | `hover`   | Définit si les menus s’ouvrent au survol (`hover`) ou uniquement au clic (`click`).                 |
-| `quickLinksEnabled`                   | Désactivé | Active les liens rapides personnalisés. Jusqu’à cinq liens peuvent être configurés.                 |
-| `quickLink1Label` à `quickLink5Label` | Vide      | Définit le nom affiché pour chacun des cinq liens rapides.                                          |
-| `quickLink1Url` à `quickLink5Url`     | Vide      | Définit l’adresse associée à chacun des cinq liens rapides.                                         |
+| Réglage                               | Description                                                                                         |
+| ------------------------------------- |-----------------------------------------------------------------------------------------------------|
+| `addNavLinks`                         | Ajoute les liens **Bookmarks**, **Marked for Later** et **Historique** dans la barre de navigation. |
+| `menuActivation`                      | Définit si les menus s’ouvrent au survol (`hover`) ou uniquement au clic (`click`).                 |
+| `quickLinksEnabled`                   | Active les liens rapides personnalisés. Jusqu’à cinq liens peuvent être configurés.                 |
+| `quickLink1Label` à `quickLink5Label` | Définit le nom affiché pour chacun des cinq liens rapides.                                          |
+| `quickLink1Url` à `quickLink5Url`     | Définit l’adresse associée à chacun des cinq liens rapides.                                         |
 
 ---
 

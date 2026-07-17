@@ -20,6 +20,10 @@ Kindle.
 | `kindleEmail` | (vide) | L'adresse e-mail Kindle |
 | `autoKindleSend` | désactivé | Envoie automatiquement vers Kindle sans demander de confirmation |
 | `autoCacheMFL` | désactivé | Met en cache automatiquement les fics ajoutées à "à lire plus tard" |
+| `showQuickDownloadButtons` | activé | Affiche les boutons de téléchargement rapide sur les listes |
+| `calibreEnabled` | désactivé | Affiche l'action "Send to Calibre" |
+| `calibreUrl` | `http://localhost:8080` | L'adresse du serveur de contenu Calibre |
+| `calibreLibrary` | (vide) | Le nom de la bibliothèque Calibre (optionnel) |
 
 ## Fichiers
 
@@ -61,6 +65,9 @@ Kindle.
 - Un bouton "📥 Save Offline" sur la page d'une fic pour la garder en mémoire et la lire plus tard, même sans connexion
 - Un bouton "📖 Read Offline" ouvre la version enregistrée dans un nouvel onglet
 - Permet de retirer une fic de la bibliothèque hors-ligne
+- Prévient avec un bandeau quand la bibliothèque approche de la limite de stockage du navigateur (seuil : 4 Mo), ou quand une sauvegarde échoue faute de place
+- La liste complète des fics en cache se consulte depuis le panneau de réglages (section "Offline Library")
+- Estime directement l'espace occupé dans le localStorage et met les tailles en forme (B / KB / MB)
 
 ### 7. `ficDownloader.css`
 
@@ -71,19 +78,35 @@ Kindle.
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Activer l'intégration Calibre depuis le panneau de réglages (le code existe déjà à l'intérieur du module, mais rien ne permet de l'activer)
+- ~~Activer l'intégration Calibre depuis le panneau de réglages (le code existe déjà à l'intérieur du module, mais rien ne permet de l'activer)~~ ✅
+  Fait : section "Calibre Integration" dans le panneau (case "Enable Send to
+  Calibre" + URL du serveur + nom de bibliothèque), lue par le coordinateur
+  au démarrage.
 
-- Choisir de cacher les boutons de téléchargement rapide sur les listes (le réglage existe déjà à l'intérieur du module, mais rien ne permet de le changer depuis le panneau)
+- ~~Choisir de cacher les boutons de téléchargement rapide sur les listes (le réglage existe déjà à l'intérieur du module, mais rien ne permet de le changer depuis le panneau)~~ ✅
+  Fait : case "Show the quick-download icon on work listings" dans le
+  panneau ; le réglage contrôle désormais les deux jeux de boutons de liste
+  (l'icône ⬇️ d'`individualDownloads.js` **et** le bouton "⬇ DL" de
+  `downloadEnhancements.js`, qui l'ignorait auparavant).
 
-- Envoyer une fic vers Kindle automatiquement en un clic, sans avoir à envoyer soi-même l'e-mail pré-rempli
+- ~~Voir en un seul endroit la liste de toutes les fics sauvegardées hors-ligne — pour l'instant, il faut retrouver chaque fic une par une sur sa propre page pour savoir si elle est enregistrée~~ ✅
+  Fait : section "Offline Library" dans le panneau — liste des fics en cache
+  (titre, auteur, date, taille), bouton "📖 Read" pour ouvrir la copie,
+  "🗑️" pour la retirer, "Clear All" pour tout vider, et total affiché.
 
-- Voir en un seul endroit la liste de toutes les fics sauvegardées hors-ligne — pour l'instant, il faut retrouver chaque fic une par une sur sa propre page pour savoir si elle est enregistrée
-
-- Prévenir quand la bibliothèque hors-ligne prend trop de place, ~~ou nettoyer automatiquement les fics les plus anciennes quand il n'y a plus assez d'espace~~
+- ~~Prévenir quand la bibliothèque hors-ligne prend trop de place~~ ✅
+  Fait : un bandeau d'avertissement s'affiche quand une sauvegarde fait
+  franchir à la bibliothèque le seuil de 4 Mo (~80% du quota localStorage),
+  ou quand l'écriture échoue faute de place ; le total du panneau passe
+  aussi en alerte. La recherche par titre/auteur est incluse dans la section
+  "Offline Library". ~~ou nettoyer automatiquement les fics les plus anciennes quand il n'y a plus assez d'espace~~
+  (nettoyage automatique écarté, voir plus bas)
 ~~- Réessayer automatiquement un téléchargement qui a échoué, au lieu de devoir le refaire à la main~~
 
 ## Explicitement écarté
 
+- Nettoyer automatiquement les fics hors-ligne les plus anciennes quand l'espace manque — supprimer silencieusement des fics que l'utilisateur a choisi de garder risquerait de perdre des données voulues ; on préfère avertir et laisser l'utilisateur choisir quoi retirer depuis le panneau
+- Envoyer une fic vers Kindle automatiquement en un clic, sans avoir à envoyer soi-même l'e-mail pré-rempli — techniquement infaisable depuis un userscript : envoyer un e-mail sans action de l'utilisateur exigerait un serveur ou des identifiants SMTP, et Amazon n'offre pas d'API publique "Send to Kindle" utilisable depuis le navigateur. Le module fait le maximum possible : e-mail pré-rempli en un clic, et le réglage `autoKindleSend` saute déjà la confirmation.
 - Synchroniser les téléchargements dans le cloud — pour rester privé, tout reste en local
 - Des modèles de téléchargement personnalisés
 - Télécharger automatiquement à intervalles réguliers — jugé trop agressif pour les serveurs d'AO3
@@ -407,33 +430,30 @@ AO3 Helper - Offline Library Submodule
   **Tab :** Appearance & Tools
 ═══════════════════════════════════════════════════════════════════════════
 
-
-# À quoi ça sert
-
+## À quoi ça sert
 Le module **Fic Downloader** regroupe toutes les fonctionnalités liées au téléchargement et à la consultation hors ligne des œuvres AO3.
 
-Il permet notamment de :
-
-- télécharger rapidement une fic sans ouvrir sa page ;
-- télécharger plusieurs fics en une seule opération ;
-- télécharger une page entière de résultats ;
-- choisir le format de téléchargement ;
-- envoyer une fic vers une liseuse Kindle ;
-- télécharger automatiquement une série complète ;
-- gérer une bibliothèque hors ligne ;
-- mettre automatiquement certaines œuvres en cache.
+* Il permet notamment de :
+  - télécharger rapidement une fic sans ouvrir sa page ;
+  - télécharger plusieurs fics en une seule opération ;
+  - télécharger une page entière de résultats ;
+  - choisir le format de téléchargement ;
+  - envoyer une fic vers une liseuse Kindle ;
+  - télécharger automatiquement une série complète ;
+  - gérer une bibliothèque hors ligne ;
+  - mettre automatiquement certaines œuvres en cache.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage | Défaut | Description |
-|----------|--------|-------------|
-| `defaultFormat` | `epub` | Format de téléchargement utilisé par défaut. |
-| `sendToKindleEnabled` | Désactivé | Affiche les fonctionnalités d'envoi vers Kindle. |
-| `kindleEmail` | Vide | Adresse e-mail Kindle utilisée pour l'envoi. |
-| `autoKindleSend` | Désactivé | Envoie automatiquement les œuvres vers Kindle sans demander de confirmation. |
-| `autoCacheMFL` | Désactivé | Met automatiquement en cache les œuvres ajoutées à **Marked for Later**. |
+| Réglage               | Description                                                                   |
+|-----------------------|-------------------------------------------------------------------------------|
+| `defaultFormat`       | Format de téléchargement utilisé par défaut.                                  |
+| `sendToKindleEnabled` | Affiche les fonctionnalités d'envoi vers Kindle.                              |
+| `kindleEmail`         | Adresse e-mail Kindle utilisée pour l'envoi.                                  |
+| `autoKindleSend`      | Envoie automatiquement les œuvres vers Kindle sans demander de confirmation.  |
+| `autoCacheMFL`        | Met automatiquement en cache les œuvres ajoutées à **Marked for Later**.      |
 
 ---
 
@@ -1295,54 +1315,56 @@ téléchargement rapide présents dans les listes d'œuvres.~~
 
 ---
 
-### Réessai automatique
+### ~~Réessai automatique~~ ✅ Fait
 
-Réessayer automatiquement les téléchargements ayant échoué.
+~~Réessayer automatiquement les téléchargements ayant échoué.~~
 
-Le système pourrait notamment :
-
-- détecter les erreurs temporaires ;
-- relancer automatiquement le téléchargement ;
-- limiter le nombre de tentatives.
+> Déjà implémenté dans `downloadEnhancements.js` : chaque téléchargement
+> est retenté jusqu'à 2 fois après une pause de 1,5 s, et la file d'attente
+> signale les échecs définitifs.
 
 ---
 
 ## Kindle
 
-### Envoi entièrement automatique
+### ~~Envoi entièrement automatique~~ ❌ Écarté
 
-Permettre l'envoi direct d'une œuvre vers Kindle sans intervention de l'utilisateur.
+~~Permettre l'envoi direct d'une œuvre vers Kindle sans intervention de l'utilisateur.~~
 
-Aujourd'hui, le module ouvre un e-mail prérempli que l'utilisateur doit encore envoyer lui-même.
+> Techniquement infaisable depuis un userscript : envoyer un e-mail sans
+> action de l'utilisateur exigerait un serveur ou des identifiants SMTP, et
+> Amazon n'offre pas d'API "Send to Kindle" utilisable depuis le navigateur.
+> Le module fait le maximum possible : e-mail prérempli en un clic, et le
+> réglage `autoKindleSend` saute la confirmation.
 
 ---
 
 ## Bibliothèque hors ligne
 
-### Gestion centralisée
+### ~~Gestion centralisée~~ ✅ Fait
 
-Ajouter une interface permettant de consulter toute la bibliothèque hors ligne au même endroit.
+~~Ajouter une interface permettant de consulter toute la bibliothèque hors ligne au même endroit.~~
 
-Cette interface pourrait notamment permettre :
-
-- d'afficher toutes les œuvres enregistrées ;
-- de rechercher une œuvre ;
-- de filtrer les résultats ;
-- de supprimer plusieurs œuvres à la fois.
-
-Actuellement, il faut visiter chaque œuvre individuellement pour savoir si elle est enregistrée.
+> Ajouté : section "Offline Library" dans le panneau de réglages — liste de
+> toutes les œuvres en cache (titre, auteur, date, taille), champ de
+> recherche par titre ou auteur, bouton "📖 Read" pour ouvrir la copie,
+> "🗑️" pour retirer une œuvre, "Clear All" pour tout vider d'un coup.
 
 ---
 
-### Gestion de l'espace disque
+### ~~Gestion de l'espace disque~~ ✅ Fait (sauf nettoyage automatique, écarté)
 
-Améliorer la gestion du stockage local.
+~~Améliorer la gestion du stockage local.~~
 
-Les fonctionnalités prévues comprennent :
-
-- le suivi précis de l'espace utilisé ;
-- des avertissements lorsque la capacité devient importante ;
-- le nettoyage automatique des anciennes œuvres enregistrées lorsque l'espace devient insuffisant.
+> Ajouté : suivi de l'espace utilisé (total affiché dans le panneau, taille
+> par œuvre) et bandeau d'avertissement quand une sauvegarde fait franchir
+> le seuil de 4 Mo (~80% du quota localStorage) ou quand l'écriture échoue
+> faute de place.
+>
+> Le nettoyage automatique des anciennes œuvres est écarté : supprimer
+> silencieusement des fics que l'utilisateur a choisi de garder hors-ligne
+> risquerait de faire perdre des données voulues — on préfère avertir et
+> laisser l'utilisateur choisir quoi retirer depuis le panneau.
 
 ---
 
@@ -1471,5 +1493,4 @@ Notamment :
 - un fonctionnement principalement local pour préserver la confidentialité des données téléchargées.
 
 Ces limites peuvent évoluer avec les futures versions du module.
-
 

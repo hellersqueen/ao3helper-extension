@@ -28,6 +28,42 @@ import { openListManagerDialog } from '../../../../lib/ui/list-manager.js';
 
 const TM_KEY_NOPE = 'hideTagsNope';
 
+const _escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Matches one NOPE entry against the lowercased combined text.
+ * Entry forms (exported for tests):
+ * - "/pattern/"      → regular expression (case-insensitive; invalid
+ *                      patterns fall back to a plain substring match)
+ * - "her*t"          → wildcard: * matches any run of characters
+ * - "word"           → substring, or whole-word when opts.wholeWords
+ */
+export function matchesNopeEntry (combined, entry, opts = {}) {
+  const w = String(entry || '');
+  if (!w) return false;
+
+  // /regex/ syntax
+  if (w.length > 2 && w.startsWith('/') && w.endsWith('/')) {
+    try { return new RegExp(w.slice(1, -1), 'i').test(combined); }
+    catch { return combined.includes(w); }
+  }
+
+  // * wildcards
+  if (w.includes('*')) {
+    try {
+      const pattern = w.split('*').map(_escapeRegex).join('.*');
+      return new RegExp(pattern, 'i').test(combined);
+    } catch { return combined.includes(w); }
+  }
+
+  // plain word
+  if (opts.wholeWords) {
+    try { return new RegExp(`(^|\\W)${_escapeRegex(w)}(\\W|$)`, 'i').test(combined); }
+    catch { return combined.includes(w); }
+  }
+  return combined.includes(w);
+}
+
 export class NopeWords {
   /**
    * @param {{ NS: string, Storage: any, UserLS: any, KeyboardNav: any }} opts
@@ -66,8 +102,10 @@ export class NopeWords {
    * @param {Element} blurb
    * @param {string[]} nopeWords  — already lowercased
    * @param {{ summaries: boolean, notes: boolean, titles: boolean }} targets
+   * @param {{ wholeWords?: boolean }} opts - wholeWords: plain words only
+   *   match at word boundaries ("art" no longer hides "heart")
    */
-  matchesNope (blurb, nopeWords, targets) {
+  matchesNope (blurb, nopeWords, targets, opts = {}) {
     if (!Array.isArray(nopeWords) || !nopeWords.length) return null;
     if (!targets || typeof targets !== 'object') return null;
     const NS    = this.NS;
@@ -89,7 +127,7 @@ export class NopeWords {
 
     const combined = parts.join(' ').toLowerCase();
     for (const w of nopeWords) {
-      if (combined.includes(w)) return w;
+      if (matchesNopeEntry(combined, w, opts)) return w;
     }
     return null;
   }

@@ -551,3 +551,106 @@
   margin-right: 12px;
   cursor: pointer;
 }
+
+
+/*+ ─────────────────────────────────────────────────────────
+    CHANTIER 4 : ÉTOILES, NOTES (important/modèles/historique),
+    NOTE RAPIDE, RAPPEL FAVORIS ANCIENS, EXPORT, ACTIONS EN MASSE
+  ───────────────────────────────────────────────────────────── */
+
+/*- Étoiles de note personnelle */
+.ao3h-bv-stars { white-space: nowrap; }
+
+.ao3h-bv-star {
+  background: none;
+  border: none;
+  padding: 0 1px;
+  font-size: 1em;
+  color: #bbb;
+  cursor: pointer;
+}
+
+.ao3h-bv-star--on { color: #e6a817; }
+.ao3h-bv-star:hover { color: #e6a817; }
+
+/*- Note importante (convention : la note commence par "!") */
+.ao3h-bv-note-important {
+  display: inline-block;
+  border-left: 3px solid #e67e22;
+  background: #fff6ec;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.ao3h-bv-note-important::before {
+  content: '⚠ ';
+}
+
+/*- Modèles de note dans l'éditeur */
+.ao3h-bv-note-tpls { margin-bottom: 4px; }
+
+.ao3h-bv-note-tpl {
+  margin-right: 4px;
+  padding: 1px 7px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #f7f7f7;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.ao3h-bv-note-tpl:hover { background: #eee; }
+
+/*- Historique de versions d'une note */
+.ao3h-bv-note-hist {
+  margin-left: 6px;
+  font-size: 0.8em;
+  max-width: 220px;
+}
+
+/*- Note rapide sur la page d'une fic */
+.ao3h-bv-quicknote { margin: 4px 0 8px; }
+
+/*- Rappel des favoris anciens */
+#ao3h-bm-stale {
+  margin: 8px 0;
+  padding: 6px 12px;
+  border-left: 3px solid #e6a817;
+  background: #fff8e1;
+  color: #6d5200;
+}
+
+.ao3h-bm-stale-btn {
+  margin-left: 10px;
+  padding: 2px 8px;
+  border: 1px solid #e6a817;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+}
+
+li.blurb.ao3h-bm-stale-hl {
+  outline: 2px dashed #e6a817;
+  outline-offset: 2px;
+}
+
+/*- Sélecteur de format d'export */
+.ao3h-export-fmt {
+  margin-left: 8px;
+  font-size: 0.7em;
+  vertical-align: middle;
+}
+
+/*- Actions en masse supplémentaires */
+.ao3h-bv-bulk-cat,
+.ao3h-bv-bulk-pin {
+  margin-left: 6px;
+  padding: 2px 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #f7f7f7;
+  cursor: pointer;
+}
+
+.ao3h-bv-bulk-cat:hover,
+.ao3h-bv-bulk-pin:hover { background: #eee; }

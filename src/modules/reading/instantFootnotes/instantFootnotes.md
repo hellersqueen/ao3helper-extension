@@ -92,16 +92,14 @@ AO3 Helper - Instant Footnotes
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Instant Footnotes** affiche le contenu des notes de fin directement dans une petite bulle ouverte depuis leur lien de renvoi dans le texte.
 
-Il permet notamment de :
-
-* consulter une note sans faire défiler la page jusqu’aux notes de fin ;
-* ouvrir la bulle au survol ou au clic ;
-* épingler une bulle pour la garder ouverte ;
-* accéder directement à la note d’origine ;
-* fermer rapidement la bulle avec le clavier ou un bouton.
+* Il permet notamment de :
+  - consulter une note sans faire défiler la page jusqu’aux notes de fin ;
+  - ouvrir la bulle au survol ou au clic ;
+  - épingler une bulle pour la garder ouverte ;
+  - accéder directement à la note d’origine ;
+  - fermer rapidement la bulle avec le clavier ou un bouton.
 
 Ce module est particulièrement utile pour les œuvres contenant beaucoup de références, d’annotations ou de notes intégrées au texte.
 
@@ -109,14 +107,14 @@ Ce module est particulièrement utile pour les œuvres contenant beaucoup de ré
 
 # Réglages utilisateur
 
-| Réglage         | Défaut  | Description                                                                |
-| --------------- | ------- | -------------------------------------------------------------------------- |
-| `trigger`       | `hover` | Définit si la bulle s’ouvre au survol ou au clic.                          |
-| `delayIn`       | `120`   | Délai en millisecondes avant l’apparition de la bulle en mode survol.      |
-| `delayOut`      | `160`   | Délai en millisecondes avant la fermeture de la bulle après le survol.     |
-| `maxWidth`      | `420`   | Largeur maximale de la bulle, en pixels.                                   |
-| `pinOnClick`    | Activé  | Permet d’épingler la bulle par un clic en mode survol.                     |
-| `showPermalink` | Activé  | Affiche un lien **Go to note** permettant d’accéder directement à la note. |
+| Réglage         | Description                                                                |
+| --------------- |----------------------------------------------------------------------------|
+| `trigger`       | Définit si la bulle s’ouvre au survol ou au clic.                          |
+| `delayIn`       | Délai en millisecondes avant l’apparition de la bulle en mode survol.      |
+| `delayOut`      | Délai en millisecondes avant la fermeture de la bulle après le survol.     |
+| `maxWidth`      | Largeur maximale de la bulle, en pixels.                                   |
+| `pinOnClick`    | Permet d’épingler la bulle par un clic en mode survol.                     |
+| `showPermalink` | Affiche un lien **Go to note** permettant d’accéder directement à la note. |
 
 ---
 

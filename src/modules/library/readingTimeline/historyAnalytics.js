@@ -20,6 +20,7 @@ Notes
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { timeOfDayBucket } from './timelineStats.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -209,6 +210,7 @@ export class HistoryAnalytics {
     this._originalDisplays.clear();
 
     document.querySelectorAll('.ao3h-session-divider').forEach(el => el.remove());
+    document.querySelectorAll('.ao3h-session-subdivider').forEach(el => el.remove());
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -237,23 +239,44 @@ export class HistoryAnalytics {
     };
 
     let lastLabel = null;
+    let lastCalendarDay = null;
+    let lastTimeBucket  = null;
+
     items.forEach(item => {
       // Try the AO3 readings page timestamp element first, then heatmapData
-      const dateEl  = item.querySelector('[datetime]') || item.querySelector('p.datetime');
-      const rawDate = dateEl?.getAttribute('datetime') || dateEl?.textContent?.trim();
-      const date    = rawDate ? new Date(rawDate) : null;
-      if (!date || isNaN(date.getTime())) return;
+      const dateEl   = item.querySelector('[datetime]') || item.querySelector('p.datetime');
+      const rawDate  = dateEl?.getAttribute('datetime') || dateEl?.textContent?.trim();
+      const fullDate = rawDate ? new Date(rawDate) : null;
+      if (!fullDate || isNaN(fullDate.getTime())) return;
 
-      date.setHours(0, 0, 0, 0);
-      const label = getLabel(date);
-      if (label === lastLabel) return;
+      const dayOnly = new Date(fullDate);
+      dayOnly.setHours(0, 0, 0, 0);
+      const label       = getLabel(dayOnly);
+      const calendarDay = this.getDateKey(dayOnly);
 
-      lastLabel = label;
-      const divider       = document.createElement('li');
-      divider.className   = 'ao3h-session-divider';
-      divider.setAttribute('aria-hidden', 'true');
-      divider.textContent = label;
-      item.parentElement.insertBefore(divider, item);
+      if (label !== lastLabel) {
+        lastLabel = label;
+        const divider       = document.createElement('li');
+        divider.className   = 'ao3h-session-divider';
+        divider.setAttribute('aria-hidden', 'true');
+        divider.textContent = label;
+        item.parentElement.insertBefore(divider, item);
+      }
+
+      // Sub-divider: same calendar day, but a clearly different time of day
+      // (morning/afternoon/evening/night) — the main dividers above only
+      // distinguish days, not multiple reading sessions within one day.
+      const bucket = timeOfDayBucket(fullDate);
+      if (calendarDay === lastCalendarDay && bucket !== lastTimeBucket) {
+        const sub       = document.createElement('li');
+        sub.className   = 'ao3h-session-subdivider';
+        sub.setAttribute('aria-hidden', 'true');
+        sub.textContent = bucket;
+        item.parentElement.insertBefore(sub, item);
+      }
+
+      lastCalendarDay = calendarDay;
+      lastTimeBucket  = bucket;
     });
   }
 

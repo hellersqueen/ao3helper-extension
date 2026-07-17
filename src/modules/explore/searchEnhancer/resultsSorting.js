@@ -23,7 +23,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { getBlurbStats } from '../../../../lib/ao3/work-stats.js';
-import { buildKudosRatioBadge, RATIO_BADGE_CLASS } from '../../../../lib/ui/engagement-badge.js';
+import { buildKudosRatioBadge, RATIO_BADGE_CLASS } from '../../../../lib/ui/badges.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -76,7 +76,7 @@ function scoreBlurb (blurb, mode) {
   return 0; // default = no reorder
 }
 
-// Badge partagé avec ficEngagement (browse) — voir lib/ui/engagement-badge.js
+// Badge partagé avec ficEngagement (browse) — voir lib/ui/badges.js
 // et shared.md décision O3. Si ficEngagement a déjà posé son badge de ratio
 // sur ce blurb, on ne le double pas.
 // Badges que ce module a lui-même créés (par opposition à ceux déjà posés par

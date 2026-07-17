@@ -293,28 +293,26 @@ AO3 Helper - Blocklist Management Submodule
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **User Relationships** regroupe toutes les fonctionnalités liées aux autres utilisateurs d'AO3.
 
-Il permet notamment de :
-
-* suivre certains auteurs ;
-* enregistrer des notes personnelles sur un auteur ;
-* marquer des auteurs comme favoris ;
-* masquer les œuvres d'auteurs bloqués ;
-* masquer les commentaires et les notes de favoris provenant d'auteurs bloqués ;
-* gérer une liste complète des utilisateurs bloqués ;
-* filtrer les œuvres selon les auteurs favoris.
+* Il permet notamment de :
+  - suivre certains auteurs ;
+  - enregistrer des notes personnelles sur un auteur ;
+  - marquer des auteurs comme favoris ;
+  - masquer les œuvres d'auteurs bloqués ;
+  - masquer les commentaires et les notes de favoris provenant d'auteurs bloqués ;
+  - gérer une liste complète des utilisateurs bloqués ;
+  - filtrer les œuvres selon les auteurs favoris.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage               | Défaut    | Description                                                                                   |
-| --------------------- | --------- | --------------------------------------------------------------------------------------------- |
-| `favoritesOnlyFilter` | Désactivé | N'affiche que les œuvres des auteurs marqués comme favoris.                                   |
-| `showPlaceholder`     | Activé    | Remplace un contenu masqué par un message explicatif plutôt que de le supprimer complètement. |
-| `tempRevealHidden`    | Désactivé | Permet de révéler temporairement un contenu masqué en cliquant dessus.                        |
+| Réglage               | Description                                                                                   |
+| --------------------- |-----------------------------------------------------------------------------------------------|
+| `favoritesOnlyFilter` | N'affiche que les œuvres des auteurs marqués comme favoris.                                   |
+| `showPlaceholder`     | Remplace un contenu masqué par un message explicatif plutôt que de le supprimer complètement. |
+| `tempRevealHidden`    | Permet de révéler temporairement un contenu masqué en cliquant dessus.                        |
 
 ---
 

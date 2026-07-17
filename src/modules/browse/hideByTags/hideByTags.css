@@ -1437,7 +1437,7 @@ a.tag.ao3h-tag-wrap .ao3h-tag-comma { text-decoration: none; margin-right: .35em
 }
 
 /* ── Dim mode ───────────────────────────────────────────────────────── */
-li.work.blurb.ao3h-dimmed { opacity: 0.25; background: rgba(180, 40, 40, 0.08); border-left: 3px solid rgba(180, 40, 40, 0.35); transition: opacity 0.15s; }
+li.work.blurb.ao3h-dimmed { opacity: var(--ao3h-hbt-dim-opacity, 0.25); background: rgba(180, 40, 40, 0.08); border-left: 3px solid rgba(180, 40, 40, 0.35); transition: opacity 0.15s; }
 li.work.blurb.ao3h-dimmed:hover { opacity: 1; }
 .ao3h-dim-strip .ao3h-dim-tag { font-weight: 700; font-size: 1.08em; color: #a00; }
 .ao3h-dim-strip {
@@ -1452,4 +1452,35 @@ li.work.blurb.ao3h-dimmed:hover .ao3h-dim-strip { opacity: 0.7; }
 @media (max-width: 720px) {
   .ao3h-ul-head { grid-template-columns: 1fr; }
   .ao3h-ul-actions { justify-content:flex-start; }
+}
+
+
+/*+ ─────────────────────────────────────────────────────────
+    ATTÉNUATION : FLOU OPTIONNEL + BOUTON RE-SCAN DU COMPTEUR
+  ───────────────────────────────────────────────────────────── */
+
+/*- Flou optionnel sur le contenu atténué (le bandeau de raison reste net) */
+html.ao3h-hbt-dim-blur li.work.blurb.ao3h-dimmed > :not(.ao3h-dim-strip):not(.ao3h-wl-strip) {
+  filter: blur(2.5px);
+  transition: filter 0.15s;
+}
+
+html.ao3h-hbt-dim-blur li.work.blurb.ao3h-dimmed:hover > :not(.ao3h-dim-strip):not(.ao3h-wl-strip) {
+  filter: none;
+}
+
+/*- Bouton "↻ Re-scan" du bandeau compteur */
+.ao3h-hbt-rescan {
+  margin-left: 10px;
+  padding: 2px 8px;
+  border: 1px solid rgba(180, 40, 40, 0.4);
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.ao3h-hbt-rescan:hover {
+  background: rgba(180, 40, 40, 0.12);
 }

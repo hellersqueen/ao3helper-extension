@@ -19,6 +19,13 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { onReady, observe } from '../../../../lib/utils/index.js';
+import {
+  parseChapterProgress,
+  avgChapterWords,
+  gradientColor,
+  parseCustomBooks,
+  formatPages,
+} from './lengthMath.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -57,8 +64,14 @@ export class LengthDisplay {
      FEATURE — LENGTH CATEGORIES AND BOOK COMPARISONS
   ═══════════════════════════════════════════════════════════════════════ */
 
+  /** Built-in references plus the user's own comparison books. */
+  getBooks() {
+    const custom = parseCustomBooks(this.cfg('customBooks'));
+    return custom.length ? this.BOOK_COMPARISONS.concat(custom) : this.BOOK_COMPARISONS;
+  }
+
   findClosestBook(words) {
-    return this.BOOK_COMPARISONS.reduce((prev, curr) =>
+    return this.getBooks().reduce((prev, curr) =>
       Math.abs(curr.words - words) < Math.abs(prev.words - words) ? curr : prev
     );
   }
@@ -97,8 +110,10 @@ export class LengthDisplay {
     html += '</span>';
 
     if (cfg('showPageEquiv')) {
-      const pages = Math.ceil(words / 275);
-      html += `<span class="${NS}-wl-pages" title="~${pages} pages (@ 275 wpp)">📄 ~${pages} pg</span>`;
+      const wpp   = parseInt(String(cfg('wordsPerPage') ?? 275), 10) || 275;
+      const pages = Math.ceil(words / wpp);
+      const label = formatPages(pages, cfg('pageFormat') || 'compact');
+      html += `<span class="${NS}-wl-pages" title="~${pages} pages (@ ${wpp} wpp)">📄 ${label}</span>`;
     }
 
     return html;
@@ -119,6 +134,59 @@ export class LengthDisplay {
   injectListings() {
     document.querySelectorAll('.blurb .stats dd.words, .index .stats dd.words')
       .forEach(ddEl => this.inject(ddEl));
+    this.applyGradient();
+  }
+
+  /** Tint each word-count stat relative to the shortest/longest work listed. */
+  applyGradient() {
+    if (!this.cfg('lengthGradient')) return;
+    const ddEls = [...document.querySelectorAll('.blurb .stats dd.words, .index .stats dd.words')];
+    const counts = ddEls.map(el => this.parseWordCount(el)).filter(w => w > 0);
+    if (counts.length < 2) return;
+    const min = Math.min(...counts), max = Math.max(...counts);
+    ddEls.forEach(el => {
+      const words = this.parseWordCount(el);
+      if (words > 0) {
+        el.classList.add(`${this.NS}-wl-gradient`);
+        el.style.backgroundColor = gradientColor(words, min, max);
+      }
+    });
+  }
+
+  /** "📊 ~X w/ch" on a work page's stats line (multi-chapter works only). */
+  injectAvgChapterLength() {
+    if (!this.cfg('showAvgChapterLength')) return;
+    const wordsEl    = document.querySelector('dl.stats dd.words');
+    const chaptersEl = document.querySelector('dl.stats dd.chapters');
+    if (!wordsEl || !chaptersEl || wordsEl.querySelector(`.${this.NS}-wl-avgch`)) return;
+    const progress = parseChapterProgress(chaptersEl.textContent);
+    if (!progress || progress.published < 2) return;
+    const avg = avgChapterWords(this.parseWordCount(wordsEl), progress.published);
+    if (!avg) return;
+    wordsEl.insertAdjacentHTML('beforeend',
+      `<span class="${this.NS}-wl-avgch" title="Average chapter length (${progress.published} chapters)">📊 ~${avg.toLocaleString()} w/ch</span>`);
+  }
+
+  /** Total word count (and page equivalent) of a whole series page. */
+  injectSeriesTotal() {
+    if (this.cfg('showSeriesTotal') === false) return;
+    if (document.querySelector(`.${this.NS}-wl-series-total`)) return;
+    const ddEls = [...document.querySelectorAll('li.blurb .stats dd.words')];
+    if (ddEls.length < 2) return;
+    const total = ddEls.reduce((sum, el) => sum + this.parseWordCount(el), 0);
+    if (total < 100) return;
+
+    const banner = document.createElement('div');
+    banner.className = `${this.NS}-wl-series-total`;
+    let text = `Σ ${total.toLocaleString()} words across ${ddEls.length} works`;
+    if (this.cfg('showPageEquiv')) {
+      const wpp = parseInt(String(this.cfg('wordsPerPage') ?? 275), 10) || 275;
+      text += ` (📄 ${formatPages(Math.ceil(total / wpp), this.cfg('pageFormat') || 'compact')})`;
+    }
+    banner.textContent = text;
+    const anchor = document.querySelector('#main h2.heading');
+    if (anchor) anchor.insertAdjacentElement('afterend', banner);
+    else document.querySelector('#main')?.prepend(banner);
   }
 
 
@@ -127,7 +195,8 @@ export class LengthDisplay {
   ═══════════════════════════════════════════════════════════════════════ */
 
   setup() {
-    const isWork = /^\/works\/\d+/.test(location.pathname);
+    const isWork   = /^\/works\/\d+/.test(location.pathname);
+    const isSeries = /^\/series\/\d+/.test(location.pathname);
     let observer = null;
     let active = true;
 
@@ -139,16 +208,20 @@ export class LengthDisplay {
       if (isWork) {
         const stat = document.querySelector('dl.stats dd.words');
         if (stat) this.inject(stat);
+        this.injectAvgChapterLength();
       } else {
+        if (isSeries) this.injectSeriesTotal();
         this.injectListings();
 
         observer = observe(document.body, { childList: true, subtree: true }, mutations => {
+          let added = false;
           mutations.forEach(mut => {
             mut.addedNodes.forEach(node => {
               if (!(node instanceof Element)) return;
-              node.querySelectorAll?.('.stats dd.words').forEach(ddEl => this.inject(ddEl));
+              node.querySelectorAll?.('.stats dd.words').forEach(ddEl => { this.inject(ddEl); added = true; });
             });
           });
+          if (added) this.applyGradient();
         });
       }
     });
@@ -161,6 +234,10 @@ export class LengthDisplay {
 
   reset() {
     const { NS } = this;
-    document.querySelectorAll(`.${NS}-wl-badge, .${NS}-wl-pages`).forEach(el => el.remove());
+    document.querySelectorAll(`.${NS}-wl-badge, .${NS}-wl-pages, .${NS}-wl-avgch, .${NS}-wl-series-total`).forEach(el => el.remove());
+    document.querySelectorAll(`.${NS}-wl-gradient`).forEach(el => {
+      el.classList.remove(`${NS}-wl-gradient`);
+      el.style.backgroundColor = '';
+    });
   }
 }

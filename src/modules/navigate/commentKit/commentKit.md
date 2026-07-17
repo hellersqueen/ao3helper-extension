@@ -301,56 +301,45 @@ AO3 Helper - Comment Composing Submodule
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Comment Kit** regroupe les outils liés à la rédaction, à la navigation et à la gestion des commentaires sur AO3.
 
-Il permet notamment de :
-
-* ajouter des outils de mise en forme à la zone de commentaire ;
-* insérer des modèles de commentaires ;
-* afficher un aperçu avant publication ;
-* sauvegarder automatiquement les brouillons ;
-* restaurer un brouillon après le rechargement de la page ;
-* afficher un compteur de mots et de caractères ;
-* utiliser une boîte de commentaire flottante pendant la lecture ;
-* accéder rapidement à la section des commentaires ;
-* mettre en évidence les commentaires de l’auteur de l’œuvre ;
-* repérer les réponses adressées à l’utilisateur ;
-* replier ou déplier les fils de discussion ;
-* identifier les commentaires jamais vus ;
-* afficher le chapitre associé à un commentaire dans la boîte de réception ;
-* activer par défaut les commentaires d’invités lors de la publication d’une œuvre.
+* Il permet notamment de :
+  - ajouter des outils de mise en forme à la zone de commentaire ;
+  - insérer des modèles de commentaires ;
+  - afficher un aperçu avant publication ;
+  - sauvegarder automatiquement les brouillons ;
+  - restaurer un brouillon après le rechargement de la page ;
+  - afficher un compteur de mots et de caractères ;
+  - utiliser une boîte de commentaire flottante pendant la lecture ;
+  - accéder rapidement à la section des commentaires ;
+  - mettre en évidence les commentaires de l’auteur de l’œuvre ;
+  - repérer les réponses adressées à l’utilisateur ;
+  - replier ou déplier les fils de discussion ;
+  - identifier les commentaires jamais vus ;
+  - afficher le chapitre associé à un commentaire dans la boîte de réception ;
+  - activer par défaut les commentaires d’invités lors de la publication d’une œuvre.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                  | Défaut    | Description                                                                                                    |
-| ------------------------ | --------- | -------------------------------------------------------------------------------------------------------------- |
-| `realtimeCounter`        | Activé    | Affiche un compteur de caractères et de mots actualisé en direct.                                              |
-| `showFloatingBox`        | Désactivé | Affiche une boîte de commentaire flottante lorsque le formulaire principal n’est plus visible.                 |
-| `enableAutoSave`         | Activé    | Sauvegarde automatiquement les brouillons et les restaure après un rechargement.                               |
-| `enablePreview`          | Activé    | Ajoute un bouton permettant d’afficher un aperçu du commentaire avant sa publication.                          |
-| `showFormattingToolbar`  | Activé    | Affiche une barre d’outils contenant les actions Gras, Italique, Lien et Citation.                             |
-| `showQuickTemplates`     | Désactivé | Affiche une rangée de modèles de commentaires rapides.                                                         |
-| `commentTemplates`       | Désactivé | Active les modèles personnalisés réutilisables et leur panneau de gestion.                                     |
-| `collapseExpandButtons`  | Activé    | Ajoute des boutons permettant de replier ou de déplier les commentaires.                                       |
-| `unreadTracking`         | Désactivé | Active le suivi des commentaires jamais vus et les badges `NEW`.                                               |
-| `highlightAuthorReplies` | Désactivé | Met en évidence les commentaires publiés par l’auteur de l’œuvre.                                              |
-| `highlightRepliesToMe`   | Activé    | Met en évidence les réponses directes aux commentaires de l’utilisateur.                                       |
-| `jumpToCommentsButton`   | Désactivé | Ajoute un bouton permettant d’accéder directement aux commentaires.                                            |
-| `chapterIndicator`       | Activé    | Affiche un badge `Ch N` sur les commentaires de la boîte de réception.                                         |
-| `guestCommentsDefault`   | Désactivé | Coche automatiquement l’option **Allow guest comments** lors de la création ou de la modification d’une œuvre. |
+| Réglage                  | Description                                                                                                    |
+| ------------------------ |----------------------------------------------------------------------------------------------------------------|
+| `realtimeCounter`        | Affiche un compteur de caractères et de mots actualisé en direct.                                              |
+| `showFloatingBox`        | Affiche une boîte de commentaire flottante lorsque le formulaire principal n’est plus visible.                 |
+| `enableAutoSave`         | Sauvegarde automatiquement les brouillons et les restaure après un rechargement.                               |
+| `enablePreview`          | Ajoute un bouton permettant d’afficher un aperçu du commentaire avant sa publication.                          |
+| `showFormattingToolbar`  | Affiche une barre d’outils contenant les actions Gras, Italique, Lien et Citation.                             |
+| `showQuickTemplates`     | Affiche une rangée de modèles de commentaires rapides.                                                         |
+| `commentTemplates`       | Active les modèles personnalisés réutilisables et leur panneau de gestion.                                     |
+| `collapseExpandButtons`  | Ajoute des boutons permettant de replier ou de déplier les commentaires.                                       |
+| `unreadTracking`         | Active le suivi des commentaires jamais vus et les badges `NEW`.                                               |
+| `highlightAuthorReplies` | Met en évidence les commentaires publiés par l’auteur de l’œuvre.                                              |
+| `highlightRepliesToMe`   | Met en évidence les réponses directes aux commentaires de l’utilisateur.                                       |
+| `jumpToCommentsButton`   | Ajoute un bouton permettant d’accéder directement aux commentaires.                                            |
+| `chapterIndicator`       | Affiche un badge `Ch N` sur les commentaires de la boîte de réception.                                         |
+| `guestCommentsDefault`   | Coche automatiquement l’option **Allow guest comments** lors de la création ou de la modification d’une œuvre. |
 
-Les anciennes spécifications techniques indiquent des valeurs par défaut différentes pour certains réglages :
-
-| Réglage                  | Défaut indiqué dans les spécifications techniques |
-| ------------------------ | ------------------------------------------------- |
-| `showQuickTemplates`     | Activé                                            |
-| `commentTemplates`       | Activé                                            |
-| `highlightAuthorReplies` | Activé                                            |
-| `highlightRepliesToMe`   | Désactivé                                         |
-| `jumpToCommentsButton`   | Activé                                            |
 
 La documentation principale et les spécifications techniques ne concordent donc pas sur ces valeurs par défaut.
 

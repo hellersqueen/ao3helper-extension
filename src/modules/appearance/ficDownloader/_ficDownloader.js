@@ -125,9 +125,12 @@ register(
     // ── Format selector + Send to Kindle button ───────────────────────────
     const enhInst = new DownloadEnhancements({
       logger,
-      kindleEnabled:  cfg('sendToKindleEnabled'),
-      autoKindleSend: cfg('autoKindleSend'),
-      calibreEnabled: cfg('calibreEnabled'),
+      kindleEnabled:   cfg('sendToKindleEnabled'),
+      autoKindleSend:  cfg('autoKindleSend'),
+      calibreEnabled:  cfg('calibreEnabled'),
+      // Sans ce câblage, les boutons "⬇ DL" de DownloadEnhancements ignoraient
+      // le réglage du panneau (seul BlurbDownloadButton le respectait).
+      showListingBtns: cfg('showQuickDownloadButtons'),
     });
     enhInst.init();
     // Seed Kindle email from panel setting if user hasn't overridden it yet

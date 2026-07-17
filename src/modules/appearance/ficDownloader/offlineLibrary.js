@@ -30,9 +30,35 @@ const W = getGlobalWindow();
 
 const STORAGE_KEY = 'ao3h:OfflineReading:library';
 
+// localStorage stores strings as UTF-16. The default warning threshold is
+// therefore expressed in estimated serialized bytes and sits near 80% of the
+// usual 5 MB browser quota.
+export const DEFAULT_WARN_BYTES = 4 * 1024 * 1024;
+
+export function estimateLibrarySize (lib) {
+  if (!lib || typeof lib !== 'object') return 0;
+  try {
+    return JSON.stringify(lib).length * 2;
+  } catch {
+    return 0;
+  }
+}
+
+export function crossedWarnThreshold (prevBytes, newBytes, warnBytes = DEFAULT_WARN_BYTES) {
+  return prevBytes < warnBytes && newBytes >= warnBytes;
+}
+
+export function formatBytes (bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return '0 B';
+  if (bytes < 1024) return `${Math.round(bytes)} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export class OfflineLibrary {
   constructor (config = {}) {
     this.logger   = config.logger;
+    this.warnBytes = config.warnBytes ?? DEFAULT_WARN_BYTES;
     this._injected = [];
     this._active   = true;
     this._controllers = new Set();
@@ -56,8 +82,10 @@ export class OfflineLibrary {
   _save (lib) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(lib));
+      return true;
     } catch (e) {
       this._log('error', '[OfflineLibrary] Storage write failed:', e);
+      return false;
     }
   }
 
@@ -74,10 +102,25 @@ export class OfflineLibrary {
   }
 
   saveWork (workId, title, author, html) {
-    const lib = this._load();
+    const lib       = this._load();
+    const prevBytes = estimateLibrarySize(lib);
     lib[workId] = { title, author, html, date: Date.now() };
-    this._save(lib);
+    const newBytes = estimateLibrarySize(lib);
+
+    if (!this._save(lib)) {
+      this._showStorageWarning(
+        `Could not save "${title}" — browser storage is full (library: ${formatBytes(prevBytes)}). Remove some offline works and try again.`
+      );
+      return false;
+    }
+
     this._log('info', `[OfflineLibrary] Saved: ${title} (${workId})`);
+    if (crossedWarnThreshold(prevBytes, newBytes, this.warnBytes)) {
+      this._showStorageWarning(
+        `Your offline library now uses ${formatBytes(newBytes)} — it is getting close to the browser storage limit. Consider removing works you have finished.`
+      );
+    }
+    return true;
   }
 
   removeWork (workId) {
@@ -86,6 +129,30 @@ export class OfflineLibrary {
     delete lib[workId];
     this._save(lib);
     if (had) this._log('info', `[OfflineLibrary] Removed: ${workId}`);
+  }
+
+  /** Dismissible in-page banner used for storage-pressure messages. */
+  _showStorageWarning (message) {
+    if (!this._active) return;
+    document.querySelectorAll('.ao3h-offline-storage-warn').forEach(el => el.remove());
+
+    const note = document.createElement('div');
+    note.className = 'ao3h-offline-storage-warn';
+
+    const text = document.createElement('span');
+    text.textContent = `⚠️ ${message}`;
+
+    const close = document.createElement('button');
+    close.type        = 'button';
+    close.className   = 'ao3h-offline-storage-warn-close';
+    close.textContent = '✕';
+    close.title       = 'Dismiss';
+    close.addEventListener('click', () => note.remove());
+
+    note.append(text, close);
+    (document.body || document.documentElement).appendChild(note);
+    this._injected.push(note);
+    this._log('warn', `[OfflineLibrary] ${message}`);
   }
 
 
@@ -157,8 +224,7 @@ export class OfflineLibrary {
       delete btn.dataset.busy;
       if (!this._active) return; // module deactivated while the fetch was in flight
 
-      if (html) {
-        this.saveWork(workId, title, author, html);
+      if (html && this.saveWork(workId, title, author, html)) {
         refresh();
         // Inject the Read Offline button if not already present
         if (!btn.parentElement?.querySelector('.ao3h-offline-read-btn')) {

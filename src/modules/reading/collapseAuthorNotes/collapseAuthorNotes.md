@@ -15,17 +15,21 @@ bandeaux de collection, de cadeau ou de défi.
 |---|---|---|
 | `autoCollapseBeginning` | désactivé | Replie automatiquement les notes de début au chargement de la page |
 | `autoCollapseEnd` | désactivé | Replie automatiquement les notes de fin au chargement de la page |
+| `autoCollapseMinChars` | `0` | Ne replie automatiquement que les notes plus longues que ce seuil (0 = toujours) |
 | `autoExpandWarnings` | activé | Garde toujours ouvertes les notes qui contiennent un avertissement (TW, CW, trigger warning, content warning) |
+| `autoExpandKeywords` | (vide) | Tes propres mots-clés (séparés par des virgules) qui gardent une note ouverte |
 | `hideCollectionBanners` | désactivé | Cache les bandeaux de collection, de cadeau ou de défi |
+| `clearStatesOnDisable` | désactivé | Oublie les choix repli/dépli sauvegardés quand le module est désactivé |
 
 ## Fichiers
 
-### `collapseAuthorNotes.js` — tout le module en un seul fichier
+### `collapseAuthorNotes.js` — le module
 
 - Replie les notes de début et de fin derrière un bouton ▼ / ▶
 - Se souvient, fic par fic, si les notes étaient repliées ou non
 - Si on arrive sur la page avec un lien qui pointe directement vers les notes, elles s'ouvrent automatiquement
 - Garde toujours ouvertes les notes qui contiennent un avertissement, même si le repli automatique est activé
+- Détecte les avertissements TW/CW, les mots-clés personnels et le seuil minimal de longueur
 - Peut aussi cacher les bandeaux de collection, de cadeau ou de défi
 
 ### `collapseAuthorNotes.css`
@@ -37,12 +41,21 @@ bandeaux de collection, de cadeau ou de défi.
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Replier automatiquement les notes seulement si elles dépassent une certaine longueur choisie par l'utilisateur
-- Déplier automatiquement les notes qui contiennent des mots-clés qu'on choisit soi-même, en plus de TW/CW
-- Effacer toutes les préférences sauvegardées (notes repliées ou non) quand on désactive le module
-- Se combiner avec les réglages d'apparence pour proposer un vrai mode de lecture sans distraction
+- ~~Replier automatiquement les notes seulement si elles dépassent une certaine longueur choisie par l'utilisateur~~ ✅
+  Fait : réglage `autoCollapseMinChars` — en dessous du seuil, la note reste
+  visible même avec le repli automatique activé (0 = comportement historique).
+- ~~Déplier automatiquement les notes qui contiennent des mots-clés qu'on choisit soi-même, en plus de TW/CW~~ ✅
+  Fait : réglage `autoExpandKeywords` (liste de mots séparés par des
+  virgules, insensible à la casse), prioritaire sur le repli automatique
+  comme les avertissements.
+- ~~Effacer toutes les préférences sauvegardées (notes repliées ou non) quand on désactive le module~~ ✅
+  Fait : réglage `clearStatesOnDisable` (désactivé par défaut pour ne pas
+  perdre les choix lors d'une désactivation temporaire) — `clearAllStates()`
+  existait déjà mais n'était jamais appelé.
 
 ## Explicitement écarté
+
+- Se combiner avec les réglages d'apparence pour proposer un vrai mode de lecture sans distraction — écarté : le mode lecture (mise en page, typographie, plein écran) est le rôle de `readingFormatter` ; les deux modules s'activent déjà ensemble librement, un couplage explicite n'apporterait qu'une dépendance de plus
 
 - Un bouton "Aller directement au texte" pour sauter les notes d'un coup — jugé redondant avec la navigation déjà fournie par AO3
 - Montrer un aperçu de la première ligne de la note avant de la déplier — jugé trop compliqué à faire pour ce que ça apporte
@@ -80,28 +93,26 @@ vraiment dans ce module (pas de code pour ça) :
 ═══════════════════════════════════════════════════════════════════════════
 
 # À quoi ça sert
-
 Le module **Collapse Author Notes** replie les notes de l’auteur affichées avant et après le texte d’une œuvre afin de réduire la longueur visible de la page.
 
-Il permet notamment de :
-
-* replier les notes de début ;
-* replier les notes de fin ;
-* mémoriser l’état des notes pour chaque œuvre ;
-* garder ouvertes les notes contenant des avertissements ;
-* ouvrir automatiquement une section ciblée par un lien direct ;
-* masquer les bandeaux de collection, de cadeau ou de défi.
+* Il permet notamment de :
+  - replier les notes de début ;
+  - replier les notes de fin ;
+  - mémoriser l’état des notes pour chaque œuvre ;
+  - garder ouvertes les notes contenant des avertissements ;
+  - ouvrir automatiquement une section ciblée par un lien direct ;
+  - masquer les bandeaux de collection, de cadeau ou de défi.
 
 ---
 
 # Réglages utilisateur
 
-| Réglage                 | Défaut    | Description                                                                                           |
-| ----------------------- | --------- | ----------------------------------------------------------------------------------------------------- |
-| `autoCollapseBeginning` | Désactivé | Replie automatiquement les notes de début au chargement de la page.                                   |
-| `autoCollapseEnd`       | Désactivé | Replie automatiquement les notes de fin au chargement de la page.                                     |
-| `autoExpandWarnings`    | Activé    | Garde ouvertes les notes contenant un avertissement comme TW, CW, Trigger Warning ou Content Warning. |
-| `hideCollectionBanners` | Désactivé | Masque les bandeaux de collection, de cadeau ou de défi.                                              |
+| Réglage                 | Description                                                                                           |
+| ----------------------- |-------------------------------------------------------------------------------------------------------|
+| `autoCollapseBeginning` | Replie automatiquement les notes de début au chargement de la page.                                   |
+| `autoCollapseEnd`       | Replie automatiquement les notes de fin au chargement de la page.                                     |
+| `autoExpandWarnings`    | Garde ouvertes les notes contenant un avertissement comme TW, CW, Trigger Warning ou Content Warning. |
+| `hideCollectionBanners` | Masque les bandeaux de collection, de cadeau ou de défi.                                              |
 
 ---
 
@@ -338,53 +349,44 @@ Les fonctionnalités ci-dessous sont mentionnées dans d’autres documents du p
 
 ---
 
-## Repli selon la longueur
+## ~~Repli selon la longueur~~ ✅ Fait
 
-Permettre de replier automatiquement une note uniquement lorsqu’elle dépasse une longueur choisie par l’utilisateur.
+~~Permettre de replier automatiquement une note uniquement lorsqu'elle dépasse une longueur choisie par l'utilisateur.~~
 
-La limite pourrait être définie à partir :
-
-* du nombre de mots ;
-* du nombre de caractères ;
-* de la hauteur visible de la note.
+> Réglage `autoCollapseMinChars` (seuil en caractères, 0 = toujours
+> replier). Le comptage en mots ou en hauteur visible n'a pas été retenu :
+> le seuil en caractères est le plus prévisible et suffit à l'usage.
 
 ---
 
-## Mots-clés personnalisés
+## ~~Mots-clés personnalisés~~ ✅ Fait
 
-Permettre à l’utilisateur de définir ses propres mots-clés afin de forcer l’ouverture de certaines notes.
+~~Permettre à l'utilisateur de définir ses propres mots-clés afin de forcer l'ouverture de certaines notes.~~
 
-Ces mots-clés s’ajouteraient aux avertissements déjà reconnus comme :
-
-* TW ;
-* CW ;
-* Trigger Warning ;
-* Content Warning.
+> Réglage `autoExpandKeywords` (liste séparée par des virgules, insensible
+> à la casse), qui s'ajoute à la détection TW/CW existante et a la même
+> priorité qu'elle sur le repli automatique (`collapseAuthorNotes.js`).
 
 ---
 
-## Suppression des états enregistrés
+## ~~Suppression des états enregistrés~~ ✅ Fait
 
-Effacer les préférences de repli sauvegardées lorsque le module est désactivé.
+~~Effacer les préférences de repli sauvegardées lorsque le module est désactivé.~~
 
-Cela supprimerait les clés enregistrées sous :
-
-```text
-ao3h:notes:{workId}:pre
-ao3h:notes:{workId}:end
-```
+> Réglage `clearStatesOnDisable` : à la désactivation du module, toutes les
+> clés `ao3h:notes:{workId}:pre|end` sont supprimées. Désactivé par défaut
+> pour qu'une désactivation temporaire ne fasse pas perdre les choix.
 
 ---
 
-## Mode de lecture sans distraction
+## ~~Mode de lecture sans distraction~~ ❌ Écarté
 
-Intégrer le module aux réglages d’apparence afin de proposer un véritable mode de lecture sans distraction.
+~~Intégrer le module aux réglages d'apparence afin de proposer un véritable mode de lecture sans distraction.~~
 
-Ce mode pourrait notamment :
-
-* replier automatiquement les notes ;
-* masquer les bandeaux ;
-* réduire les éléments secondaires de la page.
+> Écarté : la mise en page de lecture (typographie, masquage d'éléments,
+> plein écran) est le rôle de `readingFormatter`. Les deux modules
+> fonctionnent déjà ensemble quand ils sont activés tous les deux — un
+> couplage explicite n'apporterait qu'une dépendance de maintenance.
 
 ---
 
@@ -431,6 +433,5 @@ Ce comportement est nécessaire pour respecter les liens directs vers une sectio
 La position et l’apparence du bouton de repli ne sont pas personnalisables.
 
 Le module utilise une seule présentation afin de conserver un comportement simple et uniforme.
-
 
 
