@@ -1422,6 +1422,20 @@ a.tag.ao3h-tag-wrap .ao3h-tag-comma { text-decoration: none; margin-right: .35em
 }
 .ao3h-fold-remove-btn:hover { background: rgba(180,40,40,.22) !important; color: #700 !important; }
 
+/* ── Compteur "X fics cachées" ─────────────────────────────────────── */
+.ao3h-hbt-counter {
+  display: block;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: #fee9e9;
+  border: 1px dashed #bdbdbd;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #700;
+  font-family: system-ui, sans-serif;
+}
+
 /* ── Dim mode ───────────────────────────────────────────────────────── */
 li.work.blurb.ao3h-dimmed { opacity: 0.25; background: rgba(180, 40, 40, 0.08); border-left: 3px solid rgba(180, 40, 40, 0.35); transition: opacity 0.15s; }
 li.work.blurb.ao3h-dimmed:hover { opacity: 1; }

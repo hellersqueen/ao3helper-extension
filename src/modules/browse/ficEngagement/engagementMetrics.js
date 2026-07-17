@@ -1,24 +1,29 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Engagement Metrics Submodule
-    Submodule ID: engagementMetrics
-    Parent Module: ficEngagement
+AO3 Helper - Fic Engagement › Engagement Metrics
 
-    Computes and injects engagement metric badges onto work blurbs and work
-    pages:
-        • Kudos ratio   — (kudos / hits) × 100      → "X.X% ❤️/👁️"
-        • Kudos density — (kudos / words) × 1000    → "X.X /1Kw"
-        • Save rate     — (bookmarks / kudos) × 100 → "X.X% 💾"
+Purpose
+    Calculates and displays kudos ratio, kudos density, and bookmark save rate
+    badges on work blurbs and supported work pages.
 
-    Thresholds (not user-configurable):
-        Ratio   — high ≥ 20 %  · mid 8–20 %  · low < 8 %
-        Density — high ≥ 50    · mid 20–50    · low < 20
-        Save    — high ≥ 20 %  · mid 10–20 %  · low < 10 %
+Notes
+    Optional colour coding uses fixed thresholds. Processed elements are marked
+    to prevent duplicate badges during dynamic rescans.
 
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { buildKudosRatioBadge } from '../../../../lib/ui/engagement-badge.js';
 import { getBlurbStats, getWorkPageStats } from '../../../../lib/ao3/work-stats.js';
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 const BADGE_CLS = 'ao3h-engagement-badge';
 const WRAP_CLS  = 'ao3h-engagement-metrics';
@@ -29,17 +34,19 @@ export class EngagementMetrics {
     this.colorCode = colorCode;
   }
 
-  /* ── Stats from a blurb ─────────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — METRIC CALCULATION
+  ═════════════════════════════════════════════════════════════════════════ */
+
   getStats (blurb) {
     if (!blurb.querySelector('dl.stats')) return null;
     return getBlurbStats(blurb);
   }
 
-  /* ── Metric calculators ─────────────────────────────────────────── */
   kudosDensity (s){ return (s.kudos != null && s.words) ? (s.kudos / s.words) * 1000 : null; }
   saveRate (s)    { return (s.bookmarks != null && s.kudos) ? (s.bookmarks / s.kudos) * 100 : null; }
 
-  /* ── Colour classes ─────────────────────────────────────────────── */
   densityColour (v) {
     if (!this.colorCode || v == null) return '';
     return v >= 50 ? 'ao3h-metric-high' : v >= 20 ? 'ao3h-metric-mid' : 'ao3h-metric-low';
@@ -49,7 +56,11 @@ export class EngagementMetrics {
     return v >= 20 ? 'ao3h-metric-high' : v >= 10 ? 'ao3h-metric-mid' : 'ao3h-metric-low';
   }
 
-  /* ── Badge element ──────────────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — BADGE RENDERING
+  ═════════════════════════════════════════════════════════════════════════ */
+
   badge (value, unit, cls, tooltip) {
     const sp = document.createElement('span');
     sp.className = BADGE_CLS + (cls ? ' ' + cls : '');
@@ -58,7 +69,6 @@ export class EngagementMetrics {
     return sp;
   }
 
-  /* ── Build wrap from stats object ───────────────────────────────── */
   buildWrap (s) {
     const wrap = document.createElement('span');
     wrap.className = WRAP_CLS;
@@ -81,7 +91,11 @@ export class EngagementMetrics {
     return wrap.children.length ? wrap : null;
   }
 
-  /* ── Process one blurb ──────────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — PAGE PROCESSING
+  ═════════════════════════════════════════════════════════════════════════ */
+
   processBlurb (blurb) {
     if (blurb.dataset[DATA_ATTR]) return;
     blurb.dataset[DATA_ATTR] = '1';
@@ -96,14 +110,12 @@ export class EngagementMetrics {
     if (dl && dl.parentNode) dl.parentNode.insertBefore(wrap, dl.nextSibling);
   }
 
-  /* ── Scan all blurbs on the page ────────────────────────────────── */
   scan () {
     document.querySelectorAll(
       'li.work.blurb.group, li.bookmark.blurb.group'
     ).forEach(b => this.processBlurb(b));
   }
 
-  /* ── Work page injection ────────────────────────────────────────── */
   processWorkPage () {
     if (!/^\/works\/\d+/.test(location.pathname)) return;
     const dl = document.querySelector('dl.work.meta.group dl.stats, #main dl.stats');
@@ -119,7 +131,11 @@ export class EngagementMetrics {
     }
   }
 
-  /* ── Cleanup ────────────────────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE LIFECYCLE
+  ═════════════════════════════════════════════════════════════════════════ */
+
   cleanup () {
     document.querySelectorAll('.' + WRAP_CLS).forEach(el => el.remove());
     document.querySelectorAll('[data-ao3h-engagement]').forEach(el => {

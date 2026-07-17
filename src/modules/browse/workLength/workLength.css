@@ -47,7 +47,7 @@
   ───────────────────────────────────────────────────────────────────────
     Le temps par chapitre est injecté dans le badge partagé
     .ao3h-chapter-badge (voir lib/ui/chapter-badge.js), stylé dans
-    reading/chapter-navigation/chapterNavigation.css.
+    reading/chapterNavigation/chapterNavigation.css.
   ═══════════════════════════════════════════════════════════════════════
 */
 
@@ -117,6 +117,11 @@
   ═══════════════════════════════════════════════════════════════════════
 */
 
+.ao3h-wl-cat--flash {
+  /*- 🟣 Violet — Flash Fiction */
+  color: #9333ea;
+}
+
 .ao3h-wl-cat--short {
   /*- 🟢 Vert — Short story */
   color: #16a34a;
@@ -130,4 +135,9 @@
 .ao3h-wl-cat--novel {
   /*- 🟠 Orange — Novel */
   color: #ea580c;
+}
+
+.ao3h-wl-cat--epic {
+  /*- 🔴 Rouge foncé — Epic Novel */
+  color: #b91c1c;
 }

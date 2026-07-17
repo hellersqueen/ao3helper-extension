@@ -1,35 +1,37 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Auto Hide Noise Tags Submodule
-    Submodule ID: autoHideNoiseTags
-    Parent: tagsDisplay
-    Display Name: Auto Hide Noise Tags
+AO3 Helper - Tags Display › Auto Hide Noise Tags
 
-    Hides self-deprecating / low-signal freeform tags automatically.
-    Uses substring matching against a fixed default pattern list.
-    Tags are hidden (display:none on the parent <li>) and can be restored.
+Detects low-signal, self-deprecating freeform tags with a fixed substring list
+and hides their list entries while the feature is active.
 
-    Features:
-      - autoHideNoiseTags : master toggle (default: false)
+Notes
 
-    DOM side-effects:
-      - Class `ao3h-noise-tag-hidden` on the <li> wrapping a matched tag
-      - Attribute `data-ao3h-noise-checked` on each scanned <a> tag
-      - Class `ao3h-noise-filter-on` on <html> while active
+- Matching is case-insensitive and uses normalized substring comparisons.
+- Processed tags are marked to avoid duplicate scans.
+- All classes and processing attributes are removed during cleanup.
 
-    MutationObserver: watches #main for new blurbs.
+═══════════════════════════════════════════════════════════════════════════ */
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
+import { observe } from '../../../../lib/utils/index.js';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 const MOD  = 'autoHideNoiseTags';
 const NS             = 'ao3h';
 const HIDDEN_CLS     = `${NS}-noise-tag-hidden`;
 const PROCESSED_ATTR = 'data-ao3h-noise-checked';
 
-// ── Config ────────────────────────────────────────────────────────────────
 function cfg (key, fallback) {
   try {
     const v = Flags.get(`mod:tagsDisplay:${key}`);
@@ -38,7 +40,6 @@ function cfg (key, fallback) {
   return fallback;
 }
 
-// ── Noise patterns ────────────────────────────────────────────────────────
 const NOISE_PATTERNS = [
   'idk',
   "i don't know",
@@ -67,7 +68,11 @@ const NOISE_PATTERNS = [
   "idk what i'm doing",
 ];
 
-// ── Helpers ───────────────────────────────────────────────────────────────
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — NOISE-TAG DETECTION AND VISIBILITY
+═══════════════════════════════════════════════════════════════════════════ */
+
 function normalize (text) {
   return (text || '').toLowerCase().replace(/\s+/g, ' ').replace(/[.!?]+$/, '').trim();
 }
@@ -99,9 +104,9 @@ function restoreAll () {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════
-// MODULE REGISTRATION
-// ══════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
 
 register(MOD, {
   title            : 'Auto Hide Noise Tags',
@@ -114,15 +119,14 @@ register(MOD, {
   document.documentElement.classList.add(`${NS}-noise-filter-on`);
   processRoot(document);
 
-  const obs = new MutationObserver(mutations => {
+  const main = document.querySelector('#main') || document.body;
+  const obs = observe(main, { childList: true, subtree: true }, mutations => {
     for (const mut of mutations) {
       mut.addedNodes.forEach(node => {
         if (node instanceof Element) processRoot(node);
       });
     }
   });
-  const main = document.querySelector('#main') || document.body;
-  obs.observe(main, { childList: true, subtree: true });
 
   return () => {
     obs.disconnect();

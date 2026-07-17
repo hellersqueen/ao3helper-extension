@@ -1,38 +1,40 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Filter Warnings Submodule
-    Submodule ID: filterWarnings
-    Parent Module: filterManager
+AO3 Helper - Filter Manager › Filter Warnings
 
-    - Feature: Archive Warning exclusion detection
-      - Option: Scans current URL search params for excluded Archive Warnings
-      - Option: Tracks all 6 official AO3 Archive Warnings
-      - Option: Supports both array and bare param name forms
+Purpose
+    Detects excluded AO3 Archive Warnings in the current search parameters and
+    displays an accessible, dismissible warning banner.
 
-    - Feature: Dismissible warning banner
-      - Option: Injected at the top of #main on listing pages
-      - Option: Lists the names of all excluded warnings inline
-      - Option: ⚠️ icon with role="alert" for accessibility
-      - Option: ✕ dismiss button removes banner from DOM
-      - Option: Guards against duplicate banner injection
+Notes
+    The optional removal action rebuilds the current URL without the detected
+    exclusions. The coordinator owns removal of the returned banner on cleanup.
 
-    - Feature: Remove exclusion button
-      - Option: "Remove exclusion" button shown when cfg excludeWarningRemoveButton is true
-      - Option: Rebuilds current URL removing excluded Archive Warning params (both bracket and bare forms)
-      - Option: Navigates to the updated URL on click
+═══════════════════════════════════════════════════════════════════════════ */
 
-    Dependencies injected via constructor: NS, cfg
-
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { ARCHIVE_WARNING_FORM_LABELS as ARCHIVE_WARNINGS } from '../../../../lib/ao3/constants.js';
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 export class FilterWarnings {
   constructor ({ NS, cfg }) {
     this.NS  = NS;
     this.cfg = cfg;
   }
+
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — EXCLUSION DETECTION
+  ═════════════════════════════════════════════════════════════════════════ */
 
   /** Returns the list of Archive Warnings excluded by the current URL. */
   detect (params) {
@@ -42,6 +44,11 @@ export class FilterWarnings {
     ])];
     return ARCHIVE_WARNINGS.filter(w => raw.includes(w));
   }
+
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — WARNING BANNER
+  ═════════════════════════════════════════════════════════════════════════ */
 
   /** Inserts the warning banner and returns the element (or null if nothing to show). */
   insert (excluded) {
@@ -88,3 +95,11 @@ export class FilterWarnings {
     return banner;
   }
 }
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
+
+// The coordinator removes the banner element returned by insert().

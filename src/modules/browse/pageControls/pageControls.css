@@ -12,6 +12,8 @@
 /*#        |                                                 */
 /*####     ├─  03. Navigation améliorée                      */
 /*#        |                                                 */
+/*=        ├─  04. Bouton "Retour en haut"                   */
+/*#        |                                                 */
 /*#        └─*/
 
 
@@ -135,3 +137,41 @@
 .ao3h-en-btn.disabled            { color: #bbb; border-color: #ddd; cursor: default; pointer-events: none; }
 .ao3h-en-btn:hover:not(.disabled){ background: #ffe0e0; }
 .ao3h-en-current                 { font-size: .9em; color: #666; padding: 0 4px; }
+
+
+/*=
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — BOUTON "RETOUR EN HAUT"
+  ───────────────────────────────────────────────────────────────────────
+    Bouton flottant, caché tant que la page n'est pas assez défilée.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-pc-backtotop {
+  position: fixed;
+  right: 14px;
+  bottom: 64px; /* au-dessus du bouton flottant du menu AO3 Helper (14px) */
+  z-index: 999998;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #900;
+  background: #fff;
+  color: #900;
+  font-size: 1.1em;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity .2s ease, transform .2s ease, visibility .2s;
+}
+
+.ao3h-pc-backtotop--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.ao3h-pc-backtotop:hover { background: #ffe0e0; }

@@ -1,22 +1,37 @@
-/* ─────────────────────────────────────────────────────────────────────────
-   AO3 Helper — HideByTags › HiddenTags sub-module
-   Responsibilities:
-     • Tag blacklist storage (get / set / add)
-     • Group-map storage (get / set)
-     • Tag canonicalisation & matching
-     • Inline 🚫 icon injection on tag links
-     • Hidden Tags Manager panel (open/close UI, export/import)
-───────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+
+AO3 Helper - Hide By Tags › Hidden Tags
+
+Stores and matches hidden tags, adds quick-hide controls to tag links, and
+provides the grouped Hidden Tags Manager used to import, export, and remove tags.
+
+Notes
+
+- Hidden tags use the shared mirrored-list store.
+- Group assignments and collapsed-group state retain their local-storage mirrors.
+- Work blurbs are folded instead of removed so users can reveal hidden results.
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
+═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { downloadJSON, pickJSONFile } from '../../../../lib/utils/json-file.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { createMirroredListStore } from '../../../../lib/storage/mirrored-list.js';
+import { openListManagerDialog } from '../../../../lib/ui/list-manager.js';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 const W = getGlobalWindow();
 
-// ── Constants ────────────────────────────────────────────────────────────
 const LS_MIRROR      = true;
 const TM_KEY         = 'hideTags';
 const TM_KEY_GROUPS  = 'hideTagsGroups';
@@ -25,7 +40,7 @@ const LS_KEY_COLLAPSED = 'hideTagsGroupsCollapsed';
 
 export class HiddenTags {
   /**
-   * @param {{ NS: string, Storage: object, UserLS: object|null, KeyboardNav: object }} opts
+   * @param {{ NS: string, Storage: any, UserLS: any, KeyboardNav: any }} opts
    */
   constructor ({ NS, Storage, UserLS, KeyboardNav }) {
     this.NS          = NS;
@@ -36,8 +51,6 @@ export class HiddenTags {
     // (comportement historique conservé ; setHidden/add/remove écrivent déjà normalisé)
     this._store = createMirroredListStore({ key: TM_KEY, Storage, UserLS, NS, normalizeOnGet: false });
   }
-
-  // ── Internal helpers ───────────────────────────────────────────────────
 
   _lsGet (key, def) {
     try {
@@ -56,7 +69,10 @@ export class HiddenTags {
     } catch {}
   }
 
-  // ── Canonicalisation ───────────────────────────────────────────────────
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — TAG STORAGE AND MATCHING
+  ═══════════════════════════════════════════════════════════════════════ */
 
   canonicalFromAnchor (a) {
     try {
@@ -75,8 +91,6 @@ export class HiddenTags {
     catch { return base.replace(/[̀-ͯ]/g, ''); }
   }
 
-  // ── Blacklist storage ──────────────────────────────────────────────────
-
   async getHidden () {
     return this._store.get();
   }
@@ -92,8 +106,6 @@ export class HiddenTags {
   async removeHiddenTag (canon) {
     return this._store.remove(canon);
   }
-
-  // ── Group-map storage ──────────────────────────────────────────────────
 
   async getGroupsMap () {
     let map = (await this.Storage.get(TM_KEY_GROUPS, {})) || {};
@@ -122,8 +134,6 @@ export class HiddenTags {
     return cleaned;
   }
 
-  // ── Collapsed-groups state ─────────────────────────────────────────────
-
   getCollapsedSet () {
     try {
       const arr = this._lsGet(LS_KEY_COLLAPSED, []);
@@ -135,8 +145,6 @@ export class HiddenTags {
     this._lsSet(LS_KEY_COLLAPSED, [...set]);
   }
 
-  // ── Matching ───────────────────────────────────────────────────────────
-
   /** Returns the canonical forms of hidden tags found in `scope`. */
   reasonsFor (scope, hiddenSet) {
     if (!(hiddenSet instanceof Set)) return [];
@@ -146,7 +154,10 @@ export class HiddenTags {
     return canon.filter(t => hiddenSet.has(t));
   }
 
-  // ── Inline icon injection ──────────────────────────────────────────────
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — INLINE TAG-HIDING CONTROLS
+  ═══════════════════════════════════════════════════════════════════════ */
 
   ensureInlineIcons (root = document, getWorkBlurbs) {
     if (loadModuleSettings('hideByTags').quickAddIcon === false) return;
@@ -218,285 +229,110 @@ export class HiddenTags {
     managedLists.forEach(ul => ul.classList.add(`${NS}-own-commas`));
   }
 
-  // ── Manager panel ──────────────────────────────────────────────────────
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — HIDDEN TAGS MANAGER
+  ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Open the Hidden Tags Manager modal.
    * @param {{ processList: Function, toast: Function }} callbacks
    */
   openManager ({ processList, toast }) {
-    const NS          = this.NS;
-    const KeyboardNav = this.KeyboardNav;
-    const self        = this;
+    const self = this;
 
-    const backdrop = document.createElement('div');
-    backdrop.className = `${NS}-mgr-backdrop`;
+    // Rafraîchi à chaque reload() (load() est toujours attendu avant que
+    // groupBy.keyOf() ne soit appelé pour ce même cycle — voir list-manager.js).
+    let currentGroupsMap = {};
+    let managerHandle;
 
-    const box = document.createElement('div');
-    box.className   = `${NS}-mgr`;
-    box.innerHTML = `
-      <button class="${NS}-close-x" type="button" aria-label="Close" title="Close">×</button>
-      <h3>AO3 Helper — Hidden Tags (Groups)</h3>
-      <div class="${NS}-ul-head">
-        <input class="${NS}-ul-search" type="search" placeholder="Search by tag or group…" />
-        <span class="${NS}-ul-count">0 / 0</span>
-      </div>
-      <div class="${NS}-ul-actions">
-        <button class="${NS}-ul-btn ${NS}-ul-export"   type="button">Export JSON (tags)</button>
-        <button class="${NS}-ul-btn ${NS}-ul-import"   type="button">Import JSON (tags)</button>
-        <button class="${NS}-ul-btn ${NS}-ul-exportg"  type="button" title="Export groups mapping">Export Groups</button>
-        <button class="${NS}-ul-btn ${NS}-ul-importg"  type="button" title="Import Groups">Import Groups</button>
-      </div>
-      <div class="${NS}-ul-list" aria-live="polite"></div>
-    `;
-
-    let cleanupKeyboard = null;
-    let focusTrap       = null;
-
-    const close = () => {
-      try { cleanupKeyboard?.(); } catch {}
-      try { focusTrap?.deactivate(); } catch {}
-      document.documentElement.classList.remove(`${NS}-lock`);
-      document.body.classList.remove(`${NS}-lock`);
-      const y = parseInt(document.body.dataset[`${NS}ScrollY`] || '0', 10);
-      document.body.style.top = '';
-      delete document.body.dataset[`${NS}ScrollY`];
-      window.scrollTo(0, y);
-      backdrop.remove();
-      box.remove();
-    };
-
-    backdrop.addEventListener('click', close);
-    backdrop.addEventListener('wheel',     e => e.preventDefault(), { passive: false });
-    backdrop.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-    box.querySelector(`.${NS}-close-x`).addEventListener('click', close);
-
-    if (KeyboardNav.setupMenuKeyboardNav) {
-      cleanupKeyboard = KeyboardNav.setupMenuKeyboardNav(box, { onClose: close, vertical: true });
-    }
-    if (KeyboardNav.createFocusTrap) {
-      focusTrap = KeyboardNav.createFocusTrap(box);
-      focusTrap.activate();
-    }
-    document.addEventListener('keydown', function esc (e) {
-      if (e.key !== 'Escape') return;
-      close();
-      document.removeEventListener('keydown', esc);
+    managerHandle = openListManagerDialog({
+      NS: this.NS,
+      KeyboardNav: this.KeyboardNav,
+      title: 'AO3 Helper — Hidden Tags (Groups)',
+      searchPlaceholder: 'Search by tag or group…',
+      load: async () => {
+        const hidden = await self.getHidden();
+        currentGroupsMap = await self.getGroupsMap();
+        return hidden;
+      },
+      removeButtonTitle: 'Remove this hidden tag',
+      onRemove: async (tag) => {
+        await self.removeHiddenTag(tag);
+        const map = await self.getGroupsMap();
+        if (tag in map) { delete map[tag]; await self.setGroupsMap(map); }
+        await processList();
+      },
+      groupBy: {
+        keyOf: (tag) => currentGroupsMap[tag] || null,
+        getCollapsed: () => self.getCollapsedSet(),
+        setCollapsed: (set) => self.setCollapsedSet(set),
+      },
+      exportItems: { filename: 'ao3h-hidden-tags.json' },
+      importItems: async (incoming) => {
+        if (!Array.isArray(incoming)) throw new Error('not a valid tags array');
+        const current = await self.getHidden();
+        const merged  = Array.from(new Set(
+          current.concat(incoming.map(s => String(s).trim().toLowerCase()))
+        )).filter(Boolean);
+        await self.setHidden(merged);
+        await processList();
+        try { toast(`Imported ${incoming.length} tags`); } catch {}
+      },
+      extraActions: [
+        {
+          label: 'Export Groups',
+          title: 'Export groups mapping',
+          onClick: async () => {
+            const map = await self.getGroupsMap();
+            downloadJSON(map, 'ao3h-hidden-tags-groups.json');
+          },
+        },
+        {
+          label: 'Import Groups',
+          title: 'Import Groups',
+          onClick: async () => {
+            let incoming;
+            try {
+              incoming = await pickJSONFile();
+              if (incoming === null) return;
+            } catch (err) {
+              try { toast('Invalid JSON: ' + (err?.message || 'not a valid groups object')); } catch {}
+              return;
+            }
+            if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) {
+              try { toast('Invalid JSON: not a valid groups object'); } catch {}
+              return;
+            }
+            const map = await self.getGroupsMap();
+            await self.setGroupsMap({ ...map, ...incoming });
+            managerHandle.reload();
+            try { toast('Imported groups mapping'); } catch {}
+          },
+        },
+        {
+          label: 'Clear All',
+          title: 'Remove every hidden tag and group',
+          onClick: async () => {
+            const current = await self.getHidden();
+            if (!current.length) return;
+            if (!confirm(`Remove all ${current.length} hidden tags? This cannot be undone.`)) return;
+            await self.setHidden([]);
+            await self.setGroupsMap({});
+            await processList();
+            managerHandle.reload();
+            try { toast('All hidden tags removed'); } catch {}
+          },
+        },
+      ],
+      toast: (msg) => { try { toast(msg); } catch {} },
     });
-
-    document.body.append(backdrop, box);
-
-    // Lock scroll
-    document.documentElement.classList.add(`${NS}-lock`);
-    document.body.classList.add(`${NS}-lock`);
-    const y = window.scrollY || window.pageYOffset || 0;
-    document.body.dataset[`${NS}ScrollY`] = String(y);
-    document.body.style.top = `-${y}px`;
-
-    const $search = box.querySelector(`.${NS}-ul-search`);
-    const $count  = box.querySelector(`.${NS}-ul-count`);
-    const $list   = box.querySelector(`.${NS}-ul-list`);
-
-    let searchTimer = 0;
-
-    const reload = async () => {
-      const hidden    = await self.getHidden();
-      const groupsMap = await self.getGroupsMap();
-      const qn        = self.toNorm($search.value || '');
-
-      const domHasGroups = $list.querySelectorAll(`.${NS}-ul-group`).length > 0;
-      const expandedNow = domHasGroups
-        ? new Set(
-            Array.from($list.querySelectorAll(`.${NS}-ul-group[aria-expanded="true"]`))
-              .map(el => el?.dataset?.gname || '')
-              .filter(Boolean)
-          )
-        : null;
-      const collapsedFromStorage = expandedNow === null ? self.getCollapsedSet() : null;
-
-      const filtered = hidden.filter(t =>
-        !qn || self.toNorm(t).includes(qn) || self.toNorm(groupsMap[t] || '').includes(qn)
-      );
-
-      const grouped = new Map();
-      for (const t of filtered) {
-        const key = (groupsMap[t] || '').trim() || '(ungrouped)';
-        if (!grouped.has(key)) grouped.set(key, []);
-        grouped.get(key).push(t);
-      }
-      for (const [, arr] of grouped) {
-        arr.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-      }
-      const entries = [...grouped.entries()]
-        .sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: 'base' }));
-
-      const prevScrollTop = $list.scrollTop;
-      $list.innerHTML = '';
-      let shown = 0;
-
-      for (const [gname, tags] of entries) {
-        const block    = document.createElement('div');
-        block.className  = `${NS}-ul-group`;
-        block.dataset.gname = gname;
-        const shouldExpand = expandedNow !== null ? expandedNow.has(gname) : !collapsedFromStorage.has(gname);
-        block.setAttribute('aria-expanded', String(!!shouldExpand));
-
-        const head  = document.createElement('div');
-        head.className = `${NS}-ul-ghead`;
-        head.setAttribute('role', 'button');
-        head.setAttribute('tabindex', '0');
-
-        const chev  = document.createElement('span');
-        chev.className  = `${NS}-ul-chevron`;
-        chev.textContent = '';
-
-        const glabel = document.createElement('span');
-        glabel.className   = `${NS}-ul-glabel`;
-        glabel.textContent = `${gname} — ${tags.length}`;
-
-        head.append(chev, glabel);
-        block.append(head);
-
-        const wrap = document.createElement('div');
-        wrap.className  = `${NS}-ul-gwrap`;
-
-        for (const tag of tags) {
-          const row   = document.createElement('div');
-          row.className = `${NS}-ul-row`;
-
-          const label = document.createElement('span');
-          label.className   = `${NS}-ul-tag`;
-          label.textContent = tag;
-
-          const del   = document.createElement('button');
-          del.className   = `${NS}-ul-btn ${NS}-ul-del`;
-          del.textContent = '🗑️';
-          del.title       = 'Remove this hidden tag';
-          del.addEventListener('click', async () => {
-            if (del.dataset.confirming === 'true') return;
-            del.dataset.confirming = 'true';
-            del.title = '';
-
-            const confirm  = document.createElement('button');
-            confirm.className   = `${NS}-ul-btn ${NS}-ul-del-confirm`;
-            confirm.textContent = '✓';
-            confirm.title       = 'Confirm removal';
-
-            const cancel  = document.createElement('button');
-            cancel.className   = `${NS}-ul-btn ${NS}-ul-del-cancel`;
-            cancel.textContent = '✗';
-            cancel.title       = 'Cancel';
-
-            del.replaceWith(confirm, cancel);
-
-            cancel.addEventListener('click', () => {
-              confirm.replaceWith(del);
-              cancel.remove();
-              delete del.dataset.confirming;
-              del.title = 'Remove this hidden tag';
-            });
-
-            confirm.addEventListener('click', async () => {
-              await self.removeHiddenTag(tag);
-              const map = await self.getGroupsMap();
-              if (tag in map) { delete map[tag]; await self.setGroupsMap(map); }
-              await processList();
-              reload();
-            });
-          });
-
-          row.append(label, del);
-          wrap.append(row);
-          shown++;
-        }
-
-        block.append(wrap);
-        $list.append(block);
-
-        const toggleGroup = () => {
-          const expanded = block.getAttribute('aria-expanded') !== 'true';
-          block.setAttribute('aria-expanded', String(expanded));
-          const newCollapsed = new Set(
-            Array.from($list.querySelectorAll(`.${NS}-ul-group[aria-expanded="false"]`))
-              .map(el => el?.dataset?.gname || '')
-              .filter(Boolean)
-          );
-          self.setCollapsedSet(newCollapsed);
-        };
-        head.addEventListener('click', toggleGroup);
-        head.addEventListener('keydown', e => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleGroup(); }
-        });
-      }
-
-      $count.textContent = `${shown} / ${hidden.length}`;
-      try { $list.scrollTop = prevScrollTop; } catch {}
-    };
-
-    $search.addEventListener('input', () => {
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(reload, 150);
-    });
-
-    // Export / import buttons
-    box.querySelector(`.${NS}-ul-export`).addEventListener('click', async () => {
-      const list = await self.getHidden();
-      downloadJSON(list, 'ao3h-hidden-tags.json');
-    });
-
-    box.querySelector(`.${NS}-ul-import`).addEventListener('click', async () => {
-      const input   = document.createElement('input');
-      input.type    = 'file';
-      input.accept  = 'application/json';
-      input.addEventListener('change', async () => {
-        const file = input.files?.[0];
-        if (!file) return;
-        try {
-          const incoming = JSON.parse(await file.text());
-          if (!Array.isArray(incoming)) throw new Error('Not an array');
-          const current = await self.getHidden();
-          const merged  = Array.from(new Set(
-            current.concat(incoming.map(s => String(s).trim().toLowerCase()))
-          )).filter(Boolean);
-          await self.setHidden(merged);
-          await processList();
-          reload();
-          try { toast(`Imported ${incoming.length} tags`); } catch {}
-        } catch (err) { try { toast('Invalid JSON: ' + (err?.message || 'not a valid tags array')); } catch {} }
-      });
-      input.click();
-    });
-
-    box.querySelector(`.${NS}-ul-exportg`).addEventListener('click', async () => {
-      const map  = await self.getGroupsMap();
-      downloadJSON(map, 'ao3h-hidden-tags-groups.json');
-    });
-
-    box.querySelector(`.${NS}-ul-importg`).addEventListener('click', async () => {
-      const input  = document.createElement('input');
-      input.type   = 'file';
-      input.accept = 'application/json';
-      input.addEventListener('change', async () => {
-        const file = input.files?.[0];
-        if (!file) return;
-        try {
-          const incoming = JSON.parse(await file.text());
-          if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) {
-            throw new Error('Not an object');
-          }
-          const map    = await self.getGroupsMap();
-          await self.setGroupsMap({ ...map, ...incoming });
-          reload();
-          try { toast('Imported groups mapping'); } catch {}
-        } catch (err) { try { toast('Invalid JSON: ' + (err?.message || 'not a valid groups object')); } catch {} }
-      });
-      input.click();
-    });
-
-    reload();
   }
 
-  // ── Blurb helpers ──────────────────────────────────────────────────────
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — WORK BLURB FOLDING
+  ═══════════════════════════════════════════════════════════════════════ */
 
   getWorkBlurbs (root = document) {
     // Etape 318 : lecture window conservee volontairement — lib/ao3/parsers.js est
@@ -515,8 +351,6 @@ export class HiddenTags {
   getWorkIdFromBlurb (blurb) {
     return extractWorkIdFromBlurb(blurb);
   }
-
-  // ── Fold / cut DOM helpers ─────────────────────────────────────────────
 
   forceShow (el) {
     try {
@@ -712,7 +546,25 @@ export class HiddenTags {
     return blurb.hasAttribute('data-ao3h-notes-hidden');
   }
 
-  // ── Delegate events ────────────────────────────────────────────────────
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — USER FEEDBACK
+  ═══════════════════════════════════════════════════════════════════════ */
+
+  toast (msg) {
+    const NS = this.NS;
+    const el = document.createElement('div');
+    el.className   = `${NS}-hbt-toast`;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add(`${NS}-hbt-toast--visible`));
+    setTimeout(() => { el.classList.remove(`${NS}-hbt-toast--visible`); setTimeout(() => el.remove(), 200); }, 1000);
+  }
+
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE LIFECYCLE
+  ═══════════════════════════════════════════════════════════════════════ */
 
   /**
    * Attach click-delegate handlers for the inline hide icons and alt+click on tags.
@@ -725,7 +577,7 @@ export class HiddenTags {
     const signal = this._delegateController.signal;
 
     document.addEventListener('click', async (e) => {
-      const ico = e.target?.closest?.(`.${this.NS}-hide-ico`);
+      const ico = e.target instanceof Element ? e.target.closest(`.${this.NS}-hide-ico`) : null;
       if (!ico) return;
       e.preventDefault(); e.stopPropagation();
       const canon = (ico.dataset.tag || '').trim();
@@ -736,7 +588,7 @@ export class HiddenTags {
     }, { capture: true, signal });
 
     document.addEventListener('click', async (e) => {
-      const link = e.target?.closest?.('a.tag');
+      const link = e.target instanceof Element ? e.target.closest('a.tag') : null;
       if (!link || !e.altKey) return;
       e.preventDefault();
       const canon = this.canonicalFromAnchor(link);
@@ -751,17 +603,5 @@ export class HiddenTags {
     this._delegateController?.abort();
     this._delegateController = null;
     this._delegatesAttached = false;
-  }
-
-  // ── Toast ──────────────────────────────────────────────────────────────
-
-  toast (msg) {
-    const NS = this.NS;
-    const el = document.createElement('div');
-    el.className   = `${NS}-hbt-toast`;
-    el.textContent = msg;
-    document.body.appendChild(el);
-    requestAnimationFrame(() => el.classList.add(`${NS}-hbt-toast--visible`));
-    setTimeout(() => { el.classList.remove(`${NS}-hbt-toast--visible`); setTimeout(() => el.remove(), 200); }, 1000);
   }
 }

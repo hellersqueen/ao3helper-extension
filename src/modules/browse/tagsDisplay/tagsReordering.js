@@ -1,39 +1,42 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Tags Reordering Submodule
-    Submodule ID: tagsReordering
-    Parent: tagsDisplay
-    Display Name: Tags Reordering
+AO3 Helper - Tags Display › Tags Reordering
 
-    On work pages, lets the user drag-and-drop tags within each tag category
-    (fandom, character, relationship, freeform). Order is persisted per-work
-    in localStorage and restored on next visit. A "Reset order" button appears
-    when a saved order exists.
+Makes work-page tag categories drag-reorderable, persists each category order
+per work, and provides a reset control when a custom order exists.
 
-    Features:
-      - tagsReordering : master toggle (default: false)
+Notes
 
-    Storage keys (per work × tag type):
-      ao3h:tagsDisplay:order:[workId]:[tagType]  — array of tag names, in order
+- Fandom, character, relationship, and freeform categories are independent.
+- Saved orders use tag names rather than the retired numeric-index format.
+- Disabling the feature restores AO3’s original order.
+- This integration has not yet been tested against the live AO3 site.
 
-    Utilise lib/ui/drag-reorder.js (makeListReorderable) — fusionné avec
-    l'implémentation de ficActions (shared.md, T1). Le bouton "Reset order"
-    a nécessité d'étendre la lib avec cleanup.resetToOriginal().
-    ⚠️ Non testé en conditions réelles sur AO3. La clé de stockage garde le
-    même nom mais change de format (index numériques → noms de tags) ; un
-    ordre déjà sauvegardé par un utilisateur ne sera pas retrouvé une fois
-    (retombe sur l'ordre par défaut, pas de casse).
+═══════════════════════════════════════════════════════════════════════════ */
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import { makeListReorderable, applySavedOrder } from '../../../../lib/ui/drag-reorder.js';
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
+
 const MOD  = 'tagsReordering';
 const NS   = 'ao3h';
 
 const TAG_TYPES = ['fandom', 'character', 'relationship', 'freeform'];
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — PERSISTED TAG ORDER
+═══════════════════════════════════════════════════════════════════════════ */
 
 function getWorkId () {
   return extractWorkIdFromHref(location.pathname);
@@ -64,6 +67,11 @@ function clearOrder (workId, tagType) {
   try { localStorage.removeItem(storageKey(workId, tagType)); } catch (_) {}
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — DRAG REORDERING AND RESET CONTROLS
+═══════════════════════════════════════════════════════════════════════════ */
+
 function syncResetButton (list, workId, tagType, onReset) {
   const hasSaved = loadOrder(workId, tagType) !== null;
   const btnId    = `${NS}-reset-${tagType}`;
@@ -92,7 +100,7 @@ function initList (list, workId, tagType) {
 
   applySavedOrder(list, loadOrder(workId, tagType), getItemKey, ':scope > li');
 
-  const dragCleanup = makeListReorderable(list, {
+  const dragCleanup = /** @type {(() => void) & { resetToOriginal: () => void }} */ (makeListReorderable(list, {
     getItemKey,
     onOrderChanged: (order) => {
       saveOrder(workId, tagType, order);
@@ -100,12 +108,17 @@ function initList (list, workId, tagType) {
     },
     handleGlyph: '⋮⋮',
     itemSelector: ':scope > li',
-  });
+  }));
 
   syncResetButton(list, workId, tagType, () => dragCleanup.resetToOriginal());
 
   return dragCleanup;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
 
 register(MOD, {
   title:            'Tags Reordering',

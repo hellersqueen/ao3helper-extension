@@ -1,22 +1,29 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Length Display Submodule
-    Submodule ID: lengthDisplay
-    Display Name: Length Display
-    Parent Module: workLength
+AO3 Helper - Work Length › Length Display
 
-    Displays length category badges (⚡/📄/📖/📚) and famous book
-    comparisons on work pages and listing blurbs. Absorbs pageCount.
+Adds configurable length-category, book-comparison, and page-equivalent badges
+to AO3 word counts on work pages and listing blurbs.
 
-    Config keys read:
-        - showPageEquiv       → show "~X pages" badge
-        - showLengthCategory  → show category emoji + label
-        - thresholdShort      → word count ceiling for "Short story" tier
-        - thresholdNovella    → word count ceiling for "Novella" tier
+Notes
+
+- Category thresholds come from the parent Work Length configuration.
+- Page equivalents use an estimate of 275 words per page.
+- Book comparisons select the reference with the nearest word count.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { onReady } from '../../../../lib/utils/index.js';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
+═══════════════════════════════════════════════════════════════════════════ */
+
+import { onReady, observe } from '../../../../lib/utils/index.js';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 export class LengthDisplay {
   constructor(NS, cfg) {
@@ -45,6 +52,11 @@ export class LengthDisplay {
     ];
   }
 
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — LENGTH CATEGORIES AND BOOK COMPARISONS
+  ═══════════════════════════════════════════════════════════════════════ */
+
   findClosestBook(words) {
     return this.BOOK_COMPARISONS.reduce((prev, curr) =>
       Math.abs(curr.words - words) < Math.abs(prev.words - words) ? curr : prev
@@ -57,11 +69,15 @@ export class LengthDisplay {
   }
 
   getDynamicCategory(words) {
+    const tFlash   = this.cfg('thresholdFlash')   ?? 1000;
     const tShort   = this.cfg('thresholdShort')   ?? 17500;
     const tNovella = this.cfg('thresholdNovella') ?? 60000;
-    if (words <= tShort)   return { name: 'Short story', emoji: '⚡', slug: 'short' };
-    if (words <= tNovella) return { name: 'Novella',     emoji: '📄', slug: 'novella' };
-    return                        { name: 'Novel',       emoji: '📖', slug: 'novel' };
+    const tEpic    = this.cfg('thresholdEpic')    ?? 150000;
+    if (words <= tFlash)   return { name: 'Flash Fiction', emoji: '🔥', slug: 'flash' };
+    if (words <= tShort)   return { name: 'Short story',   emoji: '⚡', slug: 'short' };
+    if (words <= tNovella) return { name: 'Novella',       emoji: '📄', slug: 'novella' };
+    if (words <= tEpic)    return { name: 'Novel',         emoji: '📖', slug: 'novel' };
+    return                        { name: 'Epic Novel',    emoji: '📚', slug: 'epic' };
   }
 
   buildBadgeHTML(words) {
@@ -71,7 +87,7 @@ export class LengthDisplay {
     const cat     = this.getDynamicCategory(words);
     const book    = this.findClosestBook(words);
     const pctDiff = (Math.abs(words - book.words) / book.words * 100).toFixed(0);
-    const sym     = pctDiff < 5 ? '≈' : words > book.words ? '>' : '<';
+    const sym     = Number(pctDiff) < 5 ? '≈' : words > book.words ? '>' : '<';
 
     let html = `<span class="${NS}-wl-badge" title="${words.toLocaleString()} words | ${book.title}: ${book.words.toLocaleString()} words">`;
     if (cfg('showLengthCategory') !== false) {
@@ -88,6 +104,11 @@ export class LengthDisplay {
     return html;
   }
 
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — BADGE INJECTION
+  ═══════════════════════════════════════════════════════════════════════ */
+
   inject(ddEl) {
     if (ddEl.querySelector(`.${this.NS}-wl-badge`)) return;
     const words = this.parseWordCount(ddEl);
@@ -99,6 +120,11 @@ export class LengthDisplay {
     document.querySelectorAll('.blurb .stats dd.words, .index .stats dd.words')
       .forEach(ddEl => this.inject(ddEl));
   }
+
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE LIFECYCLE
+  ═══════════════════════════════════════════════════════════════════════ */
 
   setup() {
     const isWork = /^\/works\/\d+/.test(location.pathname);
@@ -116,15 +142,14 @@ export class LengthDisplay {
       } else {
         this.injectListings();
 
-        observer = new MutationObserver(mutations => {
+        observer = observe(document.body, { childList: true, subtree: true }, mutations => {
           mutations.forEach(mut => {
             mut.addedNodes.forEach(node => {
-              if (node.nodeType !== Node.ELEMENT_NODE) return;
+              if (!(node instanceof Element)) return;
               node.querySelectorAll?.('.stats dd.words').forEach(ddEl => this.inject(ddEl));
             });
           });
         });
-        observer.observe(document.body, { childList: true, subtree: true });
       }
     });
 

@@ -1,36 +1,32 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   AO3 Helper — Tag Highlighting Submodule
-   Submodule ID : tagHighlighting
-   Parent        : tagsDisplay
 
-   What it does:
-     On listing pages, highlights tags the user has marked as "favourites".
-     Favourite tags are stored in localStorage as an array of
-     { pattern, color } objects.  Colour is one of 6 presets defined
-     in the panel config.
+AO3 Helper - Tags Display › Tag Highlighting
 
-   Settings (from tagsDisplay config.js):
-     highlightFavoriteTags — master toggle (default true)
+Highlights exact favourite-tag matches with configurable colour presets and
+provides a right-click palette for adding, updating, or removing rules.
 
-   Storage:
-     ao3h:tagHighlights — JSON array [{ pattern: "Enemies to Lovers", color: "#fef08a" }, …]
+Notes
 
-   Quick-add:
-     Right-click a tag → small context menu "Highlight this tag" with colour swatches.
+- Rules are stored in local storage under `ao3h:tagHighlights`.
+- Fandom tags are included, and legacy fandom-highlight rules migrate once.
+- Injected AO3 Helper controls are excluded when extracting visible tag text.
+- This integration has not yet been tested against the live AO3 site.
 
-   Fusionné avec l'ex-fandomHighlighting (appearance/visual-preferences) —
-   shared.md, décision produit K4 : les deux modules surlignaient des tags
-   favoris par correspondance de texte, avec deux stockages et deux UX
-   (fandomHighlighting était console-only, sans entrée dans le panneau).
-   Le sélecteur couvre désormais aussi les tags de fandom, et les entrées de
-   l'ancienne clé ao3h:fandomHighlights sont importées une seule fois vers
-   ao3h:tagHighlights au premier démarrage après mise à jour.
-   ⚠️ Non testé en conditions réelles sur AO3.
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 const NS   = 'ao3h';
 
@@ -41,6 +37,20 @@ const STORAGE_KEY = `${NS}:tagHighlights`;
 // ── One-time migration from the retired fandomHighlighting submodule ─────
 const LEGACY_FANDOM_KEY      = `${NS}:fandomHighlights`;
 const LEGACY_MIGRATION_FLAG  = `${NS}:fandomHighlights:migratedToTagHighlights`;
+
+const PRESETS = [
+  { name: 'Yellow', bg: '#fef9c3', border: '#facc15' },
+  { name: 'Green',  bg: '#dcfce7', border: '#4ade80' },
+  { name: 'Blue',   bg: '#dbeafe', border: '#60a5fa' },
+  { name: 'Pink',   bg: '#fce7f3', border: '#f472b6' },
+  { name: 'Purple', bg: '#f3e8ff', border: '#c084fc' },
+  { name: 'Orange', bg: '#fff7ed', border: '#fb923c' },
+];
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — LEGACY FANDOM-HIGHLIGHT MIGRATION
+═══════════════════════════════════════════════════════════════════════════ */
 
 function nearestPresetIndex(hex) {
   const m = /^#?([0-9a-f]{6})$/i.exec((hex || '').trim());
@@ -78,15 +88,10 @@ function migrateLegacyFandomHighlights(rules) {
   return rules;
 }
 
-/* ── Colour presets (match panel config swatches) ──────────────────────── */
-const PRESETS = [
-  { name: 'Yellow', bg: '#fef9c3', border: '#facc15' },
-  { name: 'Green',  bg: '#dcfce7', border: '#4ade80' },
-  { name: 'Blue',   bg: '#dbeafe', border: '#60a5fa' },
-  { name: 'Pink',   bg: '#fce7f3', border: '#f472b6' },
-  { name: 'Purple', bg: '#f3e8ff', border: '#c084fc' },
-  { name: 'Orange', bg: '#fff7ed', border: '#fb923c' },
-];
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — RULE STORAGE AND TAG-TEXT EXTRACTION
+═══════════════════════════════════════════════════════════════════════════ */
 
 // Texte du tag SANS les éléments injectés par d'autres modules — sinon la
 // correspondance de motif échoue silencieusement dès qu'un autre module a
@@ -119,7 +124,10 @@ function saveRules(arr) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
 }
 
-/* ── Registration ────────────────────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
 
 register('tagHighlighting', {
   title: 'tag highlighting',
@@ -131,14 +139,16 @@ register('tagHighlighting', {
 
   let rules = migrateLegacyFandomHighlights(loadRules());
 
-  /* ── Build rule index (lower-cased pattern → preset index) ────────────── */
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — HIGHLIGHT APPLICATION
+  ═══════════════════════════════════════════════════════════════════════ */
+
   function ruleMap() {
     const m = new Map();
     rules.forEach(r => m.set(r.pattern.toLowerCase(), r.colorIdx ?? 0));
     return m;
   }
 
-  /* ── Apply highlights to all tags ─────────────────────────────────────── */
   function scan() {
     const map = ruleMap();
     if (!map.size) return;
@@ -163,7 +173,6 @@ register('tagHighlighting', {
     });
   }
 
-  /* ── Clear all highlights ─────────────────────────────────────────────── */
   function clearAll() {
     document.querySelectorAll(`[${HL_ATTR}]`).forEach(a => {
       a.style.background  = '';
@@ -175,7 +184,10 @@ register('tagHighlighting', {
     });
   }
 
-  /* ── Context menu for quick-add ───────────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — QUICK-ADD COLOUR MENU
+  ═══════════════════════════════════════════════════════════════════════ */
+
   let menu = null;
 
   function closeMenu() {
@@ -245,7 +257,6 @@ register('tagHighlighting', {
   document.addEventListener('contextmenu', onContextMenu);
   document.addEventListener('click', onClickOutside);
 
-  /* ── Observer + initial scan ───────────────────────────────────────────── */
   // document.body peut ne pas encore exister quand ce module boote (surtout sur
   // une grosse page) — observe() retombe sur document.documentElement si le
   // root est absent, mais celui-ci peut lui aussi manquer à document-start ;
@@ -260,7 +271,6 @@ register('tagHighlighting', {
     }, scan);
   });
 
-  /* ── Cleanup ──────────────────────────────────────────────────────────── */
   return () => {
     active = false;
     mo?.disconnect();

@@ -1,30 +1,37 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Tags Display Module Coordinator
+AO3 Helper — Tags Display Coordinator
+
     Module ID: tagsDisplay
     Display Name: Tags Display
     Tab: Browse
 
-    Submodules (Tier 2 — imported by this coordinator, self-register with
-    parent: 'tagsDisplay', then boot automatically through the cascade logic
-    built into core/lifecycle.js's bootOne()):
-        1. archiveWarningsDisplay — compact icons for archive warnings
-        2. autoHideNoiseTags      — hides self-deprecating freeform tags
-        3. compactMode            — collapses tags/summaries, expand on hover
-        4. tagHighlighting        — highlight favourite tags by pattern
-        5. tagsReordering         — drag-and-drop reorder tags on work pages
-        6. tagsVisibility         — truncate long tag lists on listing pages
+    Purpose
 
-    Settings (synced from panel → Flags before cascade):
-        autoHideNoiseTags    bool   → mod:tagsDisplay:autoHideNoiseTags
-        compactMode          bool   → mod:tagsDisplay:compactMode
-        highlightFavoriteTags bool  → mod:tagsDisplay:highlightFavoriteTags
-        highlightColor       int    → mod:tagsDisplay:highlightColor
-        archiveWarningsStyle string → mod:tagsDisplay:archiveWarningsStyle
-        maxTagsVisible       int    → mod:tagsDisplay:maxTagsVisible
+    Coordinates tag presentation features and synchronizes panel settings to
+    the flags consumed by its independently registered child modules.
 
-    Storage key: mod:tagsDisplay:settings (JSON, written by panel)
+    Submodules
 
+    - archiveWarningsDisplay.js: archive-warning presentation
+    - autoHideNoiseTags.js: automatic noise-tag hiding
+    - compactModeTags.js: compact tag and summary presentation
+    - tagHighlighting.js: configurable favourite-tag highlighting
+    - tagsReordering.js: drag-and-drop tag ordering on work pages
+    - tagsVisibility.js: long-list truncation on listing pages
+
+    Notes
+
+    - Settings are stored under mod:tagsDisplay:settings.
+    - Child modules register with parent `tagsDisplay` and lifecycle cascade
+      booting starts them after this coordinator completes.
+    - Settings must be synchronized before the children read their flags.
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
@@ -40,11 +47,15 @@ import './tagHighlighting.js';
 import './tagsReordering.js';
 import './tagsVisibility.js';
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
+
 css(styles, 'ao3h-tagsDisplay');
 
 const MOD  = 'tagsDisplay';
 
-// ── Defaults ──────────────────────────────────────────────────────────────
 const DEFAULTS = {
   autoHideNoiseTags    : false,
   compactMode          : false,
@@ -54,7 +65,11 @@ const DEFAULTS = {
   maxTagsVisible       : 0,
 };
 
-// ── Sync panel settings → flags ───────────────────────────────────────────
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURES
+═══════════════════════════════════════════════════════════════════════════ */
+
 async function syncFlags () {
   let saved = null;
   try {
@@ -80,9 +95,10 @@ async function syncFlags () {
   ]);
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// MODULE REGISTRATION
-// ══════════════════════════════════════════════════════════════════════════
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
 
 register(MOD, {
   title            : 'Tags Display',

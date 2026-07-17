@@ -1,45 +1,35 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Skip Works
+AO3 Helper — Skip Works
+
     Module ID: skipWorks
+    Display Name: Skip Works
+    Tab: Browse
 
-    - Feature: Hide button
-      - Option: Injects a "Hide" button on each work blurb in listing pages
+    Purpose
 
-    - Feature: Note prompt
-      - Option: Opens a centered picker on hide (quick-tag chips + freetext input)
-      - Option: Quick-tag chips are user-configurable and stored per-user
-      - Option: Modifier key (Shift/Alt/Ctrl) skips picker and re-uses stored note
+    Lets users hide listing-page works with an optional note, persist that
+    decision per AO3 user, and temporarily reveal, edit, or unhide each work.
 
-    - Feature: Hidden work display (two modes)
-      - Option: Grey block — replaces blurb with note + Show / Edit / Unhide buttons
-      - Option: Remove completely — blurb is hidden entirely (display:none)
-      - Option: Live re-apply when displayMode setting changes in the panel
+    Features
 
-    - Feature: Blurb actions
-      - Option: Show — temporary in-page reveal (not persisted, clears on reload)
-      - Option: Unhide — permanent (resets isHidden flag in DB)
-      - Option: Edit — re-opens picker to change the note while staying hidden
+    - Per-user IndexedDB persistence and legacy-data migrations
+    - Configurable quick-note picker and modifier-key quick hiding
+    - Dimmed placeholder or complete-removal display modes
+    - Temporary show, permanent unhide, and note editing actions
+    - JSON import/export and live handling of updated AO3 lists
 
-    - Feature: Persistence (IndexedDB, per-user)
-      - Option: Per-user database (ao3h-hiddenWorksDB-[username])
-      - Option: Re-applies hidden state on every page load
-      - Option: Observer re-applies Hide buttons when list updates (AJAX / pagination)
+    Notes
 
-    - Feature: Migrations
-      - Option: Legacy: localStorage (ao3HiddenWorks) → IndexedDB
-      - Option: Shared DB (ao3h-hiddenWorksDB) → per-user DB
+    - Quick-note presets use per-user local storage.
+    - Temporary reveals use tab-scoped session storage and reset on cleanup.
+    - Panel rendering lives in lib/ui/panel/configs/skipWorks-config.js.
 
-    - Feature: Export / Import
-      - Option: Export hidden works list as JSON file
-      - Option: Import hidden works from JSON file
+═══════════════════════════════════════════════════════════════════════════ */
 
-    - Feature: Config panel (skipWorks-config.js)
-      - Option: Display mode toggle (grey block / remove)
-      - Option: Quick Note Presets manager (add / remove chips)
-      - Option: Skipped Works List with Unhide per entry
-      - Option: Clear All, Export (JSON), Import (JSON) buttons
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
@@ -52,6 +42,11 @@ import { EV_SETTINGS_CHANGED } from '../../../../lib/utils/event-names.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './skipWorks.css?inline';
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
+
 css(styles, 'ao3h-skipWorks');
 
 const W  = getGlobalWindow();
@@ -60,7 +55,7 @@ const NS = 'ao3h';
 const MOD   = 'skipWorks';
 const LOG   = `[AO3H][${MOD}]`;
 
-// ── Defaults (required for audit tooling) ──────────────────────────
+// Required for audit tooling.
 const DEFAULTS = {
   displayMode: 'dim',
 };
@@ -74,13 +69,17 @@ const CURRENT_USER = detectUser();
 const DB_NAME = `ao3h-hiddenWorksDB-${CURRENT_USER}`; // Per-user database
 const STORE   = 'works';
 
-/* ----------------------------- IndexedDB ------------------------------- */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — HIDDEN-WORK PERSISTENCE
+═══════════════════════════════════════════════════════════════════════════ */
+
 let db;
 function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, 1);
     req.onupgradeneeded = (event) => {
-      const dbx = event.target.result;
+      const dbx = req.result;
       if (!dbx.objectStoreNames.contains(STORE)) {
         const objectStore = dbx.createObjectStore(STORE, { keyPath: 'workId' });
         objectStore.createIndex('reason', 'reason', { unique: false });
@@ -88,11 +87,11 @@ function openDB() {
       }
     };
     req.onsuccess = (e) => {
-      db = e.target.result;
+      db = req.result;
       db.onversionchange = () => { try { db.close(); } catch {} };
       resolve(db);
     };
-    req.onerror = (e) => reject(e.target.error);
+    req.onerror = () => reject(req.error);
   });
 }
 function getAllWorks() {
@@ -120,7 +119,6 @@ function putWork(rec) {
   });
 }
 
-/* ----------------------------- TEMP-SHOW ------------------------------- */
 // Per-path allowlist of works temporarily revealed (so Hide can instantly re-hide with the saved note).
 // Note: sessionStorage is per-browser-tab, not per-user, so we keep it as-is (temporary data)
 let tempShow = new Set();
@@ -140,7 +138,6 @@ function clearTempShow(){
   try{ sessionStorage.removeItem(tempKey()); }catch{}
 }
 
-/* ----------------------------- Utilities -------------------------------- */
 // jQuery is available on AO3; use the page copy.
 function $(sel, root){ return (W.jQuery || W.$)(sel, root); }
 
@@ -152,7 +149,11 @@ function workIdFromBlurb($blurb) {
   return href || ($blurb.find('a[href*="/works/"]').first().attr('href') || '').replace(/(#.*|\?.*)$/, '');
 }
 
-/* --------------------------- Quick-note picker -------------------------- */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — QUICK-NOTE PICKER
+═══════════════════════════════════════════════════════════════════════════ */
+
 const USER_QUICK_TAGS_DEFAULT = [
   'crossover', 'sequel', 'bad summary', 'parent/dad', 'unfinished',
   'growing up together', 'not sterek focused', '1rst pov', 'established', 'always-a-girl', 'remember reading','implied'
@@ -233,7 +234,11 @@ async function pickReasonCenteredMinimal(seed=''){
   return p;
 }
 
-/* -------------------------- Blurb UI helpers ---------------------------- */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — WORK HIDING AND BLURB ACTIONS
+═══════════════════════════════════════════════════════════════════════════ */
+
 function ensureHideButton($blurb) {
   if ($blurb.find(`.${NS}-m5-hide-btn`).length) return;
   // If hideByTags has wrapped this blurb, find .header inside .ao3h-cut
@@ -343,7 +348,11 @@ function showWork(blurbEl) {
   $blurb.find(`.${NS}-m5-hide-btn`).show();
 }
 
-/* ----------------------------- Import/Export ---------------------------- */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — IMPORT, EXPORT, AND PANEL BRIDGE
+═══════════════════════════════════════════════════════════════════════════ */
+
 async function exportHiddenWorks() {
   try {
     if (!db) await openDB();
@@ -439,7 +448,11 @@ function removeBridge(){
   if (W.ao3hTriggerHiddenWorksImport === triggerHiddenWorksImport) delete W.ao3hTriggerHiddenWorksImport;
 }
 
-/* ------------------------------- Lifecycle ------------------------------ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — LEGACY DATA MIGRATIONS
+═══════════════════════════════════════════════════════════════════════════ */
+
 // Migration: old shared DB -> new per-user DB
 async function migrateFromSharedDB() {
   try {
@@ -453,8 +466,8 @@ async function migrateFromSharedDB() {
     // Open old DB
     const oldDB = await new Promise((resolve, reject) => {
       const req = indexedDB.open(oldDBName, 1);
-      req.onsuccess = (e) => resolve(e.target.result);
-      req.onerror = (e) => reject(e.target.error);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
     });
 
     // Read all works from old DB
@@ -507,6 +520,11 @@ async function transferFromLocalStorage() {
     localStorage.removeItem('ao3HiddenWorks');
   } catch (e) { console.warn(LOG, 'legacy transfer skipped', e); }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — LIST SYNCHRONIZATION AND LIVE DISPLAY MODE
+═══════════════════════════════════════════════════════════════════════════ */
 
 async function initialPass() {
   const $ = (W.jQuery || W.$);
@@ -601,9 +619,6 @@ function observeList(){
   }, 300));
 }
 
-// Config panel rendering lives in lib/ui/panel/configs/skipWorks-config.js
-
-// ── Live re-apply when displayMode changes in panel ──────────────────────
 async function reapplyDisplayMode() {
   const mode = getSetting('displayMode', 'block');
   if (mode === 'remove') {
@@ -637,6 +652,11 @@ function onSettingsChanged(e) {
     reapplyDisplayMode();
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
 
 async function init() {
   // skipWorks runs on all AO3 listing pages (no route guard)

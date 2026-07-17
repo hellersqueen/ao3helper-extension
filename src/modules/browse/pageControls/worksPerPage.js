@@ -1,12 +1,39 @@
-// AO3 Helper — Works Per Page Submodule
-// Submodule ID: pageControls/worksPerPage
-// Role: density selector (20 / 50 / 100 works per page), memorized in localStorage
+/* ═══════════════════════════════════════════════════════════════════════════
+
+AO3 Helper - Page Controls › Works Per Page
+
+Persists a preferred listing density, applies it when AO3 has no explicit
+override, and adds a selector for 20, 50, or 100 works per page.
+
+Notes
+
+- AO3 represents listing density with the `items_per_page` query parameter.
+- Changing density resets pagination to the first page.
+- Explicit URL values take precedence over the saved preference on page load.
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
+═══════════════════════════════════════════════════════════════════════════ */
 
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 const SK_WPP      = 'ao3h:pc:worksPerPage';
 const VALID_WPP   = [20, 50, 100];
 const DEFAULT_WPP = 20;
+const WIDGET_ID   = 'ao3h-wpp-selector';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — SAVED LISTING DENSITY
+═══════════════════════════════════════════════════════════════════════════ */
 
 // AO3 uses ?items_per_page=N
 function buildURL (n) {
@@ -29,8 +56,10 @@ function applyOnLoad () {
   if (saved !== DEFAULT_WPP) location.replace(buildURL(saved));
 }
 
-// ── Widget ────────────────────────────────────────────────────────────────
-const WIDGET_ID = 'ao3h-wpp-selector';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — WORKS-PER-PAGE SELECTOR
+═══════════════════════════════════════════════════════════════════════════ */
 
 function buildWidget () {
   const current = parseInt(new URL(location.href).searchParams.get('items_per_page') || '20', 10);
@@ -49,7 +78,7 @@ function buildWidget () {
   VALID_WPP.forEach(n => {
     const btn       = document.createElement('a');
     btn.className   = `ao3h-wpp-btn${n === active ? ' active' : ''}`;
-    btn.textContent = n;
+    btn.textContent = String(n);
     btn.href        = buildURL(n);
     btn.title       = `Show ${n} works per page`;
     btn.addEventListener('click', e => {
@@ -63,7 +92,11 @@ function buildWidget () {
   return wrap;
 }
 
-// ── Class ─────────────────────────────────────────────────────────────────
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
+
 export class WorksPerPage {
   constructor (opts) {
     this._opts   = opts || {};

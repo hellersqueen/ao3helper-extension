@@ -1,21 +1,29 @@
-
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Hide By Tags Module Coordinator
+AO3 Helper — Hide By Tags Coordinator
+
     Module ID: hideByTags
     Display Name: Hide By Tags
     Tab: Browse
 
-    Submodules (imported directly as ES modules):
-        1. hiddenTags          → ./hiddenTags.js
-        2. nopeWords           → ./nopeWords.js
-        3. whitelistExceptions → ./whitelistExceptions.js
+    Purpose
+        Coordinates tag hiding, text-based NOPE filters, whitelist exceptions,
+        session overrides, management interfaces, and dynamic list processing.
 
-    Storage keys:
-        ao3h:hideByTags:list       — tag blacklist
-        ao3h:hideByTags:whitelist  — whitelist tags
-        ao3h:hideByTags:nope       — NOPE words
+    Submodules
+        hiddenTags.js          — Stores hidden tags and folds matching works.
+        nopeWords.js           — Matches configured words in selected text areas.
+        whitelistExceptions.js — Rescues or annotates works with allowed tags.
 
+    Notes
+        Per-user storage is shared across all three submodules. Notes events and
+        live settings changes trigger reprocessing, while dynamic blurbs are
+        handled through a debounced observer.
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
@@ -32,6 +40,11 @@ import styles from './hideByTags.css?inline';
 import { HiddenTags } from './hiddenTags.js';
 import { NopeWords } from './nopeWords.js';
 import { WhitelistExceptions } from './whitelistExceptions.js';
+import { countHiddenBlurbs, renderHiddenCounter } from './hiddenCounter.js';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 css(styles, 'ao3h-hideByTags');
 
@@ -41,11 +54,6 @@ const W = getGlobalWindow();
 // reproduced directly via imports rather than going through window.AO3H.store.
 const wrappedStorage = wrapStorageForUser(Storage);
 const NS          = 'ao3h';
-// KeyboardNavigation (lib/ui/keyboard.js) isn't migrated to ES Modules yet —
-// kept as a global bridge read (Phase 18: don't migrate a dependency whose
-// target isn't ready).
-// Etape 318 : lecture window conservee volontairement — lib/ui/keyboard.js est
-// hors graphe Vite (les appels sont gardes, no-op cote Vite). Resolu en Phase 27.
 const KeyboardNav = W.AO3H_Common?.KeyboardNavigation || {};
 const UserLS      = UserLocalStorage;
 
@@ -60,7 +68,30 @@ let hiddenTagsInst = null;
 let nopeWordsInst  = null;
 let whitelistInst  = null;
 
-// ── Notes integration ─────────────────────────────────────────────────────
+const MOD = 'hideByTags';
+
+const DEFAULTS = {
+  hideMode:              'hide',
+  whitelistEnabled:      true,
+  showWhitelistBadge:    true,
+  whitelistMode:         'show',
+  textFilterEnabled:     true,
+  nopeHideMode:          'hide',
+  nopeTargetSummaries:   true,
+  nopeTargetNotes:       true,
+  nopeTargetTitles:      false,
+  showHiddenCounter:     true,
+};
+
+function loadSettings () { return loadModuleSettings(MOD); }
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURES
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Notes integration ─────────────────────────────────────────────────── */
 const hiddenByNotes   = new Set();
 // (session-only override: set data-wl-override="1" on the blurb directly)
 
@@ -84,26 +115,18 @@ function patchIsHiddenByNotes () {
   };
 }
 
-// ── Settings ─────────────────────────────────────────────────────────────────
+/* ── List processing ───────────────────────────────────────────────────── */
 
-const MOD = 'hideByTags';
+let counterEl = null;
 
-// ── Defaults (required for audit tooling) ────────────────────────────
-const DEFAULTS = {
-  hideMode:              'hide',
-  whitelistEnabled:      true,
-  showWhitelistBadge:    true,
-  whitelistMode:         'show',
-  textFilterEnabled:     true,
-  nopeHideMode:          'hide',
-  nopeTargetSummaries:   true,
-  nopeTargetNotes:       true,
-  nopeTargetTitles:      false,
-};
-
-function loadSettings () { return loadModuleSettings(MOD); }
-
-// ── Processing ─────────────────────────────────────────────────────────────
+function updateHiddenCounter (s) {
+  const count = countHiddenBlurbs(hiddenTagsInst.getWorkBlurbs(), NS);
+  counterEl = renderHiddenCounter({
+    doc: document, NS, count,
+    enabled: s.showHiddenCounter ?? true,
+    el: counterEl,
+  });
+}
 
 /** Prepend (or refresh) a muted reason strip on a dimmed blurb. */
 function applyDimStrip (blurb, prefix, tag) {
@@ -331,6 +354,8 @@ async function processList () {
       hiddenTagsInst.wrapWork(blurb, reasons, buildRemoveCbs);
     }
   });
+
+  updateHiddenCounter(s);
 }
 
 function run () {
@@ -339,7 +364,7 @@ function run () {
   processList();
 }
 
-// ── Live region ───────────────────────────────────────────────────────────
+/* ── Feedback and manager bridges ──────────────────────────────────────── */
 
 let liveRegion = null;
 
@@ -397,7 +422,11 @@ function onSettingsChanged (e) {
   if (e?.detail?.moduleId === MOD && enabled) processList();
 }
 
-// ── Module registration ───────────────────────────────────────────────────
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
 
 register('hideByTags', { title: 'Hide By Tags', enabledByDefault: true }, async function init () {
   active = true;
@@ -505,6 +534,8 @@ function cleanup () {
   liveRegion?.remove?.();
   liveRegion = null;
   hiddenByNotes.clear();
+  counterEl?.remove();
+  counterEl = null;
 }
 
 console.log('[AO3H][hideByTags] registered');

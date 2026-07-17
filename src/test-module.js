@@ -47,39 +47,39 @@ import './modules/browse/skipWorks/skipWorks.js';
 // import './modules/browse/workLength/_workLength.js';
 
 // ── Explore ──────────────────────────────────────────────────────────────
-// import './modules/explore/fic-peek/ficPeek.js';
-// import './modules/explore/pov-tracker/_povTracker.js';
-// import './modules/explore/search-enhancer/_searchEnhancer.js';
-// import './modules/explore/similar-fics/similarFics.js';
-// import './modules/explore/surprise-me/surpriseMe.js';
-// import './modules/explore/trope-games/_tropeGames.js';
+// import './modules/explore/ficPeek/ficPeek.js';
+// import './modules/explore/povTracker/_povTracker.js';
+// import './modules/explore/searchEnhancer/_searchEnhancer.js';
+// import './modules/explore/similarFics/similarFics.js';
+// import './modules/explore/surpriseMe/surpriseMe.js';
+// import './modules/explore/tropeGames/_tropeGames.js';
 
 // ── Library ──────────────────────────────────────────────────────────────
-// import './modules/library/activity-panel/_activityPanel.js';
-// import './modules/library/bookmark-vault/_bookmarkVault.js';
-// import './modules/library/fanfic-binge-mode/_fanficBingeMode.js';
-// import './modules/library/fic-appreciation/_ficAppreciation.js';
-// import './modules/library/later-shelf/_laterShelf.js';
-// import './modules/library/notification-center/notificationCenter.js';
-// import './modules/library/reading-dashboard/readingDashboard.js';
-// import './modules/library/reading-timeline/_readingTimeline.js';
+// import './modules/library/activityPanel/_activityPanel.js';
+// import './modules/library/bookmarkVault/_bookmarkVault.js';
+// import './modules/library/fanficBingeMode/_fanficBingeMode.js';
+// import './modules/library/ficAppreciation/_ficAppreciation.js';
+// import './modules/library/laterShelf/_laterShelf.js';
+// import './modules/library/notificationCenter/notificationCenter.js';
+// import './modules/library/readingDashboard/readingDashboard.js';
+// import './modules/library/readingTimeline/_readingTimeline.js';
 
 // ── Navigate ─────────────────────────────────────────────────────────────
-// import './modules/navigate/comment-kit/_commentKit.js';
-// import './modules/navigate/fic-actions/ficActions.js';
-// import './modules/navigate/keyboard-shortcuts/keyboardShortcuts.js';
-// import './modules/navigate/main-navigation/_mainNavigation.js';
-// import './modules/navigate/series-helper/_seriesHelper.js';
-// import './modules/navigate/user-relationships/_userRelationships.js';
+// import './modules/navigate/commentKit/_commentKit.js';
+// import './modules/navigate/ficActions/ficActions.js';
+// import './modules/navigate/keyboardShortcuts/keyboardShortcuts.js';
+// import './modules/navigate/mainNavigation/_mainNavigation.js';
+// import './modules/navigate/seriesHelper/_seriesHelper.js';
+// import './modules/navigate/userRelationships/_userRelationships.js';
 
 // ── Reading ──────────────────────────────────────────────────────────────
-// import './modules/reading/chapter-navigation/_chapterNavigation.js';
-// import './modules/reading/collapse-author-notes/collapseAuthorNotes.js';
-// import './modules/reading/instant-footnotes/instantFootnotes.js';
-// import './modules/reading/reading-formatter/_readingFormatter.js';
-// import './modules/reading/reading-tracker/_readingTracker.js';
-// import './modules/reading/text-to-speech/_textToSpeech.js';
-// import './modules/reading/word-swap/wordSwap.js';
+// import './modules/reading/chapterNavigation/_chapterNavigation.js';
+// import './modules/reading/collapseAuthorNotes/collapseAuthorNotes.js';
+// import './modules/reading/instantFootnotes/instantFootnotes.js';
+// import './modules/reading/readingFormatter/_readingFormatter.js';
+// import './modules/reading/readingTracker/_readingTracker.js';
+// import './modules/reading/textToSpeech/_textToSpeech.js';
+// import './modules/reading/wordSwap/wordSwap.js';
 
 init();
 initMenu();

@@ -1,23 +1,32 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Work Length Module Coordinator
+AO3 Helper — Work Length Coordinator
+
     Module ID: workLength
     Display Name: Work Length
     Tab: Browse
 
-    Submodules (imported directly as ES modules):
-        1. ./lengthDisplay.js -- badges, book comparisons, page count
-        2. ./readingTime.js   -- time estimation (WPM), per-chapter time, listing time
+    Purpose
 
-    Panel config keys:
-        showPageEquiv       -- show '~X pages' badge
-        readSpeed           -- slow | average | fast | custom
-        customWPM           -- number (used when readSpeed === 'custom')
-        showEstimate        -- master toggle for reading time
-        estimateFicPage     -- show time on /works/:id pages
-        estimatePerChapter  -- show per-chapter time
-        estimateListings    -- show time on listing blurbs
+    Coordinates word-count presentation and reading-time estimates across AO3
+    work pages, chapters, and listing blurbs.
 
+    Submodules
+
+    - lengthDisplay.js: page equivalents and length-category badges
+    - readingTime.js: configurable reading-time estimates
+
+    Notes
+
+    - Both submodules share one snapshot of the Work Length settings.
+    - Each submodule returns its own cleanup callback and exposes reset logic.
+    - Reading-speed presets may be replaced by a custom words-per-minute value.
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
@@ -27,6 +36,11 @@ import styles from './workLength.css?inline';
 
 import { LengthDisplay } from './lengthDisplay.js';
 import { ReadingTime } from './readingTime.js';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 css(styles, 'ao3h-workLength');
 
@@ -46,7 +60,17 @@ const DEFAULTS = {
   thresholdNovella:   60000,
 };
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURES
+═══════════════════════════════════════════════════════════════════════════ */
+
 function loadSettings() { return loadModuleSettings(MOD); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
 
 register(MOD, { title: 'Work Length', enabledByDefault: false }, async function init() {
   const saved = loadSettings();

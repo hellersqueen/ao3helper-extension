@@ -1,37 +1,36 @@
-
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Filter Manager Module Coordinator
+AO3 Helper — Filter Manager Coordinator
+
     Module ID: filterManager
     Display Name: Filter Manager
     Tab: Browse
 
-    Submodules (imported directly as ES modules):
-        1. presetManagement   → ./presetManagement.js
-        2. languageBadges     → ./languageBadges.js
-        3. filterWarnings     → ./filterWarnings.js
-        4. userHistoryFilters → ./userHistoryFilters.js
-        5. worksFilterManager → ./worksFilterManager.js
+    Purpose
+        Coordinates filter presets, language badges, archive-warning alerts,
+        history-based hiding, quick filters, and shared tag bundles.
 
-    Storage keys:
-        filterManager:presets     — saved preset list
-        filterManager:bundles     — custom tag bundles
-        filterManager:lastPreset  — { [fandom]: presetId }
+    Submodules
+        presetManagement.js   — Saves, applies, previews, and transfers presets.
+        languageBadges.js     — Displays and activates language filters.
+        filterWarnings.js     — Warns about excluded archive warnings.
+        userHistoryFilters.js — Hides works using user interaction history.
+        worksFilterManager.js — Applies language, one-shot, and crossover filters.
 
-    Public API (AO3H.filterManager):
-        getBundleFor(tag)   → string[]
-        getAllBundles()      → bundle[]
-        getPresets()        → preset[]
+    Notes
+        The public preset and bundle API remains available off listing pages.
+        Dynamic work blurbs are reprocessed through a managed observer.
 
-    Dependencies: hideByTags (⇄), ficAppreciation, bookmarkVault,
-                  laterShelf, readingTracker
+═══════════════════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Storage } from '../../../../lib/storage/index.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, observe } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './filterManager.css?inline';
 
@@ -41,15 +40,15 @@ import { FilterWarnings } from './filterWarnings.js';
 import { UserHistoryFilters } from './userHistoryFilters.js';
 import { WorksFilterManager } from './worksFilterManager.js';
 
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
+
 css(styles, 'ao3h-filterManager');
 
 const W    = getGlobalWindow();
-// AO3H (global) reste nécessaire : les échanges croisés avec hideByTags,
-// ficAppreciation, bookmarkVault, laterShelf et readingTracker (tous migrés
-// depuis, Phases 19-23) passent toujours par les bridges window — contrat
-// conservé jusqu'à leur suppression en Phase 26 — ainsi que l'exposition de
-// l'API publique window.AO3H.filterManager.
-// Étape 318 : AO3H importé du core/lifecycle (avant : capture window.AO3H).
 const NS   = 'ao3h';
 const MOD  = 'filterManager';
 const LOG  = `[AO3H][${MOD}]`;
@@ -129,13 +128,13 @@ function storeSet (key, value) {
   } catch {}
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// TAG BUNDLES — shared across presetManagement and hideByTags
-// Bundles de variantes orthographiques par trope, forme différente de
-// lib/ao3/constants.js TROPE_NAMES (liste plate) — voir ce fichier pour la
-// liste de référence des noms de tropes du projet ; garder les `name`
-// ci-dessous alignés avec elle.
-// ══════════════════════════════════════════════════════════════════════════
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURES
+═══════════════════════════════════════════════════════════════════════════ */
+
+// Tag bundles are shared by presetManagement and hideByTags.
 
 const BUILTIN_BUNDLES = [
   { id: 'slow-burn',         name: 'Slow Burn',
@@ -186,9 +185,10 @@ function exposePublicApi (presetMgmt) {
 }
 
 
-// ══════════════════════════════════════════════════════════════════════════
-// MODULE REGISTRATION
-// ══════════════════════════════════════════════════════════════════════════
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
 
 register(MOD, {
   title: 'Filter Manager',
@@ -279,7 +279,7 @@ register(MOD, {
 
   // ── MutationObserver ─────────────────────────────────────────────────
   const root     = document.querySelector('#main') || document.body;
-  const observer = new MutationObserver((mutations) => {
+  const observer = observe(root, { childList: true, subtree: true }, (mutations) => {
     for (const mut of mutations) {
       for (const node of mut.addedNodes) {
         if (!(node instanceof Element)) continue;
@@ -293,7 +293,6 @@ register(MOD, {
       }
     }
   });
-  observer.observe(root, { childList: true, subtree: true });
 
   console.log(LOG, 'ready');
 

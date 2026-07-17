@@ -1,30 +1,37 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Tags Visibility Submodule
-    Submodule ID: tagsVisibility
-    Parent: tagsDisplay
-    Display Name: Tags Visibility
+AO3 Helper - Tags Display › Tags Visibility
 
-    On listing pages, truncates long tag lists to a configurable maximum
-    (default 5). Hidden tags are the lowest-priority ones first
-    (freeforms before characters, characters before relationships, etc.).
-    A "+N more tags" button reveals them; "– Show less" collapses again.
+Truncates long listing-page tag groups by priority and adds controls for
+revealing or collapsing the hidden tags within each work blurb.
 
-    Features:
-      - tagsVisibility  : master toggle (default: false)
-      - maxTagsVisible  : number of tags to show per blurb (default: 5)
+Notes
 
-    MutationObserver: watches #main for newly added blurbs.
+- Warning and relationship tags are retained ahead of lower-priority tags.
+- A maximum of zero means that all tags remain visible.
+- Newly added listing blurbs are processed through a mutation observer.
 
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
+import { observe } from '../../../../lib/utils/index.js';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 const MOD  = 'tagsVisibility';
 const NS   = 'ao3h';
 
 const DEFAULT_DENSITY = 5;
+const PRIORITY_CLASSES = ['warnings', 'relationships', 'characters', 'freeforms'];
 
 function cfg (key, fallback) {
   try {
@@ -34,10 +41,13 @@ function cfg (key, fallback) {
   return fallback;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — PRIORITIZED TAG TRUNCATION
+═══════════════════════════════════════════════════════════════════════════ */
+
 // Priority for smart truncation: lower index = higher priority (kept first)
 // AO3 uses plural class names directly on the li element
-const PRIORITY_CLASSES = ['warnings', 'relationships', 'characters', 'freeforms'];
-
 function isListingPage () {
   return !!document.querySelector('li.work.blurb, li.bookmark.blurb');
 }
@@ -90,7 +100,7 @@ function applyDensity (blurb, density) {
 
   // Insert after the last still-visible tag <li>
   const visibleTags = allTags.filter(li => !li.dataset.ao3hHidden);
-  const anchor = visibleTags.at(-1);
+  const anchor = visibleTags[visibleTags.length - 1];
   if (anchor) {
     anchor.insertAdjacentElement('afterend', showMoreBtn);
   } else {
@@ -108,6 +118,11 @@ function processBlurbs (blurbs, density) {
   });
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
+
 register(MOD, {
   title:            'Tags Visibility',
   parent:           'tagsDisplay',
@@ -121,10 +136,11 @@ register(MOD, {
 
   processBlurbs(document.querySelectorAll('li.work.blurb, li.bookmark.blurb'), density);
 
-  const obs = new MutationObserver(mutations => {
+  const main = document.querySelector('#main');
+  const obs = main ? observe(main, { childList: true, subtree: false }, mutations => {
     for (const m of mutations) {
       for (const node of m.addedNodes) {
-        if (node.nodeType !== 1) continue;
+        if (!(node instanceof Element)) continue;
         if (node.matches?.('li.work.blurb, li.bookmark.blurb')) {
           processBlurbs([node], density);
         } else {
@@ -133,13 +149,10 @@ register(MOD, {
         }
       }
     }
-  });
-
-  const main = document.querySelector('#main');
-  if (main) obs.observe(main, { childList: true, subtree: false });
+  }) : null;
 
   return () => {
-    obs.disconnect();
+    obs?.disconnect();
     document.querySelectorAll(`.${NS}-show-more-tags, .${NS}-show-less-tags`)
       .forEach(el => el.remove());
     document.querySelectorAll('[data-ao3h-hidden]').forEach(li => {

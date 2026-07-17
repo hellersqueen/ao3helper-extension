@@ -1,25 +1,27 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Language Badges Submodule
-    Submodule ID: languageBadges
-    Parent Module: filterManager
+AO3 Helper - Filter Manager › Language Badges
 
-    - Feature: Language badge injection
-      - Option: Appends a flag + language name badge after each work blurb heading
-      - Option: Supports 20 languages with emoji flag mapping
-      - Option: Only injects when multiple distinct languages appear on the page
-      - Option: Only injects once per blurb (guarded by data-fm-lang attribute)
+Purpose
+    Adds flag and language labels to multilingual work listings and optionally
+    turns each label into a language-filter control.
 
-    - Feature: Click-to-filter
-      - Option: Badge acts as a button when clickBadgeToFilter is enabled
-      - Option: Click navigates to current URL filtered by work_search[language_id] (ISO 639-1 code)
-      - Option: Keyboard accessible (Enter key triggers filter)
+Notes
+    Badges appear only when the setting is enabled and multiple languages are
+    present. Interactive badges support both pointer clicks and the Enter key.
 
-    - Feature: Cleanup
-      - Option: Removes all injected badges and resets data-fm-lang markers
+═══════════════════════════════════════════════════════════════════════════ */
 
-    Dependencies injected via constructor: NS, cfg
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
+═══════════════════════════════════════════════════════════════════════════ */
 
+// This submodule has no direct imports.
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const LANG_FLAGS = {
@@ -43,6 +45,11 @@ export class LanguageBadges {
     this.NS  = NS;
     this.cfg = cfg;
   }
+
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — LANGUAGE BADGES AND FILTERING
+  ═════════════════════════════════════════════════════════════════════════ */
 
   _langFromBlurb (blurb) {
     return blurb.querySelector('dd.language')?.textContent.trim() || null;
@@ -87,6 +94,11 @@ export class LanguageBadges {
       blurb.querySelector('h4.heading')?.after(badge);
     }
   }
+
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE LIFECYCLE
+  ═════════════════════════════════════════════════════════════════════════ */
 
   cleanup () {
     const NS = this.NS;

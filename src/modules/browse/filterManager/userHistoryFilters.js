@@ -1,33 +1,29 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - User History Filters Submodule
-    Submodule ID: userHistoryFilters
-    Parent Module: filterManager
+AO3 Helper - Filter Manager › User History Filters
 
-    - Feature: History-based work hiding
-      - Option: Hide works I have kudosed (hideKudosed) — reads ficAppreciation kudosTracker API
-      - Option: Hide works I am subscribed to (hideSubscribed) — detects AO3 native subscription delete button
-      - Option: Hide bookmarked works (hideBookmarked) — reads bookmarkVault API
-      - Option: Hide works in Marked for Later (hideMFL) — reads laterShelf API
-      - Option: Hide works belonging to a fully-read series (hideReadSeries) — reads readingTracker API
-      - Option: Guard against re-processing blurbs (data-fm-history marker)
+Purpose
+    Hides works based on kudos, subscriptions, bookmarks, Later Shelf entries,
+    and fully read series, with an optional hidden-work counter.
 
-    - Feature: Hidden count display
-      - Option: Shows "N works hidden by history filters" above the listing (showHiddenCount)
-      - Option: Hides the counter when count is zero
-
-    - Feature: Cleanup
-      - Option: Removes hidden class and all data markers from all processed blurbs
-
-    Dependencies injected via constructor: NS, cfg, W, AO3H
-    Note: W/AO3H sont injectes par _filterManager (qui importe AO3H du core depuis
-    l'etape 318). Les lectures window.AO3H_Modules.* et modules.getService restent
-    des no-op herites du legacy (E3, jamais poses nulle part) — fallbacks DOM/service
-    utilises, comportement identique. Documente etapes 307/318 ; hors scope migration.
+Notes
+    Cross-module status is read through injected AO3 Helper bridges; native AO3
+    subscription controls provide the subscription fallback. Processed blurbs
+    are marked to prevent duplicate work during rescans.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
+═══════════════════════════════════════════════════════════════════════════ */
+
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 export class UserHistoryFilters {
   constructor ({ NS, cfg, W, AO3H }) {
@@ -36,6 +32,11 @@ export class UserHistoryFilters {
     this._W   = W;
     this._AO3H = AO3H;
   }
+
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — HISTORY MATCHING
+  ═════════════════════════════════════════════════════════════════════════ */
 
   _workIdFromBlurb (blurb) {
     return extractWorkIdFromBlurb(blurb);
@@ -82,6 +83,11 @@ export class UserHistoryFilters {
     return reasons;
   }
 
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — WORK VISIBILITY AND COUNT
+  ═════════════════════════════════════════════════════════════════════════ */
+
   apply (blurbs, hiddenCountEl) {
     const NS = this.NS;
     let count = 0;
@@ -113,6 +119,11 @@ export class UserHistoryFilters {
       }
     }
   }
+
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE LIFECYCLE
+  ═════════════════════════════════════════════════════════════════════════ */
 
   cleanup () {
     const NS = this.NS;

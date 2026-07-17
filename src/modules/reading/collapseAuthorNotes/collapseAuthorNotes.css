@@ -1,0 +1,71 @@
+/* ── Collapse Author Notes ───────────────────────────────────────────────── */
+
+.ao3h-notes-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #333;
+  opacity: 0.75;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+  font-size: 10px;
+  vertical-align: text-bottom;
+  transition: opacity 0.15s ease;
+}
+
+.ao3h-notes-toggle:hover {
+  opacity: 1;
+}
+
+.ao3h-notes-toggle:focus-visible {
+  opacity: 1;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.ao3h-notes-toggle-wrap {
+  display: inline-flex;
+  margin-left: 8px;
+}
+
+.ao3h-notes-heading {
+  position: relative;
+  padding-right: 28px;
+}
+
+.ao3h-notes-heading > .ao3h-notes-toggle-wrap {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  margin-left: 0;
+  transform: translateY(-50%);
+}
+
+.ao3h-notes-collapsed {
+  display: none !important;
+}
+
+.ao3h-banner-hidden {
+  display: none !important;
+}
+
+.ao3h-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

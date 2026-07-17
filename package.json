@@ -10,6 +10,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "node tests/e2e/menu-boot.mjs",
     "typecheck": "tsc --noEmit",
     "docs": "echo \"📖 Documentation disponible dans le dossier docs/\"",
     "help": "echo \"Commands: npm run build (userscript Vite), npm run dev (build watch), npm test (vitest), npm run docs (documentation)\""

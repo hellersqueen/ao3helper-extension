@@ -1,25 +1,31 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Reading Time Submodule
-    Submodule ID: readingTime
-    Display Name: Reading Time
-    Parent Module: workLength
+AO3 Helper - Work Length › Reading Time
 
-    Calculates and displays reading time estimates based on WPM settings.
-    Shows time on work pages, per-chapter, and optionally on listings.
+Calculates configurable reading-time estimates and displays them on work-page
+statistics, individual chapters, and optionally listing blurbs.
 
-    Config keys read:
-        - showEstimate        → master toggle
-        - estimateFicPage     → show on work page
-        - estimatePerChapter  → show per chapter
-        - estimateListings    → show on listing blurbs
-        - readSpeed           → 'slow' | 'average' | 'fast' | 'custom'
-        - customWPM           → number (when readSpeed = 'custom')
+Notes
+
+- Slow, average, and fast presets map to fixed words-per-minute values.
+- A custom speed falls back to 250 WPM when invalid.
+- Chapter estimates share the common chapter badge with other modules.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
+═══════════════════════════════════════════════════════════════════════════ */
+
 import { upsertChapterBadgePart, removeChapterBadgePartsByKey } from '../../../../lib/ui/chapter-badge.js';
-import { onReady } from '../../../../lib/utils/index.js';
+import { onReady, observe, countWords } from '../../../../lib/utils/index.js';
+import { getChapterProse } from '../../../../lib/ao3/work-page.js';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 export class ReadingTime {
   constructor(NS, cfg) {
@@ -27,6 +33,11 @@ export class ReadingTime {
     this.cfg = cfg;
     this.WPM_MAP = { slow: 150, average: 250, fast: 400 };
   }
+
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — READING-TIME CALCULATION
+  ═══════════════════════════════════════════════════════════════════════ */
 
   getWPM() {
     const speed = this.cfg('readSpeed');
@@ -46,6 +57,11 @@ export class ReadingTime {
     const text = el.textContent.trim().replace(/,/g, '');
     return parseInt(text, 10) || 0;
   }
+
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — WORK, CHAPTER, AND LISTING BADGES
+  ═══════════════════════════════════════════════════════════════════════ */
 
   buildTimeBadge(words, onWorkPage = false) {
     if (!this.cfg('showEstimate')) return '';
@@ -69,12 +85,12 @@ export class ReadingTime {
     const chapters = document.querySelectorAll('#chapters > .chapter');
     if (chapters.length <= 1) return;
     chapters.forEach(ch => {
-      const userstuff = ch.querySelector('.userstuff');
-      if (!userstuff) return;
-      const chWords = (userstuff.textContent || '').split(/\s+/).filter(Boolean).length;
+      if (!ch.querySelector('.userstuff')) return;
+      // Même extraction de prose (exclusion préfaces/notes) et même compteur
+      // Unicode que chapterWordCount — les deux badges affichent maintenant
+      // un nombre de mots cohérent (shared.md, Z1/Z2).
+      const chWords = countWords(getChapterProse(ch));
       const min     = chWords / this.getWPM();
-      // Même sélecteur d'ancrage que chapterWordCount (reading/chapter-navigation)
-      // pour que les deux modules partagent le même badge (shared.md, Z2).
       const heading = ch.querySelector('h3.title, h2.heading, h3.heading, h2, h3');
       if (heading) upsertChapterBadgePart(heading, 'time', `${this.formatTime(min)} read`);
     });
@@ -85,6 +101,11 @@ export class ReadingTime {
     document.querySelectorAll('.blurb .stats dd.words, .index .stats dd.words')
       .forEach(ddEl => this.injectTimeBadge(ddEl));
   }
+
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE LIFECYCLE
+  ═══════════════════════════════════════════════════════════════════════ */
 
   setup() {
     const isWork = /^\/works\/\d+/.test(location.pathname);
@@ -106,15 +127,14 @@ export class ReadingTime {
       this.injectOnListings();
 
       if (this.cfg('estimateListings')) {
-        observer = new MutationObserver(mutations => {
+        observer = observe(document.body, { childList: true, subtree: true }, mutations => {
           mutations.forEach(mut => {
             mut.addedNodes.forEach(node => {
-              if (node.nodeType !== Node.ELEMENT_NODE) return;
+              if (!(node instanceof Element)) return;
               node.querySelectorAll?.('.stats dd.words').forEach(ddEl => this.injectTimeBadge(ddEl));
             });
           });
         });
-        observer.observe(document.body, { childList: true, subtree: true });
       }
     }
 

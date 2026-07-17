@@ -1,38 +1,35 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Archive Warnings Display Submodule
-    Submodule ID: archiveWarningsDisplay
-    Parent: tagsDisplay
-    Display Name: Archive Warnings Display
+AO3 Helper - Tags Display › Archive Warnings Display
 
-    Replaces verbose AO3 archive warning text with compact, recognizable icons.
-    This is a UX polish feature for faster scanning, not a filtering system.
+Replaces verbose AO3 archive-warning labels with compact icon, text, or badge
+representations to make work listings easier to scan.
 
-    Features:
-      - compactWarnings  : replace warning text with icons (master toggle)
-      - archiveWarningsStyle : 'icon' | 'text' | 'badge' (default: 'icon')
+Notes
 
-    Fixed icon set (not customizable):
-        ⚠️  Graphic Depictions Of Violence
-        💀  Major Character Death
-        🚫  Underage
-        ⛔  Rape/Non-Con
-        ❓  Creator Chose Not To Use Archive Warnings (always full text)
-        ✓   No Archive Warnings Apply
+- The warning-to-icon mapping is fixed and does not filter any works.
+- “Creator Chose Not To Use Archive Warnings” remains fully visible.
+- Compact warnings retain accessible labels, titles, roles, and keyboard focus.
 
-    Accessibility: aria-label + title + tabindex=0 on every icon.
-    MutationObserver: scans new nodes added to #main.
+═══════════════════════════════════════════════════════════════════════════ */
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { observe } from '../../../../lib/utils/index.js';
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
+
 const MOD  = 'archiveWarningsDisplay';
 const NS   = 'ao3h';
 
-// ── Config ────────────────────────────────────────────────────────────────
 function cfg (key, fallback) {
   try {
     const v = Flags.get(`mod:tagsDisplay:${key}`);
@@ -41,7 +38,6 @@ function cfg (key, fallback) {
   return fallback;
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────
 // Clés vérifiées identiques à lib/ao3/constants.js ARCHIVE_WARNINGS (forme
 // tag canonique) — gardées ici en objet plutôt qu'importées car chaque
 // entrée porte aussi son icône/abréviation, pas juste le libellé.
@@ -56,7 +52,11 @@ const WARNING_ICONS = {
 
 const WARNING_SELECTOR = 'li.warnings a.tag, .warning.tags a, dd.warning.tags a';
 
-// ── Conversion ────────────────────────────────────────────────────────────
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — WARNING CONVERSION AND RESTORATION
+═══════════════════════════════════════════════════════════════════════════ */
+
 function convertSingleWarning (tag, style) {
   if (!tag || tag.dataset.ao3hConverted) return;
 
@@ -103,9 +103,10 @@ function restoreAll () {
   });
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// MODULE REGISTRATION
-// ══════════════════════════════════════════════════════════════════════════
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
 
 register(MOD, {
   title            : 'Archive Warnings Display',

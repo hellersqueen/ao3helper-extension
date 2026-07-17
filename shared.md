@@ -492,7 +492,7 @@ Le pattern `try { JSON.parse(localStorage.getItem(K) || fallback) } catch { fall
 | Toast (hiddenTags) | **Rester dans le module** (pour l'instant) | Library utilise `alert`/`confirm`/`prompt` natifs, pas de toast. (Si on veut remplacer ces `alert` un jour, un `lib/ui/toast.js` deviendra pertinent — décision produit, pas refactoring.) |
 | Modale « list manager » (A8) | **Confirmé à extraire, mais scope hideByTags** | Les managers library (catégories d'organizationTools, feed du notificationCenter) sont des panneaux inline, pas des modales de liste : pas de 4ᵉ consommateur immédiat. A8 reste rentable rien que pour ses 3 copies. |
 | `_escapeHtml` | **À surveiller** (inchangé) | Pas de copie trouvée dans library. |
-| Cartes langues | **Rester dans le module** | Aucun usage langue dans library. (Reste à vérifier `explore/search-enhancer` à une étape ultérieure.) |
+| Cartes langues | **Rester dans le module** | Aucun usage langue dans library. (Reste à vérifier `explore/searchEnhancer` à une étape ultérieure.) |
 | `detectCurrentFandom` | **À surveiller** (inchangé) | Pas d'équivalent library. |
 | Pattern « observer les nouveaux blurbs » | **Confirmé, ampleur doublée** | Library ajoute ~10 blocs `MutationObserver` du même type (`markedForLaterStatus` l.269, `quickMarkForLaterButton` l.119 — qui réimplémente même son propre debounce à la main, `statusIndicators` l.225, `readingStatusTracking` l.131, `organizationTools` l.315, `noteManagement` l.78, `noteDisplay` l.176, `richTextNotes` l.265/271, `bookmarkMaintenance` l.171, `_ficAppreciation` l.212, `_fanficBingeMode` l.432). ~20 blocs au total dans le projet → la convergence vers `observe()`+`debounce()` de `lib/utils/index.js` passe en « à faire systématiquement », et un helper `watchNewBlurbs(cb)` dans `lib/utils/dom-observer.js` devient justifié. |
 
@@ -881,7 +881,7 @@ Deux candidats classés « rester dans le module » aux étapes précédentes ch
 
    **Pourquoi partager :** duplication interne au module — toute retouche du gabarit doit être faite deux fois ; les fichiers produits divergeront.
 
-   **Nom proposé :** fichier partagé **au niveau du module** : `src/modules/appearance/fic-downloader/workHtmlTemplate.js` — export `buildWorkHTML({ title, author, summary, notes, chaptersHTML })`. (Métier fic-downloader : ne pas mettre dans `lib/`.)
+   **Nom proposé :** fichier partagé **au niveau du module** : `src/modules/appearance/ficDownloader/workHtmlTemplate.js` — export `buildWorkHTML({ title, author, summary, notes, chaptersHTML })`. (Métier ficDownloader : ne pas mettre dans `lib/`.)
 
    **Importeurs :** individualDownloads, batchDownload, completePageDownload. Risque faible.
 
@@ -1305,7 +1305,7 @@ Modules analysés : `fic-actions`, `series-helper` (2 sous-modules), `keyboard-s
 |---|---|---|
 | Menu contextuel custom (clic droit) | `blockingInterface.js` (menu block/unblock sur les liens users) + `tagHighlighting.js` (browse, menu couleurs sur les tags) | 2ᵉ menu contextuel du projet — même squelette (createElement, position clientX/Y, fermeture clic extérieur). Candidat `lib/ui/context-menu.js` au 3ᵉ consommateur. |
 | Panneau de gestion CRUD de templates | `commentComposing.js` l.149+ (add/edit/remove templates) | Parent de la famille « list manager » (A8/S8) — vérifier lors de l'extraction A8 si l'API couvre ce cas (édition en plus d'ajout/suppression). |
-| Détection prev/next chapitre | `keyboardShortcuts.js` l.128-138 (`a[rel="prev"]`, `.chapter.previous a`…) + `seriesProgress.js` l.183-186 (mêmes sélecteurs pour la série) | Sélecteurs de navigation AO3 dupliqués 2× ; `reading/chapter-navigation` en aura forcément une 3ᵉ copie → à trancher à l'étape 6 (candidat `lib/ao3/parsers.js` → `findPrevNextLinks()`). |
+| Détection prev/next chapitre | `keyboardShortcuts.js` l.128-138 (`a[rel="prev"]`, `.chapter.previous a`…) + `seriesProgress.js` l.183-186 (mêmes sélecteurs pour la série) | Sélecteurs de navigation AO3 dupliqués 2× ; `reading/chapterNavigation` en aura forcément une 3ᵉ copie → à trancher à l'étape 6 (candidat `lib/ao3/parsers.js` → `findPrevNextLinks()`). |
 | Parse « Part X of Y » | `seriesProgress.js` → `parsePartOf()` l.30-37 | Connaissance AO3 (format des liens de série) ; un seul consommateur pour l'instant — candidat parsers.js si un module library/reading lit aussi la progression de série (readingTracker `isSeriesRead` ?). À vérifier à l'étape 6. |
 | Clé legacy avec fallback | `quickLinks.js` l.25-26 (STORAGE_KEY vs STORAGE_KEY_LEGACY) | Pattern de migration douce déjà vu dans `_visualPreferences` — si `module-settings.js` (A5) offre un paramètre `legacyKey`, ces deux cas sont couverts. |
 

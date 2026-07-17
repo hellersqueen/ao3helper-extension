@@ -46,4 +46,8 @@ export default defineConfig({
     minify: 'oxc',
     emptyOutDir: false,
   },
+  test: {
+    environment: 'happy-dom',
+    include: ['lib/**/*.test.js', 'src/**/*.test.js'],
+  },
 });

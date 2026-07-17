@@ -1,21 +1,29 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   AO3 Helper — Fic Engagement
-   Module ID : ficEngagement
-   Tab: Browse
 
-   Submodules (imported directly as ES modules):
-     1. engagementMetrics → ./engagementMetrics.js
-     2. hiddenGems        → ./hiddenGems.js
+AO3 Helper — Fic Engagement Coordinator
 
-   What it does:
-     On listing pages, adds engagement metric badges to each work blurb:
-       • Kudos ratio   — (kudos / hits) × 100  →  "X.X% ❤️/👁️"
-       • Kudos density  — (kudos / words) × 1000 →  "X.X /1Kw"
-       • Save rate      — (bookmarks / kudos) × 100 → "X.X% 💾"
+    Module ID: ficEngagement
+    Display Name: Fic Engagement
+    Tab: Browse
 
-   Settings:
-     colorCodeMetrics — colour-code badges (green/yellow/red by threshold)
+    Purpose
+        Adds engagement metrics and hidden-gem indicators to work blurbs and
+        supported work pages.
 
+    Submodules
+        engagementMetrics.js — Calculates and displays engagement ratios.
+        hiddenGems.js        — Identifies underexposed, well-received works.
+
+    Notes
+        Metrics can be colour-coded through module settings. Dynamic listing
+        content is rescanned through a managed observer.
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
@@ -25,6 +33,12 @@ import styles from './ficEngagement.css?inline';
 
 import { EngagementMetrics } from './engagementMetrics.js';
 import { HiddenGems } from './hiddenGems.js';
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 css(styles, 'ao3h-ficEngagement');
 
@@ -36,7 +50,19 @@ const DEFAULTS = {
 
 function loadSettings() { return loadModuleSettings(MOD); }
 
-/* ── Registration ───────────────────────────────────────────────────── */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURES
+═══════════════════════════════════════════════════════════════════════════ */
+
+// Both coordinated features are initialized during the module lifecycle.
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
 
 register(MOD, {
   title: 'Fic Engagement',

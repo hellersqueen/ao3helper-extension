@@ -1,8 +1,38 @@
-// AO3 Helper — Core Navigation Submodule
-// Submodule ID: pageControls/coreNavigation
-// Role: page number input field + current/max detection + URL navigation
+/* ═══════════════════════════════════════════════════════════════════════════
 
-// ── URL helpers ───────────────────────────────────────────────────────────
+AO3 Helper - Page Controls › Core Navigation
+
+Detects the current and final listing pages, builds pagination URLs, and adds
+a numeric page-jump field beside each AO3 pagination block.
+
+Notes
+
+- AO3 pagination is represented by the `page` query parameter.
+- The maximum page falls back to the listing result count when necessary.
+- Static helpers provide pagination data to Enhanced Navigation.
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
+═══════════════════════════════════════════════════════════════════════════ */
+
+// This submodule has no imports.
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
+
+const ROW_CLASS = 'ao3h-jtp-row';
+const JTP_CLASS = 'ao3h-jtp';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — PAGINATION STATE AND URLS
+═══════════════════════════════════════════════════════════════════════════ */
+
 // AO3 pagination uses ?page=N in query string
 function getCurrentPage () {
   const m = location.search.match(/[?&]page=(\d+)/);
@@ -36,9 +66,10 @@ function buildPageURL (pageNum) {
   return url.toString();
 }
 
-// ── Widget ────────────────────────────────────────────────────────────────
-const ROW_CLASS = 'ao3h-jtp-row';
-const JTP_CLASS = 'ao3h-jtp';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — PAGE-JUMP WIDGET
+═══════════════════════════════════════════════════════════════════════════ */
 
 function buildWidget (current, max) {
   const row   = document.createElement('div');
@@ -54,9 +85,9 @@ function buildWidget (current, max) {
   const input     = document.createElement('input');
   input.type      = 'number';
   input.className = 'pg-input';
-  input.value     = current;
-  input.min       = 1;
-  input.max       = max;
+  input.value     = String(current);
+  input.min       = '1';
+  input.max       = String(max);
   input.setAttribute('aria-label', `Page number (1–${max})`);
 
   const sep       = document.createElement('span');
@@ -73,8 +104,8 @@ function buildWidget (current, max) {
 
   input.addEventListener('blur', () => {
     let val = parseInt(input.value, 10);
-    if (!isFinite(val) || val < 1)   input.value = 1;
-    else if (val > max)              input.value = max;
+    if (!isFinite(val) || val < 1)   input.value = '1';
+    else if (val > max)              input.value = String(max);
   });
 
   wrap.appendChild(lbl);
@@ -84,7 +115,11 @@ function buildWidget (current, max) {
   return row;
 }
 
-// ── Class ─────────────────────────────────────────────────────────────────
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
+
 export class CoreNavigation {
   constructor (opts) {
     this._opts     = opts || {};

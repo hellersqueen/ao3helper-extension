@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="../lib/styles/collapse-chevron.css">
   <link rel="stylesheet" href="../lib/styles/icon-button.css">
   <!-- ── CSS spécifiques aux modules ───────────────────────────────────── -->
-  <link rel="stylesheet" href="../modules/Browse/hideByTags/hideByTags.css">
+  <link rel="stylesheet" href="../src/modules/browse/hideByTags/hideByTags.css">
 
   <!-- ── Source de vérité tabs + modules ───────────────────────────────── -->
   <script src="../lib/ui/panel/panel-config.js"></script>
@@ -45,46 +45,46 @@
   <script src="../lib/ui/panel/configs/_default-config.js"></script>
 
   <!-- ── Configs de chaque module ──────────────────────────────────────── -->
-  <script src="../lib/ui/panel/configs/Library-configs/activityPanel-config.js"></script>
-  <script src="../lib/ui/panel/configs/Appearance & Tools-configs/backupAndSync-config.js"></script>
-  <script src="../lib/ui/panel/configs/Library-configs/bookmarkVault-config.js"></script>
-  <script src="../lib/ui/panel/configs/Reading-configs/chapterNavigation-config.js"></script>
-  <script src="../lib/ui/panel/configs/Reading-configs/collapseAuthorNotes-config.js"></script>
-  <script src="../lib/ui/panel/configs/Navigate & Interact-configs/commentKit-config.js"></script>
-  <script src="../lib/ui/panel/configs/Navigate & Interact-configs/ficActions-config.js"></script>
-  <script src="../lib/ui/panel/configs/Library-configs/ficAppreciation-config.js"></script>
-  <script src="../lib/ui/panel/configs/Appearance & Tools-configs/ficDownloader-config.js"></script>
-  <script src="../lib/ui/panel/configs/Browse-configs/ficEngagement-config.js"></script>
-  <script src="../lib/ui/panel/configs/Explore-configs/ficPeek-config.js"></script>
-  <script src="../lib/ui/panel/configs/Browse-configs/filterManager-config.js"></script>
-  <script src="../lib/ui/panel/configs/Browse-configs/hideByTags-config.js"></script>
-  <script src="../lib/ui/panel/configs/Reading-configs/instantFootnotes-config.js"></script>
-  <script src="../lib/ui/panel/configs/Navigate & Interact-configs/keyboardShortcuts-config.js"></script>
-  <script src="../lib/ui/panel/configs/Library-configs/laterShelf-config.js"></script>
-  <script src="../lib/ui/panel/configs/Navigate & Interact-configs/mainNavigation-config.js"></script>
-  <script src="../lib/ui/panel/configs/Library-configs/notificationCenter-config.js"></script>
-  <script src="../lib/ui/panel/configs/Browse-configs/pageControls-config.js"></script>
-  <script src="../lib/ui/panel/configs/Library-configs/readingDashboard-config.js"></script>
-  <script src="../lib/ui/panel/configs/Reading-configs/readingFormatter-config.js"></script>
-  <script src="../lib/ui/panel/configs/Library-configs/readingTimeline-config.js"></script>
-  <script src="../lib/ui/panel/configs/Reading-configs/readingTracker-config.js"></script>
-  <script src="../lib/ui/panel/configs/Explore-configs/searchEnhancer-config.js"></script>
-  <script src="../lib/ui/panel/configs/Navigate & Interact-configs/seriesHelper-config.js"></script>
-  <script src="../lib/ui/panel/configs/Explore-configs/similarFics-config.js"></script>
-  <script src="../lib/ui/panel/configs/Browse-configs/skipWorks-config.js"></script>
-  <script src="../lib/ui/panel/configs/Explore-configs/surpriseMe-config.js"></script>
-  <script src="../lib/ui/panel/configs/Browse-configs/tagsDisplay-config.js"></script>
-  <script src="../lib/ui/panel/configs/Reading-configs/textToSpeech-config.js"></script>
-  <script src="../lib/ui/panel/configs/Appearance & Tools-configs/themeBuilder-config.js"></script>
-  <script src="../lib/ui/panel/configs/Explore-configs/tropeGames-config.js"></script>
-  <script src="../lib/ui/panel/configs/Navigate & Interact-configs/userRelationships-config.js"></script>
-  <script src="../lib/ui/panel/configs/Appearance & Tools-configs/visualPreferences-config.js"></script>
-  <script src="../lib/ui/panel/configs/Reading-configs/wordSwap-config.js"></script>
-  <script src="../lib/ui/panel/configs/Browse-configs/workLength-config.js"></script>
+  <script src="../lib/ui/panel/configs/library/activityPanel-config.js"></script>
+  <script src="../lib/ui/panel/configs/appearance-tools/backupAndSync-config.js"></script>
+  <script src="../lib/ui/panel/configs/library/bookmarkVault-config.js"></script>
+  <script src="../lib/ui/panel/configs/reading/chapterNavigation-config.js"></script>
+  <script src="../lib/ui/panel/configs/reading/collapseAuthorNotes-config.js"></script>
+  <script src="../lib/ui/panel/configs/navigate-interact/commentKit-config.js"></script>
+  <script src="../lib/ui/panel/configs/navigate-interact/ficActions-config.js"></script>
+  <script src="../lib/ui/panel/configs/library/ficAppreciation-config.js"></script>
+  <script src="../lib/ui/panel/configs/appearance-tools/ficDownloader-config.js"></script>
+  <script src="../lib/ui/panel/configs/browse/ficEngagement-config.js"></script>
+  <script src="../lib/ui/panel/configs/explore/ficPeek-config.js"></script>
+  <script src="../lib/ui/panel/configs/browse/filterManager-config.js"></script>
+  <script src="../lib/ui/panel/configs/browse/hideByTags-config.js"></script>
+  <script src="../lib/ui/panel/configs/reading/instantFootnotes-config.js"></script>
+  <script src="../lib/ui/panel/configs/navigate-interact/keyboardShortcuts-config.js"></script>
+  <script src="../lib/ui/panel/configs/library/laterShelf-config.js"></script>
+  <script src="../lib/ui/panel/configs/navigate-interact/mainNavigation-config.js"></script>
+  <script src="../lib/ui/panel/configs/library/notificationCenter-config.js"></script>
+  <script src="../lib/ui/panel/configs/browse/pageControls-config.js"></script>
+  <script src="../lib/ui/panel/configs/library/readingDashboard-config.js"></script>
+  <script src="../lib/ui/panel/configs/reading/readingFormatter-config.js"></script>
+  <script src="../lib/ui/panel/configs/library/readingTimeline-config.js"></script>
+  <script src="../lib/ui/panel/configs/reading/readingTracker-config.js"></script>
+  <script src="../lib/ui/panel/configs/explore/searchEnhancer-config.js"></script>
+  <script src="../lib/ui/panel/configs/navigate-interact/seriesHelper-config.js"></script>
+  <script src="../lib/ui/panel/configs/explore/similarFics-config.js"></script>
+  <script src="../lib/ui/panel/configs/browse/skipWorks-config.js"></script>
+  <script src="../lib/ui/panel/configs/explore/surpriseMe-config.js"></script>
+  <script src="../lib/ui/panel/configs/browse/tagsDisplay-config.js"></script>
+  <script src="../lib/ui/panel/configs/reading/textToSpeech-config.js"></script>
+  <script src="../lib/ui/panel/configs/appearance-tools/themeBuilder-config.js"></script>
+  <script src="../lib/ui/panel/configs/explore/tropeGames-config.js"></script>
+  <script src="../lib/ui/panel/configs/navigate-interact/userRelationships-config.js"></script>
+  <script src="../lib/ui/panel/configs/appearance-tools/visualPreferences-config.js"></script>
+  <script src="../lib/ui/panel/configs/reading/wordSwap-config.js"></script>
+  <script src="../lib/ui/panel/configs/browse/workLength-config.js"></script>
 
   <!-- ── Standalone module configs ────────────────────────────────────── -->
-  <script src="../lib/ui/panel/configs/Library-configs/fanficBingeMode-config.js"></script>
-  <script src="../lib/ui/panel/configs/Explore-configs/povTracker-config.js"></script>
+  <script src="../lib/ui/panel/configs/library/fanficBingeMode-config.js"></script>
+  <script src="../lib/ui/panel/configs/explore/povTracker-config.js"></script>
 
   <!-- ── Tab content (HTML réel des tabs, identique au vrai panel) ─────── -->
   <script src="../lib/ui/panel/panel-tab-content.js"></script>

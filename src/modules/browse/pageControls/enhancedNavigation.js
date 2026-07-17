@@ -1,10 +1,36 @@
-// AO3 Helper — Enhanced Navigation Submodule
-// Submodule ID: pageControls/enhancedNavigation
-// Role: ±10 page buttons + First/Last page links, injected top & bottom
+/* ═══════════════════════════════════════════════════════════════════════════
+
+AO3 Helper - Page Controls › Enhanced Navigation
+
+Adds first, previous, next, last, and optional ten-page jump controls around
+each AO3 pagination block.
+
+Notes
+
+- Pagination state and destination URLs come from Core Navigation.
+- Invalid, current-page, and out-of-range destinations render as disabled text.
+- Ten-page jumps follow the shared Page Controls configuration.
+
+═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
+═══════════════════════════════════════════════════════════════════════════ */
 
 import { CoreNavigation as Core } from './coreNavigation.js';
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
+
 const WRAP_CLASS = 'ao3h-en-wrap';
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — ENHANCED PAGINATION CONTROLS
+═══════════════════════════════════════════════════════════════════════════ */
 
 function buildEnhancedRow (current, max, showTen) {
   const wrap  = document.createElement('div');
@@ -17,7 +43,7 @@ function buildEnhancedRow (current, max, showTen) {
     el.textContent = label;
     el.title = title || label;
     if (!disabled) {
-      el.href = Core.buildPageURL(page);
+      /** @type {HTMLAnchorElement} */ (el).href = Core.buildPageURL(page);
     }
     return el;
   }
@@ -36,7 +62,11 @@ function buildEnhancedRow (current, max, showTen) {
   return wrap;
 }
 
-// ── Class ─────────────────────────────────────────────────────────────────
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE LIFECYCLE
+═══════════════════════════════════════════════════════════════════════════ */
+
 export class EnhancedNavigation {
   constructor (opts) {
     this._opts    = opts || {};

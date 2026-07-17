@@ -1,0 +1,261 @@
+/*: ═══════════════════════════════════════════════════════════════
+      BACKUP & SYNC — Config Panel Styles
+        Contrôle l'apparence du panneau de configuration
+        du module Backup & Sync.
+    ────────────────────────────────────────────────────────────── */
+
+/*:: ────────────────────────────────────────────────────────────── 
+      │ COMMENT LIRE CE FICHIER
+      │ 1. Lis d'abord le GUIDE RAPIDE juste en dessous.
+      │ 2. Trouve la section qui correspond à ce que tu vois à l'écran.
+      │ 3. Modifie seulement les lignes indiquées dans les commentaires.
+      │ 4. Les blocs marqués ⚠️ sont liés au JavaScript ou au layout : prudence
+    ────────────────────────────────────────────────────────────── */
+
+/*::: ────────────────────────────────────────────────────────────── 
+        | GUIDE RAPIDE — Je veux modifier...
+
+        ├─  🎨 La couleur rouge des boutons
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-bs-color-accent
+
+        ├─  🔔 La couleur ou la position des toasts
+        │     → lib/ui/toast.js (partagé avec d'autres modules,
+        │       plus dans ce fichier CSS)
+
+        ├─  📐 La position du progress
+        │     → SECTION 04 — LE PROGRESS INDICATOR
+
+        ├─  🔲 Les coins arrondis
+        │     → SECTION 00 — RÉGLAGES RAPIDES
+        │     → variable : --ao3h-bs-radius
+
+        ────────────────────────────────────────────────────────────── */
+
+
+/*#   INDEX DES SECTIONS                                     */
+/*#        |                                                 */
+/*##       ├─  00. Réglages rapides                          */
+/*#        |                                                 */
+/*###      ├─  01. Le panneau principal                      */
+/*#        |                                                 */
+/*####     ├─  02. Les boutons                               */
+/*#        |                                                 */
+/*=        ├─  03. Le statut de synchronisation              */
+/*#        |                                                 */
+/*==       ├─  04. Le progress indicator                     */
+/*#        |                                                 */
+/*#        └─*/
+
+
+/*##    
+  ═══════════════════════════════════════════════════════════════════════   
+    SECTION 00 — RÉGLAGES RAPIDES
+  ───────────────────────────────────────────────────────────────────────
+    C'est le panneau de contrôle du fichier.
+    Si tu veux modifier l'apparence sans chercher dans tout le CSS,
+    commence ici.
+    Tu peux changer :
+      - la couleur accent (rouge AO3)
+      - les coins arrondis
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+:root {
+  /*- 🎨 Couleur principale des boutons et bordures */
+  --ao3h-bs-color-accent: #900;
+
+  /*- 🔲 Arrondi des boîtes (progress, boutons) */
+  --ao3h-bs-radius: 6px;
+
+  /*- 📝 Texte secondaire gris */
+  --ao3h-bs-text-muted: #555;
+}
+
+
+/*###   
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 01 — LE PANNEAU PRINCIPAL
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle le conteneur principal du panneau DataTransfer.
+    À l'écran :
+      ┌─────────────────────────────────────┐
+      │ [Bouton]  [Bouton]  [Bouton]        │
+      │ statut de synchronisation           │
+      └─────────────────────────────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-datatransfer-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  font-size: 14px;
+}
+
+
+/*####  
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 02 — LES BOUTONS
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle l'apparence des boutons d'action du panneau.
+    La couleur vient de SECTION 00.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-datatransfer-btn {
+  padding: 6px 12px;
+  cursor: pointer;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: 4px;
+
+  /*- 🎨 Couleur accent — voir SECTION 00 */
+  border: 1px solid var(--ao3h-bs-color-accent);
+  background: #fff;
+  color: var(--ao3h-bs-color-accent);
+}
+
+
+/*=     
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 03 — LE STATUT DE SYNCHRONISATION
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle la petite ligne de texte sous le panneau principal.
+    La couleur vient de SECTION 00.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-datatransfer-status {
+  font-size: 12px;
+
+  /*- 📝 Couleur du texte — voir SECTION 00 */
+  color: var(--ao3h-bs-text-muted);
+
+  padding: 4px 2px;
+}
+
+
+/*==    
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 04 — LE PROGRESS INDICATOR
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle l'indicateur de progression affiché en bas à droite.
+    À l'écran :
+      ┌───────────────────────────────────┐
+      │ ◌  Message de progression...     │
+      └───────────────────────────────────┘
+    ⚠️ Position fixe — ne pas modifier sans raison.
+    ⚠️ L'animation ao3h-spin est utilisée par le spinner ci-dessous.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ───────────────────────────────────────────────────────────
+    BOÎTE DU PROGRESS
+  ───────────────────────────────────────────────────────────── */
+
+#ao3h-progress {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999999;
+  background: #333;
+  color: #fff;
+  padding: 10px 16px;
+
+  /*- 🔲 Arrondi — voir SECTION 00 */
+  border-radius: var(--ao3h-bs-radius);
+
+  font-size: 13px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    SPINNER ROTATIF
+  ─────────────────────────────────────────────────────────────
+      └─ Petit cercle animé à côté du message de progression.
+         ⚠️ Lié à l'animation @keyframes ao3h-spin ci-dessous.
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-progress-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: ao3h-spin 0.7s linear infinite;
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    ANIMATION DU SPINNER
+  ───────────────────────────────────────────────────────────── */
+
+@keyframes ao3h-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* SECTION 05 (toasts) supprimée : dataTransfer.js affiche maintenant ses
+   toasts via lib/ui/toast.js (styles injectés en JS), qui a repris ces
+   mêmes couleurs/position pour ne rien changer visuellement. Garder ces
+   règles ici en double n'aurait fait que créer un conflit CSS silencieux
+   au prochain changement. */
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — L'EXPLORATEUR DE SAUVEGARDES (panneau de réglages)
+  ───────────────────────────────────────────────────────────────────────
+    Contrôle la liste des sauvegardes affichée dans le panneau (recherche,
+    restaurer, supprimer). Voir lib/ui/panel/configs/appearance-tools/
+    backupAndSync-config.js pour le JS qui remplit cette liste.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-bas-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+
+.ao3h-bas-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee;
+  font-size: 12px;
+}
+
+.ao3h-bas-row:last-child { border-bottom: none; }
+
+.ao3h-bas-row-info {
+  color: var(--ao3h-bs-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ao3h-bas-row-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ao3h-bas-empty {
+  padding: 10px;
+  text-align: center;
+  color: var(--ao3h-bs-text-muted);
+  font-size: 12px;
+}

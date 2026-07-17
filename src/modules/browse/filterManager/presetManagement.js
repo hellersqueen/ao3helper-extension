@@ -1,52 +1,31 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Preset Management Submodule
-    Submodule ID: presetManagement
-    Parent Module: filterManager
+AO3 Helper - Filter Manager › Preset Management
 
-    - Feature: Save filter presets
-      - Option: Captures all active filter form fields into a named preset
-      - Option: Prompt-based name entry via Ctrl+Shift+S or Save button
-      - Option: Presets stored in configurable storage key
+Purpose
+    Captures, stores, previews, applies, edits, imports, and exports AO3 filter
+    presets through a toolbar integrated with the native filter form.
 
-    - Feature: Preset toolbar (sidebar injection)
-      - Option: Dropdown selector with all saved presets
-      - Option: Star button to pin presets to top of list (starredPresetsFirst)
-      - Option: Delete button per preset
-      - Option: Help popover explaining how presets work
+Notes
+    Presets can be starred, remembered per fandom, expanded into removable
+    chips, and activated with keyboard shortcuts. Imported presets and bundles
+    are merged by ID.
 
-    - Feature: Preset application
-      - Option: "↩ Apply" fills the filter form with all preset values
-      - Option: "🏷 Edit as chips" applies preset and shows per-filter removable chips
-      - Option: Remembers last used preset per fandom (rememberLastPresetByFandom)
+═══════════════════════════════════════════════════════════════════════════ */
 
-    - Feature: Filter chips
-      - Option: Each active filter displayed as a removable chip
-      - Option: Multi-tag fields split into individual chips
-      - Option: Tag bundle indicator (🔗) when a tag belongs to a bundle
-      - Option: Removing a chip clears that filter from the form
-
-    - Feature: Keyboard shortcuts
-      - Option: Ctrl+1–9 applies the Nth preset (sorted order)
-      - Option: Ctrl+Shift+S saves current filters as a new preset
-
-    - Feature: Import / Export
-      - Option: Export all presets + bundles as JSON file
-      - Option: Import JSON and merge with existing presets (by ID, no duplicates)
-
-    - Feature: Hover preview
-      - Option: Tooltip on each preset dropdown item showing active filter summary (presetHoverPreview)
-      - Option: Uses friendly field names instead of raw AO3 param keys
-
-    Dependencies injected via constructor:
-        NS, storeGet, storeSet, cfg, detectCurrentFandom, getBundleFor,
-        loadBundles, saveBundles, KEY_PRESETS, KEY_BUNDLES, KEY_LAST
-
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
+═══════════════════════════════════════════════════════════════════════════ */
 
 const W = getGlobalWindow();
 
@@ -122,7 +101,11 @@ export class PresetManagement {
     this.listenerController  = null;
   }
 
-  /* ── Private utilities ──────────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — PRESET STORAGE
+  ═════════════════════════════════════════════════════════════════════════ */
+
   _mergeById (existing, incoming) {
     const map = new Map(existing.map(x => [x.id, x]));
     for (const item of incoming) map.set(item.id, item);
@@ -138,7 +121,6 @@ export class PresetManagement {
       || field.replace(/^work_search\[|\](\[\])?$/g, '').replace(/_/g, ' ');
   }
 
-  /* ── Storage ────────────────────────────────────────────────────── */
   loadPresets ()  { return this.storeGet(this.KEY_PRESETS, []); }
   savePresets (p) { this.storeSet(this.KEY_PRESETS, p); }
 
@@ -152,13 +134,17 @@ export class PresetManagement {
     return [...presets].sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
   }
 
-  /* ── Form capture / apply ───────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — FILTER CAPTURE AND APPLICATION
+  ═════════════════════════════════════════════════════════════════════════ */
+
   captureCurrentFilters () {
     const form = document.querySelector(FILTER_FORM_SEL);
     if (!form) return {};
     const data = {};
     for (const field of SEARCH_FIELDS) {
-      const els = [...form.querySelectorAll(`[name="${field}"]`)];
+      const els = /** @type {HTMLInputElement[]} */ ([...form.querySelectorAll(`[name="${field}"]`)]);
       if (!els.length) continue;
       if (els.length > 1) {
         data[field] = els.filter(el => el.checked).map(el => el.value);
@@ -178,7 +164,7 @@ export class PresetManagement {
     const form = document.querySelector(FILTER_FORM_SEL);
     if (!form || !preset?.filters) return false;
     for (const [field, value] of Object.entries(preset.filters)) {
-      const els = [...form.querySelectorAll(`[name="${field}"]`)];
+      const els = /** @type {HTMLInputElement[]} */ ([...form.querySelectorAll(`[name="${field}"]`)]);
       if (!els.length) continue;
       if (Array.isArray(value)) {
         els.forEach(el => { el.checked = value.includes(el.value); });
@@ -194,7 +180,11 @@ export class PresetManagement {
     return true;
   }
 
-  /* ── Expanded filter chips ──────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — EXPANDED FILTER CHIPS
+  ═════════════════════════════════════════════════════════════════════════ */
+
   buildExpandedFilters (preset, container) {
     const NS = this.NS;
     container.innerHTML = '';
@@ -248,7 +238,11 @@ export class PresetManagement {
     container.hidden = false;
   }
 
-  /* ── Preset toolbar ─────────────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — PRESET TOOLBAR
+  ═════════════════════════════════════════════════════════════════════════ */
+
   buildPresetToolbar (presets, fandom) {
     const NS = this.NS;
     const dt = document.createElement('dt');
@@ -276,7 +270,7 @@ export class PresetManagement {
     dd.className = `${NS}-preset-toolbar ${NS}-presets-dd`;
 
     const helpBtn     = dt.querySelector(`.${NS}-help-btn`);
-    const helpPopover = dt.querySelector(`.${NS}-help-popover`);
+    const helpPopover = /** @type {HTMLElement} */ (dt.querySelector(`.${NS}-help-popover`));
     helpBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
       helpPopover.hidden = !helpPopover.hidden;
@@ -468,7 +462,7 @@ export class PresetManagement {
         const reader = new FileReader();
         reader.onload = (ev) => {
           try {
-            const data = JSON.parse(ev.target.result);
+            const data = JSON.parse(/** @type {string} */ (ev.target.result));
             if (Array.isArray(data.presets)) {
               this.savePresets(this._mergeById(this.loadPresets(), data.presets));
             }
@@ -522,7 +516,7 @@ export class PresetManagement {
       if (!form) return;
 
       if (tagValue !== undefined) {
-        const el = form.querySelector(`[name="${field}"]`);
+        const el = /** @type {HTMLInputElement} */ (form.querySelector(`[name="${field}"]`));
         if (el) {
           const remaining = el.value
             .split(',').map(t => t.trim())
@@ -530,11 +524,11 @@ export class PresetManagement {
           el.value = remaining.join(', ');
         }
       } else if (arrayValue !== undefined) {
-        for (const el of form.querySelectorAll(`[name="${field}"]`)) {
+        for (const el of /** @type {NodeListOf<HTMLInputElement>} */ (form.querySelectorAll(`[name="${field}"]`))) {
           if (el.type === 'checkbox' && el.value === arrayValue) el.checked = false;
         }
       } else {
-        for (const el of form.querySelectorAll(`[name="${field}"]`)) {
+        for (const el of /** @type {NodeListOf<HTMLInputElement>} */ (form.querySelectorAll(`[name="${field}"]`))) {
           if (el.type === 'checkbox') el.checked = false;
           else el.value = '';
         }
@@ -578,6 +572,11 @@ export class PresetManagement {
     toolbar.replaceWith(dd);
     return dd;
   }
+
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE LIFECYCLE
+  ═════════════════════════════════════════════════════════════════════════ */
 
   cleanup () {
     this.listenerController?.abort();

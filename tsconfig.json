@@ -3,7 +3,8 @@
     "allowJs": true,
     "checkJs": true,
     "noEmit": true,
-    "target": "ES2015",
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": false,
@@ -15,5 +16,5 @@
       "@styles/*": ["./lib/styles/*"]
     }
   },
-  "include": ["src/**/*.js", "tests/**/*.js", "vite-env.d.ts"]
+  "include": ["src/**/*.js", "tests/**/*.js", "vite-env.d.ts", "global.d.ts"]
 }

@@ -1,21 +1,28 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Hidden Gems Submodule
-    Submodule ID: hiddenGems
-    Parent Module: ficEngagement
+AO3 Helper - Fic Engagement › Hidden Gems
 
-    Identifies "hidden gem" works — low popularity but high engagement ratio —
-    and injects a 💎 badge onto their blurbs and work pages.
+Purpose
+    Identifies underexposed works with strong kudos-to-hit engagement and adds
+    a Hidden Gem badge to their blurbs or work page.
 
-    Detection criteria (fixed thresholds):
-        • Kudos/hits ratio ≥ 5%
-        • Kudos ≤ 100  (low popularity)
-        • Bookmarks ≤ 10  (OR kudos ≤ 100)
-        • Minimum hits ≥ 50  (enough data)
-        • Minimum kudos ≥ 5  (enough data)
+Notes
+    Fixed thresholds require at least 50 hits, 5 kudos, and a 5% ratio, with
+    either no more than 100 kudos or no more than 10 bookmarks. Dynamic listing
+    content is scanned through a managed observer.
 
-    Tooltip: "Under the radar: low kudos but high ratio — X% ratio · N kudos · N hits"
+═══════════════════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMPORTS
+═══════════════════════════════════════════════════════════════════════════ */
+
+import { observe } from '../../../../lib/utils/index.js';
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const GEM_BADGE_CLS = 'ao3h-gem-badge';
@@ -25,21 +32,22 @@ const DATA_ATTR     = 'ao3hGemChecked';
 const MIN_HITS      = 50;
 const MIN_KUDOS     = 5;
 const MIN_RATIO     = 0.05;  // 5%
-import { observe } from '../../../../lib/utils/index.js';
-
 const MAX_KUDOS     = 100;
 const MAX_BOOKMARKS = 10;
 
 export class HiddenGems {
 
-  /* ── Number parser ──────────────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — STATISTICS EXTRACTION
+  ═════════════════════════════════════════════════════════════════════════ */
+
   _parseNum (node) {
     if (!node) return null;
     const n = parseInt((node.textContent || '').replace(/,/g, '').trim(), 10);
     return isNaN(n) ? null : n;
   }
 
-  /* ── Stats from a blurb ─────────────────────────────────────────── */
   _getStatsFromBlurb (blurb) {
     const dl = blurb.querySelector('dl.stats');
     if (!dl) return null;
@@ -50,7 +58,6 @@ export class HiddenGems {
     return { kudos, hits, bookmarks };
   }
 
-  /* ── Stats from work page ───────────────────────────────────────── */
   _getStatsFromWorkPage () {
     const dl = document.querySelector('dl.work.meta.group dl.stats, #main dl.stats');
     if (!dl) return null;
@@ -61,7 +68,11 @@ export class HiddenGems {
     return { kudos, hits, bookmarks };
   }
 
-  /* ── Is this a hidden gem? ──────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — GEM DETECTION
+  ═════════════════════════════════════════════════════════════════════════ */
+
   _isGem (stats) {
     if (!stats) return false;
     const { kudos, hits, bookmarks } = stats;
@@ -72,7 +83,6 @@ export class HiddenGems {
     return ratio >= MIN_RATIO && lowPop;
   }
 
-  /* ── Build tooltip ──────────────────────────────────────────────── */
   _tooltip (stats) {
     const { kudos, hits } = stats;
     const ratio = hits ? ((kudos / hits) * 100).toFixed(1) : null;
@@ -83,7 +93,11 @@ export class HiddenGems {
     return parts[0] + ' — ' + parts.slice(1).join(' · ');
   }
 
-  /* ── Create badge ───────────────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — GEM BADGES
+  ═════════════════════════════════════════════════════════════════════════ */
+
   _createBadge (stats) {
     const span = document.createElement('span');
     span.className = GEM_BADGE_CLS;
@@ -92,7 +106,6 @@ export class HiddenGems {
     return span;
   }
 
-  /* ── Attach badge to a blurb ────────────────────────────────────── */
   _attachToBlurb (blurb, stats) {
     if (blurb.querySelector('.' + GEM_BADGE_CLS)) return;
     blurb.classList.add(GEM_BLURB_CLS);
@@ -100,7 +113,6 @@ export class HiddenGems {
     target.appendChild(this._createBadge(stats));
   }
 
-  /* ── Attach badge to work page ──────────────────────────────────── */
   _attachToWorkPage (stats) {
     const target =
       document.querySelector('div.preface.group h2.title') ||
@@ -109,7 +121,11 @@ export class HiddenGems {
     target.appendChild(this._createBadge(stats));
   }
 
-  /* ── Process one blurb ──────────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — PAGE PROCESSING
+  ═════════════════════════════════════════════════════════════════════════ */
+
   _processBlurb (blurb) {
     if (blurb.dataset[DATA_ATTR]) return;
     blurb.dataset[DATA_ATTR] = '1';
@@ -117,13 +133,16 @@ export class HiddenGems {
     if (this._isGem(stats)) this._attachToBlurb(blurb, stats);
   }
 
-  /* ── Scan all blurbs ────────────────────────────────────────────── */
   _scan () {
     document.querySelectorAll('li.work.blurb.group, li.bookmark.blurb.group')
       .forEach(b => this._processBlurb(b));
   }
 
-  /* ── init ───────────────────────────────────────────────────────── */
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE LIFECYCLE
+  ═════════════════════════════════════════════════════════════════════════ */
+
   init () {
     this._scan();
 
@@ -137,7 +156,6 @@ export class HiddenGems {
     }, () => this._scan());
   }
 
-  /* ── cleanup ────────────────────────────────────────────────────── */
   cleanup () {
     this._mo?.disconnect();
     document.querySelectorAll('.' + GEM_BADGE_CLS).forEach(el => el.remove());

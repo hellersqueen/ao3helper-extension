@@ -3,4 +3,4 @@
 // est découvert et exécuté automatiquement, sans liste manuelle à maintenir.
 // Tous les modules sont migrés ici depuis la Phase 25 ; l'ancien système
 // (modules/ + bundle legacy) a été supprimé en Phase 27 (étape 331).
-import.meta.glob('./modules/**/*.js', { eager: true });
+import.meta.glob(['./modules/**/*.js', '!./modules/**/*.test.js'], { eager: true });
