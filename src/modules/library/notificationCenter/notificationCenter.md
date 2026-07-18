@@ -18,43 +18,93 @@ site et des notifications du navigateur en option.
 | `quietHoursEnabled` | désactivé | Active une plage horaire sans notifications |
 | `quietHoursStart` | `22:00` | Heure de début des heures calmes |
 | `quietHoursEnd` | `08:00` | Heure de fin des heures calmes |
-
-Le panneau affiche aussi une section "Sync & Refresh" (synchroniser, trier,
-actualiser) *(pas encore actif — rien n'est branché derrière)*.
+| `trackBookmarks` | activé | Surveille les fics en favoris |
+| `trackMFL` | activé | Surveille les fics de la liste "à lire plus tard" |
+| `trackHistory` | activé | Surveille les fics de l'historique de lecture |
+| `trackSubscriptions` | désactivé | Surveille aussi les œuvres auxquelles tu es abonné·e sur AO3 (vérifiées au plus toutes les 6h) |
+| `digestMode` | `off` | `off` (une entrée par mise à jour), `daily` ou `weekly` (un résumé par jour/semaine) |
+| `showHomepageWidget` | activé | Affiche un petit encart "What's New" sur la page d'accueil AO3 |
 
 ## Fichiers
 
 ### `notificationCenter.js` — tout le module en un seul fichier
 
-- Suit les mises à jour de chapitres pour les fics en favoris, dans la liste "à lire plus tard" ou dans l'historique de lecture
-- Montre combien de nouveaux chapitres sont parus ("+2 chapters"), avec une petite célébration "🎉 Finished!" quand une fic devient complète
-- Garde un historique glissant de 90 jours, avec possibilité de marquer une notification (ou tout) comme lue
-- Permet de trier et filtrer le flux (par date, par titre, par origine : favoris / à lire plus tard / historique), et de cacher les fics terminées
+- Suit les mises à jour de chapitres pour les fics en favoris, dans la liste "à lire plus tard", dans l'historique de lecture, et en option dans les abonnements AO3
+- Montre combien de nouveaux chapitres sont parus ("+2 chapters"), avec une petite célébration "🎉 Finished!" quand une fic devient complète, et un badge "⚡ Big update" pour les gros sauts de chapitres
+- Garde un historique glissant de 90 jours, avec possibilité de marquer une notification comme lue, de la reporter 24h ("Snooze"), ou de l'archiver définitivement
+- Permet de trier et filtrer le flux (par date, titre ou priorité ; par origine : favoris / à lire plus tard / historique / abonnements), de cacher les fics terminées, et de regrouper l'affichage par période (aujourd'hui / hier / cette semaine / plus ancien) ou sous forme de résumé quotidien/hebdomadaire
 - Ajoute une icône 🔔 avec un compteur dans le menu du site ; elle passe en rouge s'il y a du nouveau ; un clic ouvre ou ferme le flux
-- Vérifie automatiquement en arrière-plan, toutes les 15 minutes, si de nouveaux chapitres sont parus sur les fics suivies
+- Affiche aussi un petit encart "What's New" sur la page d'accueil AO3, avec les 3 dernières mises à jour non vues
+- Vérifie automatiquement en arrière-plan, toutes les 15 minutes, si de nouveaux chapitres sont parus sur les fics suivies (et la liste d'abonnements AO3, au plus toutes les 6h si activée)
 - Peut envoyer une vraie notification du navigateur, avec un son en option et des "heures calmes" sans aucune notification
 - Détecte aussi directement un nouveau chapitre quand on visite la page d'une fic suivie
 
+### `notificationCenterHelpers.js` — logique extraite
+
+- `groupByBucket(items)` / `bucketLabel(ts)` : regroupement du flux par période (aujourd'hui/hier/cette semaine/plus ancien)
+- `computePriority({completedNow, delta})` : priorité d'une mise à jour (`high` si l'œuvre vient de se terminer ou si le saut de chapitres est important)
+- `isSnoozed(item)` / `snoozeUntil(hours)` : gestion du report d'une notification
+- `buildDigest(items, mode)` / `periodKey(ts, mode)` : résumé quotidien/hebdomadaire du flux
+- `parseSubscribedWorkIds(html)` : extrait les IDs de work depuis une page d'abonnements AO3
+
 ### `notificationCenter.css`
 
-- Les styles visuels de la cloche, du panneau du flux et de la liste des notifications
+- Les styles visuels de la cloche, du panneau du flux, du widget page d'accueil et de la liste des notifications
 
 ## Specs non implémentés
 
-Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
-vraiment dans ce module (pas de code pour ça) :
+Ce sont des idées dont on parle dans d'autres docs, avec leur statut :
 
-- Regrouper intelligemment plusieurs notifications ensemble
-- Un résumé quotidien ou hebdomadaire des mises à jour, plutôt que chaque mise à jour affichée séparément
-- Des niveaux de priorité pour les notifications
-- Pouvoir reporter une notification à plus tard
-- Un widget de notifications directement sur la page d'accueil, en plus de la cloche dans le menu
-- Choisir de recevoir des notifications seulement pour certains types d'événements (par exemple juste les favoris, pas la liste "à lire plus tard")
-- Être notifié quand quelqu'un répond à un commentaire qu'on a laissé, ou reçoit un message dans sa boîte de réception AO3
-- Suivre aussi les abonnements AO3 (auteurs ou séries suivis), pas seulement les favoris, la liste "à lire plus tard" et l'historique
-- Être notifié quand une fic qu'on a soi-même écrite reçoit un kudos ou un bookmark
-- Pouvoir archiver une notification en un clic, pas seulement la marquer comme lue
-- Choisir parmi des modèles tout prêts pour changer le texte ou l'apparence des notifications
+- ~~Regrouper intelligemment plusieurs notifications ensemble~~ ✅ Fait
+  Le flux est regroupé par période (Aujourd'hui / Hier / Cette semaine /
+  Plus ancien) plutôt que par simple statut terminé/en cours.
+- ~~Un résumé quotidien ou hebdomadaire des mises à jour, plutôt que chaque mise à jour affichée séparément~~ ✅ Fait
+  Réglage `digestMode` (`daily`/`weekly`) : une ligne de résumé par jour ou
+  semaine ("3 updates across 2 works • 🎉 1 finished") à la place du détail
+  par œuvre.
+- ~~Des niveaux de priorité pour les notifications~~ ✅ Fait
+  Chaque mise à jour reçoit une priorité `high`/`normal` (terminaison ou gros
+  saut de chapitres ≥ 3 = `high`), avec un badge "⚡ Big update" et un tri
+  "Priority" dans le flux.
+- ~~Pouvoir reporter une notification à plus tard~~ ✅ Fait
+  Bouton "Snooze" (24h) sur chaque item ; l'entrée réapparaît automatiquement
+  passé ce délai, sans job d'arrière-plan dédié (calculé à l'affichage).
+- ~~Un widget de notifications directement sur la page d'accueil, en plus de la cloche dans le menu~~ ✅ Fait
+  Réglage `showHomepageWidget` : encart "What's New" avec les 3 dernières
+  mises à jour non vues, sur `/` et `/home`.
+- ~~Choisir de recevoir des notifications seulement pour certains types d'événements (par exemple juste les favoris, pas la liste "à lire plus tard")~~ ✅ Fait
+  Réglages `trackBookmarks` / `trackMFL` / `trackHistory` / `trackSubscriptions`
+  (case par source, activées par défaut sauf les abonnements).
+- ~~Être notifié quand quelqu'un répond à un commentaire qu'on a laissé, ou reçoit un message dans sa boîte de réception AO3~~ ❌ Écarté
+  AO3 fournit déjà nativement une boîte de réception et des emails pour ça ;
+  dupliquer ce suivi demanderait de scraper en continu une page
+  supplémentaire pour un service déjà reçu nativement.
+- ~~Suivre aussi les abonnements AO3 (auteurs ou séries suivis), pas seulement les favoris, la liste "à lire plus tard" et l'historique~~ ✅ Fait
+  Réglage `trackSubscriptions` : récupère `/users/<toi>/subscriptions?type=Work`
+  au plus toutes les 6h (une page de listing complète, donc vérifiée moins
+  souvent que les autres sources) et ajoute les works trouvés au suivi.
+- ~~Être notifié quand une fic qu'on a soi-même écrite reçoit un kudos ou un bookmark~~ ❌ Écarté
+  AO3 envoie déjà un email natif à chaque kudos/bookmark reçu. Ce module
+  suit les mises à jour des fics qu'on **lit**, pas l'activité sur celles
+  qu'on écrit soi-même — changement de périmètre trop large pour un gain
+  marginal par rapport à la notification native déjà existante.
+- ~~Pouvoir archiver une notification en un clic, pas seulement la marquer comme lue~~ ✅ Fait
+  Bouton "Archive" sur chaque item : supprime définitivement l'entrée du
+  flux (au lieu de simplement la marquer vue).
+- ~~Choisir parmi des modèles tout prêts pour changer le texte ou l'apparence des notifications~~ ❌ Écarté
+  Même raisonnement que les personnalisations de bouton/icône écartées
+  ailleurs dans le projet (ficActions, ficPeek) : gain cosmétique
+  disproportionné par rapport à la configuration nécessaire.
+
+## Nettoyage connexe
+
+La section "Sync & Refresh" du panneau (`enableSync`, `sortBy`, `autoRefresh`)
+n'était jamais branchée à un vrai comportement — elle a été retirée plutôt
+que simulée, remplacée par les réglages réels ci-dessus (`trackBookmarks`
+et consorts pour le filtrage par source, le tri du flux existe déjà bel et
+bien via le sélecteur "Sort by" du panneau flottant, et l'actualisation
+automatique toutes les 15 minutes était déjà un vrai comportement, pas un
+placeholder).
 
 ## Précision
 
@@ -71,24 +121,30 @@ AO3 Helper - Notification Center
     Module ID: notificationCenter
 
     - Feature: What's New feed
-      - Option: Tracks chapter updates for bookmarked, MFL, and history works
+      - Option: Tracks chapter updates for bookmarked, MFL, history, and (optionally) subscribed works
       - Option: Delta display ("+ 2 chapters")
       - Option: "Finished!" celebration (special badge + confetti)
+      - Option: "⚡ Big update" priority badge for large chapter jumps
       - Option: 90-day rolling history (older entries auto-purged)
-      - Option: Mark item as seen / Mark all seen
-      - Option: Sort by date or title
-      - Option: Filter by source (bookmarks / MFL / history)
+      - Option: Mark item as seen / Mark all seen / Snooze 24h / Archive
+      - Option: Sort by date, title, or priority
+      - Option: Filter by source (bookmarks / MFL / history / subscriptions)
       - Option: Hide completed works from feed
+      - Option: Grouped by recency (Today/Yesterday/This week/Older), or collapsed into a daily/weekly digest
 
     - Feature: Navbar badge
       - Option: Bell icon with unread count in header
       - Option: Active state (red) when there are unseen updates
       - Option: Click opens the What's New feed panel
 
+    - Feature: Homepage widget
+      - Option: Compact "What's New" box on the AO3 homepage, up to 3 unseen updates
+
     - Feature: Auto-refresh
       - Option: Background check every 15 minutes
       - Option: Checks up to 5 unvisited WIP works per cycle
       - Option: Immediate check on page load if last refresh > 15 min ago
+      - Option: AO3 subscriptions list re-fetched at most every 6h (when trackSubscriptions is on)
 
     - Feature: Desktop notifications
       - Option: Browser Notification API (requires permission)
@@ -103,6 +159,11 @@ AO3 Helper - Notification Center
         ao3h:bookmarkVault:data  -- bookmarkVault (Library, migré Phase 23)
         ao3h:laterShelf:items    -- laterShelf (Library, migré Phase 23)
         ao3h:rt:history          -- readingTracker (Reading, migré Phase 20)
+
+    Dépendance réseau supplémentaire (quand trackSubscriptions est actif) :
+        GET /users/<username>/subscriptions?type=Work -- page AO3 native, parsée
+        via lib/ao3/parsers.js (findAllBlurbs/extractWorkIdFromBlurb) ; username
+        obtenu via lib/utils/user-detector.js (detectUser).
 
 
 
@@ -147,23 +208,26 @@ Les mises à jour détectées sont regroupées dans un flux intitulé **What’s
 | `quietHoursEnabled`    | Active une plage horaire pendant laquelle aucune notification du navigateur n’est envoyée.                                               |
 | `quietHoursStart`      | Définit l’heure de début des heures calmes.                                                                                              |
 | `quietHoursEnd`        | Définit l’heure de fin des heures calmes.                                                                                                |
+| `trackBookmarks`       | Surveille les œuvres en favoris.                                                                                                         |
+| `trackMFL`             | Surveille les œuvres de la liste **Marked for Later**.                                                                                   |
+| `trackHistory`         | Surveille les œuvres de l’historique de lecture.                                                                                         |
+| `trackSubscriptions`   | Surveille aussi les œuvres auxquelles l’utilisateur est abonné sur AO3 (vérifiées au plus toutes les 6 heures).                          |
+| `digestMode`           | `off` (une entrée par mise à jour), `daily` ou `weekly` (un résumé regroupé par jour ou semaine).                                        |
+| `showHomepageWidget`   | Affiche un encart **What’s New** sur la page d’accueil AO3, en plus de la cloche du menu.                                                |
 
-Le panneau affiche également une section **Sync & Refresh** proposant des options liées :
-
-* à la synchronisation ;
-* au tri ;
-* à l’actualisation.
-
-Ces options ne sont pas encore reliées à une fonctionnalité active.
+La section **Sync & Refresh** précédemment affichée (options `enableSync`,
+`sortBy`, `autoRefresh` jamais reliées à une fonctionnalité active) a été
+retirée du panneau et remplacée par les réglages réels ci-dessus.
 
 ---
 
 # Structure du module
 
-Le module est composé d’un fichier fonctionnel unique et d’une feuille de style.
+Le module est composé d’un fichier fonctionnel principal, d’un fichier de logique extraite et d’une feuille de style.
 
 ```text
 notificationCenter.js
+notificationCenterHelpers.js
 notificationCenter.css
 ```
 
@@ -468,108 +532,124 @@ Il définit notamment l’apparence :
 
 # Fonctionnalités non implémentées
 
-## Regroupement intelligent
+## Regroupement intelligent ✅ Fait
 
 Regrouper plusieurs notifications liées entre elles afin de réduire le nombre d’entrées affichées séparément.
 
----
-
-## Résumé périodique
-
-Créer un résumé :
-
-* quotidien ;
-* hebdomadaire.
-
-Ce résumé regrouperait les mises à jour plutôt que d’afficher chaque événement séparément.
+> Le flux est désormais regroupé par période (Aujourd’hui / Hier / Cette
+> semaine / Plus ancien) via `groupByBucket()`.
 
 ---
 
-## Niveaux de priorité
+## Résumé périodique ✅ Fait
+
+Créer un résumé quotidien ou hebdomadaire, plutôt que d’afficher chaque événement séparément.
+
+> Réglage `digestMode` (`daily`/`weekly`), calculé par `buildDigest()` :
+> une ligne par jour/semaine ("N updates across M works").
+
+---
+
+## Niveaux de priorité ✅ Fait
 
 Permettre d’attribuer différents niveaux de priorité aux notifications.
 
+> `computePriority()` : `high` pour une complétion ou un saut de ≥ 3
+> chapitres, `normal` sinon. Badge "⚡ Big update" et tri "Priority" dans le
+> flux.
+
 ---
 
-## Report d’une notification
+## Report d’une notification ✅ Fait
 
 Permettre de reporter une notification afin qu’elle réapparaisse plus tard.
 
+> Bouton "Snooze" (24h, `snoozeUntil()`/`isSnoozed()`) — l’entrée redevient
+> visible automatiquement à l’expiration, sans job d’arrière-plan dédié.
+
 ---
 
-## Widget sur la page d’accueil
+## Widget sur la page d’accueil ✅ Fait
 
 Ajouter un bloc de notifications directement sur la page d’accueil, en complément de la cloche du menu.
 
+> Réglage `showHomepageWidget` : encart avec les 3 dernières mises à jour
+> non vues, sur `/` et `/home`.
+
 ---
 
-## Filtrage des événements surveillés
+## Filtrage des événements surveillés ✅ Fait
 
 Permettre de choisir les sources qui peuvent produire des notifications.
 
-Par exemple :
-
-* recevoir uniquement les mises à jour des favoris ;
-* ignorer les œuvres de **Marked for Later** ;
-* ignorer les œuvres provenant de l’historique.
+> Réglages `trackBookmarks` / `trackMFL` / `trackHistory` /
+> `trackSubscriptions`, un par source.
 
 ---
 
-## Réponses aux commentaires et boîte de réception
+## Réponses aux commentaires et boîte de réception ❌ Écarté
 
-Notifier l’utilisateur lorsqu’il :
+Notifier l’utilisateur lorsqu’il reçoit une réponse à un commentaire ou un message dans sa boîte de réception AO3.
 
-* reçoit une réponse à un commentaire ;
-* reçoit un nouveau message dans sa boîte de réception AO3.
-
----
-
-## Suivi des abonnements AO3
-
-Surveiller également les abonnements AO3, notamment :
-
-* les auteurs ;
-* les séries ;
-* les œuvres suivies.
-
-Le système actuel utilise uniquement :
-
-* les favoris ;
-* Marked for Later ;
-* l’historique de lecture.
+> Écarté : AO3 fournit déjà nativement une boîte de réception et des emails
+> pour ça — dupliquer ce suivi demanderait de scraper en continu une page
+> supplémentaire pour un service déjà reçu nativement.
 
 ---
 
-## Activité sur ses propres œuvres
+## Suivi des abonnements AO3 ✅ Fait
 
-Notifier l’utilisateur lorsqu’une œuvre qu’il a publiée reçoit :
+Surveiller également les abonnements AO3 (œuvres suivies), en plus des favoris, de Marked for Later et de l’historique.
 
-* un kudos ;
-* un favori.
+> Réglage `trackSubscriptions` : récupère `/users/<toi>/subscriptions?type=Work`
+> au plus toutes les 6h (page de listing complète, donc vérifiée moins
+> souvent que les autres sources) via `parseSubscribedWorkIds()`.
 
 ---
 
-## Archivage
+## Activité sur ses propres œuvres ❌ Écarté
+
+Notifier l’utilisateur lorsqu’une œuvre qu’il a publiée reçoit un kudos ou un favori.
+
+> Écarté : AO3 envoie déjà un email natif pour ça. Ce module suit les mises
+> à jour des fics qu’on **lit**, pas l’activité sur celles qu’on écrit
+> soi-même — changement de périmètre trop large pour un gain marginal.
+
+---
+
+## Archivage ✅ Fait
 
 Ajouter une action permettant d’archiver une notification en un clic.
 
-Le système actuel permet uniquement de la marquer comme vue.
+> Bouton "Archive" : supprime définitivement l’entrée du flux, au lieu de
+> simplement la marquer vue.
 
 ---
 
-## Modèles de notification
+## Modèles de notification ❌ Écarté
 
-Proposer plusieurs modèles permettant de modifier :
+Proposer plusieurs modèles permettant de modifier le texte, l’apparence et la présentation des notifications.
 
-* le texte des notifications ;
-* leur apparence ;
-* leur présentation.
+> Écarté : même raisonnement que les personnalisations de bouton/icône
+> écartées ailleurs dans le projet (ficActions, ficPeek) — gain cosmétique
+> disproportionné par rapport à la configuration nécessaire.
 
 ---
 
 # Décisions de conception
 
-Aucune fonctionnalité n’est explicitement indiquée comme définitivement écartée dans la documentation actuelle.
+## Périmètre : ce qu'on lit, pas ce qu'on écrit
+
+Le module notifie sur les mises à jour des œuvres qu'on suit en tant que
+lecteur (favoris, Marked for Later, historique, abonnements) — pas sur
+l'activité que reçoivent les œuvres qu'on a soi-même publiées (kudos,
+favoris). AO3 couvre déjà ce second cas par email natif.
+
+## Pas de doublon de la boîte de réception AO3
+
+Les réponses aux commentaires et les messages de la boîte de réception AO3
+restent gérés nativement par AO3 (page + emails) plutôt que scrapés en
+continu par ce module.
 
 ---
 

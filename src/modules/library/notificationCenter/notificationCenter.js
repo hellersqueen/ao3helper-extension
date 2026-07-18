@@ -37,6 +37,10 @@ import { getHistoryWorkIdSet, getBookmarkVaultWorkIds, getLaterShelfWorkIds } fr
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { sendNotification, requestNotifyPermission } from '../../../../lib/utils/notifications.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { detectUser } from '../../../../lib/utils/user-detector.js';
+import {
+  groupByBucket, computePriority, isSnoozed, snoozeUntil, buildDigest, parseSubscribedWorkIds,
+} from './notificationCenterHelpers.js';
 import styles from './notificationCenter.css?inline';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -55,6 +59,9 @@ const D    = document;
 const SK_FEED     = 'ao3h:notifCenter:feed';
 const SK_CHAPTERS = 'ao3h:notifCenter:knownChapters';
 const SK_REFRESH  = 'ao3h:notifCenter:lastRefresh';
+const SK_SUB_REFRESH   = 'ao3h:notifCenter:lastSubRefresh';
+const SUB_REFRESH_MS   = 6 * 60 * 60 * 1000; // subscriptions list checked at most every 6h
+const SNOOZE_HOURS     = 24;
 
 const DEFAULTS = {
   desktopNotifications: false,
@@ -62,6 +69,12 @@ const DEFAULTS = {
   quietHoursEnabled:    false,
   quietHoursStart:      '22:00',
   quietHoursEnd:        '08:00',
+  trackBookmarks:       true,
+  trackMFL:             true,
+  trackHistory:         true,
+  trackSubscriptions:   false,
+  digestMode:           'off', // 'off' | 'daily' | 'weekly'
+  showHomepageWidget:   true,
 };
 
 const cfg = makeCfg(MOD, DEFAULTS, { globalConfig: true });
@@ -79,6 +92,7 @@ register(MOD, {
   var requestController = new AbortController();
   var confettiTimer = null;
   var audioContexts = new Set();
+  var subscribedWorkIds = [];
 
   /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — FEED STORAGE
@@ -94,7 +108,7 @@ register(MOD, {
   }
 
   function unseenCount (feed) {
-    return feed.filter(function (i) { return !i.seen; }).length;
+    return feed.filter(function (i) { return !i.seen && !isSnoozed(i); }).length;
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -118,10 +132,33 @@ register(MOD, {
   ═════════════════════════════════════════════════════════════════════════ */
   function getTrackedWorks () {
     var wids = new Map();
-    getBookmarkVaultWorkIds().forEach(function (w) { if (wids.has(w) === false) wids.set(w, 'bookmark'); });
-    getLaterShelfWorkIds().forEach(function (w) { if (wids.has(w) === false) wids.set(w, 'mfl'); });
-    getHistoryWorkIdSet().forEach(function (w) { if (wids.has(w) === false) wids.set(w, 'history'); });
+    if (cfg('trackBookmarks')) getBookmarkVaultWorkIds().forEach(function (w) { if (wids.has(w) === false) wids.set(w, 'bookmark'); });
+    if (cfg('trackMFL'))       getLaterShelfWorkIds().forEach(function (w) { if (wids.has(w) === false) wids.set(w, 'mfl'); });
+    if (cfg('trackHistory'))   getHistoryWorkIdSet().forEach(function (w) { if (wids.has(w) === false) wids.set(w, 'history'); });
+    if (cfg('trackSubscriptions')) subscribedWorkIds.forEach(function (w) { if (wids.has(w) === false) wids.set(w, 'subscription'); });
     return wids;
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — AO3 SUBSCRIPTIONS TRACKING
+  ═════════════════════════════════════════════════════════════════════════ */
+  async function refreshSubscriptions () {
+    if (cfg('trackSubscriptions') === false) return;
+    var last = parseInt(localStorage.getItem(SK_SUB_REFRESH) || '0', 10);
+    if (Date.now() - last < SUB_REFRESH_MS) return;
+    var username = detectUser();
+    if (!username) return;
+    try {
+      var resp = await fetch('/users/' + encodeURIComponent(username) + '/subscriptions?type=Work', {
+        credentials: 'same-origin',
+        signal: requestController.signal,
+      });
+      if (!isActive() || resp.ok === false) return;
+      var html = await resp.text();
+      if (!isActive()) return;
+      subscribedWorkIds = parseSubscribedWorkIds(html);
+      localStorage.setItem(SK_SUB_REFRESH, String(Date.now()));
+    } catch (_) { /* subscriptions page unreachable this cycle — try again next time */ }
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -171,7 +208,8 @@ register(MOD, {
       var feed = purgeFeed(loadFeed());
       feed = feed.filter(function (i) { return i.wid !== wid; });
       feed.unshift({ wid: wid, title: title, href: href, delta: delta,
-                     source: 'history', completedNow: completedNow, ts: Date.now(), seen: false });
+                     source: 'history', completedNow: completedNow, ts: Date.now(), seen: false,
+                     priority: computePriority({ completedNow: completedNow, delta: delta }) });
       saveFeed(feed);
       updateBadge();
       if (completedNow) {
@@ -188,6 +226,8 @@ register(MOD, {
   ═════════════════════════════════════════════════════════════════════════ */
   async function runBackgroundCheck () {
     if (active === false) return;
+    await refreshSubscriptions();
+    if (!isActive()) return;
     var tracked  = getTrackedWorks();
     var known    = loadChapters();
     var feed     = purgeFeed(loadFeed());
@@ -221,7 +261,8 @@ register(MOD, {
           feed = feed.filter(function (i) { return i.wid !== wid; });
           feed.unshift({ wid: wid, title: info.title || ('Work #' + wid), href: '/works/' + wid,
                          delta: delta, source: source, completedNow: completedNow,
-                         ts: Date.now(), seen: false });
+                         ts: Date.now(), seen: false,
+                         priority: computePriority({ completedNow: completedNow, delta: delta }) });
           if (completedNow) fireDesktopNotif('🎉 Finished!', info.title + ' is now complete!');
           else fireDesktopNotif('🔄 Update', info.title + ' — +' + delta + ' chapter' + (delta !== 1 ? 's' : ''));
         }
@@ -233,6 +274,7 @@ register(MOD, {
     localStorage.setItem(SK_REFRESH, String(Date.now()));
     updateBadge();
     if (feedPanel) renderFeedItems();
+    injectHomepageWidget();
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -270,27 +312,34 @@ register(MOD, {
   var feedPanel   = null;
   var filterState = { sort: 'date', source: 'all', hideComplete: false };
 
+  var SRC_MAP = { bookmark: '⭐', mfl: '📌', history: '📚', visit: '📚', subscription: '📰' };
+
   function buildFeedItem (item) {
     var li = D.createElement('li');
     li.className  = `${PFX}-item` +
       (item.seen         ? ` ${PFX}-seen`     : '') +
-      (item.completedNow ? ` ${PFX}-finished` : '');
+      (item.completedNow ? ` ${PFX}-finished` : '') +
+      (item.priority === 'high' ? ` ${PFX}-priority-high` : '');
     li.dataset.wid = item.wid;
     if (item.completedNow) {
       var fin = D.createElement('span');
       fin.className   = `${PFX}-fin-badge`;
       fin.textContent = '🎉 Finished!';
       li.appendChild(fin);
+    } else if (item.priority === 'high') {
+      var prio = D.createElement('span');
+      prio.className   = `${PFX}-priority-badge`;
+      prio.textContent = '⚡ Big update';
+      li.appendChild(prio);
     }
     var titleLink = D.createElement('a');
     titleLink.href        = item.href;
     titleLink.textContent = item.title || ('Work #' + item.wid);
     titleLink.className   = `${PFX}-title`;
     li.appendChild(titleLink);
-    var srcMap = { bookmark: '⭐', mfl: '📌', history: '📚', visit: '📚' };
     var meta = D.createElement('span');
     meta.className   = `${PFX}-meta`;
-    meta.textContent = (srcMap[item.source] || '') + ' +' + item.delta + ' ch. • ' +
+    meta.textContent = (SRC_MAP[item.source] || '') + ' +' + item.delta + ' ch. • ' +
                         new Date(item.ts).toLocaleDateString();
     li.appendChild(meta);
     var seenBtn = D.createElement('button');
@@ -305,15 +354,55 @@ register(MOD, {
       updateBadge();
     });
     li.appendChild(seenBtn);
+    var snoozeBtn = D.createElement('button');
+    snoozeBtn.className   = `${PFX}-snooze-btn`;
+    snoozeBtn.textContent = 'Snooze';
+    snoozeBtn.title       = 'Hide for ' + SNOOZE_HOURS + ' hours';
+    snoozeBtn.addEventListener('click', function () {
+      var feed  = loadFeed();
+      var entry = feed.find(function (i) { return i.wid === item.wid && i.ts === item.ts; });
+      if (entry) { entry.snoozedUntil = snoozeUntil(SNOOZE_HOURS); saveFeed(feed); }
+      updateBadge();
+      renderFeedItems();
+    });
+    li.appendChild(snoozeBtn);
+    var archiveBtn = D.createElement('button');
+    archiveBtn.className   = `${PFX}-archive-btn`;
+    archiveBtn.textContent = 'Archive';
+    archiveBtn.title       = 'Remove this notification permanently';
+    archiveBtn.addEventListener('click', function () {
+      var feed = loadFeed().filter(function (i) { return !(i.wid === item.wid && i.ts === item.ts); });
+      saveFeed(feed);
+      updateBadge();
+      renderFeedItems();
+    });
+    li.appendChild(archiveBtn);
     return li;
   }
 
   function getFilteredFeed () {
-    var feed = purgeFeed(loadFeed());
+    var feed = purgeFeed(loadFeed()).filter(function (i) { return !isSnoozed(i); });
     if (filterState.source !== 'all') feed = feed.filter(function (i) { return i.source === filterState.source; });
     if (filterState.hideComplete)     feed = feed.filter(function (i) { return !i.completedNow; });
-    if (filterState.sort === 'title') feed.sort(function (a, b) { return (a.title || '').localeCompare(b.title || ''); });
+    if (filterState.sort === 'title')    feed.sort(function (a, b) { return (a.title || '').localeCompare(b.title || ''); });
+    if (filterState.sort === 'priority') feed.sort(function (a, b) { return (b.priority === 'high' ? 1 : 0) - (a.priority === 'high' ? 1 : 0); });
     return feed;
+  }
+
+  function buildDigestRow (entry) {
+    var li = D.createElement('li');
+    li.className = `${PFX}-digest-row`;
+    var label = D.createElement('span');
+    label.className   = `${PFX}-digest-date`;
+    label.textContent = new Date(entry.ts).toLocaleDateString();
+    var summary = D.createElement('span');
+    summary.className   = `${PFX}-digest-summary`;
+    summary.textContent = entry.updateCount + ' update' + (entry.updateCount !== 1 ? 's' : '') +
+      ' across ' + entry.workCount + ' work' + (entry.workCount !== 1 ? 's' : '') +
+      (entry.finishedCount > 0 ? ' • 🎉 ' + entry.finishedCount + ' finished' : '');
+    li.appendChild(label);
+    li.appendChild(summary);
+    return li;
   }
 
   function renderFeedItems () {
@@ -329,18 +418,20 @@ register(MOD, {
       ul.appendChild(empty);
       return;
     }
-    var finished = feed.filter(function (i) { return  i.completedNow; });
-    var updates  = feed.filter(function (i) { return !i.completedNow; });
-    function renderGroup (items, label) {
-      if (items.length === 0) return;
+
+    var digest = buildDigest(feed, cfg('digestMode'));
+    if (digest) {
+      digest.forEach(function (entry) { ul.appendChild(buildDigestRow(entry)); });
+      return;
+    }
+
+    groupByBucket(feed).forEach(function (group) {
       var hdr = D.createElement('li');
       hdr.className   = `${PFX}-group-hdr`;
-      hdr.textContent = label;
+      hdr.textContent = group.label;
       ul.appendChild(hdr);
-      items.forEach(function (i) { ul.appendChild(buildFeedItem(i)); });
-    }
-    renderGroup(finished, '🎉 Finished');
-    renderGroup(updates,  '🔄 Updates');
+      group.items.forEach(function (i) { ul.appendChild(buildFeedItem(i)); });
+    });
   }
 
   function injectFeedPanel () {
@@ -368,7 +459,7 @@ register(MOD, {
     var sortSel = D.createElement('select');
     sortSel.id    = `${PFX}-sort`;
     sortSel.title = 'Sort by';
-    [['date','Date'],['title','Title']].forEach(function (o) {
+    [['date','Date'],['title','Title'],['priority','Priority']].forEach(function (o) {
       var opt = D.createElement('option');
       opt.value = o[0]; opt.textContent = o[1]; sortSel.appendChild(opt);
     });
@@ -376,7 +467,7 @@ register(MOD, {
     var srcSel = D.createElement('select');
     srcSel.id    = `${PFX}-source`;
     srcSel.title = 'Filter by source';
-    [['all','All sources'],['bookmark','⭐ Bookmarks'],['mfl','📌 MFL'],['history','📚 History']].forEach(function (o) {
+    [['all','All sources'],['bookmark','⭐ Bookmarks'],['mfl','📌 MFL'],['history','📚 History'],['subscription','📰 Subscriptions']].forEach(function (o) {
       var opt = D.createElement('option');
       opt.value = o[0]; opt.textContent = o[1]; srcSel.appendChild(opt);
     });
@@ -484,11 +575,51 @@ register(MOD, {
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — HOMEPAGE WIDGET
+  ═════════════════════════════════════════════════════════════════════════ */
+  function isHomePage () { return location.pathname === '/' || location.pathname === '/home'; }
+
+  function injectHomepageWidget () {
+    if (cfg('showHomepageWidget') === false) return;
+    if (!isHomePage()) return;
+    if (D.getElementById(`${PFX}-home-widget`)) return;
+
+    var feed = getFilteredFeed().filter(function (i) { return !i.seen; }).slice(0, 3);
+    if (feed.length === 0) return;
+
+    var widget = D.createElement('div');
+    widget.id        = `${PFX}-home-widget`;
+    widget.className = `${PFX}-home-widget`;
+    var hdr = D.createElement('strong');
+    hdr.textContent = "🔔 What's New";
+    widget.appendChild(hdr);
+    var list = D.createElement('ul');
+    feed.forEach(function (item) {
+      var li = D.createElement('li');
+      var a = D.createElement('a');
+      a.href        = item.href;
+      a.textContent = item.title || ('Work #' + item.wid);
+      li.appendChild(a);
+      li.appendChild(D.createTextNode(' +' + item.delta + ' ch.'));
+      list.appendChild(li);
+    });
+    widget.appendChild(list);
+    var viewAll = D.createElement('button');
+    viewAll.textContent = 'View all';
+    viewAll.addEventListener('click', toggleFeedPanel);
+    widget.appendChild(viewAll);
+
+    var anchor = D.querySelector('#dashboard') || D.querySelector('#main');
+    if (anchor) anchor.insertAdjacentElement('afterbegin', widget);
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
      BOOT
   ═════════════════════════════════════════════════════════════════════════ */
 
   injectBadge();
   onWorkPage();
+  injectHomepageWidget();
   scheduleRefresh();
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -499,6 +630,7 @@ register(MOD, {
     requestController.abort();
     if (badgeEl   && badgeEl.parentNode)   badgeEl.parentNode.removeChild(badgeEl);
     if (feedPanel && feedPanel.parentNode) feedPanel.parentNode.removeChild(feedPanel);
+    D.getElementById(`${PFX}-home-widget`)?.remove();
     if (refreshTimer) clearInterval(refreshTimer);
     if (initialRefreshTimer) clearTimeout(initialRefreshTimer);
     if (confettiTimer) clearTimeout(confettiTimer);

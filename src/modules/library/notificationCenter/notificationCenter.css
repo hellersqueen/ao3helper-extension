@@ -321,7 +321,9 @@
 }
 
 /*- Bouton "Marquer comme lu" sur chaque item */
-.ao3h-nc-seen-btn {
+.ao3h-nc-seen-btn,
+.ao3h-nc-snooze-btn,
+.ao3h-nc-archive-btn {
   font-size: .75em;
   padding: 1px 6px;
   border: 1px solid var(--ao3h-nc-border);
@@ -330,11 +332,41 @@
   cursor: pointer;
 }
 
+/*- Badge "⚡ Big update" pour les items de priorité haute (non terminés) */
+.ao3h-nc-priority-badge {
+  font-size: .75em;
+  background: #eef2ff;
+  color: #4338ca;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
 /*- Message affiché quand la liste est vide */
 .ao3h-nc-empty {
   padding: 16px;
   color: var(--ao3h-nc-meta-color);
   text-align: center;
+}
+
+/*- Ligne de résumé quand le mode "digest" (quotidien/hebdomadaire) est actif */
+.ao3h-nc-digest-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--ao3h-nc-group-bg);
+  font-size: .85em;
+}
+
+.ao3h-nc-digest-date {
+  font-weight: 600;
+  color: var(--ao3h-nc-title-color);
+  white-space: nowrap;
+}
+
+.ao3h-nc-digest-summary {
+  color: var(--ao3h-nc-meta-color);
+  text-align: right;
 }
 
 
@@ -367,4 +399,44 @@
   0%   { opacity: 1; }
   70%  { opacity: .6; }
   100% { opacity: 0; }
+}
+
+
+/*====
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — WIDGET PAGE D'ACCUEIL
+  ───────────────────────────────────────────────────────────────────────
+    Petit encart "What's New" injecté en haut de la page d'accueil AO3,
+    en complément de la cloche du menu.
+    ⚠️ #ao3h-nc-home-widget est injecté par JS uniquement quand il y a des
+       mises à jour non vues et que showHomepageWidget est activé.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-nc-home-widget {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--ao3h-nc-border);
+  border-radius: 6px;
+  background: var(--ao3h-nc-panel-bg);
+  font-size: .9em;
+}
+
+.ao3h-nc-home-widget ul {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+}
+
+.ao3h-nc-home-widget li {
+  padding: 2px 0;
+}
+
+.ao3h-nc-home-widget button {
+  font-size: .8em;
+  padding: 2px 8px;
+  border: 1px solid var(--ao3h-nc-border);
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
 }
