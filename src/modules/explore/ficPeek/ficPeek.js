@@ -36,6 +36,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, observe as libObserve } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { pickChapterIndex, buildCacheKey, isCacheEntryFresh, truncateFullChapterText } from './ficPeekExcerpt.js';
 import styles from './ficPeek.css?inline';
 
 
@@ -54,8 +55,10 @@ const W = getGlobalWindow();
 const previewCache = new Map();
 const behaviorCleanups = new Set();
 const requestControllers = new Set();
-// SessionStorage key prefix for cross-navigation caching.
+// SessionStorage key prefix for cross-navigation caching (session-scoped).
 const SS_KEY_PREFIX = 'ao3h:ficPeek:preview:';
+// LocalStorage key prefix, used instead of SS_KEY_PREFIX when persistCache is on.
+const LS_KEY_PREFIX = 'ao3h:ficPeek:preview:persist:';
 
 const cfg = makeCfg(MOD_ID);
 
@@ -99,6 +102,10 @@ function ensurePreviewContainer(blurb) {
   box = document.createElement('div');
   box.className = 'ao3h-fic-preview-box';
   box.setAttribute('hidden', 'hidden');
+  const maxHeightEm = parseFloat(cfg('maxPreviewHeightEm', 8.5));
+  if (Number.isFinite(maxHeightEm) && maxHeightEm > 0) {
+    box.style.setProperty('--ao3h-fp-box-max-height', `${maxHeightEm}em`);
+  }
 
   const target =
     blurb.querySelector('.summary') ||
@@ -146,24 +153,40 @@ function ensurePreviewButton(blurb) {
    FEATURE — EXCERPT EXTRACTION AND CACHING
 ═══════════════════════════════════════════════════════════════════════════ */
 
+/** All chapter `.userstuff` nodes available in a fetched work document, in order. */
+function collectChapterUserstuffs(doc) {
+  const chapters = Array.from(doc.querySelectorAll('#chapters .chapter'));
+  if (chapters.length) {
+    return chapters
+      .map((ch) => ch.querySelector('.userstuff.module') || ch.querySelector('.userstuff'))
+      .filter(Boolean);
+  }
+  const single = doc.querySelector('#workskin .userstuff') || doc.querySelector('.userstuff');
+  return single ? [single] : [];
+}
+
 /**
  * Extract preview text from a work page HTML string.
- * Respects excerptMode setting: 'paragraph' | '100words' | '250words' | 'custom'
+ * Respects excerptMode ('paragraph' | '100words' | '250words' | 'custom' |
+ * 'fullChapter') and chapterMode ('first' | 'last' | 'random').
  */
-function extractPreviewText(htmlText) {
+function extractPreviewText(htmlText, { excerptMode, excerptCustomWords, chapterMode }) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(htmlText, 'text/html');
 
-  const userstuff =
-    doc.querySelector('#chapters .chapter .userstuff') ||
-    doc.querySelector('#workskin .userstuff') ||
-    doc.querySelector('.userstuff');
+  const userstuffs = collectChapterUserstuffs(doc);
+  if (!userstuffs.length) return null;
+  const userstuff = userstuffs[pickChapterIndex(userstuffs.length, chapterMode)];
 
-  if (!userstuff) return null;
+  if (excerptMode === 'fullChapter') {
+    const full = Array.from(userstuff.querySelectorAll('p'))
+      .map((p) => (p.textContent || '').trim())
+      .filter(Boolean)
+      .join('\n\n');
+    return truncateFullChapterText(full) || null;
+  }
 
-  const mode = cfg('excerptMode', 'paragraph');
-
-  if (mode === 'paragraph') {
+  if (excerptMode === 'paragraph') {
     // Return first non-empty paragraph
     for (const p of userstuff.querySelectorAll('p')) {
       const text = (p.textContent || '').trim();
@@ -174,9 +197,9 @@ function extractPreviewText(htmlText) {
 
   // Word-limit modes
   let limit;
-  if (mode === '100words') limit = 100;
-  else if (mode === '250words') limit = 250;
-  else limit = parseInt(cfg('excerptCustomWords', 150), 10) || 150;
+  if (excerptMode === '100words') limit = 100;
+  else if (excerptMode === '250words') limit = 250;
+  else limit = parseInt(excerptCustomWords, 10) || 150;
 
   // Collect text from all paragraphs until limit
   const parts = [];
@@ -199,27 +222,68 @@ function extractPreviewText(htmlText) {
   return parts.join('\n\n') || null;
 }
 
+/** Builds the URL to fetch: the plain work URL for chapter 1, or the full
+ *  work (all chapters in one document) when a non-default chapter is wanted. */
+function buildFetchUrl(workUrl, chapterMode) {
+  if (chapterMode === 'first') return workUrl;
+  try {
+    const url = new URL(workUrl);
+    url.searchParams.set('view_full_work', 'true');
+    return url.toString();
+  } catch (_) {
+    return workUrl;
+  }
+}
+
+function excerptSettings() {
+  return {
+    excerptMode: cfg('excerptMode', 'paragraph'),
+    excerptCustomWords: cfg('excerptCustomWords', 150),
+    chapterMode: cfg('excerptChapter', 'first'),
+  };
+}
+
+function readCachedEntry(key) {
+  if (cfg('disableCache', false)) return null;
+  if (previewCache.has(key)) return previewCache.get(key);
+
+  const store = cfg('persistCache', false) ? localStorage : sessionStorage;
+  const prefix = cfg('persistCache', false) ? LS_KEY_PREFIX : SS_KEY_PREFIX;
+  try {
+    const raw = store.getItem(prefix + key);
+    if (raw === null) return null;
+    const entry = JSON.parse(raw);
+    if (!isCacheEntryFresh(entry.cachedAt, cfg('cacheTTLHours', 168))) return null;
+    previewCache.set(key, entry.text);
+    return entry.text;
+  } catch (_) { return null; }
+}
+
+function writeCachedEntry(key, text) {
+  if (cfg('disableCache', false)) return;
+  previewCache.set(key, text);
+  const store = cfg('persistCache', false) ? localStorage : sessionStorage;
+  const prefix = cfg('persistCache', false) ? LS_KEY_PREFIX : SS_KEY_PREFIX;
+  try {
+    store.setItem(prefix + key, JSON.stringify({ text, cachedAt: Date.now() }));
+  } catch (_) { /* quota exceeded or unavailable */ }
+}
+
 /**
- * Fetch the work page and return a preview text (first paragraph).
+ * Fetch the work page and return preview text for the configured chapter and
+ * excerpt length, using the in-memory/session/local cache when available.
  */
 async function fetchPreviewText(workUrl, signal) {
   if (!workUrl) return null;
 
-  // Check in-memory cache first.
-  if (previewCache.has(workUrl)) {
-    return previewCache.get(workUrl);
-  }
-  // Fall back to SessionStorage (persists across navigations in the same tab).
-  try {
-    const stored = sessionStorage.getItem(SS_KEY_PREFIX + workUrl);
-    if (stored !== null) {
-      previewCache.set(workUrl, stored);
-      return stored;
-    }
-  } catch (_) { /* sessionStorage unavailable */ }
+  const settings = excerptSettings();
+  const key = buildCacheKey(workUrl, settings);
+
+  const cached = readCachedEntry(key);
+  if (cached !== null) return cached;
 
   try {
-    const res = await fetch(workUrl, {
+    const res = await fetch(buildFetchUrl(workUrl, settings.chapterMode), {
       credentials: 'include',
       signal,
     });
@@ -229,11 +293,10 @@ async function fetchPreviewText(workUrl, signal) {
     }
 
     const html = await res.text();
-    const preview = (extractPreviewText(html) || '').trim();
+    const preview = (extractPreviewText(html, settings) || '').trim();
     const finalText = preview || '[No preview text found]';
 
-    previewCache.set(workUrl, finalText);
-    try { sessionStorage.setItem(SS_KEY_PREFIX + workUrl, finalText); } catch (_) { /* quota exceeded or unavailable */ }
+    writeCachedEntry(key, finalText);
     return finalText;
   } catch (err) {
     if (err?.name === 'AbortError') return null;
