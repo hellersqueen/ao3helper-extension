@@ -18,6 +18,11 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { getWorkTitle } from '../../../../lib/ao3/work-page.js';
+import {
+  parseChapterOptions, firstUnreadChapter,
+  buildBreadcrumbText, prependChapterToTitle,
+} from './chaptersPanelHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -26,14 +31,18 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 const W = getGlobalWindow();
 
 export class NavigationControls {
-  /** @param {{ NS, cfg, lsSet, SK_LASTCHAP }} opts */
-  constructor ({ NS, cfg, lsSet, SK_LASTCHAP }) {
+  /** @param {{ NS, cfg, lsGet, lsSet, SK_LASTCHAP, workId }} opts */
+  constructor ({ NS, cfg, lsGet, lsSet, SK_LASTCHAP, workId }) {
     this.NS         = NS;
     this.cfg        = cfg;
+    this.lsGet      = lsGet;
     this.lsSet      = lsSet;
     this.SK_LASTCHAP = SK_LASTCHAP;
+    this.workId      = workId;
     this._stickyCls  = `${NS}-sticky-nav-active`;
     this._labelId    = `${NS}-chapidx-label`;
+    this._breadcrumbId = `${NS}-chapter-breadcrumb`;
+    this._originalTitle = null;
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -90,14 +99,121 @@ export class NavigationControls {
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — BREADCRUMB
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  setupBreadcrumb () {
+    if (!this.cfg('showBreadcrumb')) return;
+    if (document.getElementById(this._breadcrumbId)) return;
+    const info = this._getChapterInfo();
+    if (!info) return;
+    const opt = document.querySelector('select#selected_id option[selected]');
+    const title = (opt?.textContent || '').replace(/^\d+\.\s*/, '').trim();
+    const el = document.createElement('div');
+    el.id = this._breadcrumbId;
+    el.className = `${this.NS}-chapter-breadcrumb`;
+    el.textContent = buildBreadcrumbText(getWorkTitle(), info.current, title);
+    const anchor = document.getElementById('workskin');
+    anchor?.insertAdjacentElement('afterbegin', el);
+  }
+
+  teardownBreadcrumb () {
+    document.getElementById(this._breadcrumbId)?.remove();
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — TAB TITLE
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  setupTabTitle () {
+    if (!this.cfg('tabTitleChapter')) return;
+    const info = this._getChapterInfo();
+    if (!info) return;
+    this._originalTitle = document.title;
+    document.title = prependChapterToTitle(document.title, info.current, info.total);
+  }
+
+  teardownTabTitle () {
+    if (this._originalTitle !== null) {
+      document.title = this._originalTitle;
+      this._originalTitle = null;
+    }
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — EMPHASIZED CHAPTER TITLE
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  setupEmphasis () {
+    if (!this.cfg('emphasizeChapterTitle')) return;
+    document.querySelector('#workskin .chapter .title, #workskin .preface h3.title')
+      ?.classList.add(`${this.NS}-chapter-title-emphasized`);
+  }
+
+  teardownEmphasis () {
+    document.querySelectorAll(`.${this.NS}-chapter-title-emphasized`)
+      .forEach(el => el.classList.remove(`${this.NS}-chapter-title-emphasized`));
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — NEXT-CHAPTER PREFETCH
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  setupPrefetch () {
+    if (!this.cfg('prefetchNextChapter')) return;
+    const next = document.querySelector('ul.work.navigation.actions li.chapter.next a');
+    const href = next?.getAttribute('href');
+    if (!href) return;
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = href;
+    link.className = `${this.NS}-chapter-prefetch`;
+    document.head.appendChild(link);
+  }
+
+  teardownPrefetch () {
+    document.querySelectorAll(`.${this.NS}-chapter-prefetch`).forEach(el => el.remove());
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — CHAPTER SHORTCUTS
   ═════════════════════════════════════════════════════════════════════════ */
+
+  _readChapters () {
+    const select = document.querySelector('select#selected_id');
+    if (!select) return [];
+    return parseChapterOptions(Array.from(select.options).map(o => ({
+      value: o.value, text: o.textContent, selected: o.selected,
+    })));
+  }
+
+  _lastReadNum () {
+    try {
+      const progress = W.AO3H_ReadingTracker?.getProgress?.(this.workId)
+        || this.lsGet?.(`ao3h:rt:progress:${this.workId}`);
+      return progress?.chapter ?? null;
+    } catch { return null; }
+  }
+
+  jumpToFirstUnread () {
+    const chapters = this._readChapters();
+    const target = firstUnreadChapter(chapters, this._lastReadNum());
+    if (target && this.workId) location.href = `/works/${this.workId}/chapters/${target.id}`;
+  }
+
+  jumpToLastChapter () {
+    const chapters = this._readChapters();
+    const last = chapters[chapters.length - 1];
+    if (last && this.workId) location.href = `/works/${this.workId}/chapters/${last.id}`;
+  }
 
   registerKeyboardShortcuts (MOD) {
     try {
       W.AO3H_KeyboardShortcuts?.register?.(MOD, [
         { key: 'ArrowLeft',  ctrlKey: true, label: 'Previous chapter', action: () => this.navPrev() },
         { key: 'ArrowRight', ctrlKey: true, label: 'Next chapter',     action: () => this.navNext() },
+        { key: 'Home', ctrlKey: true, shiftKey: true, label: 'Jump to first unread chapter', action: () => this.jumpToFirstUnread() },
+        { key: 'End',  ctrlKey: true, shiftKey: true, label: 'Jump to last chapter',          action: () => this.jumpToLastChapter() },
       ]);
     } catch {}
   }

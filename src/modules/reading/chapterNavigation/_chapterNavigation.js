@@ -13,10 +13,12 @@ AO3 Helper — Chapter Navigation Coordinator
 
     Submodules
 
-    - navigationControls.js: sticky navigation, labels, shortcuts, and cache
+    - navigationControls.js: sticky navigation, labels, shortcuts, breadcrumb,
+      tab title, chapter-title emphasis, next-chapter prefetch, and cache
     - blurbNavigation.js: Start, Continue, and Last Chapter listing links
     - autoScroll.js: configurable automatic work-page scrolling
     - chapterWordCount.js: per-chapter prose word-count badges
+    - chaptersPanel.js: floating "📑 Chapters" search/mini-map/marks panel
 
     Notes
 
@@ -39,6 +41,7 @@ import styles from './chapterNavigation.css?inline';
 import { NavigationControls } from './navigationControls.js';
 import { AutoScroll } from './autoScroll.js';
 import { BlurbNavigation } from './blurbNavigation.js';
+import { ChaptersPanel } from './chaptersPanel.js';
 import './chapterWordCount.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -58,6 +61,11 @@ const DEFAULTS = {
   autoScrollSpeed:         50,
   autoScrollAutoAdvance:   false,
   autoScrollShowControls:  true,
+  chapterPanel:            true,
+  showBreadcrumb:          true,
+  tabTitleChapter:         false,
+  emphasizeChapterTitle:   false,
+  prefetchNextChapter:     true,
 };
 
 const cfg = makeCfg(MOD, DEFAULTS);
@@ -81,6 +89,7 @@ function isListingPage () {
 
 let navCtrl   = null;
 let autoScroll = null;
+let chaptersPanel = null;
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE LIFECYCLE
@@ -96,10 +105,9 @@ register(
       getChapterInfo: () => document.querySelector('dd.chapters')?.textContent ?? null,
     };
 
-    const diOpts = { NS, cfg, lsGet, lsSet, SK_LASTCHAP };
-
     if (isWorkPage()) {
       const workId = extractWorkIdFromHref(location.pathname);
+      const diOpts = { NS, cfg, lsGet, lsSet, SK_LASTCHAP, workId };
 
       navCtrl = new NavigationControls(diOpts);
 
@@ -107,8 +115,15 @@ register(
         navCtrl.setupStickyNav();
         navCtrl.setupChapterIndexLabel();
         if (workId) navCtrl.cacheLastChapter(workId);
+
+        chaptersPanel = new ChaptersPanel({ NS, cfg, workId });
+        chaptersPanel.setup();
       }
 
+      navCtrl.setupBreadcrumb();
+      navCtrl.setupTabTitle();
+      navCtrl.setupEmphasis();
+      navCtrl.setupPrefetch();
       navCtrl.registerKeyboardShortcuts(MOD);
 
       autoScroll = new AutoScroll(diOpts);
@@ -117,19 +132,25 @@ register(
 
     let blurbNav = null;
     if (isListingPage()) {
-      blurbNav = new BlurbNavigation(diOpts);
+      blurbNav = new BlurbNavigation({ NS, cfg, lsGet, SK_LASTCHAP });
       blurbNav.setup();
     }
 
     return function cleanup () {
       autoScroll?.teardown();
+      chaptersPanel?.teardown();
       navCtrl?.teardownStickyNav();
       navCtrl?.teardownChapterIndexLabel();
+      navCtrl?.teardownBreadcrumb();
+      navCtrl?.teardownTabTitle();
+      navCtrl?.teardownEmphasis();
+      navCtrl?.teardownPrefetch();
       navCtrl?.unregisterKeyboardShortcuts(MOD);
       blurbNav?.teardown();
       delete W.AO3H_ChapterNavigation;
       navCtrl   = null;
       autoScroll = null;
+      chaptersPanel = null;
     };
   }
 );

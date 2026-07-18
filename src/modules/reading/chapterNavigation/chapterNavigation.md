@@ -19,6 +19,11 @@ défilement automatique, et un compteur de mots par chapitre.
 | `autoScrollShowControls` | activé | Affiche les boutons de vitesse et de pause du défilement automatique |
 | `autoScrollSpeed` | `50` | La vitesse de défilement par défaut (en pixels par seconde) |
 | `autoScrollAutoAdvance` | désactivé | Passe automatiquement au chapitre suivant en arrivant en bas de la page |
+| `chapterPanel` | activé | Bouton flottant "📑 Chapters" : recherche, mini-carte lu/actuel/non lu, favoris, notes, chapitres récents |
+| `showBreadcrumb` | activé | Fil d'Ariane "Œuvre > Chapitre X > Titre" au-dessus du texte |
+| `tabTitleChapter` | désactivé | Affiche la position du chapitre dans le titre de l'onglet du navigateur |
+| `emphasizeChapterTitle` | désactivé | Rend le titre du chapitre en cours plus grand et plus visible |
+| `prefetchNextChapter` | activé | Précharge la page du chapitre suivant en arrière-plan |
 
 ## Fichiers
 
@@ -31,60 +36,78 @@ défilement automatique, et un compteur de mots par chapitre.
 - Une barre Précédent/Suivant qui peut rester collée en haut de l'écran pendant la lecture
 - Un petit texte "Chapter X of Y" au-dessus du menu déroulant des chapitres
 - Garde en mémoire le dernier chapitre visité
-- Des raccourcis clavier (Ctrl+Flèche gauche/droite) pour changer de chapitre
+- Des raccourcis clavier (Ctrl+Flèche gauche/droite pour changer de chapitre ; Ctrl+Maj+Origine/Fin pour sauter au premier chapitre non lu / au dernier chapitre)
+- Un fil d'Ariane, le titre du chapitre dans l'onglet du navigateur (optionnel), une mise en avant du titre du chapitre (optionnel), et un préchargement du chapitre suivant
 
-### 3. `blurbNavigation.js` — boutons de reprise sur les listes
+### 3. `chaptersPanel.js` — panneau flottant des chapitres
+
+- Un bouton "📑 Chapters" ouvre un panneau avec une recherche par numéro ou titre
+- Une mini-carte de progression (✓ lu, 📍 en cours, non lu) et des raccourcis "premier non lu" / "dernier chapitre"
+- Étoile "favori/à relire" et note personnelle par chapitre, stockées par fic
+- Liste des chapitres récemment consultés (le temps de la session) et bouton pour copier le lien direct d'un chapitre
+
+### 4. `blurbNavigation.js` — boutons de reprise sur les listes
 
 - Ajoute un bouton "Start" sur les fics jamais commencées, ou "Continue (Ch X)" sur celles déjà en cours
 - Signale s'il y a de nouveaux chapitres parus depuis la dernière lecture
 - Ajoute un bouton "Last (Ch Y)" pour sauter directement au dernier chapitre
 
-### 4. `autoScroll.js` — défilement automatique
+### 5. `autoScroll.js` — défilement automatique
 
 - Ajoute un petit widget flottant avec plusieurs vitesses de défilement (0.5×, 1×, 2×, 4×) et un bouton stop
 - Le défilement se met en pause dès qu'on touche la souris, le clavier ou l'écran, et reprend après une courte pause
 - Peut passer automatiquement au chapitre suivant en arrivant en bas de la page
 
-### 5. `chapterWordCount.js` — compteur de mots par chapitre
+### 6. `chapterWordCount.js` — compteur de mots par chapitre
 
 - Affiche un badge "~ X.XK words" indiquant le nombre de mots de chaque chapitre, sans compter le résumé ni les notes
+- Le temps de lecture estimé partage ce même badge, mais est calculé par `workLength`/`readingTime.js` (module séparé)
 
-### 6. `chapterNavigation.css`
+### 7. `chaptersPanelHelpers.js` — logique pure du panneau
 
-- Les styles visuels de la barre, du texte, des boutons et du widget de défilement
+- Analyse du menu déroulant natif des chapitres, filtrage par recherche, calcul de l'état lu/actuel/non lu, premier chapitre non lu, liste des chapitres récents, textes du fil d'Ariane et du titre d'onglet
+
+### 8. `chapterNavigation.css`
+
+- Les styles visuels de la barre, du texte, des boutons, du widget de défilement, du fil d'Ariane et du panneau de chapitres
 
 ## Specs non implémentés
 
 Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
 vraiment dans ce module (pas de code pour ça) :
 
-- Un menu déroulant de chapitres avec les titres et des mini-aperçus, pas juste les numéros
-- Chercher un chapitre par son titre ou son numéro
-- Marquer certains chapitres comme favoris ou "à relire"
-- Ajouter une note personnelle à un chapitre précis
-- Voir la liste des chapitres consultés récemment
-- Naviguer entre les chapitres à la voix, mains libres
-- Se fixer des objectifs de lecture basés sur le nombre de chapitres
-- Un fil d'Ariane qui montre où on est (Œuvre > Chapitre 5 > Titre)
-- Un lien direct copiable vers chaque chapitre
-- Des petits points visuels (lu/non lu) et une mini-carte de la progression sur laquelle on peut cliquer pour sauter
-- Un repère "tu es ici" dans cette mini-carte
-- Des marques de complétion (✓) sur chaque chapitre déjà lu
-- Comparer la longueur des chapitres entre eux (le plus long, le plus court, la moyenne) avec un petit graphique
-- Afficher le titre du chapitre en cours dans le titre de l'onglet du navigateur
-- Un bouton flottant "📑 Chapters" sur les pages de fic, avec un raccourci pour sauter directement au premier chapitre non lu, et un raccourci clavier pour aller directement au dernier chapitre
-- Une estimation du temps de lecture pour chaque chapitre
-- Rendre le titre du chapitre en cours plus visible ou plus grand sur la page
-- Plus d'options de raccourcis clavier pour se déplacer entre les chapitres
-- Des effets d'animation ou de transition personnalisés en changeant de chapitre
-- Charger le chapitre suivant en arrière-plan pour qu'il s'ouvre instantanément
-- Combiner le défilement automatique avec un journal de lecture pour avoir un résumé détaillé de chaque session de lecture
+- ~~Un menu déroulant de chapitres avec les titres et des mini-aperçus, pas juste les numéros~~ ✅ Fait (partiel) : le panneau "📑 Chapters" liste chaque chapitre avec son numéro et son titre (déjà présents dans le `<select>` natif d'AO3, donc sans coût réseau) ; les "mini-aperçus" de contenu ont été écartés, voir Explicitement écarté
+- ~~Chercher un chapitre par son titre ou son numéro~~ ✅ Fait — champ de recherche dans le panneau "📑 Chapters" (`chaptersPanel.js`, `filterChapters`)
+- ~~Marquer certains chapitres comme favoris ou "à relire"~~ ✅ Fait — bouton étoile ☆/★ par chapitre dans le panneau, stocké sous `ao3h:cn:marks:{workId}`
+- ~~Ajouter une note personnelle à un chapitre précis~~ ✅ Fait — icône 📝 par chapitre dans le panneau, ouvre un champ de texte ; stocké dans la même clé que les favoris
+- ~~Voir la liste des chapitres consultés récemment~~ ✅ Fait — section "Recent" du panneau, limitée à la session en cours (`sessionStorage`, `ao3h:cn:recent:{workId}`) : ça n'a de sens que pour les allers-retours de la session de lecture actuelle
+- ~~Naviguer entre les chapitres à la voix, mains libres~~ ❌ Écarté — nécessiterait un accès micro toujours actif et peu fiable, pour un bénéfice limité en lecture ; même famille de raisons que les autres fonctionnalités à base de reconnaissance vocale/IA écartées ailleurs
+- ~~Se fixer des objectifs de lecture basés sur le nombre de chapitres~~ ❌ Écarté — même raisonnement que `readingDashboard`, qui a déjà écarté objectifs/stats de session comme peu fiables à mesurer et anti-gamification
+- ~~Un fil d'Ariane qui montre où on est (Œuvre > Chapitre 5 > Titre)~~ ✅ Fait — ligne "Œuvre > Chapitre X > Titre" au-dessus du texte (réglage `showBreadcrumb`)
+- ~~Un lien direct copiable vers chaque chapitre~~ ✅ Fait — icône 🔗 par chapitre dans le panneau, copie l'URL du chapitre dans le presse-papiers
+- ~~Des petits points visuels (lu/non lu) et une mini-carte de la progression sur laquelle on peut cliquer pour sauter~~ ✅ Fait — mini-carte intégrée à la liste du panneau (✓ lu / 📍 en cours / vide = non lu), chaque ligne est cliquable ; le statut "lu" est approximé à partir du dernier chapitre connu de `readingTracker`
+- ~~Un repère "tu es ici" dans cette mini-carte~~ ✅ Fait — icône 📍 sur la ligne du chapitre courant, avec surlignage
+- ~~Des marques de complétion (✓) sur chaque chapitre déjà lu~~ ✅ Fait — icône ✓ sur chaque ligne dont le numéro est ≤ au dernier chapitre lu
+- ~~Comparer la longueur des chapitres entre eux (le plus long, le plus court, la moyenne) avec un petit graphique~~ ❌ Écarté — nécessiterait de télécharger chaque chapitre séparément pour compter ses mots (AO3 n'affiche que le chapitre courant par défaut), coût réseau jugé excessif pour un simple comparatif
+- ~~Afficher le titre du chapitre en cours dans le titre de l'onglet du navigateur~~ ✅ Fait — réglage `tabTitleChapter` (désactivé par défaut, car ça remplace le titre affiché par le navigateur)
+- ~~Un bouton flottant "📑 Chapters" sur les pages de fic, avec un raccourci pour sauter directement au premier chapitre non lu, et un raccourci clavier pour aller directement au dernier chapitre~~ ✅ Fait — c'est le panneau lui-même (`chaptersPanel.js`), avec ses boutons "▶ First unread" / "⏭ Last chapter" et les raccourcis clavier ci-dessous
+- ~~Une estimation du temps de lecture pour chaque chapitre~~ ✅ Fait (déjà couvert ailleurs) — `workLength`/`readingTime.js` calcule et affiche déjà "~X min" par chapitre, sur le même badge partagé (`lib/ui/badges.js`) que le compteur de mots de `chapterWordCount.js`
+- ~~Rendre le titre du chapitre en cours plus visible ou plus grand sur la page~~ ✅ Fait — réglage `emphasizeChapterTitle`
+- ~~Plus d'options de raccourcis clavier pour se déplacer entre les chapitres~~ ✅ Fait — Ctrl+Maj+Origine (premier chapitre non lu) et Ctrl+Maj+Fin (dernier chapitre), en plus de Ctrl+Flèches existants
+- ~~Des effets d'animation ou de transition personnalisés en changeant de chapitre~~ ❌ Écarté — changer de chapitre est un vrai rechargement de page AO3 (pas une SPA) ; animer une transition entre deux pages différentes nécessiterait d'intercepter la navigation du site, trop fragile et invasif pour le bénéfice
+- ~~Charger le chapitre suivant en arrière-plan pour qu'il s'ouvre instantanément~~ ✅ Fait — indice `<link rel="prefetch">` vers le chapitre suivant (réglage `prefetchNextChapter`), coût minime car c'est juste un indice laissé au navigateur
+- ~~Combiner le défilement automatique avec un journal de lecture pour avoir un résumé détaillé de chaque session de lecture~~ ❌ Écarté — dépend d'un "journal de lecture" qui n'existe pas encore : `readingTracker` n'a pas de suivi de durée/notes de session, cette spec n'y est pas résolue non plus
 
 ## Explicitement écarté
 
 - Charger automatiquement l'œuvre entière d'un coup selon sa longueur
 - Un tableau de bord avec des statistiques de lecture — ce n'est pas le rôle de ce module, qui sert à naviguer, pas à faire des statistiques
 - Pouvoir déplacer les boutons de navigation où on veut sur l'écran — jugé trop compliqué à régler pour peu d'intérêt
+- Naviguer entre les chapitres à la voix — accès micro permanent peu fiable pour un bénéfice limité
+- Se fixer des objectifs de lecture basés sur le nombre de chapitres — même raisonnement que `readingDashboard` (anti-gamification, peu fiable à mesurer)
+- Comparer la longueur des chapitres avec un graphique — nécessiterait de télécharger chaque chapitre, coût réseau excessif
+- Des animations de transition entre chapitres — changement de chapitre = vraie navigation de page, pas une SPA
+- Un journal de lecture combiné au défilement automatique — dépend d'une fonctionnalité de suivi de session qui n'existe pas encore dans `readingTracker`
 
 ## Précision
 
@@ -101,24 +124,32 @@ AO3 Helper - Chapter Navigation Module Coordinator
     Tab: Reading
 
     Submodules (imported directly as ES modules):
-        ./navigationControls.js -- sticky nav, chapter label, shortcuts, cache
+        ./navigationControls.js -- sticky nav, chapter label, breadcrumb, tab
+                                    title, emphasis, prefetch, shortcuts, cache
         ./blurbNavigation.js    -- Start/Continue/Last buttons on listings
         ./autoScroll.js         -- auto-scroll widget (work pages)
+        ./chaptersPanel.js      -- floating "📑 Chapters" search/mini-map/marks panel
 
     Registered child module (register(), parent: 'chapterNavigation'):
         chapterWordCount  -- "~ X.XK words" badge per chapter
 
     Storage:
         ao3h:cn:lastchap:{workId} -- { id, num } written on work-page load
+        ao3h:cn:marks:{workId}    -- { [chapterId]: { starred, note } }, owned by chaptersPanel
+        ao3h:cn:recent:{workId}   -- sessionStorage, recently visited chapters, owned by chaptersPanel
 
     Integration (loose coupling):
-        W.AO3H_ReadingTracker?.getProgress(workId)
-        W.AO3H_KeyboardShortcuts (Ctrl+Left / Ctrl+Right) — migré (Phase 21,
-        navigate/keyboardShortcuts) ; le bridge window reste le contrat jusqu'à la Phase 26
+        W.AO3H_ReadingTracker?.getProgress(workId) -- also used by chaptersPanel
+        to approximate the read/unread mini-map (chapters ≤ progress.chapter)
+        W.AO3H_KeyboardShortcuts (Ctrl+Left / Ctrl+Right, Ctrl+Shift+Home /
+        Ctrl+Shift+End) — migré (Phase 21, navigate/keyboardShortcuts) ; le
+        bridge window reste le contrat jusqu'à la Phase 26
 
     Config keys:
         stickyNav, resumeButton, lastChapterBtn
         autoScrollSpeed, autoScrollAutoAdvance, autoScrollShowControls
+        chapterPanel, showBreadcrumb, tabTitleChapter, emphasizeChapterTitle,
+        prefetchNextChapter
 
 
         // ── AutoScroll ────────────────────────────────────────────────────────────
@@ -182,11 +213,42 @@ AO3 Helper - Chapter Navigation Module Coordinator
 //   - Sticky navigation bar (Previous/Next always visible while reading)
 //   - "Chapter X of Y" label injected above the chapter dropdown
 //   - Last-chapter cache: writes { id, num } to localStorage on work-page load
-//   - Keyboard shortcuts: Ctrl+← previous chapter, Ctrl+→ next chapter
-//   - Cleanup: removes sticky class, label, and unregisters shortcuts
+//   - Breadcrumb "Work > Chapter X > Title" above the chapter text
+//   - Tab title: prefixes document.title with "Ch. X/Y" (opt-in)
+//   - Emphasized chapter title (opt-in CSS class)
+//   - Next-chapter prefetch: <link rel="prefetch"> resource hint
+//   - Keyboard shortcuts: Ctrl+← previous / Ctrl+→ next chapter,
+//     Ctrl+Shift+Home first unread chapter, Ctrl+Shift+End last chapter
+//   - Cleanup: removes sticky class, label, breadcrumb, prefetch link,
+//     restores the original tab title, and unregisters shortcuts
 //
 // Config keys (passed via parent diOpts.cfg):
-//   stickyNav  (bool, default false)  — make navigation bar sticky
+//   stickyNav              (bool, default false)  — make navigation bar sticky
+//   showBreadcrumb         (bool, default true)
+//   tabTitleChapter        (bool, default false)
+//   emphasizeChapterTitle  (bool, default false)
+//   prefetchNextChapter    (bool, default true)
+
+
+// ── ChaptersPanel ─────────────────────────────────────────────────────────
+// Submodule of: chapterNavigation — multi-chapter work pages only
+//
+// Responsibilities:
+//   - Floating "📑 Chapters" button toggling a searchable chapter list
+//   - Search by chapter number or title (chaptersPanelHelpers.filterChapters)
+//   - Mini progress map: ✓ read / 📍 current / unread, approximated from
+//     W.AO3H_ReadingTracker?.getProgress(workId) (soft dependency)
+//   - Quick jumps: first unread chapter, last chapter
+//   - Per-chapter star (favorite/reread) and personal note, stored under
+//     ao3h:cn:marks:{workId}
+//   - Recently visited chapters this session, stored under
+//     ao3h:cn:recent:{workId} (sessionStorage — only meaningful within one
+//     reading session)
+//   - Copy-link button per chapter
+//   - Cleanup: removes the button and panel, detaches document listeners
+//
+// Config keys (passed via parent diOpts.cfg):
+//   chapterPanel  (bool, default true)
 
 
 ═══════════════════════════════════════════════════════════════════════════
@@ -203,7 +265,9 @@ Le module **Chapter Navigation** regroupe tous les outils permettant de naviguer
     - reprendre une œuvre au dernier chapitre lu ;
     - accéder directement au dernier chapitre disponible ;
     - faire défiler automatiquement la page ;
-    - afficher le nombre de mots de chaque chapitre.
+    - afficher le nombre de mots de chaque chapitre ;
+    - rechercher, marquer, annoter et sauter directement à un chapitre depuis un panneau flottant ;
+    - afficher un fil d'Ariane, mettre en avant le titre du chapitre, et précharger le chapitre suivant.
 
 ---
 
@@ -212,8 +276,13 @@ Le module **Chapter Navigation** regroupe tous les outils permettant de naviguer
 | Réglage                   | Description                                                           |
 |---------------------------|-----------------------------------------------------------------------|
 | `stickyNav`               | Garde la barre Précédent / Suivant visible pendant la lecture.        |
+| `showBreadcrumb`          | Affiche "Œuvre > Chapitre X > Titre" au-dessus du texte.               |
+| `tabTitleChapter`         | Affiche la position du chapitre dans le titre de l'onglet.            |
+| `emphasizeChapterTitle`   | Rend le titre du chapitre en cours plus grand et plus visible.        |
+| `prefetchNextChapter`     | Précharge la page du chapitre suivant en arrière-plan.                |
 | `resumeButton`            | Affiche un bouton **Start** ou **Continue** sur les listes de fics.   |
 | `lastChapterBtn`          | Affiche un bouton **Last (Ch X)** sur les listes.                     |
+| `chapterPanel`            | Affiche le bouton flottant "📑 Chapters" (recherche, favoris, notes). |
 | `autoScrollShowControls`  | Affiche les contrôles du défilement automatique.                      |
 | `autoScrollSpeed`         | Vitesse du défilement automatique (pixels/seconde).                   |
 | `autoScrollAutoAdvance`   | Passe automatiquement au chapitre suivant en fin de page.             |
@@ -222,13 +291,15 @@ Le module **Chapter Navigation** regroupe tous les outils permettant de naviguer
 
 # Structure du module
 
-Le module est composé de quatre sous-modules fonctionnels, d'un sous-module enregistré et d'une feuille de style.
+Le module est composé de cinq sous-modules fonctionnels, d'un fichier de logique pure, d'un sous-module enregistré et d'une feuille de style.
 
 ```
 _chapterNavigation.js
 navigationControls.js
 blurbNavigation.js
 autoScroll.js
+chaptersPanel.js
+chaptersPanelHelpers.js
 chapterWordCount.js
 chapterNavigation.css
 ```
@@ -300,6 +371,8 @@ Raccourcis disponibles :
 
 - **Ctrl + ←** : chapitre précédent.
 - **Ctrl + →** : chapitre suivant.
+- **Ctrl + Maj + Origine** : premier chapitre non lu.
+- **Ctrl + Maj + Fin** : dernier chapitre.
 
 Le système s'intègre au module **Keyboard Shortcuts** via le bridge `W.AO3H_KeyboardShortcuts`.
 
@@ -317,6 +390,34 @@ Ces informations sont enregistrées dans :
 `ao3h:cn:lastchap:{workId}`
 
 Elles sont ensuite utilisées par `blurbNavigation.js`.
+
+---
+
+### Fil d'Ariane
+
+Lorsque `showBreadcrumb` est activé, le module affiche une ligne au-dessus du texte du chapitre :
+
+`Œuvre > Chapitre X > Titre du chapitre`
+
+Le titre de l'œuvre provient de `getWorkTitle()` (`lib/ao3/work-page.js`), le titre du chapitre est extrait de l'option sélectionnée du menu déroulant natif.
+
+---
+
+### Titre de l'onglet
+
+Lorsque `tabTitleChapter` est activé, le module préfixe le titre de l'onglet du navigateur avec la position du chapitre, par exemple `Ch. 5/12 · Titre original`. Le titre d'origine est restauré à la désactivation. Ce réglage est désactivé par défaut car il remplace un titre visible par l'utilisateur.
+
+---
+
+### Mise en avant du titre du chapitre
+
+Lorsque `emphasizeChapterTitle` est activé, le module ajoute une classe CSS qui agrandit et met en gras le titre du chapitre en cours.
+
+---
+
+### Préchargement du chapitre suivant
+
+Lorsque `prefetchNextChapter` est activé, le module ajoute un indice `<link rel="prefetch">` pointant vers l'URL du chapitre suivant, pour que le navigateur puisse le précharger en arrière-plan. C'est un simple indice laissé au navigateur, pas un téléchargement forcé du contenu.
 
 ---
 
@@ -343,6 +444,9 @@ Lors de sa désactivation, le module :
 
 - retire la barre collante ;
 - supprime l'indicateur de chapitre ;
+- supprime le fil d'Ariane et le lien de préchargement ;
+- restaure le titre d'onglet d'origine ;
+- retire la mise en avant du titre de chapitre ;
 - désenregistre les raccourcis clavier.
 
 ---
@@ -351,7 +455,7 @@ Lors de sa désactivation, le module :
 
 Le sous-module est initialisé par `_chapterNavigation.js`.
 
-Il partage le cache du dernier chapitre avec `blurbNavigation.js`.
+Il partage le cache du dernier chapitre avec `blurbNavigation.js`, et utilise les fonctions pures de `chaptersPanelHelpers.js` (analyse du menu déroulant, calcul du premier chapitre non lu, textes du fil d'Ariane et du titre d'onglet) ainsi que `W.AO3H_ReadingTracker` pour connaître le dernier chapitre lu.
 
 ---
 
@@ -625,6 +729,123 @@ Lors de sa désactivation, le module supprime tous les badges ajoutés.
 
 Le sous-module est enregistré séparément via `register()` mais appartient au module parent `chapterNavigation`.
 
+Le badge qu'il affiche est partagé (`lib/ui/badges.js`) avec le module `workLength` : `readingTime.js` y ajoute la partie "temps de lecture" (`~X min`) à côté du nombre de mots — voir la spec "Estimation du temps de lecture" plus bas, déjà couverte par cette intégration.
+
+---
+
+# chaptersPanel.js
+
+## Rôle
+
+Fournit le bouton flottant "📑 Chapters" et le panneau qui s'ouvre depuis celui-ci : recherche de chapitre, mini-carte de progression, favoris, notes personnelles, chapitres récents et copie de lien.
+
+---
+
+## Fonctionnalités
+
+### Bouton flottant
+
+Un bouton "📑 Chapters" est ajouté sur les pages d'œuvres multi-chapitres. Un clic ouvre ou ferme le panneau ; un clic en dehors du panneau, ou la touche **Échap**, le referme aussi.
+
+---
+
+### Recherche de chapitre
+
+Un champ de recherche filtre la liste par numéro ou par titre de chapitre (insensible à la casse), en réutilisant `filterChapters()` de `chaptersPanelHelpers.js`.
+
+---
+
+### Mini-carte de progression
+
+Chaque ligne de la liste affiche un indicateur :
+
+- **✓** pour un chapitre déjà lu ;
+- **📍** pour le chapitre en cours ;
+- rien pour un chapitre non lu.
+
+Le statut "lu" est approximé à partir du dernier chapitre connu de `W.AO3H_ReadingTracker?.getProgress(workId)` (ou de son repli `localStorage`) : tout chapitre dont le numéro est inférieur ou égal à ce dernier chapitre est considéré comme lu. Chaque ligne est cliquable pour sauter directement au chapitre correspondant.
+
+---
+
+### Raccourcis rapides
+
+Le panneau propose deux boutons en haut de la liste :
+
+- **▶ First unread** : le premier chapitre non lu ;
+- **⏭ Last chapter** : le dernier chapitre de l'œuvre.
+
+---
+
+### Favoris et notes personnelles
+
+Chaque ligne dispose de deux boutons :
+
+- une étoile ☆/★ pour marquer un chapitre comme favori ou "à relire" ;
+- une icône 📝 qui ouvre un champ de texte pour une note personnelle sur ce chapitre.
+
+Ces informations sont stockées ensemble, par œuvre, sous `ao3h:cn:marks:{workId}`.
+
+---
+
+### Chapitres récents
+
+Une section "Recent" liste les derniers chapitres visités pendant la session de lecture en cours (dès qu'il y en a plus d'un). Elle est stockée dans `sessionStorage` sous `ao3h:cn:recent:{workId}` : ça n'a de sens que pour les allers-retours de la session actuelle, pas comme historique permanent (ce rôle appartient à `readingTracker`).
+
+---
+
+### Copie de lien
+
+Une icône 🔗 copie dans le presse-papiers l'URL absolue du chapitre correspondant.
+
+---
+
+## Détails techniques
+
+### Stockage
+
+```text
+ao3h:cn:marks:{workId}   -- { [chapterId]: { starred, note } }        (localStorage)
+ao3h:cn:recent:{workId}  -- [{ id, num, title }, ...], plafonné à 8    (sessionStorage)
+```
+
+---
+
+### Nettoyage
+
+Lors de sa désactivation, le module retire le bouton flottant, ferme le panneau s'il est ouvert, et détache les écouteurs `click`/`keydown` posés sur `document`.
+
+---
+
+## Dépendances
+
+Le sous-module est instancié par `_chapterNavigation.js` sur les pages d'œuvres multi-chapitres. Il s'appuie sur les fonctions pures de `chaptersPanelHelpers.js`, et lit optionnellement `W.AO3H_ReadingTracker` (dépendance souple : le panneau fonctionne sans, avec tous les chapitres marqués non lus).
+
+---
+
+# chaptersPanelHelpers.js
+
+## Rôle
+
+Regroupe la logique pure du panneau de chapitres, testée indépendamment du DOM.
+
+---
+
+## Fonctions exposées
+
+- `parseChapterOptions(options)` — extrait `{id, num, title}` depuis les options du menu déroulant natif d'AO3 (format `"N. Titre"`).
+- `filterChapters(chapters, query)` — filtre par numéro ou titre.
+- `buildChapterStates(chapters, { currentId, lastReadNum })` — ajoute un `state` (`current`/`read`/`unread`) à chaque chapitre.
+- `firstUnreadChapter(chapters, lastReadNum)` — le chapitre suivant le dernier lu (ou le premier chapitre si rien n'a été lu).
+- `addRecentEntry(list, entry, cap)` — ajoute une entrée à une liste "récents", dédupliquée et plafonnée.
+- `buildBreadcrumbText(workTitle, num, title)` — construit le texte du fil d'Ariane.
+- `prependChapterToTitle(originalTitle, num, total)` — construit le titre d'onglet préfixé par la position du chapitre.
+
+---
+
+## Dépendances
+
+Aucune — fonctions pures sans accès au DOM ni au stockage, utilisées par `chaptersPanel.js` et `navigationControls.js`.
+
 ---
 
 # chapterNavigation.css
@@ -639,7 +860,9 @@ Il définit notamment l'apparence :
 - de l'indicateur **Chapter X of Y** ;
 - des boutons **Start**, **Continue** et **Last** ;
 - du widget de défilement automatique ;
-- des badges du nombre de mots.
+- des badges du nombre de mots ;
+- du fil d'Ariane et du titre de chapitre mis en avant ;
+- du bouton flottant et du panneau "📑 Chapters" (recherche, mini-carte, favoris, notes).
 
 ---
 
@@ -659,6 +882,8 @@ Remplacer le simple sélecteur numérique par un menu affichant :
 - son titre ;
 - un aperçu de son contenu.
 
+**✅ Fait (partiel)** — le panneau "📑 Chapters" (`chaptersPanel.js`) liste numéro et titre de chaque chapitre, sans coût réseau puisqu'ils sont déjà dans le `<select>` natif d'AO3. L'aperçu de contenu a été écarté (voir Décisions de conception) : il nécessiterait de télécharger chaque chapitre séparément.
+
 ---
 
 ### Recherche de chapitre
@@ -668,6 +893,8 @@ Permettre de rechercher un chapitre à partir :
 - de son numéro ;
 - de son titre.
 
+**✅ Fait** — champ de recherche du panneau "📑 Chapters" (`filterChapters()`).
+
 ---
 
 ### Fil d'Ariane
@@ -676,11 +903,15 @@ Afficher un chemin de navigation comme :
 
 - Œuvre > Chapitre 5 > Titre du chapitre
 
+**✅ Fait** — `navigationControls.js`, réglage `showBreadcrumb`.
+
 ---
 
 ### Liens directs
 
 Ajouter un lien copiable permettant d'accéder directement à chaque chapitre.
+
+**✅ Fait** — icône 🔗 par ligne dans le panneau "📑 Chapters".
 
 ---
 
@@ -694,17 +925,23 @@ Ce bouton pourrait permettre :
 - d'aller au premier chapitre non lu ;
 - d'aller directement au dernier chapitre grâce à un raccourci clavier.
 
+**✅ Fait** — c'est `chaptersPanel.js` : boutons "▶ First unread" / "⏭ Last chapter" dans le panneau, et raccourcis clavier Ctrl+Maj+Origine/Fin.
+
 ---
 
 ### Raccourcis clavier supplémentaires
 
 Ajouter davantage de raccourcis personnalisables pour naviguer entre les chapitres.
 
+**✅ Fait** — Ctrl+Maj+Origine (premier non lu) et Ctrl+Maj+Fin (dernier chapitre) ajoutés à côté de Ctrl+Flèches.
+
 ---
 
 ### Navigation vocale
 
 Permettre de changer de chapitre à la voix afin de naviguer sans utiliser les mains.
+
+**❌ Écarté** — accès micro permanent peu fiable pour un bénéfice limité en lecture.
 
 ---
 
@@ -717,17 +954,23 @@ Permettre de marquer certains chapitres comme :
 - favoris ;
 - à relire.
 
+**✅ Fait** — étoile ☆/★ par chapitre dans le panneau "📑 Chapters", stockée sous `ao3h:cn:marks:{workId}`.
+
 ---
 
 ### Notes personnelles
 
 Permettre d'ajouter une note personnelle à un chapitre précis.
 
+**✅ Fait** — icône 📝 par chapitre dans le même panneau et le même stockage.
+
 ---
 
 ### Historique récent
 
 Afficher la liste des chapitres consultés récemment.
+
+**✅ Fait** — section "Recent" du panneau, limitée à la session en cours (`ao3h:cn:recent:{workId}`, `sessionStorage`) ; l'historique permanent inter-sessions reste le rôle de `readingTracker`.
 
 ---
 
@@ -745,6 +988,8 @@ Ces indicateurs pourraient inclure :
 - des marques de complétion `✓` ;
 - un repère **Tu es ici**.
 
+**✅ Fait** — mini-carte du panneau : ✓ (lu), 📍 (en cours), vide (non lu), lecture approximée depuis `W.AO3H_ReadingTracker`.
+
 ---
 
 ### Mini-carte de progression
@@ -757,6 +1002,8 @@ Elle permettrait :
 - de cliquer sur un chapitre pour y accéder ;
 - d'identifier le chapitre courant.
 
+**✅ Fait** — même mini-carte que ci-dessus ; chaque ligne est cliquable.
+
 ---
 
 ## Informations sur les chapitres
@@ -764,6 +1011,8 @@ Elle permettrait :
 ### Estimation du temps de lecture
 
 Afficher une estimation du temps nécessaire pour lire chaque chapitre.
+
+**✅ Fait (déjà couvert ailleurs)** — `workLength`/`readingTime.js` calcule et affiche déjà "~X min" par chapitre, sur le même badge partagé que `chapterWordCount.js`.
 
 ---
 
@@ -776,17 +1025,23 @@ Comparer les chapitres entre eux et afficher :
 - la longueur moyenne ;
 - un petit graphique comparatif.
 
+**❌ Écarté** — nécessiterait de télécharger chaque chapitre séparément (AO3 n'affiche que le chapitre courant par défaut), coût réseau jugé excessif pour un simple comparatif.
+
 ---
 
 ### Titre dans l'onglet
 
 Afficher le titre du chapitre en cours dans le titre de l'onglet du navigateur.
 
+**✅ Fait** — réglage `tabTitleChapter`, désactivé par défaut.
+
 ---
 
 ### Mise en évidence du titre
 
 Rendre le titre du chapitre courant plus visible ou plus grand sur la page.
+
+**✅ Fait** — réglage `emphasizeChapterTitle`.
 
 ---
 
@@ -796,11 +1051,15 @@ Rendre le titre du chapitre courant plus visible ou plus grand sur la page.
 
 Permettre à l'utilisateur de définir des objectifs basés sur le nombre de chapitres lus.
 
+**❌ Écarté** — même raisonnement que `readingDashboard`, qui a déjà écarté objectifs/statistiques de session comme peu fiables à mesurer et anti-gamification.
+
 ---
 
 ### Transitions personnalisées
 
 Ajouter des animations ou transitions lors du changement de chapitre.
+
+**❌ Écarté** — changer de chapitre est une vraie navigation de page AO3 (pas une SPA) ; animer la transition nécessiterait d'intercepter la navigation du site, trop fragile et invasif.
 
 ---
 
@@ -808,11 +1067,15 @@ Ajouter des animations ou transitions lors du changement de chapitre.
 
 Charger le chapitre suivant en arrière-plan afin qu'il s'ouvre plus rapidement.
 
+**✅ Fait** — indice `<link rel="prefetch">` vers le chapitre suivant, réglage `prefetchNextChapter`.
+
 ---
 
 ### Journal de lecture
 
 Combiner le défilement automatique avec un journal de lecture afin d'obtenir un résumé détaillé de chaque session.
+
+**❌ Écarté** — dépend d'un "journal de lecture" qui n'existe pas encore ; `readingTracker` n'a pas de suivi de durée/notes de session, cette spec n'y est pas résolue non plus.
 
 ---
 
@@ -843,6 +1106,54 @@ Les statistiques de lecture appartiennent à un autre module, car **Chapter Navi
 Les boutons de navigation ne peuvent pas être déplacés librement sur l'écran.
 
 Cette fonctionnalité a été jugée trop complexe à configurer pour un bénéfice limité.
+
+---
+
+## Aperçus de contenu dans le menu des chapitres
+
+Le menu des chapitres affiche uniquement numéro et titre, pas d'extrait du texte de chaque chapitre.
+
+Un aperçu de contenu nécessiterait de télécharger chaque chapitre séparément (AO3 n'affiche que le chapitre courant par défaut), ce qui a été jugé trop coûteux en requêtes réseau pour ce que ça apporte.
+
+---
+
+## Navigation vocale
+
+Le module ne propose pas de navigation à la voix entre les chapitres.
+
+Cette fonctionnalité nécessiterait un accès micro permanent, peu fiable, pour un bénéfice limité en contexte de lecture.
+
+---
+
+## Objectifs de lecture
+
+Le module ne propose pas de se fixer des objectifs basés sur le nombre de chapitres lus.
+
+Même raisonnement que `readingDashboard`, qui a déjà écarté les objectifs et statistiques de session comme peu fiables à mesurer et allant à l'encontre de l'esprit anti-gamification du projet.
+
+---
+
+## Comparaison des longueurs de chapitres
+
+Le module ne compare pas la longueur des chapitres entre eux.
+
+Cette fonctionnalité nécessiterait elle aussi de télécharger chaque chapitre séparément, pour un coût réseau jugé excessif.
+
+---
+
+## Transitions animées entre chapitres
+
+Le module n'anime pas le changement de chapitre.
+
+Changer de chapitre correspond à une vraie navigation de page AO3, pas à une application monopage (SPA). Animer une transition entre deux pages différentes nécessiterait d'intercepter la navigation du site, ce qui a été jugé trop fragile et invasif.
+
+---
+
+## Journal de lecture combiné au défilement automatique
+
+Le module ne combine pas le défilement automatique avec un résumé détaillé de session.
+
+Cette fonctionnalité dépend d'un "journal de lecture" qui n'existe pas encore : `readingTracker` n'a pas de suivi de durée ou de notes de session, cette spec n'y est pas non plus résolue.
 
 ---
 

@@ -60,3 +60,66 @@
   font-size: .95rem;
   opacity: .85;
 }
+
+/* ── Breadcrumb, emphasized title ────────────────────────────────────────── */
+
+.ao3h-chapter-breadcrumb {
+  font-size: .82em; color: #777; margin-bottom: .6em;
+}
+.ao3h-chapter-title-emphasized {
+  font-size: 1.3em !important;
+  font-weight: 700 !important;
+}
+
+/* ── Chapters Panel ───────────────────────────────────────────────────────── */
+
+#ao3h-chapters-fab {
+  position: fixed; bottom: 120px; right: 16px; z-index: 9100;
+  background: #900; color: #fff; border: none; border-radius: 20px;
+  padding: 6px 14px; font-size: .85em; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+#ao3h-chapters-fab:hover { background: #b00; }
+
+#ao3h-chapters-panel {
+  position: fixed; bottom: 158px; right: 16px; z-index: 9100;
+  width: 320px; max-height: 60vh; overflow-y: auto;
+  background: #fff; border: 1px solid #ccc; border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2); padding: 10px;
+}
+.ao3h-cp-search {
+  width: 100%; box-sizing: border-box; padding: 5px 8px;
+  border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px; font-size: .85em;
+}
+.ao3h-cp-quick, .ao3h-cp-recent {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px;
+}
+.ao3h-cp-recent span { font-size: .78em; color: #888; }
+.ao3h-cp-linkbtn {
+  font-size: .78em; padding: 2px 8px; border-radius: 10px;
+  border: 1px solid #900; color: #900; text-decoration: none; white-space: nowrap;
+}
+.ao3h-cp-linkbtn:hover { background: #900; color: #fff; }
+.ao3h-cp-list { list-style: none; margin: 0; padding: 0; }
+.ao3h-cp-row {
+  display: flex; align-items: center; gap: 6px; padding: 4px 2px;
+  border-bottom: 1px solid #eee; font-size: .85em; flex-wrap: wrap;
+}
+.ao3h-cp-row--current { background: #fff4e5; }
+.ao3h-cp-dot { width: 1.4em; text-align: center; flex-shrink: 0; }
+.ao3h-cp-title { flex: 1; color: #333; text-decoration: none; }
+.ao3h-cp-title:hover { text-decoration: underline; }
+.ao3h-cp-star, .ao3h-cp-note-btn, .ao3h-cp-copy {
+  border: none; background: transparent; cursor: pointer; font-size: .95em;
+  padding: 0 2px; opacity: .55;
+}
+.ao3h-cp-star.active, .ao3h-cp-note-btn.active { opacity: 1; }
+.ao3h-cp-star:hover, .ao3h-cp-note-btn:hover, .ao3h-cp-copy:hover { opacity: 1; }
+.ao3h-cp-note-text {
+  flex-basis: 100%; font-size: .85em; color: #666; font-style: italic;
+  margin: 2px 0 4px 1.4em;
+}
+.ao3h-cp-note-editor {
+  flex-basis: 100%; margin-top: 4px; font-size: .85em; padding: 4px;
+  border: 1px solid #ccc; border-radius: 4px; resize: vertical; min-height: 3em;
+}
