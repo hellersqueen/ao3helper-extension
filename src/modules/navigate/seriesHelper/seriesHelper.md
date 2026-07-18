@@ -15,55 +15,76 @@ les listes de résultats.
 |---|---|---|
 | `epicSeriesWarning` | désactivé | Affiche un badge d'avertissement sur les séries de 20 fics ou plus |
 | `groupSeriesInSearch` | désactivé | Regroupe les fics d'une même série dans les résultats de recherche |
-| `enableShortcuts` | activé *(pas encore actif)* | Réservé pour une future fonctionnalité de raccourcis |
-| `enableFilters` | activé *(pas encore actif)* | Réservé pour une future fonctionnalité de filtres |
+| `autoCollapseThreshold` | `0` (jamais) | Replie automatiquement les groupes de série à partir de N fics (3/5/10) — un choix manuel prime toujours |
+| `seriesSummary` | activé | Résumé sur les pages de série : total de mots, temps de lecture estimé, bouton "Next unread", parties indisponibles |
+| `hideEmptySeries` | désactivé | Masque les séries sans aucune œuvre sur les listings de séries |
+
+Les anciens réglages placeholder `enableShortcuts` et `enableFilters` (jamais
+branchés à rien) ont été retirés au passage chantier 4 — voir "Specs non
+implémentés" pour la raison.
 
 ## Fichiers
 
 ### 1. `_seriesHelper.js` — le chef d'orchestre
 
-- Partage des outils communs (lecture/écriture de données) utilisés par les deux autres fichiers
+- Partage des outils communs (lecture/écriture de données) utilisés par les autres fichiers
 
 ### 2. `seriesProgress.js` — progression et infos de série
 
 - Ajoute une barre de progression sur chaque lien "Part X of Y"
 - Affiche un badge d'avertissement pour les séries très longues (20 fics ou plus)
-- Affiche un badge indiquant si la série est plutôt une suite d'histoires liées ou une anthologie, quand l'info est connue
-- Affiche un badge si on est déjà abonné à la série
+- Affiche un badge indiquant si la série est plutôt une suite d'histoires liées ou une anthologie (calculé par `seriesPage.js` lors de la visite de la page de série)
+- Affiche un badge si on est déjà abonné à la série — cliquable, il mène à la page de série où se trouve le bouton natif de désabonnement
 - Affiche un badge "terminée" ou "en cours"
-- Sur la page d'une fic qui fait partie d'une série, ajoute une bannière avec la progression et des liens vers l'épisode précédent/suivant
+- Sur la page d'une fic qui fait partie d'une série, ajoute une bannière avec la progression, des liens vers l'épisode précédent/suivant, et un signal de fin de série proche ("🏁 Only N parts left" / "🎉 Final part")
 
 ### 3. `seriesOrganization.js` — regroupement dans les listes
 
 - Sur les listes de fics, regroupe sous un même en-tête les fics qui appartiennent à la même série
 - Chaque groupe propose d'aller directement à la page de la série, de tout masquer d'un coup, ou de replier/déplier le groupe
+- Les gros groupes peuvent se replier automatiquement (`autoCollapseThreshold`) ; le choix manuel de l'utilisateur est mémorisé et prime
 
-### 4. `seriesHelper.css`
+### 4. `seriesPage.js` — pages de série (ajouté au passage chantier 4)
 
-- Les styles visuels des barres de progression, badges, bannière et groupes
+- Sur `/series/{id}` : résumé avec total de mots, temps de lecture estimé, bouton "▶ Next unread" (historique `readingTracker`, dépendance optionnelle), et avertissement quand des parties annoncées ne sont pas listées (supprimées/restreintes)
+- Enregistre l'état d'abonnement (présence du bouton natif Unsubscribe) pour alimenter le badge des listings
+- Calcule et mémorise le type de série (suite/anthologie) par heuristique sur les titres
+- Sur les listings de séries : masque les séries vides si `hideEmptySeries` est activé
+
+### 5. `seriesHelperMath.js` — calculs purs (ajouté au passage chantier 4)
+
+- Totaux de mots et format du temps de lecture, parties indisponibles, première œuvre non lue, parties restantes, décision de repli automatique, heuristique suite/anthologie
+
+### 6. `seriesHelper.css`
+
+- Les styles visuels des barres de progression, badges, bannière, groupes, résumé de page de série et bouton "Next unread"
 
 ## Specs non implémentés
 
-Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
-vraiment dans ce module (pas de code pour ça) :
+Ce sont des idées dont on parle dans d'autres docs. État après le passage
+chantier 4 (2026-07-18). Note : la liste legacy plus bas dans ce fichier
+comptait deux items de plus (Raccourcis, Filtres — les réglages placeholder) ;
+ils sont résolus ici aussi, en fin de liste.
 
-- Suggestions d'ordre de lecture (par exemple l'ordre chronologique de l'histoire plutôt que l'ordre de publication)
-- Passer directement à la prochaine fic non lue d'une série
-- Comparer plusieurs séries entre elles
-- Voir le nombre total de mots et le temps de lecture total d'une série entière
-- Synchroniser le statut de lecture de la série avec celui des fics individuelles
-- Prévenir quand un numéro manque dans une série (par exemple "Part 3" absent d'une série qui en a 5)
-- Voir à quelle vitesse on avance dans une série, avec une date de fin estimée
-- Un petit rappel quand il ne reste plus que quelques fics à lire dans une série
-- Un panneau récapitulatif une fois une série terminée
-- Un vrai tableau de bord de statistiques sur toutes tes séries
-- Une vue consolidée de tous les favoris d'une même série, avec un bouton pour mettre toute la série en favori d'un coup
-- Choisir soi-même à partir de combien de fics une série se replie automatiquement dans les listes de résultats (aujourd'hui le seuil est fixe)
-- Voir la date de la dernière mise à jour d'une série
-- Un bouton pour se désabonner rapidement d'une série, directement depuis le badge d'abonnement
-- Cacher les liens vers des séries vides, sans aucune fic visible
-- Un badge "Part X de Y" affiché directement sur chaque fic dans les résultats de recherche, avec un lien vers la page de la série
-- Deviner automatiquement si une série est plutôt une suite d'histoires à lire dans l'ordre ou une anthologie d'histoires indépendantes : le badge existe dans le code, mais rien ne calcule vraiment cette information aujourd'hui, donc il ne s'affiche jamais
+- ~~Suggestions d'ordre de lecture (par exemple l'ordre chronologique de l'histoire plutôt que l'ordre de publication)~~ ❌ Écarté — aucune source de données : AO3 n'a pas de métadonnée d'ordre chronologique, et deviner la chronologie interne d'une histoire sans lire son contenu est impossible ; contredit aussi la décision de conception existante "Ordre de l'auteur respecté"
+- ~~Passer directement à la prochaine fic non lue d'une série~~ ✅ Fait — sur les pages de série, le résumé affiche un bouton "▶ Next unread: Part N" (ou "▶ Start reading") basé sur l'historique de `readingTracker` (`ao3h:rt:history`, dépendance optionnelle : sans historique, il pointe sur la première œuvre)
+- ~~Comparer plusieurs séries entre elles~~ ❌ Écarté — cas d'usage flou et il faudrait récupérer plusieurs pages de série (coût réseau) ; proche des "recommandations de séries" déjà écartées ("ce n'est pas le rôle de ce module")
+- ~~Voir le nombre total de mots et le temps de lecture total d'une série entière~~ ✅ Fait — le résumé de page de série additionne les compteurs de mots déjà affichés sur la page (aucune requête) et estime le temps de lecture (250 mots/min, même convention qu'activityPanel)
+- ~~Synchroniser le statut de lecture de la série avec celui des fics individuelles~~ ❌ Écarté — aucun "statut de lecture de série" n'existe nulle part dans l'extension à synchroniser ; le statut par œuvre vit dans `readingTracker`, et le bouton "Next unread" (ci-dessus) en dérive déjà la progression de série à la volée, ce qui couvre le besoin réel
+- ~~Prévenir quand un numéro manque dans une série (par exemple "Part 3" absent d'une série qui en a 5)~~ ✅ Fait — le résumé compare le total annoncé dans les stats de la série au nombre d'œuvres réellement listées et affiche "⚠️ N work(s) unavailable (deleted or restricted)" en cas d'écart
+- ~~Voir à quelle vitesse on avance dans une série, avec une date de fin estimée~~ ❌ Écarté — même raison que le calcul de vitesse de lecture déjà écarté par `readingDashboard` ("jugé peu fiable sans vraie mesure du temps de lecture")
+- ~~Un petit rappel quand il ne reste plus que quelques fics à lire dans une série~~ ✅ Fait — la bannière de page de work affiche "🏁 Only N parts left" / "Last part after this one!" quand il reste ≤ 2 parties, et "🎉 Final part" sur la dernière
+- ~~Un panneau récapitulatif une fois une série terminée~~ ❌ Écarté — la page de série AO3 est déjà ce récapitulatif (stats, description, liste complète) ; la bannière indique déjà la position et le 100%
+- ~~Un vrai tableau de bord de statistiques sur toutes tes séries~~ ❌ Écarté — `readingDashboard` a déjà écarté les statistiques avancées/graphiques, et un tableau de bord dédié dupliquerait son rôle avec une infrastructure de suivi par série à construire
+- ~~Une vue consolidée de tous les favoris d'une même série, avec un bouton pour mettre toute la série en favori d'un coup~~ ❌ Écarté — AO3 le fait déjà nativement : bouton "Bookmark Series" sur chaque page de série, et les favoris sont filtrables par tag/série via la recherche de bookmarks
+- ~~Choisir soi-même à partir de combien de fics une série se replie automatiquement dans les listes de résultats (aujourd'hui le seuil est fixe)~~ ✅ Fait — réglage `autoCollapseThreshold` (jamais / 3+ / 5+ / 10+) ; un choix manuel (déplier/replier) est mémorisé et prime toujours sur le repli automatique
+- ~~Voir la date de la dernière mise à jour d'une série~~ ❌ Écarté — la page de série AO3 l'affiche déjà nativement ("Updated:") ; ailleurs il faudrait récupérer chaque page de série (coût réseau, même raison que les compteurs écartés dans mainNavigation)
+- ~~Un bouton pour se désabonner rapidement d'une série, directement depuis le badge d'abonnement~~ ✅ Fait (via la page native) — le badge "✓ Subscribed" est désormais un lien vers la page de série, où le bouton natif Unsubscribe est à un clic ; un désabonnement direct depuis le badge exigerait l'id d'abonnement par utilisateur + le jeton CSRF, présents uniquement sur cette page. Au passage, l'état d'abonnement est maintenant réellement enregistré (en visitant une page de série) — la clé `sub` était lue mais jamais écrite, le badge ne pouvait donc jamais apparaître
+- ~~Cacher les liens vers des séries vides, sans aucune fic visible~~ ✅ Fait — réglage `hideEmptySeries` : sur les listings de séries, les blurbs annonçant 0 œuvre sont masqués (donnée déjà sur la page)
+- ~~Un badge "Part X de Y" affiché directement sur chaque fic dans les résultats de recherche, avec un lien vers la page de la série~~ ❌ Écarté — les blurbs AO3 affichent déjà nativement "Part X of [série]" avec le lien ; le total Y n'est pas dans le HTML des listings et demanderait une requête par série (coût réseau)
+- ~~Deviner automatiquement si une série est plutôt une suite d'histoires à lire dans l'ordre ou une anthologie d'histoires indépendantes~~ ✅ Fait — heuristique locale sur les titres des œuvres, calculée en visitant la page de série (`guessSeriesType` : marqueurs de séquence "Part/Book/2…" ou long préfixe commun → suite ; sinon anthologie) et mémorisée ; le badge dormant 📖 Sequential / 🗂️ Anthology s'affiche donc enfin
+- ~~Raccourcis (réglage `enableShortcuts`, placeholder jamais branché)~~ ❌ Écarté — réglage mort supprimé du panneau. Des raccourcis de navigation de série contrediraient la décision "Aucun remplacement de la navigation native" (AO3 a "Next Work in Series"), et le rôle "raccourcis clavier" appartient de toute façon au module `keyboardShortcuts`
+- ~~Filtres (réglage `enableFilters`, placeholder jamais branché)~~ ❌ Écarté — réglage mort supprimé du panneau. Filtrer les listes est le rôle du module `filterManager`, pas de celui-ci
 
 ## Explicitement écarté
 
@@ -86,15 +107,31 @@ AO3 Helper - Series Helper Module Coordinator
     built into core/lifecycle.js's bootOne()):
         seriesOrganization
         seriesProgress
+        seriesPage           (chantier 4)
 
     Shared API (W.AO3H_SeriesHelper, set before submodule cascade):
         W.AO3H_SeriesHelper.lsGet(key)
         W.AO3H_SeriesHelper.lsSet(key, val)
         W.AO3H_SeriesHelper.NS
 
+    Shared storage keys (ao3h:sh:*):
+        sub              -- { seriesId: 1 } — subscription map, written by
+                            seriesPage.js on series-page visits (chantier 4;
+                            previously read-only and never populated)
+        type:{seriesId}  -- 'seq' | 'anth' — title heuristic (chantier 4)
+        collapsedGroups  -- { seriesId: 1|0 } — manual collapse choices
+                            (0 = explicitly expanded, wins over auto-collapse)
+
     Config keys:
-        epicSeriesWarning   -- warning badge for large series (20+ works) — key: epicSeriesWarning
-        groupSeriesInSearch -- group series works in search results
+        epicSeriesWarning     -- warning badge for large series (20+ works)
+        groupSeriesInSearch   -- group series works in search results
+        autoCollapseThreshold -- auto-collapse groups of N+ works (0 = never)
+        seriesSummary         -- series-page summary block (chantier 4)
+        hideEmptySeries       -- hide 0-work series blurbs on series listings
+
+    Soft dependency:
+        ao3h:rt:history (readingTracker) -- powers the "Next unread" button;
+        falls back to the first work when absent
 
 
 ═══════════════════════════════════════════════════════════════════════════
@@ -118,23 +155,30 @@ Le module **Series Helper** améliore la navigation et le suivi des séries d’
 
 # Réglages utilisateur
 
-| Réglage               | Description                                                                           |
-| --------------------- |---------------------------------------------------------------------------------------|
-| `epicSeriesWarning`   | Affiche un badge d’avertissement sur les séries contenant au moins 20 œuvres.         |
-| `groupSeriesInSearch` | Regroupe les œuvres appartenant à une même série dans les résultats de recherche.     |
-| `enableShortcuts`     | Réservé à une future fonctionnalité de raccourcis. Ce réglage n’est pas encore actif. |
-| `enableFilters`       | Réservé à une future fonctionnalité de filtres. Ce réglage n’est pas encore actif.    |
+| Réglage                 | Description                                                                           |
+| ----------------------- |---------------------------------------------------------------------------------------|
+| `epicSeriesWarning`     | Affiche un badge d’avertissement sur les séries contenant au moins 20 œuvres.         |
+| `groupSeriesInSearch`   | Regroupe les œuvres appartenant à une même série dans les résultats de recherche.     |
+| `autoCollapseThreshold` | Replie automatiquement les groupes de N œuvres ou plus (0 = jamais) — chantier 4.     |
+| `seriesSummary`         | Résumé sur les pages de série (mots, temps, Next unread, parties manquantes) — chantier 4. |
+| `hideEmptySeries`       | Masque les séries vides sur les listings de séries — chantier 4.                      |
+
+Les réglages placeholder `enableShortcuts` et `enableFilters` ont été retirés
+au passage chantier 4 (jamais branchés — voir les sections Raccourcis/Filtres
+plus bas).
 
 ---
 
 # Structure du module
 
-Le module est composé d’un fichier coordinateur, de deux sous-modules fonctionnels et d’une feuille de style.
+Le module est composé d’un fichier coordinateur, de trois sous-modules fonctionnels, d'un fichier de calculs purs et d’une feuille de style (`seriesPage.js` et `seriesHelperMath.js` ajoutés au passage chantier 4).
 
 ```text
 _seriesHelper.js
 seriesProgress.js
 seriesOrganization.js
+seriesPage.js
+seriesHelperMath.js
 seriesHelper.css
 ```
 
@@ -482,6 +526,10 @@ Les fonctionnalités ci-dessous sont mentionnées dans d’autres documents du p
 
 ## Suggestions d’ordre de lecture
 
+> ❌ Écarté — aucune métadonnée d'ordre chronologique sur AO3, deviner la
+> chronologie interne est impossible ; contredit la décision « Ordre de
+> l'auteur respecté ».
+
 Proposer un ordre alternatif pour lire une série.
 
 Cela pourrait notamment permettre de suivre :
@@ -493,17 +541,26 @@ Cela pourrait notamment permettre de suivre :
 
 ## Prochaine œuvre non lue
 
+> ✅ Fait — bouton « ▶ Next unread » dans le résumé de page de série,
+> basé sur l'historique readingTracker (dépendance optionnelle).
+
 Permettre de passer directement à la prochaine œuvre non lue d’une série.
 
 ---
 
 ## Comparaison de séries
 
+> ❌ Écarté — cas d'usage flou + coût réseau (plusieurs pages à récupérer) ;
+> proche des recommandations déjà écartées.
+
 Permettre de comparer plusieurs séries entre elles.
 
 ---
 
 ## Statistiques globales d’une série
+
+> ✅ Fait — le résumé de page de série additionne les mots déjà affichés
+> sur la page et estime le temps de lecture (250 mots/min).
 
 Afficher pour une série entière :
 
@@ -514,11 +571,17 @@ Afficher pour une série entière :
 
 ## Synchronisation du statut de lecture
 
+> ❌ Écarté — aucun statut de lecture « de série » n'existe à synchroniser ;
+> le bouton Next unread dérive déjà la progression depuis readingTracker.
+
 Synchroniser le statut de lecture global d’une série avec celui de chacune de ses œuvres.
 
 ---
 
 ## Détection des parties manquantes
+
+> ✅ Fait — le résumé compare le total annoncé aux œuvres listées et
+> signale les parties supprimées/restreintes.
 
 Signaler lorsqu’un numéro semble manquer dans une série.
 
@@ -528,6 +591,9 @@ Par exemple, avertir lorsque la partie 3 est absente d’une série contenant ci
 
 ## Vitesse de progression
 
+> ❌ Écarté — même raison que la vitesse de lecture écartée par
+> readingDashboard (peu fiable sans vraie mesure du temps).
+
 Calculer la vitesse à laquelle l’utilisateur avance dans une série.
 
 Cette fonctionnalité pourrait également estimer une date de fin.
@@ -536,11 +602,16 @@ Cette fonctionnalité pourrait également estimer une date de fin.
 
 ## Rappel de fin de série
 
+> ✅ Fait — la bannière signale « 🏁 Only N parts left » quand il reste
+> ≤ 2 parties, et « 🎉 Final part » sur la dernière.
+
 Afficher un rappel lorsqu’il ne reste plus que quelques œuvres à lire dans une série.
 
 ---
 
 ## Récapitulatif de fin
+
+> ❌ Écarté — la page de série AO3 est déjà ce récapitulatif.
 
 Ajouter un panneau récapitulatif lorsqu’une série est terminée.
 
@@ -548,11 +619,17 @@ Ajouter un panneau récapitulatif lorsqu’une série est terminée.
 
 ## Tableau de bord des séries
 
+> ❌ Écarté — readingDashboard a déjà écarté les statistiques avancées ;
+> un tableau dédié dupliquerait son rôle.
+
 Créer un tableau de bord regroupant les statistiques de toutes les séries suivies ou commencées.
 
 ---
 
 ## Gestion consolidée des favoris
+
+> ❌ Écarté — AO3 a déjà « Bookmark Series » sur chaque page de série, et
+> la recherche de bookmarks filtre par série.
 
 Afficher une vue regroupant tous les favoris appartenant à une même série.
 
@@ -562,6 +639,9 @@ Cette interface pourrait également proposer un bouton permettant d’ajouter to
 
 ## Seuil de repli personnalisable
 
+> ✅ Fait — réglage `autoCollapseThreshold` (jamais/3+/5+/10+), le choix
+> manuel est mémorisé et prime.
+
 Permettre à l’utilisateur de choisir à partir de combien d’œuvres un groupe de série se replie automatiquement dans les listes de résultats.
 
 Le seuil actuel est fixe.
@@ -570,11 +650,19 @@ Le seuil actuel est fixe.
 
 ## Date de dernière mise à jour
 
+> ❌ Écarté — affichée nativement sur la page de série (« Updated: ») ;
+> ailleurs, coût réseau d'une requête par série.
+
 Afficher la date de la dernière mise à jour d’une série.
 
 ---
 
 ## Désabonnement rapide
+
+> ✅ Fait (via la page native) — le badge ✓ Subscribed est un lien vers la
+> page de série (bouton natif Unsubscribe) ; l'état d'abonnement est
+> désormais réellement enregistré en visitant cette page (la clé `sub`
+> n'était jamais écrite auparavant).
 
 Ajouter un bouton permettant de se désabonner directement depuis le badge d’abonnement de la série.
 
@@ -582,11 +670,16 @@ Ajouter un bouton permettant de se désabonner directement depuis le badge d’a
 
 ## Séries vides
 
+> ✅ Fait — réglage `hideEmptySeries` sur les listings de séries.
+
 Masquer les liens menant vers des séries ne contenant aucune œuvre visible.
 
 ---
 
 ## Badge Part X of Y dans les résultats
+
+> ❌ Écarté — AO3 affiche déjà « Part X of [série] » avec lien dans les
+> blurbs ; le total Y demanderait une requête par série.
 
 Afficher directement sur chaque œuvre d’une liste un badge du type :
 
@@ -599,6 +692,10 @@ Ce badge fournirait également un lien vers la page de la série.
 ---
 
 ## Détection automatique du type de série
+
+> ✅ Fait — heuristique locale sur les titres (`guessSeriesType`), calculée
+> et mémorisée en visitant la page de série ; le badge dormant s'affiche
+> enfin.
 
 Analyser automatiquement une série afin de déterminer si elle correspond plutôt à :
 
@@ -613,6 +710,10 @@ Il ne s’affiche donc jamais automatiquement.
 
 ## Raccourcis
 
+> ❌ Écarté — réglage placeholder supprimé ; contredirait « Aucun
+> remplacement de la navigation native », et le rôle appartient à
+> keyboardShortcuts.
+
 Activer réellement le réglage `enableShortcuts` et ajouter les raccourcis prévus pour le module.
 
 Le réglage existe actuellement, mais aucune fonctionnalité n’y est reliée.
@@ -620,6 +721,9 @@ Le réglage existe actuellement, mais aucune fonctionnalité n’y est reliée.
 ---
 
 ## Filtres
+
+> ❌ Écarté — réglage placeholder supprimé ; filtrer les listes est le rôle
+> de filterManager.
 
 Activer réellement le réglage `enableFilters` et ajouter les filtres prévus pour les séries.
 

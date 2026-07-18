@@ -23,6 +23,7 @@ import { Storage } from '../../../../lib/storage/index.js';
 import { wrapStorageForUser } from '../../../../lib/storage/user.js';
 import { isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
+import { remainingParts } from './seriesHelperMath.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -103,13 +104,17 @@ function enhanceLink(a, cfg, api) {
     }
   }
 
-  // Subscription indicator
+  // Subscription indicator — links to the series page, where AO3's native
+  // Unsubscribe button lives (an in-place unsubscribe would need the per-user
+  // subscription id + CSRF token, only present on that page).
   if (seriesId && api) {
     const subs = api.lsGet('sub') || {};
     if (subs[seriesId]) {
-      const badge = document.createElement('span');
+      const badge = document.createElement('a');
       badge.className = `${NS}-sh-badge ${NS}-sh-badge-sub`;
       badge.textContent = '✓ Subscribed';
+      badge.href = `/series/${seriesId}`;
+      badge.title = 'Subscribed — open the series page to unsubscribe';
       a.parentNode.insertBefore(badge, a.nextSibling);
     }
   }
@@ -191,6 +196,19 @@ function injectBanner(api) {
     if (e.part !== null && e.total !== null) {
       const pct = Math.round((e.part / e.total) * 100);
       info.appendChild(document.createTextNode(` (${pct}%)`));
+      // End-of-series nudge when only a couple of parts remain
+      const left = remainingParts(e.part, e.total);
+      if (left !== null && left > 0 && left <= 2) {
+        const nudge = document.createElement('span');
+        nudge.className = `${NS}-sh-banner-nudge`;
+        nudge.textContent = ` 🏁 ${left === 1 ? 'Last part after this one!' : `Only ${left} parts left`}`;
+        info.appendChild(nudge);
+      } else if (left === 0) {
+        const nudge = document.createElement('span');
+        nudge.className = `${NS}-sh-banner-nudge`;
+        nudge.textContent = ' 🎉 Final part';
+        info.appendChild(nudge);
+      }
     }
   });
 

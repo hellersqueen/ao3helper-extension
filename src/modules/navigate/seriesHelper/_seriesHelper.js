@@ -15,6 +15,7 @@ AO3 Helper — Series Helper Coordinator
 
     - seriesOrganization.js: groups related works on listing pages
     - seriesProgress.js: progress badges and work-page series navigation
+    - seriesPage.js: series-page summary, next-unread, type/subscription recording
 
     Notes
 
@@ -34,6 +35,7 @@ import styles from './seriesHelper.css?inline';
 
 import './seriesOrganization.js';
 import './seriesProgress.js';
+import './seriesPage.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP

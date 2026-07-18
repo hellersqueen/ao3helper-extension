@@ -21,6 +21,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Storage } from '../../../../lib/storage/index.js';
 import { wrapStorageForUser } from '../../../../lib/storage/user.js';
+import { shouldAutoCollapse } from './seriesHelperMath.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -34,7 +35,7 @@ const NS = 'ao3h';
 // reproduced directly via imports rather than going through window.AO3H.store.
 const wrappedStorage = wrapStorageForUser(Storage);
 
-const DEFAULTS = { groupSeriesInSearch: false };
+const DEFAULTS = { groupSeriesInSearch: false, autoCollapseThreshold: 0 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — SERIES IDENTIFICATION AND GROUP STATE
@@ -63,15 +64,21 @@ function getSeriesHrefFromBlurb(blurb) {
   return a ? a.getAttribute('href') : null;
 }
 
-function isCollapsed(api, seriesId) {
+// Manual state is tri-state: 1 = collapsed, 0 = expanded (explicit user
+// choice, wins over auto-collapse), absent = no choice yet.
+function manualCollapseState(api, seriesId) {
   const map = api.lsGet('collapsedGroups') || {};
+  if (!(seriesId in map)) return undefined;
   return !!map[seriesId];
+}
+
+function isCollapsed(api, seriesId, count = 0, threshold = 0) {
+  return shouldAutoCollapse(count, threshold, manualCollapseState(api, seriesId));
 }
 
 function setCollapsed(api, seriesId, val) {
   const map = api.lsGet('collapsedGroups') || {};
-  if (val) map[seriesId] = 1;
-  else delete map[seriesId];
+  map[seriesId] = val ? 1 : 0;
   api.lsSet('collapsedGroups', map);
 }
 
@@ -115,12 +122,14 @@ function buildGroupHeader(seriesId, seriesName, seriesHref, count, collapsed, ap
     header.style.display = 'none';
   });
 
-  // Expand/Collapse toggle
+  // Expand/Collapse toggle — flips the current visual state and records the
+  // choice as an explicit manual preference (wins over auto-collapse).
   const toggleBtn = document.createElement('button');
   toggleBtn.textContent = collapsed ? '▼ Expand' : '▲ Collapse';
   toggleBtn.title = collapsed ? 'Show works in this series' : 'Collapse series works';
   toggleBtn.addEventListener('click', () => {
-    const nowCollapsed = !isCollapsed(api, seriesId);
+    const currentlyCollapsed = !!document.querySelector(`[data-ao3h-sh-series="${seriesId}"].${NS}-sh-group-hidden`);
+    const nowCollapsed = !currentlyCollapsed;
     setCollapsed(api, seriesId, nowCollapsed);
     toggleBtn.textContent = nowCollapsed ? '▼ Expand' : '▲ Collapse';
     document.querySelectorAll(`[data-ao3h-sh-series="${seriesId}"]`).forEach(el => {
@@ -136,7 +145,7 @@ function buildGroupHeader(seriesId, seriesName, seriesHref, count, collapsed, ap
   return header;
 }
 
-function groupSeriesBlurbs(api) {
+function groupSeriesBlurbs(api, autoCollapseThreshold = 0) {
   const workList = document.querySelector('ol.work.index, ul.work.index');
   if (!workList) return [];
 
@@ -168,7 +177,7 @@ function groupSeriesBlurbs(api) {
     const seriesHref = getSeriesHrefFromBlurb(blurbList[0]);
     if (!seriesName || !seriesHref) return;
 
-    const collapsed = isCollapsed(api, seriesId);
+    const collapsed = isCollapsed(api, seriesId, blurbList.length, autoCollapseThreshold);
     const header = buildGroupHeader(
       seriesId, seriesName, seriesHref, blurbList.length, collapsed, api
     );
@@ -214,7 +223,8 @@ register(MOD, {
   if (!cfg.groupSeriesInSearch) return function cleanup() {};
   if (!isListingPage() || !api) return function cleanup() {};
 
-  const originalPositions = groupSeriesBlurbs(api);
+  const threshold = parseInt(cfg.autoCollapseThreshold, 10) || 0;
+  const originalPositions = groupSeriesBlurbs(api, threshold);
 
   return function cleanup() {
     // Remove group headers
