@@ -32,8 +32,11 @@ AO3 Helper — Keyboard Shortcuts
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import styles from './keyboardShortcuts.css?inline';
-import { css } from '../../../../lib/utils/index.js';
+import { css, getCurrentPage, getMaxPageFromDOM, buildURLForPage } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import {
+  parseCombo, matchesEvent, detectConflicts, groupByCategory, actionLabel, clampPageJump,
+} from './keyboardShortcutsHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP
@@ -50,15 +53,29 @@ const cfg = makeCfg(MOD);
 
 // Key strings use the format: "Ctrl+Shift+K" or single keys like "?"
 const DEFAULTS = {
-  prevChapter:  'Ctrl+ArrowLeft',
-  nextChapter:  'Ctrl+ArrowRight',
-  prevPage:     'Shift+ArrowLeft',
-  nextPage:     'Shift+ArrowRight',
-  guide:        '?',
-  surpriseMe:   'Ctrl+Shift+R',
-  subscribe:    'Ctrl+Shift+S',
-  bookmark:     'Ctrl+Shift+B',
-  markForLater: 'Ctrl+Shift+M',
+  prevChapter:      'Ctrl+ArrowLeft',
+  nextChapter:      'Ctrl+ArrowRight',
+  prevPage:         'Shift+ArrowLeft',
+  nextPage:         'Shift+ArrowRight',
+  firstPage:        'Ctrl+Home',
+  lastPage:         'Ctrl+End',
+  jumpBackPages:    'Shift+PageUp',
+  jumpForwardPages: 'Shift+PageDown',
+  guide:            '?',
+  commandPalette:   'Ctrl+/',
+  surpriseMe:       'Ctrl+Shift+R',
+  subscribe:        'Ctrl+Shift+S',
+  bookmark:         'Ctrl+Shift+B',
+  markForLater:     'Ctrl+Shift+M',
+  kudos:            'Ctrl+Shift+K',
+};
+
+// Actions grouped for the shortcut guide's category headers. Anything not
+// listed here (e.g. shortcuts registered by other modules) falls back to "Other".
+const CATEGORIES = {
+  Navigation: ['prevChapter', 'nextChapter', 'prevPage', 'nextPage', 'firstPage', 'lastPage', 'jumpBackPages', 'jumpForwardPages'],
+  Actions:    ['surpriseMe', 'subscribe', 'bookmark', 'markForLater', 'kudos'],
+  Interface:  ['guide', 'commandPalette'],
 };
 const DEFAULT_SHORTCUTS = { ...DEFAULTS };
 const externalShortcuts = new Map();
@@ -77,42 +94,13 @@ function getShortcuts () {
    FEATURE — SHORTCUT RESOLUTION
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function parseCombo (str) {
-  const parts = str.split('+');
-  return {
-    ctrl:  parts.includes('Ctrl'),
-    shift: parts.includes('Shift'),
-    alt:   parts.includes('Alt'),
-    key:   parts[parts.length - 1],
-  };
-}
-
-function comboToString (combo) {
-  return [combo.ctrl && 'Ctrl', combo.shift && 'Shift', combo.alt && 'Alt', combo.key]
-    .filter(Boolean).join('+');
-}
-
-function matchesEvent (combo, e) {
-  // event.key already contains the transformed printable character. Thus a
-  // configured "?" must also match the Shift+key event used to produce it.
-  const transformedPrintable = !combo.shift && combo.key.length === 1 && e.key === combo.key;
-  return e.key === combo.key &&
-         e.ctrlKey  === combo.ctrl &&
-         (e.shiftKey === combo.shift || transformedPrintable) &&
-         e.altKey   === combo.alt;
-}
-
-function detectConflicts (map) {
-  const seen = new Map(); // comboString → action
-  for (const [action, keyStr] of Object.entries(map)) {
-    const combo = parseCombo(keyStr);
-    const key = comboToString(combo);
-    if (seen.has(key)) {
-      console.warn(LOG, `Shortcut conflict: "${key}" used by both "${seen.get(key)}" and "${action}"`);
-    } else {
-      seen.set(key, action);
-    }
-  }
+/** detectConflicts() + logs each colliding group to the console for developers. */
+function reportConflicts (map) {
+  const { conflicting, groups } = detectConflicts(map);
+  groups.forEach(({ key, actions }) => {
+    console.warn(LOG, `Shortcut conflict: "${key}" used by ${actions.join(', ')}`);
+  });
+  return conflicting;
 }
 
 const FLASH_ID = `${NS}-kb-flash`;
@@ -194,17 +182,57 @@ function actionMarkForLater () {
   return false;
 }
 
+function actionKudos () {
+  const btn = document.querySelector('#kudo_submit, .kudos input[type="submit"], [data-ao3h-action="kudos"]');
+  if (btn) { btn.click(); return true; }
+  return false;
+}
+
+const PAGE_JUMP = 5;
+
+function firstPage () {
+  if (getCurrentPage() <= 1) return false;
+  location.assign(buildURLForPage(1));
+  return true;
+}
+
+function lastPage () {
+  const max = getMaxPageFromDOM();
+  if (max <= 1 || getCurrentPage() >= max) return false;
+  location.assign(buildURLForPage(max));
+  return true;
+}
+
+function jumpBackPages () {
+  const target = clampPageJump(getCurrentPage(), -PAGE_JUMP, getMaxPageFromDOM());
+  if (target === null) return false;
+  location.assign(buildURLForPage(target));
+  return true;
+}
+
+function jumpForwardPages () {
+  const target = clampPageJump(getCurrentPage(), PAGE_JUMP, getMaxPageFromDOM());
+  if (target === null) return false;
+  location.assign(buildURLForPage(target));
+  return true;
+}
+
 // Built-in actions. External modules add more via W.AO3H_Keyboard.register().
 const BUILTIN_ACTIONS = {
   prevChapter,
   nextChapter,
   prevPage,
   nextPage,
+  firstPage,
+  lastPage,
+  jumpBackPages,
+  jumpForwardPages,
   surpriseMe:   actionSurpriseMe,
   subscribe:    actionSubscribe,
   bookmark:     actionBookmark,
   markForLater: actionMarkForLater,
-  // guide is handled separately in onKeyDown
+  kudos:        actionKudos,
+  // guide and commandPalette are handled separately in onKeyDown
 };
 const externalActions = new Map();
 
@@ -222,7 +250,7 @@ function registerAction (action, keyStr, fn) {
   }
   externalActions.set(action, fn);
   externalShortcuts.set(action, keyStr);
-  detectConflicts(getShortcuts());
+  reportConflicts(getShortcuts());
   console.log(LOG, `external shortcut registered: ${action} → ${keyStr}`);
   return () => unregisterAction(action);
 }
@@ -273,46 +301,117 @@ function createKeyboardApi () {
 let overlayEl = null;
 
 const LABELS = {
-  prevChapter:  '← Previous chapter',
-  nextChapter:  'Next chapter →',
-  prevPage:     '← Previous page',
-  nextPage:     'Next page →',
-  guide:        'Show this guide',
-  surpriseMe:   '🎲 Surprise Me',
-  subscribe:    'Subscribe to work',
-  bookmark:     'Bookmark work',
-  markForLater: '📌 Mark for Later',
+  prevChapter:      '← Previous chapter',
+  nextChapter:      'Next chapter →',
+  prevPage:         '← Previous page',
+  nextPage:         'Next page →',
+  firstPage:        '⇤ First page',
+  lastPage:         'Last page ⇥',
+  jumpBackPages:    `⇤ Jump back ${PAGE_JUMP} pages`,
+  jumpForwardPages: `Jump forward ${PAGE_JUMP} pages ⇥`,
+  guide:            'Show this guide',
+  commandPalette:   'Command palette',
+  surpriseMe:       '🎲 Surprise Me',
+  subscribe:        'Subscribe to work',
+  bookmark:         'Bookmark work',
+  markForLater:     '📌 Mark for Later',
+  kudos:            '❤️ Leave kudos',
 };
 
-function actionLabel (action) {
-  if (LABELS[action]) return LABELS[action];
-  // Convert camelCase / snake_case / slash-separated to readable words
-  return action.replace(/[_/]/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
+function runAction (action) {
+  const fn = actionFor(action);
+  if (fn && fn()) triggerFlash();
 }
 
-function showGuide () {
+function showGuide (paletteMode = false) {
   if (overlayEl) { hideGuide(); return; }
 
   const map = getShortcuts();
-  const rows = Object.entries(map)
-    .map(([action, key]) =>
-      `<div class="${NS}-kb-row"><span>${actionLabel(action)}</span><span class="${NS}-kb-key">${key}</span></div>`)
-    .join('');
+  const conflicts = detectConflicts(map).conflicting;
+
+  const panel = document.createElement('div');
+  panel.className = `${NS}-kb-panel`;
+
+  const title = document.createElement('h3');
+  title.textContent = paletteMode ? '⌨️ Command Palette' : '⌨️ Keyboard Shortcuts';
+  panel.appendChild(title);
+
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.className = `${NS}-kb-search`;
+  searchInput.placeholder = paletteMode ? 'Type a command and press Enter…' : 'Search shortcuts…';
+  panel.appendChild(searchInput);
+
+  const list = document.createElement('div');
+  list.className = `${NS}-kb-list`;
+  panel.appendChild(list);
+
+  function renderRows (filter) {
+    list.innerHTML = '';
+    const q = (filter || '').trim().toLowerCase();
+    const grouped = groupByCategory(map, CATEGORIES);
+    for (const [category, entries] of Object.entries(grouped)) {
+      const matches = entries.filter(([action, key]) =>
+        !q || actionLabel(action, LABELS).toLowerCase().includes(q) || key.toLowerCase().includes(q));
+      if (!matches.length) continue;
+      if (!paletteMode) {
+        const hdr = document.createElement('div');
+        hdr.className = `${NS}-kb-category`;
+        hdr.textContent = category;
+        list.appendChild(hdr);
+      }
+      matches.forEach(([action, key]) => {
+        const row = document.createElement('div');
+        row.className = `${NS}-kb-row` + (conflicts.has(action) ? ` ${NS}-kb-conflict` : '');
+        row.dataset.action = action;
+        if (conflicts.has(action)) row.title = 'Conflicts with another shortcut using the same keys';
+        const label = document.createElement('span');
+        label.textContent = actionLabel(action, LABELS) + (conflicts.has(action) ? ' ⚠️' : '');
+        const keyEl = document.createElement('span');
+        keyEl.className = `${NS}-kb-key`;
+        keyEl.textContent = key;
+        row.appendChild(label);
+        row.appendChild(keyEl);
+        if (paletteMode) {
+          row.classList.add(`${NS}-kb-row--clickable`);
+          row.addEventListener('click', () => { runAction(action); hideGuide(); });
+        }
+        list.appendChild(row);
+      });
+    }
+    if (!list.children.length) {
+      const empty = document.createElement('div');
+      empty.className = `${NS}-kb-empty`;
+      empty.textContent = 'No matching shortcuts.';
+      list.appendChild(empty);
+    }
+  }
+
+  renderRows('');
+  searchInput.addEventListener('input', () => renderRows(searchInput.value));
+  if (paletteMode) {
+    searchInput.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const first = list.querySelector(`.${NS}-kb-row`);
+      if (first) { runAction(first.dataset.action); hideGuide(); }
+    });
+  }
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = `${NS}-kb-close`;
+  closeBtn.innerHTML = 'Close <small>(Esc)</small>';
+  closeBtn.addEventListener('click', hideGuide);
+  panel.appendChild(closeBtn);
 
   overlayEl = document.createElement('div');
   overlayEl.className = `${NS}-kb-overlay`;
-  overlayEl.innerHTML = `
-    <div class="${NS}-kb-panel">
-      <h3>⌨️ Keyboard Shortcuts</h3>
-      ${rows}
-      <button class="${NS}-kb-close">Close <small>(Esc or ?)</small></button>
-    </div>
-  `;
-
-  overlayEl.querySelector(`.${NS}-kb-close`).addEventListener('click', hideGuide);
+  overlayEl.appendChild(panel);
   overlayEl.addEventListener('click', e => { if (e.target === overlayEl) hideGuide(); });
   document.addEventListener('keydown', onGuideKeyDown);
   document.body.appendChild(overlayEl);
+
+  if (paletteMode) searchInput.focus();
 }
 
 function hideGuide () {
@@ -322,7 +421,9 @@ function hideGuide () {
 }
 
 function onGuideKeyDown (e) {
-  if (e.key === 'Escape' || e.key === '?') { e.preventDefault(); hideGuide(); }
+  if (e.key === 'Escape') { e.preventDefault(); hideGuide(); return; }
+  // Don't let "?" close the overlay while the user is typing in its search box.
+  if (e.key === '?' && e.target.tagName !== 'INPUT') { e.preventDefault(); hideGuide(); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -340,12 +441,18 @@ function onKeyDown (e) {
   // Guide toggle
   if (map.guide) {
     const combo = parseCombo(map.guide);
-    if (matchesEvent(combo, e)) { e.preventDefault(); showGuide(); return; }
+    if (matchesEvent(combo, e)) { e.preventDefault(); showGuide(false); return; }
+  }
+
+  // Command palette toggle
+  if (map.commandPalette) {
+    const combo = parseCombo(map.commandPalette);
+    if (matchesEvent(combo, e)) { e.preventDefault(); showGuide(true); return; }
   }
 
   // All other actions
   for (const [action, keyStr] of Object.entries(map)) {
-    if (action === 'guide') continue;
+    if (action === 'guide' || action === 'commandPalette') continue;
     const fn = actionFor(action);
     if (!fn) continue;
     const combo = parseCombo(keyStr);
@@ -379,12 +486,10 @@ register(MOD, {
   title: 'Keyboard Shortcuts',
   enabledByDefault: false,
 }, async function init () {
-  // customizationEnabled — future: controls whether key bindings are editable
-  const _remappingEnabled = cfg('customizationEnabled', false); // eslint-disable-line no-unused-vars
   keyboardApi = createKeyboardApi();
   W.AO3H_Keyboard = keyboardApi;
   W.AO3H_KeyboardShortcuts = keyboardApi;
-  detectConflicts(getShortcuts());
+  reportConflicts(getShortcuts());
   document.addEventListener('keydown', onKeyDown);
   console.log(LOG, 'initialized');
   return cleanup;
