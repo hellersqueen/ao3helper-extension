@@ -53,15 +53,21 @@ const NS  = 'ao3h';
 const MOD = 'textToSpeech';
 
 const DEFAULTS = {
-  voice:            '',
-  playbackSpeed:    1,
-  stopOnPageChange: true,
-  autoNextChapter:  true,
-  highlightSentence:true,
-  autoScroll:       true,
-  skipAuthorNotes:  true,
-  skipSummary:      true,
-  floatingPanel:    true,
+  voice:              '',
+  playbackSpeed:      1,
+  volume:             1,
+  pitch:              1,
+  stopOnPageChange:   true,
+  autoNextChapter:    true,
+  confirmNextChapter: false,
+  notifyChapterEnd:   false,
+  highlightSentence:  true,
+  highlightColor:     '#fff3b0',
+  autoScroll:         true,
+  scrollSpeed:        'normal',
+  skipAuthorNotes:    true,
+  skipSummary:        true,
+  floatingPanel:      true,
 };
 
 const cfg = makeCfg(MOD, DEFAULTS);

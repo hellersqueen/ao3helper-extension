@@ -59,6 +59,8 @@
 /*#        |                                                 */
 /*--       ├─  08. Bouton fermeture                          */
 /*#        |                                                 */
+/*==       ├─  09. Transition vers le chapitre suivant        */
+/*#        |                                                 */
 /*#        └─*/
 
 
@@ -255,6 +257,47 @@
   font-variant-numeric: tabular-nums;
 }
 
+.ao3h-tts-mute-btn {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.ao3h-tts-mute-btn.ao3h-tts-active {
+  /*- ⚠️ Lié au JS : playbackControls.js ajoute cette classe quand muet */
+  background: var(--ao3h-tts-color-accent);
+  border-color: var(--ao3h-tts-color-accent);
+}
+
+/*+ ───────────────────────────────────────────────────────────
+    PRESETS DE VITESSE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tts-preset-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.ao3h-tts-preset-btn {
+  flex: 1;
+  padding: 3px 4px;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.ao3h-tts-preset-btn:hover {
+  background: #ddd;
+}
+
 
 /*==
   ═══════════════════════════════════════════════════════════════════════
@@ -278,6 +321,11 @@
   padding: 3px 4px;
   border: 1px solid #ccc;
   border-radius: 3px;
+}
+
+.ao3h-tts-lang-filter {
+  /*- Plus étroit que le select de voix — sert juste à filtrer la liste */
+  flex: 0 0 72px !important;
 }
 
 .ao3h-tts-voice-preview {
@@ -353,6 +401,20 @@
   font-weight: bold;
 }
 
+.ao3h-tts-sleep-extend {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.ao3h-tts-sleep-extend:hover {
+  background: #ddd;
+}
+
 
 /*++
   ═══════════════════════════════════════════════════════════════════════
@@ -396,4 +458,20 @@
 
 .ao3h-tts-close:hover {
   color: #333;
+}
+
+
+/*==
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 09 — TRANSITION VERS LE CHAPITRE SUIVANT
+  ───────────────────────────────────────────────────────────────────────
+    Classe ajoutée brièvement sur <body> juste avant de cliquer sur le lien
+    du chapitre suivant, pour adoucir le passage automatique.
+    ⚠️ Lié au JS : playbackControls.js ajoute cette classe dans onFinished().
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-tts-chapter-fade {
+  transition: opacity .3s ease;
+  opacity: .35;
 }

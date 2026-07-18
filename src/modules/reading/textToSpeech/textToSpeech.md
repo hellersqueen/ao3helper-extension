@@ -13,14 +13,24 @@ cours, et une minuterie de sommeil.
 | Réglage | Par défaut | Ce que ça fait |
 |---|---|---|
 | `voice` | (voix du système) | La voix utilisée pour la lecture |
-| `playbackSpeed` | `1` | La vitesse de lecture (de 0.5× à 2×) |
+| `playbackSpeed` | `1` | La vitesse de lecture (de 0.5× à 2×) — le panneau flottant offre aussi 4 profils rapides |
+| `volume` | `1` | Le volume de la voix (0 à 1) |
+| `pitch` | `1` | La hauteur de la voix (0 à 2) |
 | `stopOnPageChange` | activé | Arrête la lecture si on change de page |
 | `autoNextChapter` | activé | Lit automatiquement le chapitre suivant à la fin |
+| `confirmNextChapter` | désactivé | Demande une confirmation avant de passer au chapitre suivant |
+| `notifyChapterEnd` | désactivé | Affiche une notification quand un chapitre vient de se terminer |
 | `highlightSentence` | activé | Surligne la phrase en cours de lecture |
+| `highlightColor` | `#fff3b0` | La couleur du surlignage de la phrase en cours |
 | `autoScroll` | activé | Fait défiler la page pour suivre la lecture |
+| `scrollSpeed` | `normal` | La vitesse du défilement automatique (slow / normal / fast) |
 | `skipAuthorNotes` | activé | Ignore les notes d'auteur |
 | `skipSummary` | activé | Ignore le résumé et la préface |
 | `floatingPanel` | activé | Affiche le panneau de lecture flottant |
+
+Réglages disponibles uniquement dans le panneau flottant (persistés directement,
+pas via le panneau de réglages) : le filtre de langue des voix, et le
+bouton muet — voir les sections des fichiers ci-dessous.
 
 ## Fichiers
 
@@ -64,25 +74,47 @@ cours, et une minuterie de sommeil.
 
 - Les styles visuels du panneau, des boutons, du surlignage et de la barre de progression
 
+### 8. `playbackHelpers.js` — calculs purs pour la lecture
+
+- Les profils de vitesse prédéfinis (`SPEED_PRESETS`)
+- Bornage du volume et de la hauteur de voix
+- Calcul du facteur de fondu avant la fin de la minuterie de sommeil
+- Calcul de la nouvelle échéance de la minuterie après un "+5 minutes"
+- Bornage de l'index de phrase pour le saut manuel
+
+### 9. `voiceHelpers.js` — filtrage et étiquetage des voix
+
+- Liste des langues disponibles parmi les voix du navigateur
+- Filtrage des voix par langue
+- Étiquette de qualité approximative (Local/Network, Default) — l'API Web
+  Speech n'exposant aucune vraie métrique de qualité audio
+
+### 10. `scrollHelpers.js` — calculs purs pour le défilement automatique
+
+- Durée de défilement associée à chaque vitesse (slow/normal/fast)
+- Fonction d'accélération/décélération (easing) et position intermédiaire,
+  utilisées par `visualFeedback.js` pour animer son propre défilement
+  (`scrollIntoView({behavior:'smooth'})` n'ayant pas de réglage de vitesse)
+
 ## Specs non implémentés
 
-Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
-vraiment dans ce module (pas de code pour ça) :
+Ce sont des idées dont on parle dans d'autres docs. État après le passage
+chantier 4 (2026-07-17) :
 
-- Des vitesses de lecture prédéfinies ("confortable", "rapide", "façon livre audio") plutôt qu'un simple curseur libre
-- Des dictionnaires de prononciation tout prêts partagés par fandom, avec contributions de la communauté
-- Régler le volume ou la hauteur de la voix
-- Une base de prononciation de noms de personnages déjà prête, sans avoir à tout ajouter soi-même
-- Un bouton pour couper rapidement le son (mute) sans toucher au réglage du volume
-- Un fondu audio progressif juste avant que la minuterie de sommeil s'arrête
-- Un bouton "+5 minutes" pour prolonger facilement la minuterie de sommeil
-- Une confirmation demandée avant de passer automatiquement au chapitre suivant
-- Une notification quand un chapitre vient de se terminer
-- Personnaliser la couleur ou le style du surlignage pendant la lecture
-- Régler la vitesse du défilement automatique de la page
-- Filtrer les voix disponibles par langue et voir un indicateur de qualité pour chaque voix
-- Un bouton pour sauter manuellement un passage pendant la lecture, en plus du saut automatique des notes
-- Une transition plus douce quand la lecture passe automatiquement au chapitre suivant
+- ~~Des vitesses de lecture prédéfinies ("confortable", "rapide", "façon livre audio") plutôt qu'un simple curseur libre~~ ✅ Fait — quatre boutons de profil (🐢 Comfortable 0.85×, Normal 1×, 🐇 Fast 1.25×, 🎧 Audiobook 1.5×) dans le panneau flottant, à côté du curseur (`playbackHelpers.js` → `SPEED_PRESETS`)
+- ~~Des dictionnaires de prononciation tout prêts partagés par fandom, avec contributions de la communauté~~ ❌ Écarté — nécessiterait un serveur communautaire (hébergement + modération des contributions) ; l'extension reste 100% locale sans backend. L'import/export JSON déjà présent dans `pronunciationManager.js` permet déjà un partage manuel des dictionnaires
+- ~~Régler le volume ou la hauteur de la voix~~ ✅ Fait — curseurs Volume et Pitch dans le panneau flottant et le panneau de réglages (`speechEngine.js` applique `utterance.volume`/`utterance.pitch`)
+- ~~Une base de prononciation de noms de personnages déjà prête, sans avoir à tout ajouter soi-même~~ ❌ Écarté — même raison que les dictionnaires partagés : aucune base multi-fandom fiable à maintenir sans infrastructure serveur ; le dictionnaire personnel + import/export couvre déjà ce besoin
+- ~~Un bouton pour couper rapidement le son (mute) sans toucher au réglage du volume~~ ✅ Fait — bouton 🔊/🔇 à côté du curseur Volume ; coupe uniquement le son effectif (`effectiveVolume()`), le curseur ne bouge pas
+- ~~Un fondu audio progressif juste avant que la minuterie de sommeil s'arrête~~ ✅ Fait — les 8 dernières secondes du compte à rebours réduisent linéairement le volume des phrases lues (`computeFadeFactor`)
+- ~~Un bouton "+5 minutes" pour prolonger facilement la minuterie de sommeil~~ ✅ Fait — bouton "+5m" affiché à côté du compte à rebours pendant que la minuterie tourne
+- ~~Une confirmation demandée avant de passer automatiquement au chapitre suivant~~ ✅ Fait — réglage `confirmNextChapter` (case à cocher), utilise `confirm()`
+- ~~Une notification quand un chapitre vient de se terminer~~ ✅ Fait — réglage `notifyChapterEnd`, affiche un toast partagé (`lib/ui/toast.js`)
+- ~~Personnaliser la couleur ou le style du surlignage pendant la lecture~~ ✅ Fait (couleur) — réglage `highlightColor` (sélecteur de couleur), appliqué en style inline sur le `<mark>` ; le style (au-delà de la couleur de fond) reste volontairement simple, cohérent avec la décision de conception ci-dessous sur le surlignage
+- ~~Régler la vitesse du défilement automatique de la page~~ ✅ Fait — réglage `scrollSpeed` (slow/normal/fast), anime le défilement soi-même (`scrollHelpers.js`) puisque `scrollIntoView({behavior:'smooth'})` n'a pas de réglage de vitesse
+- ~~Filtrer les voix disponibles par langue et voir un indicateur de qualité pour chaque voix~~ ✅ Fait — menu de filtre par langue dans le panneau flottant ; pour la "qualité", l'API Web Speech n'expose aucune métrique réelle donc chaque voix est étiquetée Local/Network (`voice.localService`) et Default, la meilleure indication disponible en pratique (latence/dépendance réseau)
+- ~~Un bouton pour sauter manuellement un passage pendant la lecture, en plus du saut automatique des notes~~ ✅ Fait — boutons ⏮/⏭ dans le panneau, sautent d'une phrase en avant/arrière
+- ~~Une transition plus douce quand la lecture passe automatiquement au chapitre suivant~~ ✅ Fait — un court fondu d'opacité (classe `.ao3h-tts-chapter-fade`) et un délai de 300ms précèdent le clic automatique sur le lien du chapitre suivant
 
 ## Explicitement écarté
 
@@ -90,6 +122,8 @@ vraiment dans ce module (pas de code pour ça) :
 - Surligner exactement la phrase lue plutôt que tout le paragraphe — jugé trop fragile techniquement
 - Déplacer le panneau flottant où on veut — la position reste fixe pour rester simple
 - Faire un vrai lecteur audio complet, comme pour un livre audio — le but est de rester simple, juste un outil pour faire lire le texte par le navigateur
+- Des dictionnaires de prononciation tout prêts partagés par fandom avec contributions communautaires — demanderait un serveur d'hébergement/modération ; l'import/export JSON local suffit
+- Une base de prononciation de noms de personnages pré-remplie — même raison, pas de source de données fiable à maintenir sans backend
 
 ## Précision
 
@@ -120,7 +154,8 @@ AO3 Helper - Text To Speech Module Coordinator
     Cross-submodule wiring reads the shared globals fresh at call time.
 
     Storage keys:
-        ao3h:tts:voice, :rate, :pronunciations, :sleepMinutes
+        ao3h:tts:voice, :rate, :pronunciations, :sleepMinutes,
+        :volume, :pitch, :langFilter (added in the chantier 4 pass)
 
 
 
@@ -145,10 +180,16 @@ AO3 Helper - Content Filtering Submodule
 
     Features:
         - Floating control panel with Play / Pause / Stop
-        - Speed slider (0.5× – 2×)
-        - Voice selector (populated from speechEngine)
-        - Sleep timer (15 / 30 / 60 min with countdown)
-        - Auto-advance to next chapter on completion
+        - Manual skip back / skip forward one sentence
+        - Speed slider (0.5× – 2×) plus quick presets (Comfortable/Normal/Fast/Audiobook)
+        - Volume and pitch sliders, and a mute toggle that leaves the volume slider untouched
+        - Voice selector (populated from speechEngine), with a language filter
+          and a Local/Network + Default quality tag per voice
+        - Sleep timer (15 / 30 / 60 min with countdown), a "+5m" extend button,
+          and an automatic volume fade over the last 8s before it stops playback
+        - Auto-advance to next chapter on completion, optionally gated behind
+          a confirm() prompt, with a short opacity-fade transition before navigating
+        - Optional toast notification when a chapter finishes reading
         - Progress bar (sentence-based)
         - Keyboard shortcut: Space to toggle play/pause (when panel focused)
 
@@ -173,6 +214,9 @@ AO3 Helper - Speech Engine Submodule
     Features:
         - Web Speech API wrapper
         - Voice selection with persistence
+        - Volume and pitch, persisted and applied to every utterance
+          (playbackControls can still override both per-utterance, e.g.
+          for the mute toggle and the sleep-timer fade)
         - Voice preview
         - Sentence-by-sentence utterance queue for highlight/progress tracking
 
@@ -183,8 +227,11 @@ AO3 Helper - Speech Engine Submodule
     Source Module: Text To Speech
 
     Features:
-        - Highlights the paragraph containing the current sentence being read aloud
-        - Auto-scrolls to keep the highlighted paragraph in view
+        - Highlights the paragraph containing the current sentence being read aloud,
+          in a configurable color (highlightColor)
+        - Auto-scrolls to keep the highlighted paragraph in view, at a
+          configurable speed (scrollSpeed) — drives its own requestAnimationFrame
+          animation since scrollIntoView({behavior:'smooth'}) has no speed knob
         - Provides highlight/unhighlight API for playbackControls to call
 
 
@@ -230,7 +277,7 @@ Tout le traitement est effectué localement dans le navigateur. Aucun service de
 
 # Structure du module
 
-Le module est composé d’un fichier coordinateur, de cinq sous-modules fonctionnels et d’une feuille de style.
+Le module est composé d’un fichier coordinateur, de cinq sous-modules fonctionnels, d’une feuille de style, et de trois fichiers de calculs purs (ajoutés au passage chantier 4) partagés par les sous-modules.
 
 ```text
 _textToSpeech.js
@@ -240,6 +287,9 @@ pronunciationManager.js
 visualFeedback.js
 playbackControls.js
 textToSpeech.css
+playbackHelpers.js
+voiceHelpers.js
+scrollHelpers.js
 ```
 
 Les sous-modules sont enregistrés indépendamment avec le parent :
@@ -859,11 +909,16 @@ Il définit notamment l’apparence :
 
 # Fonctionnalités non implémentées
 
-Les fonctionnalités ci-dessous sont mentionnées dans d’autres documents du projet, mais ne sont pas actuellement présentes dans le module.
+Les fonctionnalités ci-dessous étaient mentionnées dans d’autres documents du
+projet. État après le passage chantier 4 (2026-07-17) — chaque sous-section
+garde sa description d’origine, complétée par une note de résolution.
 
 ---
 
 ## Vitesses prédéfinies
+
+> ✅ Fait — quatre boutons de profil (Comfortable 0.85×, Normal 1×, Fast 1.25×,
+> Audiobook 1.5×) dans le panneau flottant, à côté du curseur libre.
 
 Ajouter des profils de vitesse prêts à utiliser plutôt qu’un simple curseur libre.
 
@@ -877,6 +932,10 @@ Les profils envisagés comprennent notamment :
 
 ## Dictionnaires partagés par fandom
 
+> ❌ Écarté — nécessiterait un serveur communautaire pour héberger et modérer
+> les contributions ; l’extension reste 100% locale. L’import/export JSON déjà
+> présent dans `pronunciationManager.js` permet déjà un partage manuel.
+
 Permettre d’utiliser des dictionnaires de prononciation préparés pour certains fandoms.
 
 Ces dictionnaires pourraient être enrichis par les contributions de la communauté.
@@ -885,17 +944,26 @@ Ces dictionnaires pourraient être enrichis par les contributions de la communau
 
 ## Réglage du volume
 
+> ✅ Fait — curseur Volume dans le panneau flottant et le panneau de réglages,
+> appliqué via `utterance.volume` dans `speechEngine.js`.
+
 Ajouter un contrôle permettant de modifier le volume de la synthèse vocale depuis le panneau.
 
 ---
 
 ## Réglage de la hauteur de la voix
 
+> ✅ Fait — curseur Pitch, appliqué via `utterance.pitch` dans `speechEngine.js`.
+
 Ajouter un contrôle permettant de modifier la hauteur, ou `pitch`, de la voix.
 
 ---
 
 ## Base de prononciation intégrée
+
+> ❌ Écarté — même raison que les dictionnaires partagés par fandom : aucune
+> base multi-fandom fiable à maintenir sans infrastructure serveur ; le
+> dictionnaire personnel + import/export suffit.
 
 Fournir une base de données de prononciation contenant déjà des noms de personnages et des termes connus.
 
@@ -905,17 +973,26 @@ L’utilisateur n’aurait alors pas à créer toutes les règles manuellement.
 
 ## Bouton de sourdine
 
+> ✅ Fait — bouton 🔊/🔇 à côté du curseur Volume ; coupe le son effectif sans
+> déplacer le curseur (`effectiveVolume()` dans `playbackControls.js`).
+
 Ajouter un bouton permettant de couper rapidement le son sans modifier le réglage du volume.
 
 ---
 
 ## Fondu avant l’arrêt de la minuterie
 
+> ✅ Fait — les 8 dernières secondes du compte à rebours réduisent linéairement
+> le volume des phrases lues (`computeFadeFactor` dans `playbackHelpers.js`).
+
 Réduire progressivement le volume juste avant la fin de la minuterie de sommeil.
 
 ---
 
 ## Prolongation de la minuterie
+
+> ✅ Fait — bouton "+5m" affiché à côté du compte à rebours pendant que la
+> minuterie tourne.
 
 Ajouter un bouton :
 
@@ -929,17 +1006,28 @@ permettant de prolonger rapidement la minuterie active.
 
 ## Confirmation avant le chapitre suivant
 
+> ✅ Fait — réglage `confirmNextChapter` (case à cocher), utilise `confirm()`
+> avant de cliquer sur le lien du chapitre suivant.
+
 Demander une confirmation avant de passer automatiquement au chapitre suivant.
 
 ---
 
 ## Notification de fin de chapitre
 
+> ✅ Fait — réglage `notifyChapterEnd`, affiche un toast partagé
+> (`lib/ui/toast.js`).
+
 Afficher une notification lorsqu’un chapitre vient de se terminer.
 
 ---
 
 ## Personnalisation du surlignage
+
+> ✅ Fait (couleur) — réglage `highlightColor` (sélecteur de couleur), appliqué
+> en style inline sur le `<mark>`. Le style au-delà de la couleur de fond reste
+> volontairement simple, cohérent avec la décision de conception sur le
+> surlignage par paragraphe (voir plus bas).
 
 Permettre de modifier :
 
@@ -951,11 +1039,18 @@ Permettre de modifier :
 
 ## Vitesse du défilement automatique
 
+> ✅ Fait — réglage `scrollSpeed` (slow/normal/fast). `visualFeedback.js` anime
+> son propre défilement (`scrollHelpers.js`) puisque
+> `scrollIntoView({behavior:'smooth'})` n’a pas de réglage de vitesse.
+
 Ajouter un réglage permettant de contrôler la vitesse du défilement automatique de la page.
 
 ---
 
 ## Filtrage des voix
+
+> ✅ Fait — menu de filtre par langue dans le panneau flottant
+> (`voiceHelpers.js`).
 
 Permettre de filtrer les voix disponibles selon leur langue.
 
@@ -963,11 +1058,18 @@ Permettre de filtrer les voix disponibles selon leur langue.
 
 ## Indicateur de qualité des voix
 
+> ✅ Fait — l’API Web Speech n’exposant aucune vraie métrique de qualité audio,
+> chaque voix est étiquetée Local/Network (`voice.localService`) et Default :
+> la meilleure indication disponible en pratique (latence, dépendance réseau).
+
 Afficher une indication de qualité pour chaque voix proposée dans le sélecteur.
 
 ---
 
 ## Saut manuel d’un passage
+
+> ✅ Fait — boutons ⏮/⏭ dans le panneau, sautent d’une phrase en avant/arrière
+> en annulant la lecture en cours.
 
 Ajouter une commande permettant de sauter manuellement une phrase ou un passage pendant la lecture.
 
@@ -976,6 +1078,9 @@ Cette fonctionnalité compléterait le saut automatique des notes de l’auteur 
 ---
 
 ## Transition entre les chapitres
+
+> ✅ Fait — un court fondu d’opacité (`.ao3h-tts-chapter-fade`) et un délai de
+> 300ms précèdent le clic automatique sur le lien du chapitre suivant.
 
 Ajouter une transition plus douce lorsque le module passe automatiquement d’un chapitre au suivant.
 

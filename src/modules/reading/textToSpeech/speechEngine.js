@@ -21,6 +21,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { clampVolume, clampPitch } from './playbackHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -35,6 +36,8 @@ function shared () { return W.AO3H_TextToSpeech || null; }
 function cfg (k) { const s = shared(); return s ? s.cfg(k) : null; }
 
 const LS_VOICE = `${NS}:tts:voice`;
+const LS_VOLUME = `${NS}:tts:volume`;
+const LS_PITCH  = `${NS}:tts:pitch`;
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE LIFECYCLE
@@ -50,6 +53,8 @@ register(MOD, { title: 'Speech Engine', parent: 'textToSpeech', enabledByDefault
   const synth = W.speechSynthesis;
   let voices = [];
   let selectedVoice = null;
+  let currentVolume = clampVolume(parseFloat(lsGet(LS_VOLUME)) || cfg('volume') || 1);
+  let currentPitch  = clampPitch(parseFloat(lsGet(LS_PITCH)) || cfg('pitch') || 1);
 
   /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — VOICE SELECTION AND UTTERANCES
@@ -71,9 +76,21 @@ register(MOD, { title: 'Speech Engine', parent: 'textToSpeech', enabledByDefault
     lsSet(LS_VOICE, voiceURI || '');
   }
 
-  function createUtterance (text, rate) {
+  function setVolume (volume) {
+    currentVolume = clampVolume(volume);
+    lsSet(LS_VOLUME, currentVolume);
+  }
+
+  function setPitch (pitch) {
+    currentPitch = clampPitch(pitch);
+    lsSet(LS_PITCH, currentPitch);
+  }
+
+  function createUtterance (text, rate, opts = {}) {
     const u = new SpeechSynthesisUtterance(text);
     u.rate = rate ?? cfg('playbackSpeed') ?? 1;
+    u.volume = clampVolume(opts.volume ?? currentVolume);
+    u.pitch = clampPitch(opts.pitch ?? currentPitch);
     if (selectedVoice) u.voice = selectedVoice;
     return u;
   }
@@ -88,6 +105,10 @@ register(MOD, { title: 'Speech Engine', parent: 'textToSpeech', enabledByDefault
     getVoices: () => voices,
     setVoice,
     getSelectedVoice: () => selectedVoice,
+    setVolume,
+    setPitch,
+    getVolume: () => currentVolume,
+    getPitch: () => currentPitch,
     createUtterance,
     preview,
     synth,

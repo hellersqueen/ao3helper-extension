@@ -20,6 +20,7 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { getScrollDuration, computeScrollY } from './scrollHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -42,6 +43,7 @@ register(MOD, { title: 'Visual Feedback', parent: 'textToSpeech', enabledByDefau
 
   const HL_CLASS = `${NS}-tts-highlight`;
   let activeWrap = null;
+  let scrollRafId = null;
 
   /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — CURRENT-PARAGRAPH HIGHLIGHTING
@@ -58,14 +60,37 @@ register(MOD, { title: 'Visual Feedback', parent: 'textToSpeech', enabledByDefau
     // is brittle with mixed inline elements). Good enough for per-sentence TTS.
     const mark = document.createElement('mark');
     mark.className = HL_CLASS;
+    const color = cfg('highlightColor');
+    if (color) mark.style.backgroundColor = color;
     while (el.firstChild) mark.appendChild(el.firstChild);
     el.appendChild(mark);
     activeWrap = { mark, parent: el };
 
     // Auto-scroll
     if (cfg('autoScroll') ?? true) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      scrollParagraphIntoView(el);
     }
+  }
+
+  function scrollParagraphIntoView (el) {
+    if (scrollRafId) { W.cancelAnimationFrame(scrollRafId); scrollRafId = null; }
+
+    const rect = el.getBoundingClientRect();
+    const startY = W.scrollY;
+    const targetY = startY + rect.top - (W.innerHeight / 2 - rect.height / 2);
+    const duration = getScrollDuration(cfg('scrollSpeed'));
+    const startTime = W.performance.now();
+
+    function step (now) {
+      const elapsed = now - startTime;
+      W.scrollTo(0, computeScrollY(startY, targetY, elapsed, duration));
+      if (elapsed < duration) {
+        scrollRafId = W.requestAnimationFrame(step);
+      } else {
+        scrollRafId = null;
+      }
+    }
+    scrollRafId = W.requestAnimationFrame(step);
   }
 
   function clearHighlight () {
@@ -80,6 +105,7 @@ register(MOD, { title: 'Visual Feedback', parent: 'textToSpeech', enabledByDefau
 
   console.log(LOG, 'init');
   return function cleanup () {
+    if (scrollRafId) { W.cancelAnimationFrame(scrollRafId); scrollRafId = null; }
     clearHighlight();
     delete W.AO3H_TTS_Visual;
   };
