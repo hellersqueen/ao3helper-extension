@@ -57,6 +57,12 @@
 /*#        |                                                 */
 /*---      ├─  09. Roulette trigger & tagline                */
 /*#        |                                                 */
+/*++++     ├─  10. Mood quiz modal (chantier 4)               */
+/*#        |                                                 */
+/*++++     ├─  11. Horoscope modal & rétrospective (chantier 4) */
+/*#        |                                                 */
+/*++++     ├─  12. Thème saisonnier (chantier 4)              */
+/*#        |                                                 */
 /*#        └─*/
 
 
@@ -315,12 +321,9 @@
   line-height: 1;
 }
 
-/*- Bouton toggle flottant pour afficher/masquer la carte */
+/*- Bouton toggle pour afficher/masquer la carte — vit désormais dans le
+   menu flottant partagé (Section 05), plus de position fixe individuelle */
 .ao3h-tg-bingo-toggle {
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  z-index: calc(var(--ao3h-tg-z-bingo) + 1);
   background: var(--ao3h-tg-color-primary);
   color: #fff;
   border: none;
@@ -328,10 +331,21 @@
   padding: 6px 14px;
   font-size: .8em;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,.2);
 }
 
 .ao3h-tg-bingo-toggle:hover { background: #700; }
+
+/*- Barre de progression de la carte (% de cases cochées, hors FREE) */
+.ao3h-tg-bingo-progress {
+  text-align: center;
+  font-size: .68em;
+  color: var(--ao3h-tg-color-accent);
+  margin-top: 6px;
+}
+
+/*- Grille 3×3 (mode "easy") — cellules plus grandes que la grille 5×5 */
+.ao3h-tg-bingo-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.ao3h-tg-bingo-grid-3 .ao3h-tg-bingo-cell { font-size: 0.85em; }
 
 
 /*=   
@@ -497,49 +511,78 @@
 }
 
 
-/*===   
+/*===
   ═══════════════════════════════════════════════════════════════════════
-    SECTION 05 — BOUTONS TRIGGER FLOTTANTS (partagé)
+    SECTION 05 — MENU FLOTTANT CONSOLIDÉ (partagé, chantier 4)
   ───────────────────────────────────────────────────────────────────────
-    Boutons fixes en bas de l'écran qui ouvrent les panneaux
-    Roulette, Statistics et Achievements.
+    Un seul bouton "🃏" en bas à droite ouvre une colonne regroupant les
+    boutons Bingo / Roulette / Stats / Achievements / Mood Quiz / Horoscope.
+    Avant, chacun flottait indépendamment avec sa propre position fixe.
     À l'écran :
-      ──────────────────────────────────────────────────────
-      [ 🎲 Roulette ]  [ 📊 Stats ]  [ 🏅 Achievements ]
-      ──────────────────────────────────────────────────────
-    ⚠️ La position `right` de chaque bouton est définie dans
-       sa propre classe (sections 03, 07, 06).
+      ┌───────────────────┐
+      │ 🎯 Bingo          │
+      │ 🎲 Roulette       │
+      │ 📊 Stats          │
+      │ 🏅 Achievements   │
+      │ 🎭 Mood Quiz      │
+      │ 🔮 Horoscope      │
+      └───────────────────┘
+              🃏
+    ⚠️ Créé par _tropeGames.js (createMenu()) ; chaque sous-module y ajoute
+       son bouton via W.AO3H_TropeGames.registerMenuItem(btn) plutôt que de
+       l'attacher directement à document.body.
   ═══════════════════════════════════════════════════════════════════════
 */
 
 
 /*+ ───────────────────────────────────────────────────────────
-    STYLES COMMUNS AUX 3 TRIGGERS
+    BOUTON "🃏" — OUVRE/FERME LE MENU
   ───────────────────────────────────────────────────────────── */
 
-/*- ⚠️ Complète .ao3h-tg-btn — remplace background, padding et border-radius */
-.ao3h-tg-trigger-btn {
+.ao3h-tg-menu-fab {
   position: fixed;
-  bottom: 52px;
+  bottom: 16px;
+  right: 16px;
   z-index: 8002;
-  padding: 6px 12px;
-  border-radius: 18px;
-  background: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--ao3h-tg-color-primary);
+  color: #fff;
+  font-size: 1.3em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
 }
+
+.ao3h-tg-menu-fab:hover { background: #700; }
 
 
 /*+ ───────────────────────────────────────────────────────────
-    POSITION INDIVIDUELLE (right) PAR SOUS-MODULE
+    COLONNE DE BOUTONS
   ───────────────────────────────────────────────────────────── */
 
-/*- Bouton Roulette */
-.ao3h-tg-roulette-trigger  { right: 90px; }
+.ao3h-tg-menu {
+  /*- ⚠️ `hidden` basculé par JS (createMenu()'s fab click handler) */
+  position: fixed;
+  bottom: 68px;
+  right: 16px;
+  z-index: 8001;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+}
 
-/*- Bouton Statistics */
-.ao3h-tg-stats-trigger     { right: 180px; }
-
-/*- Bouton Achievements */
-.ao3h-tg-ach-trigger       { right: 256px; }
+/*- Chaque bouton enfant (Bingo/Roulette/Stats/Achievements/Mood/Horoscope) */
+.ao3h-tg-trigger-btn {
+  padding: 6px 14px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  white-space: nowrap;
+  text-align: left;
+}
 
 
 /*====   
@@ -641,6 +684,27 @@
   font-size: .72em;
   opacity: .8;
 }
+
+/*- Icône de médaille (bronze/argent/or/platine) à côté du titre */
+.ao3h-tg-ach-medal { font-size: .9em; }
+
+/*- Historique des déblocages (bouton + liste chronologique) */
+.ao3h-tg-ach-history-toggle {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  font-size: .7em;
+}
+
+.ao3h-tg-ach-history {
+  font-size: .72em;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.ao3h-tg-ach-history-row { margin: 3px 0; }
+.ao3h-tg-ach-history-date { opacity: .6; }
 
 
 /*+ ───────────────────────────────────────────────────────────
@@ -813,6 +877,43 @@
 }
 
 
+/*+ ───────────────────────────────────────────────────────────
+    AJOUTS CHANTIER 4 — défi hebdo, tendance, catégories, tropes rares
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-tg-stats-section-title {
+  font-size: .7em;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  opacity: .55;
+  margin: 10px 0 4px;
+}
+
+.ao3h-tg-stats-challenge {
+  font-size: .76em;
+  background: #f5f0ff;
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin-bottom: 8px;
+}
+
+.ao3h-tg-stats-challenge.is-complete {
+  background: #e0ffe0;
+  color: #060;
+}
+
+.ao3h-tg-stats-rare {
+  font-size: .72em;
+  opacity: .8;
+  margin-top: 10px;
+}
+
+.ao3h-tg-stats-trend {
+  font-size: .74em;
+  line-height: 1.5;
+}
+
+
 /*--   
   ═══════════════════════════════════════════════════════════════════════
     SECTION 08 — BINGO PATTERNS INFO
@@ -845,4 +946,146 @@
   font-size: .82em;
   opacity: .8;
   margin: 0 0 12px;
+}
+
+
+/*++++
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 10 — MOOD QUIZ MODAL (chantier 4)
+  ───────────────────────────────────────────────────────────────────────
+    Même structure que la modal roulette : backdrop + boîte centrée.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-tg-mood-modal {
+  /*- ⚠️ display basculé par JS (openModal/closeModal dans tropeMoodQuiz.js) */
+  position: fixed;
+  inset: 0;
+  z-index: var(--ao3h-tg-z-modal);
+  background: rgba(0,0,0,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ao3h-tg-mood-inner {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  min-width: 300px;
+  max-width: 420px;
+  width: 90vw;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  position: relative;
+}
+
+.ao3h-tg-mood-title {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: var(--ao3h-tg-color-accent);
+  margin-bottom: 10px;
+}
+
+.ao3h-tg-mood-question { margin-bottom: 14px; }
+
+.ao3h-tg-mood-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ao3h-tg-mood-result {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--ao3h-tg-color-accent);
+  margin: 10px 0 18px;
+}
+
+.ao3h-tg-mood-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+
+/*++++
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 11 — HOROSCOPE MODAL & RÉTROSPECTIVE (chantier 4)
+  ───────────────────────────────────────────────────────────────────────
+    Réaffichage manuel du trope du jour, même après avoir fermé la
+    bannière automatique. Affiche aussi si la prédiction d'hier s'est
+    réalisée.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-tg-horoscope-modal {
+  /*- ⚠️ display basculé par JS (openManualModal/closeManualModal) */
+  position: fixed;
+  inset: 0;
+  z-index: var(--ao3h-tg-z-modal);
+  background: rgba(0,0,0,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ao3h-tg-horo-modal-inner {
+  background: linear-gradient(135deg, #4a1a6e 0%, #7b2fa8 60%, #a040c8 100%);
+  color: #fff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  min-width: 280px;
+  max-width: 400px;
+  width: 90vw;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  position: relative;
+}
+
+.ao3h-tg-horo-modal-inner .ao3h-tg-horo-icon { font-size: 2em; }
+.ao3h-tg-horo-modal-inner .ao3h-tg-horo-trope { font-size: 1.2em; margin: 8px 0 4px; }
+
+/*- Ligne "Yesterday's trope came true / didn't come up" */
+.ao3h-tg-horo-retro {
+  margin-top: 10px;
+  font-size: .8em;
+  opacity: .9;
+}
+
+
+/*++++
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 12 — THÈME SAISONNIER (chantier 4)
+  ───────────────────────────────────────────────────────────────────────
+    Reteinte légère de l'horoscope et de la carte bingo selon la saison
+    (réglage `seasonalTheme`). ⚠️ Attribut posé sur <html> par
+    _tropeGames.js (applySeasonalTheme()) : data-ao3h-tg-season="...".
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+html[data-ao3h-tg-season="halloween"] .ao3h-tg-horoscope-banner,
+html[data-ao3h-tg-season="halloween"] .ao3h-tg-horo-modal-inner {
+  background: linear-gradient(135deg, #ff7518 0%, #2b1b3d 100%);
+}
+
+html[data-ao3h-tg-season="winter"] .ao3h-tg-horoscope-banner,
+html[data-ao3h-tg-season="winter"] .ao3h-tg-horo-modal-inner {
+  background: linear-gradient(135deg, #1a3a6e 0%, #3fa0c8 100%);
+}
+
+html[data-ao3h-tg-season="spring"] .ao3h-tg-horoscope-banner,
+html[data-ao3h-tg-season="spring"] .ao3h-tg-horo-modal-inner {
+  background: linear-gradient(135deg, #2e8b57 0%, #a0d840 100%);
+}
+
+html[data-ao3h-tg-season="summer"] .ao3h-tg-horoscope-banner,
+html[data-ao3h-tg-season="summer"] .ao3h-tg-horo-modal-inner {
+  background: linear-gradient(135deg, #d89000 0%, #ff5040 100%);
+}
+
+html[data-ao3h-tg-season="autumn"] .ao3h-tg-horoscope-banner,
+html[data-ao3h-tg-season="autumn"] .ao3h-tg-horo-modal-inner {
+  background: linear-gradient(135deg, #7a3a10 0%, #c87020 100%);
 }

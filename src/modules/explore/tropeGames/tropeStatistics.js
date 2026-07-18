@@ -22,9 +22,11 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON, downloadFile } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
+import {
+  computeWeeklyChallenge, monthlyTrend, unexploredTropes, groupStatsByCategory,
+} from './tropeGamesHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -73,26 +75,31 @@ function calcStreak (seen) {
 
 function recordTropes (stats) {
   const workId = extractWorkIdFromHref(location.pathname);
+  const TROPE_LIST = getShared()?.TROPE_LIST || [];
+  const tagEls = document.querySelectorAll('dd.freeform.tags li a.tag');
+  const pageTags = Array.from(tagEls).map(el => el.textContent.trim().toLowerCase());
+  const matched = TROPE_LIST.filter(trope =>
+    pageTags.some(t => t.includes(trope.toLowerCase()) || trope.toLowerCase().includes(t))
+  );
+
   if (workId) {
     const seen = loadSeen();
     if (seen.some(e => (typeof e === 'object' ? e.id : e) === workId)) {
       console.log(LOG, 'Work already recorded, skipping:', workId);
       return stats;
     }
-    seen.push({ id: workId, date: todayKey() });
+    // `tropes` (chantier 4) backs the weekly challenge, monthly trend, and
+    // horoscope retrospective — earlier entries predating this field simply
+    // contribute nothing to those computations.
+    seen.push({ id: workId, date: todayKey(), tropes: matched });
     if (seen.length > 1000) seen.splice(0, seen.length - 1000);
     saveSeen(seen);
   }
 
-  const TROPE_LIST = getShared()?.TROPE_LIST || [];
-  const tagEls = document.querySelectorAll('dd.freeform.tags li a.tag');
-  const pageTags = Array.from(tagEls).map(el => el.textContent.trim().toLowerCase());
   let changed = false;
-  TROPE_LIST.forEach(trope => {
-    if (pageTags.some(t => t.includes(trope.toLowerCase()) || trope.toLowerCase().includes(t))) {
-      stats[trope] = (stats[trope] || 0) + 1;
-      changed = true;
-    }
+  matched.forEach(trope => {
+    stats[trope] = (stats[trope] || 0) + 1;
+    changed = true;
   });
   if (changed) saveStats(stats);
   return stats;
@@ -112,22 +119,69 @@ function getTopTen (stats) {
 let panelEl = null;
 let triggerBtn = null;
 
+function renderBarRows (entries, max) {
+  return entries.map(([trope, count]) => `
+    <div class="${NS}-tg-stats-row">
+      <div class="${NS}-tg-stats-row-label">${escapeHtml(trope)} <span class="${NS}-tg-stats-row-count">(${count})</span></div>
+      <div class="${NS}-tg-stats-bar-bg">
+        <div class="${NS}-tg-stats-bar-fill" style="width:${Math.round(count / max * 100)}%"></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderChallengeSection (seen) {
+  const { distinct, target, complete } = computeWeeklyChallenge(seen);
+  return `
+    <div class="${NS}-tg-stats-challenge${complete ? ' is-complete' : ''}">
+      🗓️ Weekly Challenge: ${distinct}/${target} different tropes this week
+      ${complete ? ' ✅' : ''}
+    </div>
+  `;
+}
+
+function renderRareSection (tropeList, stats) {
+  const unseen = unexploredTropes(tropeList, stats);
+  if (!unseen.length) return `<div class="${NS}-tg-stats-rare">🔍 You've read every tracked trope at least once!</div>`;
+  const shown = unseen.slice(0, 5).map(escapeHtml).join(', ');
+  const more = unseen.length > 5 ? ` (+${unseen.length - 5} more)` : '';
+  return `<div class="${NS}-tg-stats-rare">🔍 ${unseen.length} tropes left to explore: ${shown}${more}</div>`;
+}
+
+function renderTrendSection (seen) {
+  const { current, previous, rising } = monthlyTrend(seen);
+  if (!current.length && !previous.length) return '';
+  const currentHtml = current.length
+    ? current.map(([t, c]) => `${escapeHtml(t)} (${c})${rising.includes(t) ? ' 📈' : ''}`).join(', ')
+    : '—';
+  const previousHtml = previous.length ? previous.map(([t, c]) => `${escapeHtml(t)} (${c})`).join(', ') : '—';
+  return `
+    <div class="${NS}-tg-stats-trend">
+      <div><strong>This month:</strong> ${currentHtml}</div>
+      <div><strong>Last month:</strong> ${previousHtml}</div>
+    </div>
+  `;
+}
+
+function renderCategorySection (stats) {
+  const groups = groupStatsByCategory(stats);
+  const entries = Object.entries(groups).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) return '';
+  const max = entries[0][1] || 1;
+  return `<div class="${NS}-tg-stats-categories">${renderBarRows(entries, max)}</div>`;
+}
+
 function renderPanel (stats) {
-  const streak = calcStreak(loadSeen());
+  const seen = loadSeen();
+  const streak = calcStreak(seen);
   const streakHtml = streak > 0
     ? `<div class="${NS}-tg-stats-streak">🔥 ${streak}-day reading streak!</div>`
     : '';
   const top = getTopTen(stats);
   const max = top[0]?.[1] || 1;
   const rows = top.length
-    ? top.map(([trope, count]) => `
-        <div class="${NS}-tg-stats-row">
-          <div class="${NS}-tg-stats-row-label">${escapeHtml(trope)} <span class="${NS}-tg-stats-row-count">(${count})</span></div>
-          <div class="${NS}-tg-stats-bar-bg">
-            <div class="${NS}-tg-stats-bar-fill" style="width:${Math.round(count / max * 100)}%"></div>
-          </div>
-        </div>`).join('')
+    ? renderBarRows(top, max)
     : `<p class="${NS}-tg-stats-empty">No tropes tracked yet. Read some works!</p>`;
+  const TROPE_LIST = getShared()?.TROPE_LIST || [];
 
   return `
     <div class="${NS}-tg-stats-header">
@@ -135,7 +189,13 @@ function renderPanel (stats) {
       <button class="${NS}-tg-stats-close" aria-label="Close statistics">✕</button>
     </div>
     ${streakHtml}
+    ${renderChallengeSection(seen)}
     ${rows}
+    <div class="${NS}-tg-stats-section-title">By category</div>
+    ${renderCategorySection(stats)}
+    <div class="${NS}-tg-stats-section-title">Trend</div>
+    ${renderTrendSection(seen)}
+    ${renderRareSection(TROPE_LIST, stats)}
     <div class="${NS}-tg-stats-actions">
       <button class="${NS}-tg-btn ${NS}-tg-stats-export-json">Export JSON</button>
       <button class="${NS}-tg-btn ${NS}-tg-stats-export-csv">Export CSV</button>
@@ -178,7 +238,7 @@ function injectTrigger () {
       openPanel();
     }
   });
-  document.body.appendChild(triggerBtn);
+  W.AO3H_TropeGames?.registerMenuItem(triggerBtn);
 }
 
 
@@ -190,7 +250,7 @@ register(
   MOD,
   { title: 'Trope Statistics', parent: 'tropeGames', enabledByDefault: true },
   async function init () {
-    if (loadModuleSettings(MOD).enableStats === false) return () => {};
+    if (getShared()?.cfg('enableStats') === false) return () => {};
     console.log(LOG, 'init');
 
     // document.body peut ne pas encore exister quand ce module boote — sans ce

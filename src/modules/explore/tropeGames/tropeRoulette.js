@@ -21,7 +21,6 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { onReady } from '../../../../lib/utils/index.js';
 
 
@@ -59,6 +58,13 @@ function buildSearchUrl (tropes) {
   return `https://archiveofourown.org/works?work_search[query]=${query}`;
 }
 
+// Read by surpriseMe.js on the next listing-page load — a lightweight,
+// same-tab handoff rather than a persisted cross-module API (chantier 4).
+const AUTO_SURPRISE_KEY = `${NS}:tg:autoSurprise`;
+function requestSurpriseFromCombo () {
+  try { sessionStorage.setItem(AUTO_SURPRISE_KEY, '1'); } catch { /* storage off */ }
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — ROULETTE MODAL
@@ -80,13 +86,14 @@ function renderModal (tropes) {
         <button class="${NS}-tg-btn ${NS}-tg-spin-again">Spin Again</button>
         <a class="${NS}-tg-btn" href="${escapeHtml(buildSearchUrl(tropes))}"
            target="_blank" rel="noopener noreferrer">Search AO3 ↗</a>
+        <button class="${NS}-tg-btn ${NS}-tg-roulette-surprise" title="Open the search and auto-pick a random result">🎲 Surprise Pick</button>
       </div>
     </div>
   `;
 }
 
-function openModal () {
-  const tropes = pickRandom(3);
+function openModal (count) {
+  const tropes = pickRandom(count);
   if (!tropes.length) return;
 
   if (!modalEl) {
@@ -101,7 +108,11 @@ function openModal () {
   modalEl.style.display = 'flex';
 
   modalEl.querySelector(`.${NS}-tg-modal-close`).addEventListener('click', closeModal);
-  modalEl.querySelector(`.${NS}-tg-spin-again`).addEventListener('click', () => openModal());
+  modalEl.querySelector(`.${NS}-tg-spin-again`).addEventListener('click', () => openModal(count));
+  modalEl.querySelector(`.${NS}-tg-roulette-surprise`).addEventListener('click', () => {
+    requestSurpriseFromCombo();
+    location.href = buildSearchUrl(tropes);
+  });
 
   // Keyboard close — remove previous listener before adding new one
   if (onKey) document.removeEventListener('keydown', onKey);
@@ -114,13 +125,13 @@ function closeModal () {
   if (onKey) { document.removeEventListener('keydown', onKey); onKey = null; }
 }
 
-function injectTrigger () {
+function injectTrigger (count) {
   triggerBtn = document.createElement('button');
   triggerBtn.className = `${NS}-tg-btn ${NS}-tg-trigger-btn ${NS}-tg-roulette-trigger`;
   triggerBtn.textContent = '🎲 Roulette';
   triggerBtn.setAttribute('aria-label', 'Open Trope Roulette');
-  triggerBtn.addEventListener('click', openModal);
-  document.body.appendChild(triggerBtn);
+  triggerBtn.addEventListener('click', () => openModal(count));
+  W.AO3H_TropeGames?.registerMenuItem(triggerBtn);
 }
 
 
@@ -132,15 +143,17 @@ register(
   MOD,
   { title: 'Trope Roulette', parent: 'tropeGames', enabledByDefault: true },
   async function init () {
-    if (loadModuleSettings(MOD).enableRoulette === false) return () => {};
+    const cfg = (key) => W.AO3H_TropeGames?.cfg(key);
+    if (cfg('enableRoulette') === false) return () => {};
     console.log(LOG, 'init');
+    const count = Math.min(5, Math.max(2, parseInt(cfg('rouletteCount'), 10) || 3));
     // document.body peut ne pas encore exister quand ce module boote — sans ce
     // report, l'appendChild plantait (Cannot read properties of null),
     // constaté sur plusieurs modules similaires en test.
     let active = true;
     onReady(() => {
       if (!active) return;
-      injectTrigger();
+      injectTrigger(count);
     });
 
     return function cleanup () {

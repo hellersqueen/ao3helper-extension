@@ -421,6 +421,11 @@ function cleanup () {
   console.log(LOG, 'cleaned up');
 }
 
+// Set by tropeGames' Trope Roulette "🎲 Surprise Pick" button before it
+// navigates to a combo search — same-tab handoff, not a persisted API
+// (chantier 4, tropeGames side).
+const AUTO_SURPRISE_KEY = `${NS}:tg:autoSurprise`;
+
 register(MOD, {
   title: 'Surprise Me',
   enabledByDefault: false,
@@ -429,6 +434,13 @@ register(MOD, {
 
   injectButton();
   exposeApi();
+
+  let autoRequested = false;
+  try { autoRequested = sessionStorage.getItem(AUTO_SURPRISE_KEY) === '1'; } catch { /* storage off */ }
+  if (autoRequested) {
+    try { sessionStorage.removeItem(AUTO_SURPRISE_KEY); } catch { /* storage off */ }
+    triggerRandom();
+  }
 
   console.log(LOG, 'initialized');
   return cleanup;

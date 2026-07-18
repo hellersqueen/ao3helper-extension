@@ -2,7 +2,7 @@
 
 AO3 Helper - Trope Games › Trope Bingo Patterns
 
-Generates and persists a 5×5 trope bingo card, checks cells from work-page
+Generates and persists an N×N trope bingo card, checks cells from work-page
 tags, and detects completed lines and advanced board patterns.
 
 Notes
@@ -10,6 +10,9 @@ Notes
 - The center cell is always a pre-checked FREE space.
 - Completed rows, columns, diagonals, X, frame, corners, and blackout persist.
 - Users may also toggle cells manually or generate a new card.
+- Card size, category, and exclusions are configurable (chantier 4); newly
+  completed patterns found during background tag scanning surface as a toast
+  even if the card isn't open (chantier 4).
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -21,9 +24,10 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { showToast } from '../../../../lib/ui/toast.js';
+import { buildBingoPatterns, freeCenterIndex, filterTropesByCategory, bingoProgressPercent } from './tropeGamesHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -38,12 +42,9 @@ const SK   = `${NS}:tg:bingo`;
 
 function getShared () { return W.AO3H_TropeGames || null; }
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — CARD GENERATION AND PERSISTENCE
 ═══════════════════════════════════════════════════════════════════════════ */
-
-const FREE_CENTER = 12; // index 12 of 25 cells
 
 function shuffle (arr) {
   const a = [...arr];
@@ -54,19 +55,34 @@ function shuffle (arr) {
   return a;
 }
 
-function generateCard () {
+function generateCard (size, category, exclude) {
   const TROPE_LIST = getShared()?.TROPE_LIST || [];
-  const tropes = shuffle([...TROPE_LIST]).slice(0, 24);
-  // Insert FREE space at index 12
-  tropes.splice(FREE_CENTER, 0, 'FREE');
+  const excludeSet = new Set((exclude || []).map(t => t.trim().toLowerCase()).filter(Boolean));
+  const needed = size * size - 1;
+
+  const preferred = shuffle(filterTropesByCategory(TROPE_LIST, category).filter(t => !excludeSet.has(t.toLowerCase())));
+  const fillers = shuffle(TROPE_LIST.filter(t => !preferred.includes(t) && !excludeSet.has(t.toLowerCase())));
+  const tropes = [...preferred, ...fillers].slice(0, needed);
+
+  tropes.splice(freeCenterIndex(size), 0, 'FREE');
   return tropes;
 }
 
-function loadState () {
+function cardOptions (cfg) {
+  const size = cfg('bingoSize') === 9 ? 3 : 5;
+  return { size, category: cfg('bingoCategory') || '', exclude: (cfg('bingoExclude') || '').split(',') };
+}
+
+function freshState (opts) {
+  const fresh = { card: generateCard(opts.size, opts.category, opts.exclude), checked: Array(opts.size * opts.size).fill(false), completed: [], size: opts.size };
+  fresh.checked[freeCenterIndex(opts.size)] = true;
+  return fresh;
+}
+
+function loadState (opts) {
   const state = lsGet(SK);
-  if (state?.card?.length === 25) return state;
-  const fresh = { card: generateCard(), checked: Array(25).fill(false), completed: [] };
-  fresh.checked[FREE_CENTER] = true; // FREE square pre-checked
+  if (state?.card?.length === opts.size * opts.size) return state;
+  const fresh = freshState(opts);
   lsSet(SK, fresh);
   return fresh;
 }
@@ -78,37 +94,19 @@ function saveState (state) { lsSet(SK, state); }
    FEATURE — PATTERN DETECTION AND TAG AUTO-CHECKING
 ═══════════════════════════════════════════════════════════════════════════ */
 
-const PATTERNS = {
-  'Row 1': [0,1,2,3,4],
-  'Row 2': [5,6,7,8,9],
-  'Row 3': [10,11,12,13,14],
-  'Row 4': [15,16,17,18,19],
-  'Row 5': [20,21,22,23,24],
-  'Col 1': [0,5,10,15,20],
-  'Col 2': [1,6,11,16,21],
-  'Col 3': [2,7,12,17,22],
-  'Col 4': [3,8,13,18,23],
-  'Col 5': [4,9,14,19,24],
-  'Diagonal \\': [0,6,12,18,24],
-  'Diagonal /': [4,8,12,16,20],
-  'X': [0,4,6,8,12,16,18,20,24],
-  'Frame': [0,1,2,3,4,5,9,10,14,15,19,20,21,22,23,24],
-  'Corners': [0,4,20,24],
-  'Blackout': Array.from({length: 25}, (_, i) => i),
-};
-
-function detectPatterns (checked) {
+function detectPatterns (checked, patterns) {
   const found = [];
-  for (const [name, indices] of Object.entries(PATTERNS)) {
+  for (const [name, indices] of Object.entries(patterns)) {
     if (indices.every(i => checked[i])) found.push(name);
   }
   return found;
 }
 
-function autoCheckFromTags (state) {
+function autoCheckFromTags (state, patterns) {
   const tagEls = document.querySelectorAll('dd.freeform.tags li a.tag');
   if (!tagEls.length) return state;
   const pageTags = Array.from(tagEls).map(el => el.textContent.trim().toLowerCase());
+  const previouslyCompleted = new Set(state.completed);
   let changed = false;
   state.card.forEach((trope, idx) => {
     if (trope === 'FREE') return;
@@ -120,8 +118,13 @@ function autoCheckFromTags (state) {
     }
   });
   if (changed) {
-    state.completed = detectPatterns(state.checked);
+    state.completed = detectPatterns(state.checked, patterns);
     saveState(state);
+    // Surface newly completed patterns even if the card isn't open (chantier 4)
+    const newlyCompleted = state.completed.filter(p => !previouslyCompleted.has(p));
+    newlyCompleted.forEach(name => {
+      showToast(`🎯 Bingo pattern completed: ${name}!`, { type: 'success', duration: 5000 });
+    });
   }
   return state;
 }
@@ -135,12 +138,14 @@ let wrapEl = null;
 let toggleBtn = null;
 let isOpen = false;
 
-function renderCard (state) {
-  // Build set of all cell indices that belong to any completed pattern
+function renderCard (state, patterns) {
   const patternCells = new Set();
   for (const name of state.completed) {
-    if (PATTERNS[name]) PATTERNS[name].forEach(i => patternCells.add(i));
+    if (patterns[name]) patterns[name].forEach(i => patternCells.add(i));
   }
+  const size = state.size || 5;
+  const freeIdx = freeCenterIndex(size);
+  const progress = bingoProgressPercent(state.checked, freeIdx);
 
   const cellsHtml = state.card.map((trope, i) => {
     const classes = [
@@ -156,7 +161,8 @@ function renderCard (state) {
     <div class="${NS}-tg-bingo-title">TROPE BINGO
       <button class="${NS}-tg-bingo-close" aria-label="Close bingo card">✕</button>
     </div>
-    <div class="${NS}-tg-bingo-grid">${cellsHtml}</div>
+    <div class="${NS}-tg-bingo-grid ${NS}-tg-bingo-grid-${size}">${cellsHtml}</div>
+    <div class="${NS}-tg-bingo-progress" title="${progress}% of the card checked">${progress}% complete</div>
     <div class="${NS}-tg-bingo-actions">
       <button class="${NS}-tg-btn ${NS}-tg-bingo-reset">New Card</button>
       <button class="${NS}-tg-btn ${NS}-tg-bingo-export">Patterns: ${state.completed.length}</button>
@@ -164,35 +170,33 @@ function renderCard (state) {
   `;
 }
 
-function openCard (state) {
+function openCard (state, patterns, opts) {
   if (!wrapEl) {
     wrapEl = document.createElement('div');
     wrapEl.className = `${NS}-tg-bingo-wrap`;
     document.body.appendChild(wrapEl);
   }
-  wrapEl.innerHTML = renderCard(state);
+  wrapEl.innerHTML = renderCard(state, patterns);
   wrapEl.style.display = 'block';
   isOpen = true;
-  attachCardEvents(state);
+  attachCardEvents(state, patterns, opts);
 }
 
-function attachCardEvents (state) {
+function attachCardEvents (state, patterns, opts) {
   wrapEl.querySelector(`.${NS}-tg-bingo-close`)?.addEventListener('click', () => {
     wrapEl.style.display = 'none';
     isOpen = false;
   });
   wrapEl.querySelector(`.${NS}-tg-bingo-reset`)?.addEventListener('click', () => {
-    const fresh = { card: generateCard(), checked: Array(25).fill(false), completed: [] };
-    fresh.checked[FREE_CENTER] = true;
+    const fresh = freshState(opts);
     saveState(fresh);
-    wrapEl.innerHTML = renderCard(fresh);
-    attachCardEvents(fresh);
+    wrapEl.innerHTML = renderCard(fresh, patterns);
+    attachCardEvents(fresh, patterns, opts);
   });
   wrapEl.querySelector(`.${NS}-tg-bingo-export`)?.addEventListener('click', () => {
     const list = state.completed.length
       ? state.completed.join(', ')
       : 'No patterns completed yet.';
-    // Show a small overlay inside the wrap
     let info = wrapEl.querySelector(`.${NS}-tg-bingo-patterns-info`);
     if (!info) {
       info = document.createElement('div');
@@ -206,17 +210,17 @@ function attachCardEvents (state) {
       const idx = parseInt(cell.dataset.idx, 10);
       if (state.card[idx] === 'FREE') return;
       state.checked[idx] = !state.checked[idx];
-      state.completed = detectPatterns(state.checked);
+      state.completed = detectPatterns(state.checked, patterns);
       saveState(state);
-      wrapEl.innerHTML = renderCard(state);
-      attachCardEvents(state);
+      wrapEl.innerHTML = renderCard(state, patterns);
+      attachCardEvents(state, patterns, opts);
     });
   });
 }
 
-function injectToggle () {
+function injectToggle (opts) {
   toggleBtn = document.createElement('button');
-  toggleBtn.className = `${NS}-tg-bingo-toggle`;
+  toggleBtn.className = `${NS}-tg-btn ${NS}-tg-trigger-btn ${NS}-tg-bingo-toggle`;
   toggleBtn.textContent = '🎯 Bingo';
   toggleBtn.setAttribute('aria-label', 'Toggle Trope Bingo card');
   toggleBtn.addEventListener('click', () => {
@@ -224,11 +228,12 @@ function injectToggle () {
       wrapEl.style.display = 'none';
       isOpen = false;
     } else {
-      const state = loadState();
-      openCard(state);
+      const patterns = buildBingoPatterns(opts.size);
+      const state = loadState(opts);
+      openCard(state, patterns, opts);
     }
   });
-  document.body.appendChild(toggleBtn);
+  W.AO3H_TropeGames?.registerMenuItem(toggleBtn);
 }
 
 
@@ -240,9 +245,13 @@ register(
   MOD,
   { title: 'Trope Bingo', parent: 'tropeGames', enabledByDefault: true },
   async function init () {
-    if (loadModuleSettings(MOD).enableBingo === false) return () => {};
+    const cfg = (key) => getShared()?.cfg(key);
+    if (cfg('enableBingo') === false) return () => {};
     console.log(LOG, 'init');
-    let state = loadState();
+
+    const opts = cardOptions(cfg);
+    const patterns = buildBingoPatterns(opts.size);
+    let state = loadState(opts);
 
     // document.body peut ne pas encore exister quand ce module boote — sans ce
     // report, l'appendChild plantait (Cannot read properties of null),
@@ -250,12 +259,10 @@ register(
     let active = true;
     onReady(() => {
       if (!active) return;
-      // Auto-check from work page tags
       if (isWorkPage()) {
-        state = autoCheckFromTags(state);
+        state = autoCheckFromTags(state, patterns);
       }
-
-      injectToggle();
+      injectToggle(opts);
     });
 
     return function cleanup () {

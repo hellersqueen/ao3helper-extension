@@ -21,8 +21,8 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
+import { medalIcon } from './tropeGamesHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -57,6 +57,7 @@ const ACHIEVEMENTS = [
   {
     id: 'first_trope',
     icon: '🌱',
+    tier: 'bronze',
     title: 'First Steps',
     desc: 'Read a work tagged with any tracked trope.',
     check: (stats) => Object.values(stats).some(n => n >= 1),
@@ -64,6 +65,7 @@ const ACHIEVEMENTS = [
   {
     id: 'trope_10',
     icon: '📚',
+    tier: 'bronze',
     title: 'Trope Curious',
     desc: 'Read 10 works tagged with tracked tropes.',
     check: (stats) => Object.values(stats).reduce((a, b) => a + b, 0) >= 10,
@@ -71,6 +73,7 @@ const ACHIEVEMENTS = [
   {
     id: 'trope_50',
     icon: '🏆',
+    tier: 'gold',
     title: 'Trope Aficionado',
     desc: 'Read 50 works tagged with tracked tropes.',
     check: (stats) => Object.values(stats).reduce((a, b) => a + b, 0) >= 50,
@@ -78,6 +81,7 @@ const ACHIEVEMENTS = [
   {
     id: 'variety_5',
     icon: '🌈',
+    tier: 'silver',
     title: 'Variety Pack',
     desc: 'Read works covering at least 5 different tropes.',
     check: (stats) => Object.keys(stats).length >= 5,
@@ -85,6 +89,7 @@ const ACHIEVEMENTS = [
   {
     id: 'variety_20',
     icon: '🎨',
+    tier: 'platinum',
     title: 'Trope Connoisseur',
     desc: 'Read works covering at least 20 different tropes.',
     check: (stats) => Object.keys(stats).length >= 20,
@@ -92,6 +97,7 @@ const ACHIEVEMENTS = [
   {
     id: 'bingo_line',
     icon: '🎯',
+    tier: 'bronze',
     title: 'Bingo!',
     desc: 'Complete at least one line on your Bingo card.',
     check: (stats, bingo) => (bingo?.completed?.length || 0) >= 1,
@@ -99,6 +105,7 @@ const ACHIEVEMENTS = [
   {
     id: 'bingo_x',
     icon: '✖️',
+    tier: 'silver',
     title: 'X Marks the Spot',
     desc: 'Complete the X pattern on your Bingo card.',
     check: (stats, bingo) => bingo?.completed?.includes('X'),
@@ -106,6 +113,7 @@ const ACHIEVEMENTS = [
   {
     id: 'bingo_blackout',
     icon: '🌑',
+    tier: 'platinum',
     title: 'Blackout',
     desc: 'Check every cell on your Bingo card.',
     check: (stats, bingo) => bingo?.completed?.includes('Blackout'),
@@ -113,6 +121,7 @@ const ACHIEVEMENTS = [
   {
     id: 'obsessed',
     icon: '💜',
+    tier: 'silver',
     title: 'Obsessed',
     desc: 'Read 10 or more works with the same trope.',
     check: (stats) => Object.values(stats).some(n => n >= 10),
@@ -154,7 +163,7 @@ function showToast (ach) {
   el.className = `${NS}-tg-achievement-toast`;
   el.innerHTML = `
     <div class="${NS}-tg-ach-icon">${escapeHtml(ach.icon)}</div>
-    <div class="${NS}-tg-ach-subtitle">🎉 Achievement Unlocked!</div>
+    <div class="${NS}-tg-ach-subtitle">🎉 Achievement Unlocked! ${escapeHtml(medalIcon(ach.tier))}</div>
     <div class="${NS}-tg-ach-title-text">${escapeHtml(ach.title)}</div>
     <div class="${NS}-tg-ach-desc-text">${escapeHtml(ach.desc)}</div>
   `;
@@ -179,28 +188,40 @@ function showToast (ach) {
 
 let panelEl   = null;
 let triggerBtn = null;
+let showHistory = false;
 
 function renderPanel () {
   const unlocked = loadUnlocked();
-  const unlockedIds = new Set(unlocked.map(u => u.id));
+  const unlockedIds = new Map(unlocked.map(u => [u.id, u.unlockedAt]));
   const rows = ACHIEVEMENTS.map(ach => {
     const done = unlockedIds.has(ach.id);
     return `
       <div class="${NS}-tg-ach-row${done ? ' is-done' : ''}">
         <span class="${NS}-tg-ach-row-icon">${escapeHtml(ach.icon)}</span>
         <div>
-          <div class="${NS}-tg-ach-row-title">${escapeHtml(ach.title)}</div>
+          <div class="${NS}-tg-ach-row-title">${escapeHtml(ach.title)} <span class="${NS}-tg-ach-medal">${escapeHtml(medalIcon(ach.tier))}</span></div>
           <div class="${NS}-tg-ach-row-desc">${escapeHtml(ach.desc)}</div>
         </div>
       </div>
     `;
   }).join('');
 
+  const historyRows = [...unlocked]
+    .sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime())
+    .map(u => {
+      const ach = ACHIEVEMENTS.find(a => a.id === u.id);
+      if (!ach) return '';
+      const when = new Date(u.unlockedAt).toLocaleDateString();
+      return `<div class="${NS}-tg-ach-history-row">${escapeHtml(medalIcon(ach.tier))} ${escapeHtml(ach.title)} — <span class="${NS}-tg-ach-history-date">${escapeHtml(when)}</span></div>`;
+    }).join('');
+
   return `
     <div class="${NS}-tg-ach-panel-header">
       🏅 Achievements (${unlockedIds.size}/${ACHIEVEMENTS.length})
       <button class="${NS}-tg-ach-close" aria-label="Close achievements">✕</button>
     </div>
+    <button class="${NS}-tg-btn ${NS}-tg-ach-history-toggle">${showHistory ? 'Hide' : 'Show'} unlock history</button>
+    ${showHistory ? `<div class="${NS}-tg-ach-history">${historyRows || 'Nothing unlocked yet.'}</div>` : ''}
     ${rows}
   `;
 }
@@ -216,6 +237,10 @@ function openPanel () {
   panelEl.querySelector(`.${NS}-tg-ach-close`).addEventListener('click', () => {
     panelEl.style.display = 'none';
   });
+  panelEl.querySelector(`.${NS}-tg-ach-history-toggle`).addEventListener('click', () => {
+    showHistory = !showHistory;
+    openPanel();
+  });
 }
 
 function injectTrigger () {
@@ -230,7 +255,7 @@ function injectTrigger () {
       openPanel();
     }
   });
-  document.body.appendChild(triggerBtn);
+  W.AO3H_TropeGames?.registerMenuItem(triggerBtn);
 }
 
 
@@ -245,7 +270,7 @@ register(
     console.log(LOG, 'init');
 
     // Check achievementsEnabled setting (default true)
-    if (loadModuleSettings(MOD).achievementsEnabled === false) return () => {};
+    if (W.AO3H_TropeGames?.cfg('achievementsEnabled') === false) return () => {};
 
     // document.body peut ne pas encore exister quand ce module boote — sans ce
     // report, l'appendChild plantait (Cannot read properties of null),
@@ -270,6 +295,7 @@ register(
       activeTimers.clear();
       activeToasts.forEach(toast => toast.remove());
       activeToasts.clear();
+      showHistory = false;
       panelEl = null;
       triggerBtn = null;
       console.log(LOG, 'cleanup');
