@@ -125,6 +125,18 @@
   }
 }
 
+/*- ⚠️ Forçage manuel du thème (réglage bubbleTheme) — l'emporte sur
+    prefers-color-scheme puisque ces sélecteurs sont plus spécifiques
+    (classe sur <html> + classe du popup). Classes posées par le JS. */
+html.ao3h-if-theme-light .ao3h-gloss-pop {
+  background: var(--ao3h-if-bg-light);
+  color:      #111;
+}
+html.ao3h-if-theme-dark .ao3h-gloss-pop {
+  background: var(--ao3h-if-bg-dark);
+  color:      #fff;
+}
+
 
 /*####
   ═══════════════════════════════════════════════════════════════════════
@@ -169,6 +181,12 @@
   .ao3h-gloss-pop button {
     background: rgba(0, 0, 0, 0.06);
   }
+}
+html.ao3h-if-theme-light .ao3h-gloss-pop button {
+  background: rgba(0, 0, 0, 0.06);
+}
+html.ao3h-if-theme-dark .ao3h-gloss-pop button {
+  background: rgba(0, 0, 0, 0.15);
 }
 
 

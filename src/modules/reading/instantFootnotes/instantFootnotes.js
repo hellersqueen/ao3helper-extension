@@ -74,11 +74,14 @@ register(MOD, {
     delayOut: 160,
     maxWidth: 420,        // px
     pinOnClick: true,
-    showPermalink: true
+    showPermalink: true,
+    bubbleTheme: 'auto',  // 'auto' | 'light' | 'dark' — auto follows prefers-color-scheme
   };
   let cfg = loadModuleSettings(MOD, defaults);
 
   document.documentElement.style.setProperty('--ao3h-if-max-width', cfg.maxWidth + 'px');
+  document.documentElement.classList.toggle('ao3h-if-theme-light', cfg.bubbleTheme === 'light');
+  document.documentElement.classList.toggle('ao3h-if-theme-dark', cfg.bubbleTheme === 'dark');
 
   /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — NOTE TARGET RESOLUTION
@@ -322,5 +325,6 @@ register(MOD, {
       originalAriaHaspopup.delete(a);
     });
     document.documentElement.style.removeProperty('--ao3h-if-max-width');
+    document.documentElement.classList.remove('ao3h-if-theme-light', 'ao3h-if-theme-dark');
   };
 });

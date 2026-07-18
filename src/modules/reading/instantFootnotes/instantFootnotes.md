@@ -19,6 +19,7 @@ Pratique pour les fics avec beaucoup de références dans le texte.
 | `maxWidth` | `420` | La largeur maximale de la bulle, en pixels |
 | `pinOnClick` | activé | Un clic sur le lien épingle la bulle pour qu'elle reste ouverte (mode survol uniquement) |
 | `showPermalink` | activé | Affiche un lien "Go to note" dans la bulle, pour sauter directement à la note |
+| `bubbleTheme` | `auto` | Couleur de la bulle : suit le thème système (`auto`), ou forcée en `light`/`dark` |
 
 ## Fichiers
 
@@ -30,6 +31,7 @@ Pratique pour les fics avec beaucoup de références dans le texte.
 - En mode survol, un clic permet d'épingler la bulle pour qu'elle reste ouverte
 - Un lien optionnel permet de sauter directement à la note dans le texte
 - Se ferme avec la touche Échap ou le bouton "✕"
+- Peut forcer la bulle en thème clair ou sombre, indépendamment du thème système (réglage `bubbleTheme`)
 
 ### `instantFootnotes.css`
 
@@ -37,27 +39,58 @@ Pratique pour les fics avec beaucoup de références dans le texte.
 
 ## Specs non implémentés
 
-Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
-vraiment dans ce module (pas de code pour ça) :
+Ce sont des idées dont on parle dans d'autres docs, avec leur statut :
 
-- Un glossaire personnel — définir ses propres mots et voir leur définition apparaître automatiquement dans le texte
-- Des mots déjà prêts pour certains fandoms (jargon, abréviations, argot)
-- Importer ou exporter son glossaire pour le partager
-- Un glossaire différent pour chaque œuvre
-- Naviguer au clavier d'une note à l'autre (précédente/suivante)
-- Une prononciation audio des mots du glossaire
-- Un glossaire disponible en plusieurs langues
-- Voir un aperçu des notes de l'auteur (au début et à la fin du chapitre) directement dans une bulle, sans avoir à y aller
-- Gérer aussi les notes écrites directement dans le texte, pas seulement celles regroupées en fin de page (cas assez rare)
-- Choisir la couleur ou le style de la bulle soi-même (aujourd'hui elle suit juste le thème clair/sombre automatique)
-- Un vrai gestionnaire de glossaire complet (mots tout prêts, import/export, un glossaire par fandom...) : trop gros pour ce module, ce serait plutôt un module à part entière si ça se fait un jour
-- Ignorer automatiquement les notes de bas de page quand on utilise la lecture à voix haute
+- ~~Un glossaire personnel — définir ses propres mots et voir leur définition apparaître automatiquement dans le texte~~ ❌ Écarté
+- ~~Des mots déjà prêts pour certains fandoms (jargon, abréviations, argot)~~ ❌ Écarté
+- ~~Importer ou exporter son glossaire pour le partager~~ ❌ Écarté
+- ~~Un glossaire différent pour chaque œuvre~~ ❌ Écarté
+- ~~Une prononciation audio des mots du glossaire~~ ❌ Écarté
+- ~~Un glossaire disponible en plusieurs langues~~ ❌ Écarté
+- ~~Un vrai gestionnaire de glossaire complet (mots tout prêts, import/export, un glossaire par fandom...)~~ ❌ Écarté
+
+  > Ces sept idées forment un seul et même chantier (un glossaire
+  > personnel complet), déjà identifié dans ce document comme "trop gros
+  > pour ce module, ce serait plutôt un module à part entière" — la
+  > position du projet n'a pas changé : ce module gère des bulles
+  > d'aperçu de notes AO3, pas un dictionnaire personnel. Aucune des sept
+  > variantes n'a de sens sans la fonctionnalité de base (le glossaire
+  > lui-même), donc toutes sont écartées ensemble.
+
+- ~~Naviguer au clavier d'une note à l'autre (précédente/suivante)~~ ❌ Écarté
+  Déjà tranché (voir "Explicitement écarté" ci-dessous) — cet item était
+  dupliqué par erreur dans les deux listes ; la raison est la même.
+- ~~Voir un aperçu des notes de l'auteur (au début et à la fin du chapitre) directement dans une bulle, sans avoir à y aller~~ ❌ Écarté
+  Ces mêmes éléments (`div.notes.module` / `div.end.notes.module`) sont
+  déjà gérés par le module `collapseAuthorNotes`, qui permet justement de
+  les déplier/replier en un clic sans avoir à s'y rendre par défilement.
+  Ajouter un second mécanisme de bulle sur les mêmes éléments dupliquerait
+  une fonctionnalité déjà couverte par un module dédié, avec un risque de
+  confusion entre les deux.
+- ~~Gérer aussi les notes écrites directement dans le texte, pas seulement celles regroupées en fin de page (cas assez rare)~~ ❌ Écarté
+  AO3 n'a pas de convention standard pour une note intégrée directement au
+  texte (contrairement aux notes de fin, structurées et reconnaissables).
+  Deviner "quel bout de texte est la note" pour un format non standardisé
+  produirait des bulles au contenu incorrect plus souvent qu'utile, pour un
+  cas déjà signalé comme rare.
+- ~~Choisir la couleur ou le style de la bulle soi-même (aujourd'hui elle suit juste le thème clair/sombre automatique)~~ ✅ Fait
+  Réglage `bubbleTheme` : `auto` (comportement historique, suit le thème
+  système), ou forcé en `light`/`dark` indépendamment du système.
+- ~~Ignorer automatiquement les notes de bas de page quand on utilise la lecture à voix haute~~ ✅ Fait (déjà couvert ailleurs)
+  Le module `textToSpeech` (réglage `skipAuthorNotes`, activé par défaut)
+  exclut déjà tout élément portant la classe AO3 `notes` du texte lu à voix
+  haute — ce qui couvre aussi bien les notes d'auteur que les notes de fin
+  ciblées par ce module, puisqu'AO3 utilise la même classe pour les deux
+  (`div.end.notes.module`).
 
 ## Explicitement écarté
 
 - Naviguer au clavier d'une note à l'autre a été essayé puis retiré : trop peu de fics ont assez de notes de bas de page pour que ce soit utile
 - Choisir comment les notes s'affichent (bulle, texte intégré dans la page, ou panneau à part) — une seule façon d'afficher a été gardée, la bulle
 - Afficher seulement un extrait de la note (aperçu tronqué) au lieu du texte complet — non retenu, le texte complet est toujours affiché
+- Le glossaire personnel et toutes ses variantes (fandom, import/export, par œuvre, audio, multilingue, gestionnaire complet) — trop gros pour ce module, serait un module à part entière
+- Aperçu des notes de l'auteur en bulle — recouperait le domaine déjà couvert par `collapseAuthorNotes`
+- Gestion des notes intégrées directement au texte — format non standardisé sur AO3, cas rare
 
 ## Précision
 
@@ -115,6 +148,7 @@ Ce module est particulièrement utile pour les œuvres contenant beaucoup de ré
 | `maxWidth`      | Largeur maximale de la bulle, en pixels.                                   |
 | `pinOnClick`    | Permet d’épingler la bulle par un clic en mode survol.                     |
 | `showPermalink` | Affiche un lien **Go to note** permettant d’accéder directement à la note. |
+| `bubbleTheme`   | Couleur de la bulle : `auto` (thème système), ou forcée en `light`/`dark`. |
 
 ---
 
@@ -330,111 +364,123 @@ Le style suit automatiquement le thème clair ou sombre utilisé.
 
 # Fonctionnalités non implémentées
 
-Les fonctionnalités ci-dessous sont mentionnées dans d’autres documents du projet, mais ne sont pas actuellement présentes dans le module.
+Les fonctionnalités ci-dessous sont mentionnées dans d’autres documents du projet. Statut après revue :
 
 ---
 
-## Glossaire personnel
+## Glossaire personnel ❌ Écarté
 
-Permettre à l’utilisateur de définir ses propres mots et leurs définitions.
+Permettre à l’utilisateur de définir ses propres mots et leurs définitions, affichées automatiquement dans le texte.
 
-Les mots reconnus pourraient ensuite afficher automatiquement une bulle explicative dans le texte.
-
----
-
-## Glossaires de fandom
-
-Fournir des listes déjà préparées contenant notamment :
-
-* du jargon ;
-* des abréviations ;
-* de l’argot ;
-* des termes propres à certains fandoms.
+> Écarté avec les six variantes ci-dessous (fandom, import/export, par
+> œuvre, audio, multilingue, gestionnaire complet) : ce document
+> lui-même les identifie déjà comme "suffisamment importantes pour
+> devenir un module distinct" (voir "Gestionnaire de glossaire complet").
+> Ce module gère des bulles d’aperçu de notes AO3, pas un dictionnaire
+> personnel — la position ne change pas.
 
 ---
 
-## Import et export de glossaire
+## Glossaires de fandom ❌ Écarté
 
-Permettre :
+Fournir des listes déjà préparées (jargon, abréviations, argot, termes de fandom).
 
-* d’exporter un glossaire ;
-* d’importer un glossaire existant ;
-* de partager un glossaire avec d’autres utilisateurs.
+> Écarté — dépend du glossaire personnel ci-dessus.
 
 ---
 
-## Glossaire par œuvre
+## Import et export de glossaire ❌ Écarté
+
+Exporter/importer un glossaire, le partager.
+
+> Écarté — dépend du glossaire personnel ci-dessus.
+
+---
+
+## Glossaire par œuvre ❌ Écarté
 
 Associer un glossaire différent à chaque œuvre.
 
----
-
-## Navigation entre les notes
-
-Permettre de passer au clavier :
-
-* à la note précédente ;
-* à la note suivante.
-
-Cette fonctionnalité a déjà été essayée, puis retirée du code actuel.
+> Écarté — dépend du glossaire personnel ci-dessus.
 
 ---
 
-## Prononciation audio
+## Navigation entre les notes ❌ Écarté
 
-Ajouter une fonction permettant d’écouter la prononciation des mots présents dans un glossaire.
+Permettre de passer au clavier à la note précédente/suivante. Déjà essayée, puis retirée du code actuel.
 
----
-
-## Glossaire multilingue
-
-Permettre de gérer plusieurs langues dans un même glossaire ou dans des glossaires séparés.
+> Écarté — décision déjà prise (voir "Décisions de conception" :
+> "Navigation clavier retirée").
 
 ---
 
-## Aperçu des notes de l’auteur
+## Prononciation audio ❌ Écarté
 
-Afficher dans une bulle les notes de début ou de fin de chapitre sans devoir se déplacer jusqu’à leur emplacement.
+Écouter la prononciation des mots d’un glossaire.
 
----
-
-## Notes directement intégrées au texte
-
-Prendre en charge les notes qui ne sont pas regroupées en fin de page et qui sont directement écrites dans le contenu principal.
-
-Ce cas est relativement rare.
+> Écarté — dépend du glossaire personnel ci-dessus.
 
 ---
 
-## Personnalisation visuelle
+## Glossaire multilingue ❌ Écarté
 
-Permettre à l’utilisateur de choisir :
+Gérer plusieurs langues dans un glossaire.
 
-* la couleur de la bulle ;
-* son style ;
-* sa présentation.
-
-Actuellement, le module suit automatiquement le thème clair ou sombre.
+> Écarté — dépend du glossaire personnel ci-dessus.
 
 ---
 
-## Gestionnaire de glossaire complet
+## Aperçu des notes de l’auteur ❌ Écarté
 
-Créer une interface complète pour gérer :
+Afficher dans une bulle les notes de début ou de fin de chapitre sans devoir s’y déplacer.
 
-* les mots ;
-* les définitions ;
-* les fandoms ;
-* les imports et exports ;
-* les glossaires par œuvre ou par fandom.
-
-Cette fonctionnalité serait suffisamment importante pour devenir un module distinct.
+> Écarté : ces mêmes éléments (`div.notes.module` / `div.end.notes.module`)
+> sont déjà gérés par le module `collapseAuthorNotes`, qui permet de les
+> déplier/replier en un clic sans défilement. Ajouter un second mécanisme
+> de bulle sur les mêmes éléments dupliquerait une fonctionnalité déjà
+> couverte par un module dédié.
 
 ---
 
-## Lecture à voix haute
+## Notes directement intégrées au texte ❌ Écarté
+
+Prendre en charge les notes écrites directement dans le contenu principal, pas seulement en fin de page. Cas relativement rare.
+
+> Écarté : AO3 n’a pas de convention standard pour une note intégrée
+> directement au texte, contrairement aux notes de fin (structurées et
+> reconnaissables). Deviner "quel bout de texte est la note" pour un
+> format non standardisé produirait des bulles au contenu incorrect plus
+> souvent qu’utile.
+
+---
+
+## Personnalisation visuelle ✅ Fait
+
+Permettre à l’utilisateur de choisir la couleur, le style, la présentation de la bulle plutôt que de suivre automatiquement le thème système.
+
+> Réglage `bubbleTheme` : `auto` (comportement historique), ou forcé en
+> `light`/`dark` indépendamment du thème système.
+
+---
+
+## Gestionnaire de glossaire complet ❌ Écarté
+
+Interface complète (mots, définitions, fandoms, import/export, glossaires par œuvre/fandom) — jugée suffisamment importante pour un module distinct.
+
+> Écarté — confirme cette évaluation déjà présente dans le document ;
+> voir "Glossaire personnel" ci-dessus.
+
+---
+
+## Lecture à voix haute ✅ Fait (déjà couvert ailleurs)
 
 Ignorer automatiquement les notes de bas de page lorsqu’une fonction de lecture à voix haute est utilisée.
+
+> Le module `textToSpeech` (réglage `skipAuthorNotes`, activé par défaut)
+> exclut déjà tout élément portant la classe AO3 `notes` du texte lu à
+> voix haute — cela couvre aussi les notes de fin ciblées par ce module,
+> puisqu’AO3 utilise la même classe (`div.end.notes.module`) pour les
+> deux.
 
 ---
 
