@@ -27,43 +27,96 @@ utile, mais pas parfaite (autour de 60% de bonnes réponses).
 | `enablePovFilters` | activé | Ajoute des cases à cocher pour filtrer les listes par point de vue |
 | `autoAnalyze` | activé | Analyse automatiquement à l'ouverture de la page d'une fic |
 | `showStats` | désactivé | Affiche un résumé personnel de la répartition des points de vue |
+| `analyzeFullText` | activé | Analyse le texte intégral du chapitre affiché (pronoms), plus fiable que les tags/résumé seuls |
+| `showDetailPanel` | activé | Affiche un panneau sur la page d'une œuvre : verdict global + détail chapitre par chapitre |
+| `autoApplyPreferredFilter` | désactivé | Masque automatiquement les fics hors de tes points de vue préférés |
+| `preferredPovs` | (vide) | Tes points de vue préférés, séparés par des virgules ("first,third") |
 
 ## Fichiers
 
 ### 1. `_povTracker.js` — le chef d'orchestre
 
-- Met en route les deux autres fichiers et partage les réglages avec eux
+- Met en route les autres fichiers et partage les réglages avec eux
 
 ### 2. `povAnalysis.js` — détection du point de vue
 
-- Analyse les tags et le résumé d'une fic pour deviner son point de vue
+- Analyse les tags et le résumé d'une fic pour deviner son point de vue (utilisé sur les listes)
+- Garde en mémoire, par fic, les analyses de texte intégral faites chapitre par chapitre (`recordChapterAnalysis`) au fur et à mesure de la lecture
+- Calcule un verdict combiné (`getCombinedResult`) : utilise les analyses de texte intégral quand elles existent (plus fiables), sinon retombe sur le résultat tags/résumé ; détecte "multi" quand les chapitres lus ne s'accordent pas
 - Garde le résultat en mémoire pendant 7 jours, pour ne pas refaire l'analyse à chaque fois
 
-### 3. `povPresentation.js` — badges et filtres
+### 3. `povTextAnalysis.js` — analyse du texte intégral
+
+- Compte les pronoms de 1ère/2e/3e personne dans un texte
+- Classe le résultat (dominante nette, faible, ou "mixed" si deux personnes sont fortement représentées)
+- Refuse de conclure si le texte est trop court (`MIN_ANALYZABLE_CHARS`) ou sans aucun pronom détecté
+
+### 4. `povPreferences.js` — préférences utilisateur
+
+- Découpe le réglage `preferredPovs` ("first,third") en liste de clés valides
+
+### 5. `povDetailPanel.js` — panneau sur la page d'une œuvre
+
+- Analyse le texte du chapitre actuellement affiché et l'enregistre via `povAnalysis`
+- Affiche un panneau : verdict global, cohérence entre les chapitres déjà lus (avec avertissement si le point de vue change), et la liste des chapitres analysés
+
+### 6. `povPresentation.js` — badges et filtres
 
 - Affiche un badge coloré sur chaque fic d'une liste, selon son point de vue
 - Ajoute une barre de filtres cliquables pour cacher ou montrer les fics selon leur point de vue
 - Peut afficher un petit résumé de la répartition des points de vue rencontrés
+- Applique automatiquement un filtre sur les points de vue préférés si `autoApplyPreferredFilter` est activé
 
-### 4. `povTracker.css`
+### 7. `povTracker.css`
 
-- Les styles visuels des badges, de la barre de filtres et de la barre de statistiques
+- Les styles visuels des badges, de la barre de filtres, de la barre de statistiques et du panneau détaillé
 
 ## Specs non implémentés
 
-Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
-vraiment dans ce module (pas de code pour ça) :
+Ce sont des idées dont on parle dans d'autres docs, avec leur statut :
 
-- Deviner le point de vue en lisant vraiment le texte de l'histoire (en comptant des mots comme "je", "tu", "il/elle") — en ce moment, ça regarde seulement les tags et le résumé, pas le texte réel de la fic
-- Suivre le point de vue chapitre par chapitre à l'intérieur d'une même fic
-- Un panneau sur la page de la fic qui montre un résumé global et une liste chapitre par chapitre du point de vue
-- Vérifier qu'il y a assez de texte avant de se lancer dans une analyse
-- Prévenir quand le point de vue change en cours de route dans une fic
-- Vérifier si le point de vue reste cohérent du début à la fin
-- Enregistrer sa préférence de point de vue une bonne fois pour toutes, et filtrer automatiquement selon elle
-- Deviner le style d'écriture habituel d'un auteur selon les points de vue qu'il utilise
-- Recommander des fics selon le point de vue préféré
-- Mieux repérer les fics qui mélangent plusieurs points de vue en même temps
+- ~~Deviner le point de vue en lisant vraiment le texte de l'histoire (en comptant des mots comme "je", "tu", "il/elle") — en ce moment, ça regarde seulement les tags et le résumé, pas le texte réel de la fic~~ ✅ Fait
+  Réglage `analyzeFullText` : compte les pronoms 1ère/2e/3e personne dans le
+  texte du chapitre affiché (`povTextAnalysis.js`), plus fiable que les tags
+  et le résumé. N'analyse que les chapitres réellement ouverts (pas de
+  pré-chargement des autres chapitres).
+- ~~Suivre le point de vue chapitre par chapitre à l'intérieur d'une même fic~~ ✅ Fait (partiellement)
+  Chaque chapitre visité est analysé et mémorisé séparément
+  (`recordChapterAnalysis`). Limite assumée : seuls les chapitres que
+  l'utilisateur ouvre réellement sont suivis, pas l'ensemble de la fic d'un
+  coup (éviterait des requêtes réseau supplémentaires par chapitre).
+- ~~Un panneau sur la page de la fic qui montre un résumé global et une liste chapitre par chapitre du point de vue~~ ✅ Fait
+  Réglage `showDetailPanel` (`povDetailPanel.js`) : verdict global + liste
+  des chapitres déjà analysés, affichée dès que plus d'un chapitre a été lu.
+- ~~Vérifier qu'il y a assez de texte avant de se lancer dans une analyse~~ ✅ Fait
+  `MIN_ANALYZABLE_CHARS` (200 caractères) dans `povTextAnalysis.js` : en
+  dessous, ou sans aucun pronom détecté, l'analyse retourne "pas de verdict"
+  plutôt qu'un résultat peu fiable.
+- ~~Prévenir quand le point de vue change en cours de route dans une fic~~ ✅ Fait
+  Le panneau détaillé affiche "⚠️ POV change detected across chapters read"
+  dès que deux chapitres analysés divergent.
+- ~~Vérifier si le point de vue reste cohérent du début à la fin~~ ✅ Fait (partiellement)
+  Le panneau affiche "Consistent across N chapters read" quand tous les
+  chapitres analysés jusqu'ici concordent — seulement sur les chapitres
+  déjà lus, pas une vérification de la fic entière d'un coup.
+- ~~Enregistrer sa préférence de point de vue une bonne fois pour toutes, et filtrer automatiquement selon elle~~ ✅ Fait
+  Réglages `preferredPovs` + `autoApplyPreferredFilter` : masque
+  automatiquement les fics dont le point de vue détecté n'est pas dans la
+  liste préférée, sans avoir à recliquer les filtres à chaque page.
+- ~~Deviner le style d'écriture habituel d'un auteur selon les points de vue qu'il utilise~~ ❌ Écarté
+  Nécessiterait de télécharger et analyser toutes les œuvres d'un auteur
+  (requêtes réseau supplémentaires, fiabilité incertaine) pour un bénéfice
+  marginal par rapport à l'analyse par fic déjà en place.
+- ~~Recommander des fics selon le point de vue préféré~~ ❌ Écarté
+  Couvert autrement : le filtre automatique sur les POV préférés (ci-dessus)
+  répond déjà au besoin pratique. Un vrai moteur de recommandation a été
+  explicitement écarté à l'échelle du projet (voir "Recommendation Engine"
+  dans `docs/never-built-modules.md`).
+- ~~Mieux repérer les fics qui mélangent plusieurs points de vue en même temps~~ ✅ Fait
+  Le verdict combiné (`getCombinedResult`) classe une fic "multi" dès que
+  ses chapitres analysés en texte intégral divergent, même si la fic n'est
+  pas explicitement taguée comme multi-POV — plus fiable que la détection
+  par tags seule.
 
 
 
@@ -75,17 +128,28 @@ AO3 Helper - POV Tracker Module Coordinator
     Submodules (imported directly as ES modules):
         PovAnalysis (povAnalysis.js)         -- pronoun heuristics + cache
         PovPresentation (povPresentation.js) -- badge injection + filter controls
+        PovDetailPanel (povDetailPanel.js)   -- work-page full-text analysis + panel
+    Pure helpers:
+        povTextAnalysis.js -- full-text pronoun counting/classification
+        povPreferences.js  -- preferredPovs setting parsing
 
     Coordinator role:
         - Registers as 'povTracker'
         - Defines shared DEFAULTS + cfg()
         - Exposes W.AO3H_PovTracker API for helper files
-        - Instantiates Analysis and Presentation helpers
-        - Returns cleanup that cascades to both instances
+        - Instantiates Analysis, Presentation, and DetailPanel helpers
+        - Returns cleanup that cascades to all three instances
 
     Storage keys:
         ao3h:mod:povTracker:settings  -- user settings (JSON)
-        ao3h_pov_tracker_data_v1      -- analysis cache { [workId]: { pov, confidence, lastUpdated } }
+        ao3h_pov_tracker_data_v1      -- analysis cache { [workId]: { pov, confidence, lastUpdated, chapters? } }
+
+    ⚠️ Précision (mise à jour) : le cache contient désormais, en plus du
+    résultat tags/résumé, un tableau optionnel `chapters` — les analyses de
+    texte intégral faites chapitre par chapitre au fil de la lecture (voir
+    PovDetailPanel). `getCombinedResult(workId)` retourne le meilleur
+    verdict disponible : basé sur `chapters` quand il existe, sinon sur le
+    résultat tags/résumé.
 
 
 AO3 Helper - POV Tracker: Analysis
@@ -99,7 +163,8 @@ AO3 Helper - POV Tracker: Analysis
         3. Cache result in ao3h_pov_tracker_data_v1 keyed by workId
 
     Cache schema (per entry):
-        { pov: string, confidence: 'high'|'low', lastUpdated: number }
+        { pov: string, confidence: 'high'|'low', lastUpdated: number,
+          chapters?: Array<{ chapterId, label, pov, confidence, sampleSize, lastUpdated }> }
 
 
         AO3 Helper - POV Tracker: Presentation
@@ -146,7 +211,7 @@ Le module **POV Tracker** tente de déterminer automatiquement le point de vue n
     - filtrer les œuvres selon leur point de vue ;
     - afficher des statistiques personnelles sur les points de vue rencontrés.
 
-La détection est expérimentale. Elle repose sur des motifs de texte simples et sur des heuristiques liées aux pronoms. Elle ne lit pas réellement le texte complet de l’œuvre. Sa précision est estimée à environ **60 %**, ce qui la rend utile comme indication générale, mais insuffisante pour garantir un résultat exact.
+Sur les listes, la détection reste basée sur des motifs de texte simples et des heuristiques liées aux pronoms trouvés dans les tags et le résumé (précision estimée à environ **60 %**). Sur la page d’une œuvre, le module peut désormais aussi lire le texte intégral du chapitre affiché (`analyzeFullText`) pour un verdict plus fiable, chapitre par chapitre, au fil de la lecture — sans jamais télécharger ou pré-analyser les chapitres non ouverts.
 
 ---
 
@@ -164,16 +229,23 @@ La détection est expérimentale. Elle repose sur des motifs de texte simples et
 | `enablePovFilters`   | Ajoute des contrôles permettant de filtrer les listes par point de vue.           |
 | `autoAnalyze`        | Analyse automatiquement l’œuvre à l’ouverture de sa page.                         |
 | `showStats`          | Affiche un résumé personnel de la répartition des points de vue.                  |
+| `analyzeFullText`    | Analyse le texte intégral du chapitre affiché plutôt que les tags/résumé seuls.   |
+| `showDetailPanel`    | Affiche le panneau détaillé (verdict global + détail par chapitre) sur la page d’une œuvre. |
+| `autoApplyPreferredFilter` | Masque automatiquement les œuvres hors des points de vue préférés.        |
+| `preferredPovs`      | Liste des points de vue préférés, séparés par des virgules.                       |
 
 ---
 
 # Structure du module
 
-Le module est composé d’un fichier coordinateur, de deux sous-modules fonctionnels et d’une feuille de style.
+Le module est composé d’un fichier coordinateur, de quatre sous-modules fonctionnels et d’une feuille de style.
 
 ```text
 _povTracker.js
 povAnalysis.js
+povTextAnalysis.js
+povPreferences.js
+povDetailPanel.js
 povPresentation.js
 povTracker.css
 ```
@@ -567,93 +639,104 @@ Il définit notamment l’apparence :
 
 # Fonctionnalités non implémentées
 
-Les fonctionnalités ci-dessous sont prévues dans la conception du module ou mentionnées dans d’autres documents, mais ne disposent pas encore d’une implémentation complète.
+Les fonctionnalités ci-dessous sont prévues dans la conception du module ou mentionnées dans d’autres documents. Statut après revue :
 
 ---
 
-## Analyse du texte complet
+## Analyse du texte complet ✅ Fait
 
 Analyser directement le texte de l’histoire plutôt que de se limiter aux tags et au résumé.
 
-Cette analyse pourrait notamment compter ou comparer des mots comme :
-
-* je ;
-* nous ;
-* tu ;
-* vous ;
-* il ;
-* elle ;
-* ils ;
-* elles.
+> Réglage `analyzeFullText` (`povTextAnalysis.js`) : compte les pronoms de
+> 1ère, 2e et 3e personne dans le texte du chapitre affiché.
 
 ---
 
-## Analyse chapitre par chapitre
+## Analyse chapitre par chapitre ✅ Fait (partiellement)
 
 Déterminer séparément le point de vue de chaque chapitre d’une œuvre.
 
-Cela permettrait de repérer les changements de narrateur ou de perspective au fil de la lecture.
+> Chaque chapitre visité est analysé et mémorisé séparément
+> (`recordChapterAnalysis`). Limite assumée : seuls les chapitres réellement
+> ouverts sont suivis — pas de pré-chargement de la fic entière.
 
 ---
 
-## Panneau détaillé sur l’œuvre
+## Panneau détaillé sur l’œuvre ✅ Fait
 
 Ajouter un panneau directement sur la page d’une œuvre.
 
-Il pourrait afficher :
-
-* le point de vue global détecté ;
-* le niveau de confiance ;
-* une liste chapitre par chapitre ;
-* les changements de point de vue repérés.
+> Réglage `showDetailPanel` (`povDetailPanel.js`) : verdict global, niveau
+> de confiance, cohérence entre les chapitres lus et liste chapitre par
+> chapitre.
 
 ---
 
-## Quantité minimale de texte
+## Quantité minimale de texte ✅ Fait
 
 Vérifier qu’une quantité suffisante de texte est disponible avant de lancer l’analyse.
 
-Cela éviterait de produire un résultat à partir d’un échantillon trop petit.
+> `MIN_ANALYZABLE_CHARS` (200 caractères) dans `povTextAnalysis.js` — en
+> dessous, ou sans aucun pronom détecté, l’analyse ne retourne aucun verdict.
 
 ---
 
-## Avertissement de changement
+## Avertissement de changement ✅ Fait
 
 Prévenir l’utilisateur lorsque le point de vue change en cours d’histoire.
 
+> Le panneau détaillé affiche "⚠️ POV change detected across chapters read"
+> dès que deux chapitres analysés divergent.
+
 ---
 
-## Vérification de cohérence
+## Vérification de cohérence ✅ Fait (partiellement)
 
 Analyser si le point de vue reste cohérent du début à la fin de l’œuvre.
 
+> Le panneau affiche "Consistent across N chapters read" quand tous les
+> chapitres analysés jusqu’ici concordent — seulement sur les chapitres déjà
+> lus, pas une vérification de la fic entière en une fois.
+
 ---
 
-## Préférence personnelle
+## Préférence personnelle ✅ Fait
 
 Permettre à l’utilisateur d’enregistrer ses points de vue préférés ou indésirables.
 
-Le module pourrait ensuite appliquer automatiquement les filtres correspondants.
+> Réglages `preferredPovs` + `autoApplyPreferredFilter` : filtre
+> automatiquement les fics hors de la liste préférée.
 
 ---
 
-## Profil des auteurs
+## Profil des auteurs ❌ Écarté
 
 Analyser les œuvres d’un auteur afin d’estimer les points de vue qu’il utilise le plus souvent.
 
+> Écarté : nécessiterait de télécharger et analyser toutes les œuvres d’un
+> auteur (requêtes réseau supplémentaires, fiabilité incertaine) pour un
+> bénéfice marginal par rapport à l’analyse par fic déjà en place.
+
 ---
 
-## Recommandations
+## Recommandations ❌ Écarté
 
 Recommander des œuvres selon les préférences de point de vue de l’utilisateur.
 
+> Écarté : couvert autrement par le filtre automatique sur les POV préférés
+> ci-dessus. Un vrai moteur de recommandation a été explicitement écarté à
+> l’échelle du projet (voir "Recommendation Engine" dans
+> `docs/never-built-modules.md`).
+
 ---
 
-## Détection améliorée des œuvres multiples
+## Détection améliorée des œuvres multiples ✅ Fait
 
 Améliorer la détection des œuvres qui alternent ou mélangent plusieurs points de vue.
 
-La détection actuelle repose uniquement sur des indices simples présents dans les tags et le résumé.
+> Le verdict combiné (`getCombinedResult`) classe une fic "multi" dès que
+> ses chapitres analysés en texte intégral divergent, même sans tag
+> multi-POV explicite.
 
 ---
 
@@ -671,15 +754,15 @@ Le module privilégie une détection légère et rapide à partir des données d
 
 ---
 
-## Analyse limitée aux métadonnées
+## Analyse limitée aux métadonnées, sauf sur la page d’une œuvre
 
-Le module n’analyse actuellement que les tags et le résumé.
-
-Il ne télécharge pas automatiquement le texte complet de chaque œuvre, ce qui permet :
+Sur les listes, le module n’analyse que les tags et le résumé — il ne télécharge jamais le texte complet d’œuvres qu’on n’ouvre pas, ce qui permet :
 
 * de réduire les requêtes ;
 * de limiter les traitements ;
 * d’éviter d’analyser inutilement des œuvres que l’utilisateur n’ouvre pas.
+
+Sur la page d’une œuvre déjà ouverte, en revanche, le texte du chapitre affiché est analysé (`analyzeFullText`) puisqu’il est déjà chargé dans la page — cela n’ajoute aucune requête réseau.
 
 ---
 

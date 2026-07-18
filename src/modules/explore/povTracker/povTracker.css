@@ -169,3 +169,36 @@
 }
 
 #ao3h-pov-stats-bar span { margin-right: 10px; }
+
+
+/*===
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — PANNEAU DÉTAILLÉ (PAGE D'UNE ŒUVRE)
+  ───────────────────────────────────────────────────────────────────────
+    Le résumé + la liste chapitre par chapitre injectés sur la page d'une
+    œuvre après analyse du texte intégral du chapitre affiché.
+    ⚠️ L'ID #ao3h-pov-detail-panel est injecté par JS — ne pas modifier.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+#ao3h-pov-detail-panel {
+  font-size: 0.85em;
+  padding: 6px 10px;
+  margin: 6px 0;
+  border: 1px solid #ccc;
+  border-radius: var(--ao3h-pov-badge-radius);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+#ao3h-pov-detail-panel .ao3h-pov-panel-summary {
+  font-weight: 600;
+}
+
+#ao3h-pov-detail-panel .ao3h-pov-panel-consistency {
+  margin-top: 4px;
+}
+
+#ao3h-pov-detail-panel .ao3h-pov-panel-chapters {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}

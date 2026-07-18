@@ -20,6 +20,7 @@ Notes
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { observe } from '../../../../lib/utils/index.js';
+import { parsePreferredPovs } from './povPreferences.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -125,11 +126,11 @@ export class PovPresentation {
       if (!this.cfg(meta.cfgKey)) continue;
       const btn         = document.createElement('button');
       btn.textContent   = meta.label;
-      btn.style.color   = meta.color;
       btn.style.borderColor = meta.color;
       btn.dataset.pov   = pov;
       btn.title         = `Toggle ${meta.label} works`;
       btn.addEventListener('click', () => this._toggleFilter(pov, btn, meta.color));
+      this._setButtonActive(btn, meta.color, this._hidden.has(pov));
       bar.appendChild(btn);
     }
 
@@ -141,12 +142,16 @@ export class PovPresentation {
     }
   }
 
+  _setButtonActive (btn, color, active) {
+    btn.classList.toggle('active', active);
+    btn.style.background = active ? color : '';
+    btn.style.color      = active ? '#fff' : color;
+  }
+
   _toggleFilter (pov, btn, color) {
     if (this._hidden.has(pov)) {
       this._hidden.delete(pov);
-      btn.classList.remove('active');
-      btn.style.background = '';
-      btn.style.color      = color;
+      this._setButtonActive(btn, color, false);
       // Restore
       document.querySelectorAll(`[data-ao3h-pov-hidden]`).forEach(blurb => {
         const badge = blurb.querySelector(`.ao3h-pov-badge[${BADGE_ATTR}="${pov}"]`);
@@ -161,9 +166,7 @@ export class PovPresentation {
       });
     } else {
       this._hidden.add(pov);
-      btn.classList.add('active');
-      btn.style.background = color;
-      btn.style.color      = '#fff';
+      this._setButtonActive(btn, color, true);
       // Hide
       document.querySelectorAll(`li.work.blurb, div.work.blurb`).forEach(blurb => {
         const badge = blurb.querySelector(`.ao3h-pov-badge[${BADGE_ATTR}="${pov}"]`);
@@ -240,10 +243,27 @@ export class PovPresentation {
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — PREFERRED POV AUTO-FILTER
+  ═══════════════════════════════════════════════════════════════════════ */
+
+  // Pre-populates `_hidden` with every non-preferred POV type before blurbs
+  // are processed, so the existing badge-time auto-hide check (see
+  // _processBlurb) applies the preference without a separate code path.
+  _applyPreferredPovDefaults () {
+    if (!this.cfg('autoApplyPreferredFilter')) return;
+    const preferred = parsePreferredPovs(this.cfg('preferredPovs'));
+    if (!preferred.length) return;
+    for (const pov of Object.keys(POV_META)) {
+      if (!preferred.includes(pov)) this._hidden.add(pov);
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
      FEATURE LIFECYCLE
   ═══════════════════════════════════════════════════════════════════════ */
 
   init () {
+    this._applyPreferredPovDefaults();
     if (this.cfg('showBadgesOnBlurbs')) this._processAllBlurbs();
     if (this.cfg('enablePovFilters'))   this._injectFilterBar();
     if (this.cfg('showStats'))          this._injectStatsBar();

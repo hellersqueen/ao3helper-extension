@@ -19,6 +19,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { analyzeChapterText } from './povTextAnalysis.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -164,6 +165,64 @@ export class PovAnalysis {
       saveCache(this._cache);
       this._dirty = false;
     }
+  }
+
+  /**
+   * Records a full-text analysis result for one chapter of a work (called
+   * from the work-page detail panel, as chapters are actually read — this
+   * never fetches or analyzes chapters proactively). Updates the entry in
+   * place, keyed by chapterId so re-visiting a chapter replaces its result
+   * rather than duplicating it. Returns null when the text is too short or
+   * has no pronoun signal (see povTextAnalysis.js).
+   * @param {string} workId
+   * @param {string} chapterId
+   * @param {string} label - Display label for this chapter (e.g. its title)
+   * @param {string} text - Full chapter prose
+   */
+  recordChapterAnalysis (workId, chapterId, label, text) {
+    const result = analyzeChapterText(text);
+    if (!result) return null;
+
+    const now = Date.now();
+    const entry = this._cache[workId] || {};
+    const chapters = entry.chapters ? entry.chapters.slice() : [];
+    const record = { chapterId, label: label || 'Chapter', ...result, lastUpdated: now };
+    const idx = chapters.findIndex((c) => c.chapterId === chapterId);
+    if (idx >= 0) chapters[idx] = record; else chapters.push(record);
+
+    this._cache[workId] = { ...entry, chapters, lastUpdated: entry.lastUpdated || now };
+    this._dirty = true;
+    return record;
+  }
+
+  /** Full-text chapter analyses recorded so far for a work, in visit order. */
+  getChapterAnalyses (workId) {
+    return this._cache[workId]?.chapters || [];
+  }
+
+  /**
+   * Best-available POV verdict for a work: combines full-text chapter
+   * analyses (more reliable) when any exist, falling back to the
+   * tag/summary-based result used for blurbs. When chapters disagree, the
+   * verdict is 'multi' with high confidence — this is more accurate than
+   * the tag-only heuristic for fics that don't explicitly tag themselves as
+   * multi-POV.
+   * @param {string} workId
+   * @returns {{pov: string, confidence: string, chapters: Array}|null}
+   */
+  getCombinedResult (workId) {
+    const chapters = this.getChapterAnalyses(workId);
+    if (chapters.length === 1) {
+      return { pov: chapters[0].pov, confidence: chapters[0].confidence, chapters };
+    }
+    if (chapters.length > 1) {
+      const distinct = new Set(chapters.map((c) => c.pov));
+      return distinct.size > 1
+        ? { pov: 'multi', confidence: 'high', chapters }
+        : { pov: chapters[0].pov, confidence: 'high', chapters };
+    }
+    const entry = this._cache[workId];
+    return entry?.pov ? { pov: entry.pov, confidence: entry.confidence, chapters: [] } : null;
   }
 
   /**

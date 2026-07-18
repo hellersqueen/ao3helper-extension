@@ -37,6 +37,7 @@ import styles from './povTracker.css?inline';
 
 import { PovAnalysis } from './povAnalysis.js';
 import { PovPresentation } from './povPresentation.js';
+import { PovDetailPanel } from './povDetailPanel.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -61,6 +62,10 @@ const DEFAULTS = {
   enablePovFilters   : true,
   autoAnalyze        : true,
   showStats          : false,
+  analyzeFullText    : true,
+  showDetailPanel    : true,
+  autoApplyPreferredFilter : false,
+  preferredPovs      : '',
 };
 
 const cfg = makeCfg(MOD, DEFAULTS);
@@ -85,6 +90,7 @@ register(MOD, {
 
   const analysis     = new PovAnalysis();
   const presentation = new PovPresentation({ cfg, NS });
+  const detailPanel  = new PovDetailPanel({ cfg });
 
   analysis.init();
 
@@ -92,8 +98,10 @@ register(MOD, {
   W.AO3H_PovTracker = { cfg, NS, LOG, _analysis: analysis };
 
   presentation.init();
+  detailPanel.init();
 
   return function cleanup () {
+    detailPanel.destroy();
     presentation.destroy();
     analysis.destroy();
     delete W.AO3H_PovTracker;
