@@ -20,6 +20,9 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import {
+  isLongParagraph, splitWallText, cleanPasteArtifacts, isEmptyParagraphText,
+} from './readingFormatterHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -70,6 +73,48 @@ function hideEmbeddedImages (container) {
   });
 }
 
+/** Collapse nbsp runs left by word-processor pastes (same restore map). */
+function fixPasteArtifacts (textNode) {
+  const cleaned = cleanPasteArtifacts(textNode.textContent);
+  if (cleaned !== textNode.textContent) {
+    if (!originalText.has(textNode)) originalText.set(textNode, textNode.textContent);
+    textNode.textContent = cleaned;
+  }
+}
+
+/** Hide paragraphs that contain nothing but whitespace/nbsp filler. */
+function hideEmptyParagraphs (container, NS) {
+  container.querySelectorAll('p').forEach(p => {
+    if (p.children.length === 0 && isEmptyParagraphText(p.textContent)) {
+      p.classList.add(`${NS}-rf-empty-p`);
+    }
+  });
+}
+
+/** Split wall-of-text paragraphs into readable chunks (reversible). */
+const wallReplacements = new Map(); // firstChunk <p> -> { original, extras: [<p>...] }
+function splitTextWalls (container) {
+  container.querySelectorAll('p').forEach(p => {
+    // Only plain-text paragraphs — inline markup makes splitting unsafe
+    if (p.children.length > 0) return;
+    const chunks = splitWallText(p.textContent);
+    if (chunks.length < 2) return;
+    const replacement = /** @type {HTMLParagraphElement} */ (p.cloneNode(false));
+    replacement.textContent = chunks[0];
+    replacement.dataset.rfWall = '1';
+    const extras = chunks.slice(1).map(chunk => {
+      const el = /** @type {HTMLParagraphElement} */ (p.cloneNode(false));
+      el.textContent = chunk;
+      el.dataset.rfWall = '1';
+      return el;
+    });
+    p.replaceWith(replacement);
+    let anchor = replacement;
+    extras.forEach(el => { anchor.insertAdjacentElement('afterend', el); anchor = el; });
+    wallReplacements.set(replacement, { original: p, extras });
+  });
+}
+
 register(CONTENT_CLEANUP_MOD, {
   title: 'Content Cleanup',
   parent: 'readingFormatter',
@@ -85,9 +130,14 @@ register(CONTENT_CLEANUP_MOD, {
     if (cfg('autoCleanFormatting')) {
       fixDoubleBreaks(content);
       RF.walkTextNodes(content, fixDoubleSpaces);
+      RF.walkTextNodes(content, fixPasteArtifacts);
+      hideEmptyParagraphs(content, RF.NS);
     }
     if (cfg('hideEmbeddedImages')) {
       hideEmbeddedImages(content);
+    }
+    if (cfg('splitTextWalls')) {
+      splitTextWalls(content);
     }
   }
 
@@ -104,6 +154,17 @@ register(CONTENT_CLEANUP_MOD, {
       delete img.dataset.rfImgHidden;
     });
     originalImageDisplay.clear();
+    // Unhide empty paragraphs
+    const NS = W.AO3H_RF?.NS || 'ao3h';
+    document.querySelectorAll(`.${NS}-rf-empty-p`).forEach(p => {
+      p.classList.remove(`${NS}-rf-empty-p`);
+    });
+    // Restore split walls
+    wallReplacements.forEach(({ original, extras }, replacement) => {
+      extras.forEach(el => el.remove());
+      replacement.replaceWith(original);
+    });
+    wallReplacements.clear();
   };
 });
 
@@ -113,6 +174,60 @@ register(CONTENT_CLEANUP_MOD, {
 
 const READING_VIEW_OPTIMIZATION_MOD = 'readingViewOptimization';
 const READING_VIEW_OPTIMIZATION_LOG = `[AO3H][readingFormatter/${READING_VIEW_OPTIMIZATION_MOD}]`;
+
+/** Breathe mode: tag long paragraphs so CSS can widen their line spacing. */
+function applyBreatheMode (container, NS) {
+  container.querySelectorAll('p').forEach(p => {
+    if (isLongParagraph(p.textContent)) p.classList.add(`${NS}-rf-breathe`);
+  });
+}
+
+/** Semi-transparent horizontal band following the pointer (reading ruler). */
+function createReadingRuler (NS) {
+  const ruler = document.createElement('div');
+  ruler.className = `${NS}-rf-ruler`;
+  ruler.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(ruler);
+  const onMove = (e) => { ruler.style.top = `${e.clientY - 14}px`; };
+  document.addEventListener('mousemove', onMove, { passive: true });
+  return () => {
+    document.removeEventListener('mousemove', onMove);
+    ruler.remove();
+  };
+}
+
+/** Repeat title / author / tags below the work for end-of-reading reference. */
+function injectEndOfWorkInfo (NS) {
+  if (document.getElementById(`${NS}-rf-endinfo`)) return;
+  const title = document.querySelector('h2.title.heading')?.textContent.trim();
+  if (!title) return;
+  const author = document.querySelector('h3.byline.heading a[rel="author"], .byline a[href*="/users/"]')?.textContent.trim();
+  const tags = Array.from(document.querySelectorAll(
+    '.work.meta.group dd.fandom.tags a.tag, .work.meta.group dd.relationship.tags a.tag, .work.meta.group dd.freeform.tags a.tag'
+  )).slice(0, 12);
+
+  const box = document.createElement('div');
+  box.id = `${NS}-rf-endinfo`;
+  box.className = `${NS}-rf-endinfo`;
+  const heading = document.createElement('div');
+  heading.className = `${NS}-rf-endinfo-title`;
+  heading.textContent = author ? `${title} — ${author}` : title;
+  box.appendChild(heading);
+  if (tags.length) {
+    const tagList = document.createElement('div');
+    tagList.className = `${NS}-rf-endinfo-tags`;
+    tags.forEach(tag => {
+      const a = document.createElement('a');
+      a.href = tag.getAttribute('href');
+      a.textContent = tag.textContent;
+      tagList.appendChild(a);
+    });
+    box.appendChild(tagList);
+  }
+
+  const anchor = document.querySelector('#workskin') || document.querySelector('#chapters');
+  anchor?.insertAdjacentElement('afterend', box);
+}
 
 register(READING_VIEW_OPTIMIZATION_MOD, {
   title: 'Reading View Optimization',
@@ -131,9 +246,23 @@ register(READING_VIEW_OPTIMIZATION_MOD, {
   html.style.setProperty('--ao3h-rvo-align',        alignment);
   html.style.setProperty('--ao3h-rvo-para-spacing', paraSpacing);
 
+  const workskin = document.getElementById('workskin');
+  if (cfg('breatheMode') && workskin) {
+    applyBreatheMode(workskin.querySelector('.userstuff') || workskin, RF.NS);
+  }
+
+  let removeRuler = null;
+  if (cfg('readingRuler')) removeRuler = createReadingRuler(RF.NS);
+
+  if (cfg('endOfWorkInfo')) injectEndOfWorkInfo(RF.NS);
+
   return () => {
     html.style.removeProperty('--ao3h-rvo-align');
     html.style.removeProperty('--ao3h-rvo-para-spacing');
+    const NS = W.AO3H_RF?.NS || 'ao3h';
+    document.querySelectorAll(`.${NS}-rf-breathe`).forEach(p => p.classList.remove(`${NS}-rf-breathe`));
+    removeRuler?.();
+    document.getElementById(`${NS}-rf-endinfo`)?.remove();
   };
 });
 

@@ -186,15 +186,25 @@ register(MOD, {
   const RF = W.AO3H_RF;
   if (!RF) { console.warn(`${LOG} W.AO3H_RF not ready`); return () => {}; }
 
-  const { ROOT_CLS, NOINDENT_CLS, isWorkPage, prefGet, prefSet } = RF;
+  const { ROOT_CLS, NOINDENT_CLS, isWorkPage, prefGet } = RF;
 
   if (!isWorkPage() || !document.getElementById('workskin')) return () => {};
 
+  // Per-work preferences: when enabled, the Aa panel reads/writes keys scoped
+  // to this work, falling back to the global value for anything not yet set.
+  const workId = (/^\/works\/(\d+)/.exec(location.pathname) || [])[1] || null;
+  const perWork = !!RF.cfg('perWorkPrefs') && !!workId;
+  const scopedKey = (key) => perWork ? `${key}:${workId}` : key;
+  const readPref = (key, def) => perWork
+    ? prefGet(scopedKey(key), prefGet(key, def))
+    : prefGet(key, def);
+  const prefSet = (key, val) => RF.prefSet(scopedKey(key), val);
+
   const state = {
-    scale:   prefGet(PK_SCALE,   1.0),
-    spacing: prefGet(PK_SPACING, 1.6),
-    width:   prefGet(PK_WIDTH,   'default'),
-    indent:  prefGet(PK_INDENT,  false),
+    scale:   readPref(PK_SCALE,   1.0),
+    spacing: readPref(PK_SPACING, 1.6),
+    width:   readPref(PK_WIDTH,   'default'),
+    indent:  readPref(PK_INDENT,  false),
   };
 
   const html = document.documentElement;

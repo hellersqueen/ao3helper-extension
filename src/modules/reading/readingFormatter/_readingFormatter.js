@@ -56,10 +56,17 @@ const DEFAULTS = {
   removeBoldExcessive : false,
   convertSlashItalic  : false,
   unifySceneBreaks    : true,
+  sceneBreakStyle     : '✦ ✦ ✦',
   sansSerifFont       : false,
   cleanReadingMode    : false,
   textAlignment       : 'left',
   paragraphSpacing    : '0.5em',
+  breatheMode         : false,
+  splitTextWalls      : false,
+  readingRuler        : false,
+  endOfWorkInfo       : false,
+  highlightDialogue   : false,
+  perWorkPrefs        : false,
 };
 
 const cfg = makeCfg(MOD, DEFAULTS);

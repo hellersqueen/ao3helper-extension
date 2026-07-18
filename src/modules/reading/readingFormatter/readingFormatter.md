@@ -14,15 +14,22 @@ l'espacement et la taille du texte.
 
 | Réglage | Par défaut | Ce que ça fait |
 |---|---|---|
-| `autoCleanFormatting` | activé | Corrige les doubles espaces et les sauts de ligne mal placés |
+| `autoCleanFormatting` | activé | Corrige les doubles espaces, les sauts de ligne mal placés, les paragraphes vides et les espaces insécables de copier-coller |
 | `removeBoldExcessive` | désactivé | Retire le gras si un paragraphe entier est en gras |
 | `convertSlashItalic` | désactivé | Convertit le texte entre barres obliques (`/texte/`) en italique |
-| `unifySceneBreaks` | activé | Uniformise les séparateurs de scène en `✦ ✦ ✦` |
+| `unifySceneBreaks` | activé | Uniformise les séparateurs de scène |
+| `sceneBreakStyle` | `✦ ✦ ✦` | Le style de séparateur utilisé (texte libre) |
+| `splitTextWalls` | désactivé | Découpe les très longs paragraphes ("murs de texte") aux frontières de phrases |
 | `hideEmbeddedImages` | désactivé | Cache les images intégrées dans le texte (mode texte seul) |
 | `sansSerifFont` | désactivé | Force une police sans empattements sur toute la fic |
 | `cleanReadingMode` | désactivé | Réduit la largeur du texte et cache les éléments secondaires de la page |
 | `textAlignment` | `left` | L'alignement du texte : gauche, justifié, ou centré |
 | `paragraphSpacing` | `0.5em` | L'espace supplémentaire entre les paragraphes |
+| `breatheMode` | désactivé | Interligne élargi automatiquement sur les longs paragraphes |
+| `readingRuler` | désactivé | Une bande horizontale semi-transparente suit le pointeur pour ne pas perdre sa ligne |
+| `highlightDialogue` | désactivé | Teinte discrète sur les répliques entre guillemets |
+| `endOfWorkInfo` | désactivé | Répète le titre, l'auteur et les tags principaux en bas de la fic |
+| `perWorkPrefs` | désactivé | Mémorise les réglages du panneau Aa par œuvre plutôt que globalement |
 
 ## Fichiers
 
@@ -33,48 +40,53 @@ l'espacement et la taille du texte.
 ### 2. `content.js` — nettoyage et confort du contenu
 
 Regroupe deux sous-fonctionnalités (chacune reste activable/désactivable séparément dans le panneau) :
-- **Content Cleanup** : corrige les doubles espaces et les sauts de ligne mal placés, peut cacher les images intégrées dans le texte (mode texte seul)
-- **Reading View Optimization** : choisit l'alignement du texte (gauche, justifié, centré), ajoute un espace supplémentaire entre les paragraphes
+- **Content Cleanup** : corrige les doubles espaces et les sauts de ligne mal placés, masque les paragraphes vides et normalise les espaces insécables de copier-coller, peut cacher les images intégrées (mode texte seul) et découper les murs de texte (`splitTextWalls`)
+- **Reading View Optimization** : choisit l'alignement du texte (gauche, justifié, centré), ajoute un espace supplémentaire entre les paragraphes, et porte les ajouts chantier 4 : mode Breathe, règle de lecture, rappel d'infos en fin d'œuvre
 
 ### 3. `appearance.js` — apparence visuelle
 
 Regroupe trois sous-fonctionnalités (chacune reste activable/désactivable séparément dans le panneau) :
-- **Typography** : convertit le texte entre barres obliques (`/texte/`) en italique, retire le gras si un paragraphe entier est en gras, peut forcer une police sans empattements
-- **Spacing and Structure** : remplace les séparateurs de scène (`***`, `---`, `~~~`...) par un symbole uniforme (✦ ✦ ✦)
+- **Typography** : convertit le texte entre barres obliques (`/texte/`) en italique, retire le gras si un paragraphe entier est en gras, peut forcer une police sans empattements, et peut teinter les dialogues (`highlightDialogue`)
+- **Spacing and Structure** : remplace les séparateurs de scène (`***`, `---`, `~~~`...) par le symbole choisi (`sceneBreakStyle`, défaut ✦ ✦ ✦)
 - **Layout and Display Modes** : réduit la largeur du texte et cache les éléments secondaires de la page (mode de lecture épuré)
 
 ### 4. `readingControls.js` — le panneau flottant "Aa"
 
 - Ajoute un bouton "Aa" sur les pages de fic pour ouvrir un panneau de réglages rapides
 - Permet de choisir la largeur du texte, l'espacement des lignes, la taille du texte, et de retirer l'indentation des paragraphes
+- Avec `perWorkPrefs`, ces choix sont mémorisés par œuvre (repli sur la valeur globale)
 
-### 5. `readingFormatter.css`
+### 5. `readingFormatterHelpers.js` — calculs purs (ajouté au passage chantier 4)
 
-- Les styles visuels de tous les fichiers ci-dessus
+- Détection des paragraphes longs (mode Breathe), découpage des murs de texte aux frontières de phrases, nettoyage des artefacts de copier-coller (espaces insécables, paragraphes vides), détection des répliques entre guillemets
+
+### 6. `readingFormatter.css`
+
+- Les styles visuels de tous les fichiers ci-dessus (dont les ajouts chantier 4 : Breathe, règle de lecture, dialogues, bloc de fin d'œuvre)
 
 ## Specs non implémentés
 
-Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
-vraiment dans ce module (pas de code pour ça) :
+Ce sont des idées dont on parle dans d'autres docs. État après le passage
+chantier 4 (2026-07-18) :
 
-- Le mode "Breathe" (espacement de ligne augmenté automatiquement sur les longs paragraphes)
-- Des règles de formatage personnalisées avec des motifs de recherche
-- Des profils de formatage différents selon l'auteur·ice
-- Pouvoir annuler ses changements de formatage après coup
-- Choisir son propre style de séparateur de scène, au lieu du symbole fixe
-- Reconnaître plusieurs styles de dialogue (guillemets, tirets...) et les uniformiser
-- Un mode "confort" avec des couleurs plus douces et apaisantes, et la possibilité de flouter les passages associés à un avertissement
-- Se souvenir des préférences de formatage différemment pour chaque œuvre
-- Une détection plus poussée des guillemets et apostrophes
-- Voir un aperçu avant d'appliquer un changement, avec possibilité d'annuler/refaire
-- Détecter les gros blocs de texte sans paragraphes ("murs de texte") et ajouter des sauts de paragraphe automatiquement
-- Répéter le titre, l'auteur et les tags en bas de la fic, pour les avoir sous la main juste après avoir fini de lire
-- Une règle de lecture qui suit les yeux : une ligne horizontale semi-transparente pour ne pas perdre sa ligne en lisant
-- Ajouter automatiquement un saut de ligne avant chaque ligne de dialogue, pour les fics écrites sans retour à la ligne
-- Mettre en valeur visuellement les dialogues (le texte parlé) pour mieux les distinguer du reste du texte
-- Nettoyer les paragraphes complètement vides et les espaces bizarres laissés par un copier-coller (par exemple depuis Word)
-- Un réglage de densité de l'interface (compacte / normale / spacieuse) qui s'applique à toutes les pages d'AO3, pas seulement à la lecture d'une fic
-- Pouvoir surligner ou marquer certains passages du texte pendant la lecture, pour les retrouver facilement plus tard
+- ~~Le mode "Breathe" (espacement de ligne augmenté automatiquement sur les longs paragraphes)~~ ✅ Fait — réglage `breatheMode` : les paragraphes de 600+ caractères reçoivent un interligne élargi (classe posée par `readingViewOptimization`, seuil dans `readingFormatterHelpers.js`)
+- ~~Des règles de formatage personnalisées avec des motifs de recherche~~ ✅ Fait (déjà couvert ailleurs) — c'est exactement le module `wordSwap` : règles find/replace personnalisées avec support regex, sensibilité à la casse, mot entier, import/export
+- ~~Des profils de formatage différents selon l'auteur·ice~~ ❌ Écarté — niche et lourd (une UI de gestion de profils + stockage par auteur) ; les préférences par œuvre (ci-dessous) couvrent le besoin concret de "cette fic se lit mal avec mes réglages habituels"
+- ~~Pouvoir annuler ses changements de formatage après coup~~ ✅ Fait (déjà le cas) — toutes les transformations sont réversibles : chaque sous-module garde une carte de restauration (texte original, éléments remplacés) et désactiver le réglage restaure l'état d'origine sans recharger
+- ~~Choisir son propre style de séparateur de scène, au lieu du symbole fixe~~ ✅ Fait — réglage `sceneBreakStyle` (texte libre, défaut `✦ ✦ ✦`)
+- ~~Reconnaître plusieurs styles de dialogue (guillemets, tirets...) et les uniformiser~~ ❌ Écarté — réécrire la ponctuation de l'auteur·ice sur la base d'une détection incertaine (guillemets vs citations, tirets vs incises) altère l'œuvre ; même famille que la conversion de guillemets déjà écartée ("jugé trop spécifique")
+- ~~Un mode "confort" avec des couleurs plus douces et apaisantes, et la possibilité de flouter les passages associés à un avertissement~~ ❌ Écarté — les couleurs de page sont le rôle de `themeBuilder` (thèmes complets) et `visualPreferences` ; et rien ne relie un passage précis du texte à un avertissement de l'œuvre (les warnings sont des métadonnées globales), le floutage ciblé est donc impossible sans données
+- ~~Se souvenir des préférences de formatage différemment pour chaque œuvre~~ ✅ Fait — réglage `perWorkPrefs` : les préférences du panneau Aa (largeur/espacement/taille/indentation) sont stockées par œuvre, avec repli sur la valeur globale
+- ~~Une détection plus poussée des guillemets et apostrophes~~ ❌ Écarté — même famille que la conversion de guillemets déjà écartée ("jugé trop spécifique")
+- ~~Voir un aperçu avant d'appliquer un changement, avec possibilité d'annuler/refaire~~ ❌ Écarté — les transformations sont déjà réversibles en direct (cocher/décocher le réglage EST l'aperçu) ; une UI d'aperçu/undo-redo séparée dupliquerait ça en plus lourd
+- ~~Détecter les gros blocs de texte sans paragraphes ("murs de texte") et ajouter des sauts de paragraphe automatiquement~~ ✅ Fait — réglage `splitTextWalls` : les paragraphes de 1500+ caractères sans balisage interne sont découpés aux frontières de phrases (~500 caractères par morceau), réversible (`splitWallText` dans les helpers)
+- ~~Répéter le titre, l'auteur et les tags en bas de la fic, pour les avoir sous la main juste après avoir fini de lire~~ ✅ Fait — réglage `endOfWorkInfo` : bloc titre — auteur + tags principaux (12 max) inséré après le texte
+- ~~Une règle de lecture qui suit les yeux : une ligne horizontale semi-transparente pour ne pas perdre sa ligne en lisant~~ ✅ Fait — réglage `readingRuler` : bande horizontale semi-transparente qui suit le pointeur
+- ~~Ajouter automatiquement un saut de ligne avant chaque ligne de dialogue, pour les fics écrites sans retour à la ligne~~ ❌ Écarté — même raison que l'uniformisation des dialogues : deviner où commence une réplique est trop peu fiable pour modifier le découpage de l'auteur·ice ; le découpage des murs de texte (ci-dessus) couvre le cas des blocs illisibles sans deviner les dialogues
+- ~~Mettre en valeur visuellement les dialogues (le texte parlé) pour mieux les distinguer du reste du texte~~ ✅ Fait — réglage `highlightDialogue` : les répliques entre guillemets (typographiques ou droits appariés) reçoivent une teinte discrète, sans toucher au texte (`findDialogueSpans` dans les helpers)
+- ~~Nettoyer les paragraphes complètement vides et les espaces bizarres laissés par un copier-coller (par exemple depuis Word)~~ ✅ Fait — intégré à `autoCleanFormatting` : les paragraphes de pur remplissage sont masqués et les espaces insécables résiduels (U+00A0/U+2007/U+202F) normalisés, le tout réversible
+- ~~Un réglage de densité de l'interface (compacte / normale / spacieuse) qui s'applique à toutes les pages d'AO3, pas seulement à la lecture d'une fic~~ ❌ Écarté — c'est la généralisation du "mode interface compacte" déjà explicitement écarté ("trop de modes différents à gérer") ; même décision
+- ~~Pouvoir surligner ou marquer certains passages du texte pendant la lecture, pour les retrouver facilement plus tard~~ ❌ Écarté — la persistance de surlignages ancrés dans le texte est fragile (le texte change quand l'auteur·ice édite, les ancres DOM ne survivent pas d'une version à l'autre), et l'annotation relève d'un outil de notes (`bookmarkVault` a déjà des notes riches par œuvre), pas d'un formateur de texte
 
 ## Explicitement écarté
 
@@ -101,15 +113,24 @@ AO3 Helper - Reading Formatter Module Coordinator
     Tab: Reading
 
     Settings (delegated to submodules):
-        autoCleanFormatting  -- fix double spaces, <br><br> sequences (contentCleanup)
+        autoCleanFormatting  -- fix double spaces, <br><br> sequences, empty <p>,
+                                nbsp paste artifacts (contentCleanup)
         hideEmbeddedImages   -- hide <img> tags in work content (contentCleanup)
+        splitTextWalls       -- split 1500+ char plain paragraphs at sentence
+                                boundaries, reversible (contentCleanup, chantier 4)
         removeBoldExcessive  -- strip <strong> from paragraphs (typography)
         convertSlashItalic   -- /text/ -> <em>text</em> (typography)
         sansSerifFont        -- CSS override to sans-serif on #workskin (typography)
-        unifySceneBreaks     -- *** / --- / ~~~ -> ✦ ✦ ✦ (spacingAndStructure)
+        highlightDialogue    -- tint quoted speech spans (typography, chantier 4)
+        unifySceneBreaks     -- *** / --- / ~~~ -> sceneBreakStyle (spacingAndStructure)
+        sceneBreakStyle      -- separator text, default ✦ ✦ ✦ (chantier 4)
         cleanReadingMode     -- narrow max-width, hide secondary chrome (layoutAndDisplayModes)
         textAlignment        -- left / justify / center (readingViewOptimization)
         paragraphSpacing     -- margin-block between <p> elements (readingViewOptimization)
+        breatheMode          -- wider line-height on 600+ char paragraphs (chantier 4)
+        readingRuler         -- pointer-following horizontal band (chantier 4)
+        endOfWorkInfo        -- title/author/tags repeated below the work (chantier 4)
+        perWorkPrefs         -- Aa panel prefs scoped per work id (readingControls, chantier 4)
 
     Submodules (Tier 2 — self-register with parent: 'readingFormatter', discovered
     independently by src/modules.js's import.meta.glob, booted automatically
@@ -554,11 +575,17 @@ Il définit notamment l'apparence :
 
 ## Mode Breathe
 
+> ✅ Fait — réglage `breatheMode` : interligne élargi sur les paragraphes
+> de 600+ caractères.
+
 Augmenter automatiquement l'espacement des lignes dans les longs paragraphes afin d'améliorer le confort de lecture.
 
 ---
 
 ## Règles de formatage personnalisées
+
+> ✅ Fait (déjà couvert ailleurs) — c'est le module `wordSwap` : règles
+> find/replace avec regex, casse, mot entier, import/export.
 
 Permettre à l'utilisateur de définir ses propres règles de transformation du texte à partir de motifs de recherche.
 
@@ -566,11 +593,17 @@ Permettre à l'utilisateur de définir ses propres règles de transformation du 
 
 ## Profils par auteur
 
+> ❌ Écarté — niche et lourd (UI + stockage par auteur) ; les préférences
+> par œuvre (`perWorkPrefs`) couvrent le besoin concret.
+
 Utiliser des profils de formatage différents selon l'auteur d'une œuvre.
 
 ---
 
 ## Annulation des modifications
+
+> ✅ Fait (déjà le cas) — toutes les transformations gardent une carte de
+> restauration ; désactiver le réglage restaure l'origine en direct.
 
 Permettre d'annuler les transformations appliquées au texte après leur exécution.
 
@@ -578,11 +611,17 @@ Permettre d'annuler les transformations appliquées au texte après leur exécut
 
 ## Séparateurs personnalisés
 
+> ✅ Fait — réglage `sceneBreakStyle` (texte libre, défaut ✦ ✦ ✦).
+
 Permettre de choisir son propre style de séparateur de scène au lieu du symbole fixe `✦ ✦ ✦`.
 
 ---
 
 ## Uniformisation des dialogues
+
+> ❌ Écarté — réécrire la ponctuation de l'auteur·ice sur détection
+> incertaine altère l'œuvre ; même famille que la conversion de guillemets
+> déjà écartée.
 
 Reconnaître différents styles de dialogue (guillemets, tirets, etc.) et les uniformiser automatiquement.
 
@@ -590,11 +629,18 @@ Reconnaître différents styles de dialogue (guillemets, tirets, etc.) et les un
 
 ## Mode confort
 
+> ❌ Écarté — les couleurs sont le rôle de themeBuilder/visualPreferences ;
+> et rien ne relie un passage précis à un avertissement (métadonnée globale),
+> le floutage ciblé est impossible sans données.
+
 Ajouter un mode de lecture utilisant des couleurs plus douces et permettant notamment de flouter les passages associés à un avertissement.
 
 ---
 
 ## Préférences par œuvre
+
+> ✅ Fait — réglage `perWorkPrefs` : les réglages du panneau Aa sont
+> stockés par œuvre, avec repli sur le global.
 
 Mémoriser les préférences de formatage indépendamment pour chaque œuvre.
 
@@ -602,11 +648,17 @@ Mémoriser les préférences de formatage indépendamment pour chaque œuvre.
 
 ## Détection avancée de la ponctuation
 
+> ❌ Écarté — même famille que la conversion de guillemets déjà écartée
+> (« jugé trop spécifique »).
+
 Améliorer la détection des guillemets et des apostrophes.
 
 ---
 
 ## Aperçu avant application
+
+> ❌ Écarté — les transformations sont déjà réversibles en direct ;
+> cocher/décocher le réglage est l'aperçu.
 
 Afficher un aperçu des transformations avant leur application avec un système d'annulation et de rétablissement.
 
@@ -614,11 +666,17 @@ Afficher un aperçu des transformations avant leur application avec un système 
 
 ## Détection des murs de texte
 
+> ✅ Fait — réglage `splitTextWalls` : découpage aux frontières de phrases
+> (seuil 1500 caractères), réversible.
+
 Identifier les très gros blocs de texte sans paragraphes et insérer automatiquement des sauts de ligne.
 
 ---
 
 ## Informations en fin de lecture
+
+> ✅ Fait — réglage `endOfWorkInfo` : bloc titre — auteur + tags sous le
+> texte de l'œuvre.
 
 Répéter le titre, l'auteur et les tags à la fin de la fic afin de les garder visibles après la lecture.
 
@@ -626,11 +684,18 @@ Répéter le titre, l'auteur et les tags à la fin de la fic afin de les garder 
 
 ## Guide de lecture
 
+> ✅ Fait — réglage `readingRuler` : bande semi-transparente suivant le
+> pointeur.
+
 Ajouter une ligne horizontale semi-transparente suivant les yeux du lecteur afin de faciliter le suivi du texte.
 
 ---
 
 ## Dialogue automatique
+
+> ❌ Écarté — deviner où commence une réplique est trop peu fiable pour
+> modifier le découpage de l'auteur·ice ; `splitTextWalls` couvre les blocs
+> illisibles sans deviner les dialogues.
 
 Ajouter automatiquement un saut de ligne avant chaque réplique dans les œuvres qui ne séparent pas correctement les dialogues.
 
@@ -638,11 +703,17 @@ Ajouter automatiquement un saut de ligne avant chaque réplique dans les œuvres
 
 ## Mise en valeur des dialogues
 
+> ✅ Fait — réglage `highlightDialogue` : teinte discrète sur les répliques
+> entre guillemets, texte inchangé.
+
 Permettre de distinguer visuellement les passages dialogués du reste du texte.
 
 ---
 
 ## Nettoyage avancé
+
+> ✅ Fait — intégré à `autoCleanFormatting` : paragraphes vides masqués,
+> espaces insécables normalisés, réversible.
 
 Supprimer les paragraphes entièrement vides et les espaces résiduels provenant de copier-coller (par exemple depuis Word).
 
@@ -650,11 +721,18 @@ Supprimer les paragraphes entièrement vides et les espaces résiduels provenant
 
 ## Densité globale de l'interface
 
+> ❌ Écarté — généralisation du « mode interface compacte » déjà écarté
+> (« trop de modes différents à gérer »).
+
 Ajouter un réglage de densité (compacte, normale ou spacieuse) applicable à l'ensemble d'AO3.
 
 ---
 
 ## Surlignage du texte
+
+> ❌ Écarté — ancres de surlignage fragiles (le texte édité par
+> l'auteur·ice casse les positions), et l'annotation relève d'un outil de
+> notes (bookmarkVault) plutôt que d'un formateur.
 
 Permettre de surligner ou marquer certains passages afin de les retrouver facilement ultérieurement.
 

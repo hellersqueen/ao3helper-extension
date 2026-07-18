@@ -19,6 +19,7 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { findDialogueSpans } from './readingFormatterHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -66,6 +67,29 @@ function applySlashItalic (textNode) {
   textNode.parentNode?.replaceChild(frag, textNode);
 }
 
+/** Wrap quoted dialogue in tagged spans for visual emphasis. */
+const dialogueSpans = new Set();
+function applyDialogueHighlight (textNode) {
+  const src = textNode.textContent;
+  const found = findDialogueSpans(src);
+  if (!found.length) return;
+
+  const frag = document.createDocumentFragment();
+  let last = 0;
+  found.forEach(({ start, end }) => {
+    if (start > last) frag.appendChild(document.createTextNode(src.slice(last, start)));
+    const span = document.createElement('span');
+    span.className = `${W.AO3H_RF?.NS || 'ao3h'}-rf-dialogue`;
+    span.dataset.rfDialogue = '1';
+    span.textContent = src.slice(start, end);
+    dialogueSpans.add(span);
+    frag.appendChild(span);
+    last = end;
+  });
+  if (last < src.length) frag.appendChild(document.createTextNode(src.slice(last)));
+  textNode.parentNode?.replaceChild(frag, textNode);
+}
+
 /** Strip excessive <strong> (paragraphs where > 60% of text is bold). */
 function stripExcessiveBold (container) {
   const paras = container.querySelectorAll('p');
@@ -105,6 +129,7 @@ register(TYPOGRAPHY_MOD, {
     const content = workskin.querySelector('.userstuff') || workskin;
     if (cfg('convertSlashItalic')) RF.walkTextNodes(content, applySlashItalic);
     if (cfg('removeBoldExcessive')) stripExcessiveBold(content);
+    if (cfg('highlightDialogue')) RF.walkTextNodes(content, applyDialogueHighlight);
   }
 
   return () => {
@@ -120,6 +145,11 @@ register(TYPOGRAPHY_MOD, {
       span.replaceWith(original);
     });
     boldReplacements.clear();
+    // Unwrap dialogue spans (text content is identical to the original)
+    dialogueSpans.forEach(span => {
+      span.replaceWith(span.textContent);
+    });
+    dialogueSpans.clear();
   };
 });
 
@@ -131,13 +161,20 @@ const SPACING_AND_STRUCTURE_MOD = 'spacingAndStructure';
 const SPACING_AND_STRUCTURE_LOG = `[AO3H][readingFormatter/${SPACING_AND_STRUCTURE_MOD}]`;
 const sceneBreakReplacements = new Map();
 
+// User-configurable separator style — falls back to the historical default.
+function sceneBreakSymbol () {
+  const custom = String(cfg('sceneBreakStyle') || '').trim();
+  return custom || '✦ ✦ ✦';
+}
+
 function unifySceneBreaks (container) {
   const NS = W.AO3H_RF?.NS || 'ao3h';
+  const symbol = sceneBreakSymbol();
   container.querySelectorAll('p, div').forEach(el => {
     const text = el.textContent.trim();
     if (/^([*\-~_=+]{3,}|(\*\s*){3,}|(–\s*){3,})$/.test(text)) {
       const replacement = document.createElement('p');
-      replacement.textContent = '✦ ✦ ✦';
+      replacement.textContent = symbol;
       replacement.className = `${NS}-rf-scene-break`;
       replacement.dataset.rfBreak = '1';
       el.replaceWith(replacement);
@@ -149,7 +186,7 @@ function unifySceneBreaks (container) {
     if (hr.dataset.rfBreak) return;
     const NS2 = W.AO3H_RF?.NS || 'ao3h';
     const div = document.createElement('p');
-    div.textContent = '✦ ✦ ✦';
+    div.textContent = symbol;
     div.className = `${NS2}-rf-scene-break`;
     div.dataset.rfBreak = '1';
     div.dataset.rfHrReplaced = '1';
