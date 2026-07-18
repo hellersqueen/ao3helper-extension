@@ -18,6 +18,7 @@ Notes
 
 import { buildKudosRatioBadge } from '../../../../lib/ui/badges.js';
 import { getBlurbStats, getWorkPageStats } from '../../../../lib/ao3/work-stats.js';
+import { commentRate, classifyLevel } from './ficEngagementHelpers.js';
 
 
 
@@ -28,10 +29,16 @@ import { getBlurbStats, getWorkPageStats } from '../../../../lib/ao3/work-stats.
 const BADGE_CLS = 'ao3h-engagement-badge';
 const WRAP_CLS  = 'ao3h-engagement-metrics';
 const DATA_ATTR = 'ao3hEngagement';
+const HELP_TEXT =
+  'Kudos ratio (kudos/hits): high ≥20% · medium 8–20% · low <8%. ' +
+  'Kudos density (kudos per 1,000 words): high ≥50 · medium 20–50 · low <20. ' +
+  'Save rate (bookmarks/kudos): high ≥20% · medium 10–20% · low <10%. ' +
+  'Comment rate (comments/kudos): high ≥15% · medium 5–15% · low <5%.';
 
 export class EngagementMetrics {
-  constructor ({ colorCode = false } = {}) {
+  constructor ({ colorCode = false, hideLowEngagement = false } = {}) {
     this.colorCode = colorCode;
+    this.hideLowEngagement = hideLowEngagement;
   }
 
 
@@ -44,16 +51,25 @@ export class EngagementMetrics {
     return getBlurbStats(blurb);
   }
 
+  kudosRatio (s)  { return (s.kudos != null && s.hits) ? (s.kudos / s.hits) * 100 : null; }
   kudosDensity (s){ return (s.kudos != null && s.words) ? (s.kudos / s.words) * 1000 : null; }
   saveRate (s)    { return (s.bookmarks != null && s.kudos) ? (s.bookmarks / s.kudos) * 100 : null; }
+  commentRate (s) { return commentRate(s); }
 
   densityColour (v) {
     if (!this.colorCode || v == null) return '';
-    return v >= 50 ? 'ao3h-metric-high' : v >= 20 ? 'ao3h-metric-mid' : 'ao3h-metric-low';
+    const level = classifyLevel(v, { high: 50, mid: 20 });
+    return level ? `ao3h-metric-${level}` : '';
   }
   saveColour (v) {
     if (!this.colorCode || v == null) return '';
-    return v >= 20 ? 'ao3h-metric-high' : v >= 10 ? 'ao3h-metric-mid' : 'ao3h-metric-low';
+    const level = classifyLevel(v, { high: 20, mid: 10 });
+    return level ? `ao3h-metric-${level}` : '';
+  }
+  commentColour (v) {
+    if (!this.colorCode || v == null) return '';
+    const level = classifyLevel(v, { high: 15, mid: 5 });
+    return level ? `ao3h-metric-${level}` : '';
   }
 
 
@@ -88,6 +104,20 @@ export class EngagementMetrics {
       `${(s.bookmarks || 0).toLocaleString()} bookmarks / ${(s.kudos || 0).toLocaleString()} kudos`
     ));
 
+    const cr = this.commentRate(s);
+    if (cr != null) wrap.appendChild(this.badge(
+      cr.toFixed(1), '% 💬', this.commentColour(cr),
+      `${(s.comments || 0).toLocaleString()} comments / ${(s.kudos || 0).toLocaleString()} kudos`
+    ));
+
+    if (wrap.children.length) {
+      const help = document.createElement('span');
+      help.className = `${BADGE_CLS} ao3h-engagement-help`;
+      help.textContent = 'ⓘ';
+      help.title = HELP_TEXT;
+      wrap.appendChild(help);
+    }
+
     return wrap.children.length ? wrap : null;
   }
 
@@ -102,6 +132,12 @@ export class EngagementMetrics {
 
     const s = this.getStats(blurb);
     if (!s) return;
+
+    if (this.hideLowEngagement && classifyLevel(this.kudosRatio(s), { high: 20, mid: 8 }) === 'low') {
+      blurb.classList.add('ao3h-low-engagement-hidden');
+      blurb.style.display = 'none';
+      return;
+    }
 
     const wrap = this.buildWrap(s);
     if (!wrap) return;
@@ -140,6 +176,10 @@ export class EngagementMetrics {
     document.querySelectorAll('.' + WRAP_CLS).forEach(el => el.remove());
     document.querySelectorAll('[data-ao3h-engagement]').forEach(el => {
       delete el.dataset[DATA_ATTR];
+    });
+    document.querySelectorAll('.ao3h-low-engagement-hidden').forEach(el => {
+      el.style.display = '';
+      el.classList.remove('ao3h-low-engagement-hidden');
     });
   }
 }

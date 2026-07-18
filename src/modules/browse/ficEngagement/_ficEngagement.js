@@ -46,6 +46,12 @@ const MOD  = 'ficEngagement';
 
 const DEFAULTS = {
   colorCodeMetrics: false,
+  hideLowEngagement: false,
+  gemMinRatio: 5,       // percent
+  gemMaxKudos: 100,
+  gemMaxBookmarks: 10,
+  gemMinHits: 50,
+  gemCompareToPageAverage: false,
 };
 
 function loadSettings() { return loadModuleSettings(MOD); }
@@ -73,8 +79,19 @@ register(MOD, {
   function cfg(key) { return saved[key] ?? DEFAULTS[key]; }
 
   /* ── Submodules ───────────────────────────────────────────────────── */
-  const metrics = new EngagementMetrics({ colorCode: cfg('colorCodeMetrics') });
-  const hiddenGems = new HiddenGems();
+  const metrics = new EngagementMetrics({
+    colorCode: cfg('colorCodeMetrics'),
+    hideLowEngagement: cfg('hideLowEngagement'),
+  });
+  const hiddenGems = new HiddenGems({
+    thresholds: {
+      minRatio: (parseFloat(cfg('gemMinRatio')) || 5) / 100,
+      maxKudos: parseInt(cfg('gemMaxKudos'), 10) || 100,
+      maxBookmarks: parseInt(cfg('gemMaxBookmarks'), 10) || 10,
+      minHits: parseInt(cfg('gemMinHits'), 10) || 50,
+    },
+    compareToPageAverage: cfg('gemCompareToPageAverage'),
+  });
 
   // document.querySelector('#main')/document.body peuvent ne pas encore
   // exister quand ce module boote — sans ce report, l'observer plantait

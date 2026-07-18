@@ -13,6 +13,12 @@ du simple nombre de kudos ou de vues.
 | Réglage | Par défaut | Ce que ça fait |
 |---|---|---|
 | `colorCodeMetrics` | désactivé | Colore les badges selon leur niveau d'engagement |
+| `hideLowEngagement` | désactivé | Cache les fics dont le taux de kudos est dans la tranche "faible" (< 8 %) |
+| `gemMinRatio` | `5` (%) | Ratio minimum kudos/vues pour être une pépite cachée |
+| `gemMaxKudos` | `100` | Nombre de kudos maximum pour rester "peu populaire" |
+| `gemMaxBookmarks` | `10` | Nombre de favoris maximum pour rester "peu populaire" |
+| `gemMinHits` | `50` | Nombre de vues minimum pour avoir assez de données |
+| `gemCompareToPageAverage` | désactivé | Repère aussi les pépites par rapport à la moyenne de la page affichée, en plus des seuils fixes |
 
 ## Fichiers
 
@@ -20,49 +26,79 @@ du simple nombre de kudos ou de vues.
 
 - Met en route les deux autres fichiers de fonctionnalités de ce module
 
-### 2. `engagementMetrics.js` — badges de métriques
+### 2. `ficEngagementHelpers.js` — logique extraite
 
-- Calcule et affiche trois badges sous les statistiques de chaque fic : le taux de kudos par rapport aux vues, le nombre de kudos par rapport au nombre de mots, et le taux de mise en favori par rapport aux kudos
+- `commentRate`/`classifyLevel` : calcul et classement (haut/moyen/faible) des ratios
+- `isGem`/`gemMedal` : détection de pépite cachée et son niveau de médaille (seuils personnalisables)
+- `averageRatio`/`isGemRelativeToPageAverage` : détection relative à la moyenne des œuvres affichées sur la page
+
+### 3. `engagementMetrics.js` — badges de métriques
+
+- Calcule et affiche quatre badges sous les statistiques de chaque fic : le taux de kudos par rapport aux vues, le nombre de kudos par rapport au nombre de mots, le taux de mise en favori par rapport aux kudos, et le taux de commentaires par rapport aux kudos
+- Un badge "ⓘ" explique en survol comment interpréter chaque ratio (seuils haut/moyen/faible)
 - Chaque badge montre les chiffres bruts si on passe la souris dessus
 - Peut colorer les badges (vert/jaune/rouge) selon le niveau d'engagement
+- Peut cacher entièrement les fics à faible engagement (réglage `hideLowEngagement`)
 
-### 3. `hiddenGems.js` — pépites cachées
+### 4. `hiddenGems.js` — pépites cachées
 
-- Repère les fics peu populaires mais avec un très bon taux d'engagement, et leur ajoute un badge 💎 "Hidden Gem"
-- Utilise des seuils fixes (taux de kudos élevé, mais peu de kudos et de favoris au total) pour ne pas rater les petites fics de qualité
+- Repère les fics peu populaires mais avec un très bon taux d'engagement, et leur ajoute un badge médaille (💎 diamant / 🥇 or / 🥈 argent) selon la force du ratio
+- Les seuils (ratio minimum, plafonds de popularité, vues minimum) sont réglables dans le panneau, au lieu d'être figés
+- Peut aussi repérer une pépite par comparaison avec la moyenne des œuvres affichées sur la page courante (approximation de "comparer au fandom", puisque l'extension ne voit que les œuvres affichées, pas tout le catalogue d'un fandom)
 
-### 4. `ficEngagement.css`
+### 5. `ficEngagement.css`
 
-- Les styles visuels des badges
+- Les styles visuels des badges, y compris les variantes par médaille
 
 ## Specs non implémentés
 
-Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
-vraiment dans ce module (pas de code pour ça) :
+Ce sont des idées dont on parle dans d'autres docs, avec leur statut :
 
-- Une note personnelle qu'on pourrait donner à une fic
-
-- Compter combien de fois une fic est mise en favori ou commentée, par rapport à ses kudos
-
-- Un filtre pour ne montrer que les fics avec un très bon ratio
-
-- Des catégories de "pépites cachées" (nouveaux auteurs, vieux classiques, couples rares)
-
-- Des niveaux de pépites, comme des médailles (diamant/or/argent)
-
-- Une version plus poussée du détecteur de pépites cachées
-
-- Mettre automatiquement les pépites cachées en haut de la liste "à lire plus tard"
-
-- Montrer le classement d'une fic parmi tout le fandom (en %)
-
-- Un petit guide qui explique comment interpréter chaque ratio (bon, moyen, faible)
-
-- Pouvoir changer soi-même les seuils utilisés pour repérer une pépite cachée, au lieu de seuils fixes
-
-- Repérer les pépites cachées en les comparant à la moyenne de leur propre fandom, plutôt qu'avec les mêmes seuils fixes pour tout le monde
-
-- Un score qui essaie de deviner si une fic en cours risque d'être abandonnée et jamais terminée, en regardant les habitudes de publication passées de l'auteur
+- ~~Une note personnelle qu'on pourrait donner à une fic~~ ✅ Fait (déjà couvert ailleurs)
+  Le module `ficAppreciation` propose déjà `starRatings.js` : une note
+  personnelle de 1 à 5 étoiles (avec note libre optionnelle), sur la page
+  d'une œuvre et dans les listes. Pas de duplication ici.
+- ~~Compter combien de fois une fic est mise en favori ou commentée, par rapport à ses kudos~~ ✅ Fait
+  Nouveau badge "taux de commentaires" (`comments / kudos × 100`) — le
+  taux de favoris existait déjà (Save Rate).
+- ~~Un filtre pour ne montrer que les fics avec un très bon ratio~~ ✅ Fait
+  Réglage `hideLowEngagement` : cache les fics dont le taux de kudos est
+  dans la tranche "faible".
+- ~~Des catégories de "pépites cachées" (nouveaux auteurs, vieux classiques, couples rares)~~ ❌ Écarté
+  Nécessiterait des données indisponibles sans requêtes supplémentaires par
+  auteur (ancienneté du compte, nombre total d'œuvres) ou une base de
+  fréquence des tags par fandom (couples rares) — hors de portée d'un badge
+  calculé localement à partir des stats déjà affichées.
+- ~~Des niveaux de pépites, comme des médailles (diamant/or/argent)~~ ✅ Fait
+  `gemMedal()` : diamant (ratio ≥ 3× le seuil minimum), or (≥ 2×), argent
+  (le seuil de base).
+- ~~Une version plus poussée du détecteur de pépites cachées~~ ✅ Fait (déjà couvert)
+  Cette demande générique est couverte par la combinaison des points
+  ci-dessous : niveaux de médaille, seuils personnalisables, et comparaison
+  à la moyenne de la page.
+- ~~Mettre automatiquement les pépites cachées en haut de la liste "à lire plus tard"~~ ❌ Écarté
+  Nécessiterait que ce module modifie l'ordre d'affichage d'un autre module
+  (Later Shelf) — un couplage entre modules que le projet évite (voir E7
+  dans l'audit `shared.md`). Le badge reste une information sur les
+  listings, pas une action sur une autre liste.
+- ~~Montrer le classement d'une fic parmi tout le fandom (en %)~~ ❌ Écarté
+  Nécessiterait de connaître les statistiques de toutes les œuvres d'un
+  fandom pour calculer un centile — des dizaines ou centaines de requêtes
+  par fandom.
+- ~~Un petit guide qui explique comment interpréter chaque ratio (bon, moyen, faible)~~ ✅ Fait
+  Badge "ⓘ" à côté des métriques, avec les seuils exacts en info-bulle.
+- ~~Pouvoir changer soi-même les seuils utilisés pour repérer une pépite cachée, au lieu de seuils fixes~~ ✅ Fait
+  Réglages `gemMinRatio` / `gemMaxKudos` / `gemMaxBookmarks` / `gemMinHits`.
+- ~~Repérer les pépites cachées en les comparant à la moyenne de leur propre fandom, plutôt qu'avec les mêmes seuils fixes pour tout le monde~~ ✅ Fait (approximation)
+  Réglage `gemCompareToPageAverage` : compare à la moyenne des œuvres
+  affichées sur la page courante, pas au fandom entier (voir "classement
+  dans le fandom" ci-dessus pour pourquoi une vraie moyenne de fandom est
+  hors de portée).
+- ~~Un score qui essaie de deviner si une fic en cours risque d'être abandonnée et jamais terminée, en regardant les habitudes de publication passées de l'auteur~~ ❌ Écarté
+  Concept déjà explicitement rejeté à l'échelle du projet (voir
+  "updateLikelihood" dans `docs/never-built-modules.md`) : juger
+  publiquement qu'une fic risque d'être abandonnée est injuste envers
+  l'auteur·ice.
 
 ---
 
@@ -81,6 +117,10 @@ vraiment dans ce module (pas de code pour ça) :
 ## Explicitement écarté
 
 - Une note de qualité unique et globale pour chaque fic (calculée à partir des kudos, des vues, des favoris et des commentaires, avec des grades du type S/A/B/C/D) — jugée trop subjective et présomptueuse
+- Des catégories de pépites cachées par type d'auteur/couple — données indisponibles sans requêtes supplémentaires
+- Priorisation automatique dans une autre liste (Later Shelf) — couplage entre modules évité
+- Classement précis dans le fandom (%) — nécessiterait de crawler tout le fandom
+- Score de risque d'abandon — déjà rejeté à l'échelle du projet ("updateLikelihood")
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -94,12 +134,19 @@ vraiment dans ce module (pas de code pour ça) :
 
    What it does:
      On listing pages, adds engagement metric badges to each work blurb:
-       • Kudos ratio   — (kudos / hits) × 100  →  "X.X% ❤️/👁️"
-       • Kudos density  — (kudos / words) × 1000 →  "X.X /1Kw"
-       • Save rate      — (bookmarks / kudos) × 100 → "X.X% 💾"
+       • Kudos ratio   — (kudos / hits) × 100      →  "X.X% ❤️/👁️"
+       • Kudos density — (kudos / words) × 1000    →  "X.X /1Kw"
+       • Save rate     — (bookmarks / kudos) × 100 →  "X.X% 💾"
+       • Comment rate  — (comments / kudos) × 100  →  "X.X% 💬"
+     Plus an "ⓘ" help badge explaining all four thresholds on hover.
 
    Settings:
-     colorCodeMetrics — colour-code badges (green/yellow/red by threshold)
+     colorCodeMetrics  — colour-code badges (green/yellow/red by threshold)
+     hideLowEngagement — hide blurbs whose kudos ratio is in the "low" tier
+     gemMinRatio / gemMaxKudos / gemMaxBookmarks / gemMinHits — Hidden Gems
+       thresholds, now user-configurable (previously fixed)
+     gemCompareToPageAverage — also flag gems relative to the current
+       page's average ratio (approximates "vs. fandom" without crawling it)
 
 
      /* ═══════════════════════════════════════════════════════════════════════════
@@ -113,29 +160,43 @@ AO3 Helper - Engagement Metrics Submodule
         • Kudos ratio   — (kudos / hits) × 100      → "X.X% ❤️/👁️"
         • Kudos density — (kudos / words) × 1000    → "X.X /1Kw"
         • Save rate     — (bookmarks / kudos) × 100 → "X.X% 💾"
+        • Comment rate  — (comments / kudos) × 100  → "X.X% 💬"
 
-    Thresholds (not user-configurable):
+    Thresholds (fixed, summarized in an "ⓘ" help badge):
         Ratio   — high ≥ 20 %  · mid 8–20 %  · low < 8 %
         Density — high ≥ 50    · mid 20–50    · low < 20
         Save    — high ≥ 20 %  · mid 10–20 %  · low < 10 %
+        Comment — high ≥ 15 %  · mid 5–15 %   · low < 5 %
+
+    hideLowEngagement (setting) hides the whole blurb when the kudos ratio
+    tier is "low", instead of just showing the badge.
 
 
-        
 AO3 Helper - Hidden Gems Submodule
     Submodule ID: hiddenGems
     Parent Module: ficEngagement
 
     Identifies "hidden gem" works — low popularity but high engagement ratio —
-    and injects a 💎 badge onto their blurbs and work pages.
+    and injects a medal badge (💎 diamond / 🥇 gold / 🥈 silver) onto their
+    blurbs and work pages, based on how far the ratio clears the base threshold.
 
-    Detection criteria (fixed thresholds):
+    Detection criteria (now user-configurable via gemMinRatio/gemMaxKudos/
+    gemMaxBookmarks/gemMinHits — defaults unchanged from the original fixed values):
         • Kudos/hits ratio ≥ 5%
         • Kudos ≤ 100  (low popularity)
         • Bookmarks ≤ 10  (OR kudos ≤ 100)
         • Minimum hits ≥ 50  (enough data)
         • Minimum kudos ≥ 5  (enough data)
 
-    Tooltip: "Under the radar: low kudos but high ratio — X% ratio · N kudos · N hits"
+    Medal tiers: silver at the base ratio, gold at 2×, diamond at 3×.
+
+    Optional (gemCompareToPageAverage): also flags a work as a gem when its
+    ratio is ≥1.5× the average ratio of works currently shown on the page,
+    even if it doesn't clear the fixed ratio threshold — an honest
+    approximation of "compare to the fandom" (only the current page's works
+    are visible to the extension, not a fandom's full catalogue).
+
+    Tooltip: "Under the radar: low kudos but high ratio — X% ratio · N kudos · N hits [· page average: Y%]"
 
 
 
@@ -156,18 +217,25 @@ Le module **Fic Engagement** ajoute des indicateurs permettant d'évaluer rapide
 
 # Réglages utilisateur
 
-| Réglage            | Description                                       |
-|--------------------|---------------------------------------------------|
-| `colorCodeMetrics` | Colore les badges selon leur niveau d'engagement. |
+| Réglage                    | Description                                                                 |
+|----------------------------|------------------------------------------------------------------------------|
+| `colorCodeMetrics`         | Colore les badges selon leur niveau d'engagement.                           |
+| `hideLowEngagement`        | Cache les fics dont le taux de kudos est dans la tranche "faible".         |
+| `gemMinRatio`              | Ratio minimum kudos/vues pour être une pépite cachée.                       |
+| `gemMaxKudos`              | Plafond de kudos pour rester "peu populaire".                               |
+| `gemMaxBookmarks`          | Plafond de favoris pour rester "peu populaire".                             |
+| `gemMinHits`               | Nombre de vues minimum pour avoir assez de données.                         |
+| `gemCompareToPageAverage`  | Repère aussi les pépites par rapport à la moyenne de la page affichée.     |
 
 ---
 
 # Structure du module
 
-Le module est composé de deux sous-modules fonctionnels ainsi qu'une feuille de style.
+Le module est composé d'un fichier de logique partagée, de deux sous-modules fonctionnels et d'une feuille de style.
 
 ```
 _ficEngagement.js
+ficEngagementHelpers.js
 engagementMetrics.js
 hiddenGems.js
 ficEngagement.css
@@ -414,116 +482,130 @@ Il définit notamment l'apparence :
 
 # Fonctionnalités non implémentées
 
-Les fonctionnalités ci-dessous sont prévues dans la conception du module ou documentées ailleurs dans le projet, mais ne disposent pas encore d'une implémentation complète.
+Les fonctionnalités ci-dessous sont documentées ailleurs dans le projet. Statut après revue :
 
 ---
 
 ## Évaluation des œuvres
 
-### Note personnelle
+### Note personnelle ✅ Fait (déjà couvert ailleurs)
 
 Permettre à l'utilisateur d'attribuer sa propre note à une œuvre.
 
-Cette évaluation serait indépendante des statistiques publiques d'AO3.
+> Le module `ficAppreciation` propose déjà `starRatings.js` (1 à 5 étoiles,
+> note libre optionnelle). Pas de duplication dans ce module.
 
 ---
 
-### Nouvelles métriques
+### Nouvelles métriques ✅ Fait
 
-Ajouter de nouveaux indicateurs d'engagement.
+Ajouter de nouveaux indicateurs d'engagement : rapport commentaires/kudos, rapport favoris/kudos plus détaillé, autres ratios complémentaires.
 
-Les idées prévues comprennent notamment :
-
-- le rapport commentaires / kudos ;
-- le rapport favoris / kudos plus détaillé ;
-- d'autres ratios d'engagement complémentaires.
+> Nouveau badge de taux de commentaires (`comments / kudos × 100`). Le taux
+> de favoris détaillé existait déjà (Save Rate).
 
 ---
 
-### Guide d'interprétation
+### Guide d'interprétation ✅ Fait
 
-Ajouter une aide expliquant comment interpréter les différents ratios.
+Ajouter une aide expliquant comment interpréter les différents ratios (excellent/bon/moyen/faible).
 
-Le guide pourrait indiquer, par exemple, si une valeur est :
-
-- excellente ;
-- bonne ;
-- moyenne ;
-- faible.
+> Badge "ⓘ" à côté des métriques, avec les seuils exacts des quatre ratios
+> en info-bulle.
 
 ---
 
-### Classement dans le fandom
+### Classement dans le fandom ❌ Écarté
 
-Afficher la position approximative d'une œuvre par rapport aux autres œuvres de son fandom.
+Afficher la position approximative d'une œuvre par rapport aux autres œuvres de son fandom, en pourcentage.
 
-Le classement pourrait être exprimé sous forme de pourcentage.
+> Écarté : nécessiterait de connaître les statistiques de toutes les
+> œuvres d'un fandom pour calculer un centile — des dizaines ou centaines
+> de requêtes par fandom.
 
 ---
 
 ## Recherche et filtrage
 
-### Filtre par engagement
+### Filtre par engagement ✅ Fait
 
 Permettre de filtrer les résultats afin de n'afficher que les œuvres possédant un excellent niveau d'engagement.
+
+> Réglage `hideLowEngagement` : cache les fics dont le taux de kudos est
+> dans la tranche "faible".
 
 ---
 
 ## Hidden Gems
 
-### Catégories
+### Catégories ❌ Écarté
 
-Créer plusieurs catégories de Hidden Gems.
+Créer plusieurs catégories de Hidden Gems (nouveaux auteurs, classiques oubliés, couples rares).
 
-Exemples envisagés :
-
-- nouveaux auteurs ;
-- classiques oubliés ;
-- couples rares.
+> Écarté : nécessiterait des données indisponibles sans requêtes
+> supplémentaires par auteur (ancienneté, nombre d'œuvres) ou une base de
+> fréquence des tags par fandom (couples rares).
 
 ---
 
-### Niveaux de rareté
+### Niveaux de rareté ✅ Fait
 
-Attribuer différents niveaux aux Hidden Gems.
+Attribuer différents niveaux aux Hidden Gems (Diamant/Or/Argent).
 
-Par exemple :
-
-- Diamant ;
-- Or ;
-- Argent.
+> `gemMedal()` : diamant (≥3× le seuil de base), or (≥2×), argent (seuil
+> de base).
 
 ---
 
-### Détection avancée
+### Détection avancée ✅ Fait (déjà couvert)
 
-Développer une version plus évoluée du système de détection.
+Développer une version plus évoluée du système de détection : seuils personnalisables, comparaison avec la moyenne du fandom, analyse plus fine par communauté.
 
-Les améliorations prévues comprennent notamment :
-
-- des seuils personnalisables ;
-- une comparaison avec la moyenne du fandom ;
-- une analyse plus fine des statistiques propres à chaque communauté.
+> Couvert par la combinaison des points ci-dessus (niveaux de médaille) et
+> ci-dessous (seuils personnalisables, comparaison à la moyenne de la page).
 
 ---
 
-### Priorisation
+### Priorisation ❌ Écarté
 
-Permettre de placer automatiquement les Hidden Gems en tête de certaines listes, comme **Marked for Later**.
+Permettre de placer automatiquement les Hidden Gems en tête de certaines listes, comme Marked for Later.
+
+> Écarté : nécessiterait que ce module modifie l'ordre d'affichage d'un
+> autre module (Later Shelf) — couplage entre modules évité par le projet
+> (voir E7 dans l'audit `shared.md`).
+
+---
+
+## Seuils et comparaison
+
+### Seuils personnalisables ✅ Fait
+
+Permettre de changer soi-même les seuils utilisés pour repérer une pépite cachée.
+
+> Réglages `gemMinRatio` / `gemMaxKudos` / `gemMaxBookmarks` / `gemMinHits`.
+
+---
+
+### Comparaison à la moyenne du fandom ✅ Fait (approximation)
+
+Repérer les pépites cachées en les comparant à la moyenne de leur propre fandom plutôt qu'à des seuils fixes.
+
+> Réglage `gemCompareToPageAverage` : compare à la moyenne des œuvres
+> affichées sur la page courante — une vraie moyenne de fandom entier est
+> hors de portée (voir "Classement dans le fandom" ci-dessus).
 
 ---
 
 ## Analyse prédictive
 
-### Risque d'abandon
+### Risque d'abandon ❌ Écarté
 
-Estimer la probabilité qu'une œuvre en cours soit abandonnée.
+Estimer la probabilité qu'une œuvre en cours soit abandonnée, à partir des habitudes de publication de l'auteur.
 
-L'analyse pourrait notamment prendre en compte :
-
-- les habitudes de publication de l'auteur ;
-- la fréquence des mises à jour passées ;
-- l'historique de publication.
+> Écarté : concept déjà explicitement rejeté à l'échelle du projet (voir
+> "updateLikelihood" dans `docs/never-built-modules.md`) — juger
+> publiquement qu'une fic risque d'être abandonnée est injuste envers
+> l'auteur·ice.
 
 
 # Décisions de conception
@@ -605,13 +687,12 @@ Toutes les métriques sont calculées localement à partir des données disponib
 
 # Limites connues
 
-Le module applique actuellement plusieurs simplifications.
+Le module applique toujours plusieurs simplifications volontaires.
 
 Notamment :
 
-- tous les seuils utilisés pour les calculs sont fixes ;
-- les seuils des **Hidden Gems** ne sont pas personnalisables ;
-- les métriques sont calculées indépendamment du fandom de l'œuvre ;
+- les seuils des badges d'engagement (kudos ratio, densité, save rate, comment rate) restent fixes ; seuls les seuils des **Hidden Gems** sont désormais personnalisables ;
+- la comparaison "au fandom" reste une approximation limitée à la page affichée, pas au fandom entier ;
 - aucune analyse historique ou prédictive n'est réalisée ;
 - les ratios décrivent uniquement les statistiques disponibles au moment de l'affichage.
 

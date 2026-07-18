@@ -69,6 +69,12 @@
 .ao3h-metric-mid  { border-color: #fde68a; background: #fffbeb; color: #92400e; }
 .ao3h-metric-low  { border-color: #fca5a5; background: #fef2f2; color: #991b1b; }
 
+/* Help icon explaining how to read the metric badges */
+.ao3h-engagement-help {
+  font-weight: 600;
+  color: #6b7280;
+}
+
 
 /*=
   ═══════════════════════════════════════════════════════════════════════
@@ -91,6 +97,23 @@
   vertical-align: middle;
   white-space: nowrap;
   cursor: help;
+}
+
+/* Medal tiers — how far above the base gem threshold the ratio is */
+.ao3h-gem-badge-diamond {
+  border-color: rgba(56, 189, 248, .9);
+  background: rgba(186, 230, 253, .35);
+  color: #0369a1;
+}
+.ao3h-gem-badge-gold {
+  border-color: rgba(234, 179, 8, .9);
+  background: rgba(250, 204, 21, .25);
+  color: #854d0e;
+}
+.ao3h-gem-badge-silver {
+  border-color: rgba(148, 163, 184, .9);
+  background: rgba(203, 213, 225, .3);
+  color: #475569;
 }
 
 

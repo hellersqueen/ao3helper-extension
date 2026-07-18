@@ -18,6 +18,9 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { observe } from '../../../../lib/utils/index.js';
+import {
+  DEFAULT_GEM_THRESHOLDS, isGem, gemMedal, averageRatio, isGemRelativeToPageAverage,
+} from './ficEngagementHelpers.js';
 
 
 
@@ -29,13 +32,17 @@ const GEM_BADGE_CLS = 'ao3h-gem-badge';
 const GEM_BLURB_CLS = 'ao3h-gem-blurb';
 const DATA_ATTR     = 'ao3hGemChecked';
 
-const MIN_HITS      = 50;
-const MIN_KUDOS     = 5;
-const MIN_RATIO     = 0.05;  // 5%
-const MAX_KUDOS     = 100;
-const MAX_BOOKMARKS = 10;
+const MEDAL_ICON = { diamond: '💎', gold: '🥇', silver: '🥈' };
+const RELATIVE_MULTIPLIER = 1.5; // how far above the page's own average ratio counts as a gem
 
 export class HiddenGems {
+  /**
+   * @param {{thresholds?: Partial<typeof DEFAULT_GEM_THRESHOLDS>, compareToPageAverage?: boolean}} [opts]
+   */
+  constructor ({ thresholds = {}, compareToPageAverage = false } = {}) {
+    this.thresholds = { ...DEFAULT_GEM_THRESHOLDS, ...thresholds };
+    this.compareToPageAverage = compareToPageAverage;
+  }
 
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -74,22 +81,30 @@ export class HiddenGems {
   ═════════════════════════════════════════════════════════════════════════ */
 
   _isGem (stats) {
-    if (!stats) return false;
-    const { kudos, hits, bookmarks } = stats;
-    if (!kudos || !hits) return false;
-    if (hits < MIN_HITS || kudos < MIN_KUDOS) return false;
-    const ratio  = kudos / hits;
-    const lowPop = kudos <= MAX_KUDOS || (bookmarks != null && bookmarks <= MAX_BOOKMARKS);
-    return ratio >= MIN_RATIO && lowPop;
+    if (isGem(stats, this.thresholds)) return true;
+    if (!this.compareToPageAverage) return false;
+    return isGemRelativeToPageAverage(stats, this._pageAverageRatio, RELATIVE_MULTIPLIER, this.thresholds);
+  }
+
+  _medal (stats) {
+    const medal = gemMedal(stats, this.thresholds);
+    if (medal) return medal;
+    // Relative-only gems (didn't clear the fixed threshold, only the page-average one) get the base tier.
+    return this._isGem(stats) ? 'silver' : null;
   }
 
   _tooltip (stats) {
     const { kudos, hits } = stats;
     const ratio = hits ? ((kudos / hits) * 100).toFixed(1) : null;
-    const parts = ['Under the radar: low kudos but high ratio'];
+    const medal = this._medal(stats);
+    const label = medal ? `${MEDAL_ICON[medal]} ${medal[0].toUpperCase()}${medal.slice(1)} hidden gem` : 'Under the radar: low kudos but high ratio';
+    const parts = [label];
     if (ratio != null) parts.push(`${ratio}% ratio`);
     if (kudos  != null) parts.push(`${kudos.toLocaleString()} kudos`);
     if (hits   != null) parts.push(`${hits.toLocaleString()} hits`);
+    if (this.compareToPageAverage && this._pageAverageRatio != null) {
+      parts.push(`page average: ${(this._pageAverageRatio * 100).toFixed(1)}%`);
+    }
     return parts[0] + ' — ' + parts.slice(1).join(' · ');
   }
 
@@ -99,9 +114,10 @@ export class HiddenGems {
   ═════════════════════════════════════════════════════════════════════════ */
 
   _createBadge (stats) {
+    const medal = this._medal(stats);
     const span = document.createElement('span');
-    span.className = GEM_BADGE_CLS;
-    span.textContent = '💎 Hidden Gem';
+    span.className = GEM_BADGE_CLS + (medal ? ` ${GEM_BADGE_CLS}-${medal}` : '');
+    span.textContent = medal ? `${MEDAL_ICON[medal]} Hidden Gem` : '💎 Hidden Gem';
     span.title = this._tooltip(stats);
     return span;
   }
@@ -134,8 +150,11 @@ export class HiddenGems {
   }
 
   _scan () {
-    document.querySelectorAll('li.work.blurb.group, li.bookmark.blurb.group')
-      .forEach(b => this._processBlurb(b));
+    const blurbs = document.querySelectorAll('li.work.blurb.group, li.bookmark.blurb.group');
+    if (this.compareToPageAverage) {
+      this._pageAverageRatio = averageRatio(Array.from(blurbs).map(b => this._getStatsFromBlurb(b)));
+    }
+    blurbs.forEach(b => this._processBlurb(b));
   }
 
 
