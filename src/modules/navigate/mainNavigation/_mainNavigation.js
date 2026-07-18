@@ -30,13 +30,15 @@ AO3 Helper — Main Navigation Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { css } from '../../../../lib/utils/index.js';
-import { Settings } from '../../../../lib/utils/config.js';
+import { Settings, Flags } from '../../../../lib/utils/config.js';
 import { detectUser } from '../../../../lib/utils/user-detector.js';
 import styles from './mainNavigation.css?inline';
 
 import { AddNavLinks } from './addNavLinks.js';
 import { MenuActivation } from './menuActivation.js';
 import { QuickLinks } from './quickLinks.js';
+import { BackToSearch } from './backToSearch.js';
+import { Breadcrumbs } from './breadcrumbs.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP
@@ -47,9 +49,12 @@ css(styles, 'ao3h-mainNavigation');
 const MOD = 'mainNavigation';
 
 const DEFAULTS = {
-  addNavLinks:       true,
-  quickLinksEnabled: false,
-  menuActivation:    'hover',
+  addNavLinks:        true,
+  quickLinksEnabled:  false,
+  quickLinksDropdown: false,
+  menuActivation:     'hover',
+  backToSearch:       true,
+  breadcrumbs:        false,
   quickLink1Label: '', quickLink1Url: '',
   quickLink2Label: '', quickLink2Url: '',
   quickLink3Label: '', quickLink3Url: '',
@@ -95,11 +100,12 @@ register(MOD, { title: 'Main Navigation', enabledByDefault: false }, async funct
   const headerUL = findPrimaryHeaderUL();
   const user = detectUser() || '';
 
-  const menuActivationInst = new MenuActivation(NS);
-  menuActivationInst.apply(cfg.menuActivation ?? 'hover');
-
-  const addNavLinksInst = new AddNavLinks(NS);
+  // History link targets the reading dashboard when that module is enabled
+  const dashboardOn = !!Flags.get('mod:readingDashboard:enabled', false);
+  const addNavLinksInst = new AddNavLinks(NS, { historyToDashboard: dashboardOn });
   const quickLinksInst = new QuickLinks(NS, cfg);
+  const backToSearchInst = new BackToSearch(NS);
+  const breadcrumbsInst = new Breadcrumbs(NS);
 
   if (headerUL) {
     if (cfg.addNavLinks) {
@@ -110,9 +116,19 @@ register(MOD, { title: 'Main Navigation', enabledByDefault: false }, async funct
     }
   }
 
+  // Applied after injection so the quick-links dropdown (if any) is included
+  // in the click-mode and arrow-key handling.
+  const menuActivationInst = new MenuActivation(NS);
+  menuActivationInst.apply(cfg.menuActivation ?? 'hover');
+
+  if (cfg.backToSearch !== false) backToSearchInst.apply();
+  if (cfg.breadcrumbs) breadcrumbsInst.inject();
+
   return () => {
     addNavLinksInst.reset();
     quickLinksInst.reset();
     menuActivationInst.reset();
+    backToSearchInst.reset();
+    breadcrumbsInst.reset();
   };
 });

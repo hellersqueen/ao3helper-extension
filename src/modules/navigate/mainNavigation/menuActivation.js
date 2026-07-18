@@ -2,11 +2,14 @@
 
 AO3 Helper - Main Navigation › Menu Activation
 
-Applies hover- or click-based behavior to AO3's primary navigation menus.
+Applies hover- or click-based behavior to AO3's primary navigation menus, and
+provides arrow-key navigation between and inside them.
 
 Notes
 
 - Click mode closes sibling menus and dismisses open menus on outside clicks.
+- Arrow keys move focus between top-level items (←/→) and within an open
+  dropdown (↑/↓); Escape closes the open menu. Active in both modes.
 - Event listeners are scoped to an abort controller for reliable cleanup.
 
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -32,6 +35,7 @@ export class MenuActivation {
     this.NS = NS;
     this._menuItems = [];
     this._clickAbort = null;
+    this._keyAbort = null;
   }
 
   apply(mode) {
@@ -64,11 +68,62 @@ export class MenuActivation {
     } else {
       this._menuItems.forEach(item => item.classList.remove('open'));
     }
+
+    this._applyKeyboardNav();
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — ARROW-KEY MENU NAVIGATION
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  _applyKeyboardNav() {
+    this._keyAbort = new AbortController();
+    const { signal } = this._keyAbort;
+    const menuItems = this._menuItems;
+
+    document.addEventListener('keydown', (e) => {
+      const target = /** @type {HTMLElement} */ (e.target);
+      if (!target?.closest?.('#header .primary.navigation')) return;
+
+      const currentItem = target.closest('#header .primary.navigation > li');
+      if (!currentItem) return;
+      const idx = menuItems.indexOf(/** @type {*} */ (currentItem));
+      if (idx === -1) return;
+
+      const topLink = (item) => item.querySelector(':scope > a');
+      const subLinks = (item) => Array.from(item.querySelectorAll(':scope ul a, :scope div a'));
+
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const delta = e.key === 'ArrowRight' ? 1 : -1;
+        const next = menuItems[(idx + delta + menuItems.length) % menuItems.length];
+        currentItem.classList.remove('open');
+        topLink(next)?.focus();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const links = subLinks(currentItem);
+        if (!links.length) return;
+        currentItem.classList.add('open');
+        const pos = links.indexOf(target);
+        links[pos === -1 ? 0 : Math.min(pos + 1, links.length - 1)].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const links = subLinks(currentItem);
+        const pos = links.indexOf(target);
+        if (pos > 0) links[pos - 1].focus();
+        else topLink(currentItem)?.focus();
+      } else if (e.key === 'Escape') {
+        currentItem.classList.remove('open');
+        topLink(currentItem)?.focus();
+      }
+    }, { signal });
   }
 
   reset() {
     this._clickAbort?.abort();
     this._clickAbort = null;
+    this._keyAbort?.abort();
+    this._keyAbort = null;
     document.documentElement.classList.remove(`${this.NS}-no-hover-menu`);
     this._menuItems.forEach(item => item.classList.remove('open'));
     this._menuItems = [];

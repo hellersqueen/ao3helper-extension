@@ -1,14 +1,15 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Main Navigation › Add Navigation Links
+AO3 Helper - Main Navigation › Back To Search
 
-Adds authenticated-user shortcuts for Bookmarks, Marked for Later, and History
-to AO3's primary header navigation.
+Remembers the last listing/search page visited (full URL, filters included)
+and offers a "← Back to search" link on work pages.
 
 Notes
 
-- No links are injected when the current AO3 username is unavailable.
-- The injected navigation slot is removed by `reset()`.
+- The origin URL is kept in sessionStorage: it is per-tab and vanishes with
+  the session, which matches how a "return to my search" gesture works.
+- Nothing is shown when no listing page was visited in this tab.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -16,55 +17,54 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-// No imports required.
+import { isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { isSearchOrigin } from './navHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
-const LINKS = [
-  { id: 'bookmarks', label: '🔖 Bookmarks',        path: u => `/users/${encodeURIComponent(u)}/bookmarks` },
-  { id: 'mfl',       label: '📌 Marked for Later', path: u => `/users/${encodeURIComponent(u)}/bookmarks?show=to-read` },
-  { id: 'history',   label: '📚 History',          path: u => `/users/${encodeURIComponent(u)}/readings` },
-];
+const SS_KEY = 'ao3h:nav:lastSearchUrl';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   FEATURE — NAVIGATION LINK INJECTION
+   FEATURE — BACK-TO-SEARCH LINK
 ═══════════════════════════════════════════════════════════════════════════ */
 
-export class AddNavLinks {
-  /** @param {string} NS @param {{historyToDashboard?: boolean}} [opts] */
-  constructor(NS, opts = {}) {
+export class BackToSearch {
+  constructor (NS) {
     this.NS = NS;
-    this.historyToDashboard = !!opts.historyToDashboard;
     this._el = null;
   }
 
-  inject(headerUL, user) {
-    if (this._el) return;
-    const slot = document.createElement('li');
-    slot.className = `${this.NS}-add-nav-links`;
+  /** Record the current page as a search origin, or inject the link on works. */
+  apply () {
+    const current = location.pathname + location.search;
+    if (isSearchOrigin(current)) {
+      try { sessionStorage.setItem(SS_KEY, current); } catch { /* storage off */ }
+      return;
+    }
+    if (!isWorkPage()) return;
 
-    LINKS.forEach(({ id, label, path }) => {
-      let resolvedHref = user ? path(user) : null;
-      if (!resolvedHref) return;
-      // When readingDashboard is active, History points to the personal
-      // dashboard page where that module renders, instead of AO3's raw list.
-      if (id === 'history' && this.historyToDashboard) {
-        resolvedHref = `/users/${encodeURIComponent(user)}`;
-      }
-      const a = document.createElement('a');
-      a.href = resolvedHref;
-      a.textContent = label;
-      slot.appendChild(a);
-    });
+    let saved = null;
+    try { saved = sessionStorage.getItem(SS_KEY); } catch { /* storage off */ }
+    if (!saved || !isSearchOrigin(saved)) return;
 
-    if (!slot.children.length) return;
-    headerUL.appendChild(slot);
-    this._el = slot;
+    const bar = document.createElement('div');
+    bar.className = `${this.NS}-back-to-search`;
+    const a = document.createElement('a');
+    a.href = saved;
+    a.textContent = '← Back to search';
+    a.title = 'Return to the results page you came from, filters intact';
+    bar.appendChild(a);
+
+    const anchor = document.querySelector('#workskin') || document.querySelector('#main');
+    if (anchor) {
+      anchor.insertAdjacentElement('beforebegin', bar);
+      this._el = bar;
+    }
   }
 
-  reset() {
+  reset () {
     this._el?.remove();
     this._el = null;
   }
@@ -74,4 +74,4 @@ export class AddNavLinks {
    FEATURE LIFECYCLE
 ═══════════════════════════════════════════════════════════════════════════ */
 
-// The coordinator creates this helper and calls `reset()` during cleanup.
+// The coordinator calls `apply()` on init and `reset()` during cleanup.

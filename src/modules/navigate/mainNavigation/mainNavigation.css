@@ -47,3 +47,31 @@ html.ao3h-no-hover-menu #header .primary.navigation li.open > ul,
 html.ao3h-no-hover-menu #header .primary.navigation li.open > div {
   display: block !important;
 }
+
+/* ── backToSearch — "← Back to search" link on work pages ───────────────── */
+
+.ao3h-back-to-search {
+  margin: 8px 0;
+}
+.ao3h-back-to-search a {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid #ccc;
+  border-radius: 14px;
+  font-size: 0.85em;
+  text-decoration: none;
+  background: #f5f5f5;
+}
+.ao3h-back-to-search a:hover { background: #eee; }
+
+/* ── breadcrumbs — Breadcrumb trail under the header ────────────────────── */
+
+.ao3h-breadcrumbs {
+  padding: 4px 12px;
+  font-size: 0.8em;
+  color: #777;
+}
+.ao3h-breadcrumbs a { text-decoration: none; }
+.ao3h-breadcrumbs a:hover { text-decoration: underline; }
+.ao3h-breadcrumbs-sep { margin: 0 5px; color: #aaa; }
+.ao3h-breadcrumbs-current { font-weight: 600; }

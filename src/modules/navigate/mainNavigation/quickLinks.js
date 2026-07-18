@@ -78,14 +78,37 @@ export class QuickLinks {
     if (!links.length) return;
 
     const slot = document.createElement('li');
-    slot.className = `${this.NS}-quick-links`;
 
-    links.forEach(({ label, href }) => {
-      const a = document.createElement('a');
-      a.href = href;
-      a.textContent = label;
-      slot.appendChild(a);
-    });
+    if (this.settings.quickLinksDropdown) {
+      // Custom dropdown menu — mimics AO3's native .dropdown structure so the
+      // hover CSS and menuActivation's click mode both apply to it unchanged.
+      slot.className = `${this.NS}-quick-links dropdown`;
+      const toggle = document.createElement('a');
+      toggle.href = '#';
+      toggle.className = 'dropdown-toggle';
+      toggle.textContent = '☆ Quick Links';
+      toggle.addEventListener('click', e => e.preventDefault());
+      const menu = document.createElement('ul');
+      menu.className = 'menu dropdown-menu';
+      links.forEach(({ label, href }) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = href;
+        a.textContent = label;
+        li.appendChild(a);
+        menu.appendChild(li);
+      });
+      slot.appendChild(toggle);
+      slot.appendChild(menu);
+    } else {
+      slot.className = `${this.NS}-quick-links`;
+      links.forEach(({ label, href }) => {
+        const a = document.createElement('a');
+        a.href = href;
+        a.textContent = label;
+        slot.appendChild(a);
+      });
+    }
 
     headerUL.appendChild(slot);
     this._el = slot;

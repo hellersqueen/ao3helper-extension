@@ -13,11 +13,17 @@ personnalisés.
 
 | Réglage | Par défaut | Ce que ça fait |
 |---|---|---|
-| `addNavLinks` | activé | Ajoute des liens Bookmarks / Marked for Later / Historique dans le menu |
-| `menuActivation` | `hover` | Comment les menus s'ouvrent : au survol de la souris, ou seulement au clic |
-| `quickLinksEnabled` | désactivé | Active les liens rapides personnalisés (jusqu'à 5, avec un nom et une adresse) |
+| `addNavLinks` | activé | Ajoute des liens Bookmarks / Marked for Later / Historique dans le menu (Historique pointe vers le tableau de bord de lecture si `readingDashboard` est activé) |
+| `menuActivation` | `hover` | Comment les menus s'ouvrent : au survol de la souris, ou seulement au clic — les flèches du clavier fonctionnent dans les deux modes |
+| `backToSearch` | activé | Un lien "← Back to search" sur les pages de fics, vers la dernière page de résultats visitée (filtres conservés) |
+| `breadcrumbs` | désactivé | Un fil d'Ariane sous l'en-tête, construit depuis l'URL |
+| `quickLinksEnabled` | désactivé | Active les liens rapides personnalisés (jusqu'à 5, avec un nom et une adresse — un emoji en début de nom fait office d'icône) |
+| `quickLinksDropdown` | désactivé | Regroupe les liens rapides sous un menu déroulant "☆ Quick Links" |
 | `quickLink1Label` … `quickLink5Label` | (vide) | Le nom du lien rapide N |
 | `quickLink1Url` … `quickLink5Url` | (vide) | L'adresse du lien rapide N |
+
+Le panneau de réglages propose aussi une recherche Fandom/Pairing
+(autocomplete AO3) qui remplit automatiquement le premier lien rapide vide.
 
 ## Fichiers
 
@@ -31,43 +37,60 @@ personnalisés.
 
 - Ajoute trois liens dans le menu : 🔖 Bookmarks, 📌 Marked for Later, 📚 Historique
 - N'affiche que les liens qui peuvent vraiment fonctionner (il faut être connecté)
+- Le lien Historique pointe vers la page personnelle (où s'affiche le tableau de bord de lecture) quand le module `readingDashboard` est activé
 
 ### 3. `menuActivation.js` — mode d'ouverture des menus
 
 - Bascule entre l'ouverture au survol de la souris (comportement normal d'AO3) et l'ouverture au clic uniquement
 - En mode "clic", un seul menu peut être ouvert à la fois, et il se ferme si on clique ailleurs
+- Navigation au clavier dans les deux modes : ←/→ entre les menus, ↓/↑ dans un menu ouvert, Échap pour fermer
 
 ### 4. `quickLinks.js` — liens personnalisés
 
 - Permet d'ajouter jusqu'à 5 liens personnalisés (avec un nom et une adresse) dans le menu
 - Vérifie que l'adresse est valide avant de l'ajouter
+- Peut regrouper les liens sous un menu déroulant "☆ Quick Links" (réglage `quickLinksDropdown`)
 
-### 5. `mainNavigation.css`
+### 5. `backToSearch.js` — retour vers la recherche (ajouté au passage chantier 4)
 
-- Les styles visuels des liens ajoutés et du mode "menu au clic"
+- Mémorise la dernière page de listing/recherche visitée dans l'onglet (URL complète, filtres inclus)
+- Sur les pages de fics, affiche un lien "← Back to search" vers cette page
+
+### 6. `breadcrumbs.js` — fil d'Ariane (ajouté au passage chantier 4)
+
+- Affiche un petit fil d'Ariane sous l'en-tête, construit depuis l'URL (aucune requête)
+
+### 7. `navHelpers.js` — calculs purs (ajouté au passage chantier 4)
+
+- Reconnaissance des pages "origine de recherche" (`isSearchOrigin`, s'appuie sur `lib/ao3/parsers.js`)
+- Décomposition d'un chemin AO3 en segments de fil d'Ariane (`buildBreadcrumbs`, avec décodage des tags `*s*`/`*a*`/`*d*`)
+
+### 8. `mainNavigation.css`
+
+- Les styles visuels des liens ajoutés, du mode "menu au clic", du lien de retour à la recherche et du fil d'Ariane
 
 ## Specs non implémentés
 
-Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
-vraiment dans ce module (pas de code pour ça) :
+Ce sont des idées dont on parle dans d'autres docs. État après le passage
+chantier 4 (2026-07-18) :
 
-- Un bouton "← Retour à la recherche" sur les pages de fics, qui ramène intelligemment à la page de résultats précédente en gardant les filtres actifs
-- Voir plusieurs pages précédentes dans une liste déroulante
-- Un bouton "Suivant" pour compléter le retour en arrière
-- Garder en mémoire les pages fermées récemment pour pouvoir les rouvrir
-- Un raccourci plus malin vers la page "parente" (série, collection, page auteur)
-- Accès rapide à des tags ou fandoms personnalisés
-- Une liste des liens récemment visités
-- Des menus déroulants personnalisés dans la barre de navigation
-- Personnaliser les icônes des liens
-- Cacher les éléments du menu qu'on ne veut pas voir
-- Un historique de navigation "intelligent" qui ignore les redirections
-- Un fil d'Ariane (breadcrumb) pour se repérer
-- Un lien rapide vers l'historique des kudos donnés
-- Un petit chiffre sur les liens Historique et Mark for Later pour indiquer combien de nouveautés il y a
-- Quand on ajoute un lien personnalisé, pouvoir chercher un fandom ou un pairing dans une liste plutôt que de devoir taper l'adresse à la main
-- Faire pointer le lien Historique vers le tableau de bord de lecture (si ce module-là est activé) plutôt que toujours vers la page historique classique d'AO3
-- Se déplacer dans les menus du haut avec les flèches du clavier, pour les personnes qui n'utilisent pas la souris
+- ~~Un bouton "← Retour à la recherche" sur les pages de fics, qui ramène intelligemment à la page de résultats précédente en gardant les filtres actifs~~ ✅ Fait — `backToSearch.js` : la dernière page de listing/recherche visitée dans l'onglet est mémorisée (sessionStorage, URL complète donc filtres inclus) et un lien "← Back to search" apparaît au-dessus du texte sur les pages de work. Réglage `backToSearch` (activé par défaut)
+- ~~Voir plusieurs pages précédentes dans une liste déroulante~~ ❌ Écarté — le navigateur offre déjà exactement ça (appui long sur le bouton Retour) ; le réimplémenter en userscript ne couvrirait que les pages du même onglet, en moins bien
+- ~~Un bouton "Suivant" pour compléter le retour en arrière~~ ❌ Écarté — même raison : c'est le bouton Suivant du navigateur
+- ~~Garder en mémoire les pages fermées récemment pour pouvoir les rouvrir~~ ❌ Écarté — un userscript n'a aucun accès aux onglets du navigateur (pas d'API tabs), il ne peut pas savoir qu'un onglet a été fermé ; les navigateurs le font déjà (Ctrl+Shift+T, menu historique)
+- ~~Un raccourci plus malin vers la page "parente" (série, collection, page auteur)~~ ❌ Écarté — AO3 affiche déjà tous ces liens sur chaque page de work (byline de l'auteur, bloc "Part X of Y" de la série, collections) ; un doublon dans la barre de navigation n'apporte rien
+- ~~Accès rapide à des tags ou fandoms personnalisés~~ ✅ Fait (déjà couvert) — c'est exactement ce que permettent les quick links (URL libre : n'importe quelle page de tag/fandom/pairing), désormais aidés par la recherche autocomplete ci-dessous
+- ~~Une liste des liens récemment visités~~ ❌ Écarté — doublon de l'historique du navigateur ; pour les fics spécifiquement, `readingTracker` (historique), `readingDashboard` et `fanficBingeMode` (blocs "Continue Reading") couvrent déjà ce besoin
+- ~~Des menus déroulants personnalisés dans la barre de navigation~~ ✅ Fait — réglage `quickLinksDropdown` : les quick links se regroupent sous un menu déroulant "☆ Quick Links" qui reprend la structure native des menus AO3 (survol et mode clic fonctionnent dessus sans code particulier)
+- ~~Personnaliser les icônes des liens~~ ✅ Fait (déjà possible) — le libellé d'un quick link est du texte libre : commencer le libellé par un emoji donne une "icône" au lien ; le placeholder du panneau le suggère désormais. Les icônes des 3 liens intégrés restent fixes (cohérent avec la décision "un seul réglage pour le groupe")
+- ~~Cacher les éléments du menu qu'on ne veut pas voir~~ ❌ Écarté — extension directe de la décision déjà prise pour la recherche ("jugée risquée, elle pourrait casser la navigation") : masquer des entrées natives du menu porte le même risque
+- ~~Un historique de navigation "intelligent" qui ignore les redirections~~ ❌ Écarté — doublon de l'historique du navigateur ; un userscript ne voit pas les redirections de façon fiable
+- ~~Un fil d'Ariane (breadcrumb) pour se repérer~~ ✅ Fait — `breadcrumbs.js` : petit fil d'Ariane sous l'en-tête (Works › Work 123 › Chapter…), construit uniquement depuis l'URL (`navHelpers.js` → `buildBreadcrumbs`), aucune requête. Réglage `breadcrumbs` (désactivé par défaut)
+- ~~Un lien rapide vers l'historique des kudos donnés~~ ❌ Écarté — AO3 n'a pas de page native listant les kudos donnés, et la route virtuelle `/kudos-history` de l'extension est un vestige que plus rien ne rend (seul un garde-fou la détecte encore) : le lien pointerait vers une page vide. Le suivi local des kudos existe dans `ficAppreciation` (badges 🧡 sur les listings) mais sans page dédiée
+- ~~Un petit chiffre sur les liens Historique et Mark for Later pour indiquer combien de nouveautés il y a~~ ❌ Écarté — demanderait de récupérer et parser ces pages à chaque chargement (coût réseau permanent) ; `notificationCenter` fournit déjà des notifications de mise à jour des œuvres suivies
+- ~~Quand on ajoute un lien personnalisé, pouvoir chercher un fandom ou un pairing dans une liste plutôt que de devoir taper l'adresse à la main~~ ✅ Fait — le panneau de réglages a maintenant une recherche Fandom/Pairing branchée sur l'autocomplete natif d'AO3 (`/autocomplete/fandom`, `/autocomplete/relationship`) ; choisir un résultat remplit le premier emplacement de lien vide (libellé + URL de la page de works du tag)
+- ~~Faire pointer le lien Historique vers le tableau de bord de lecture (si ce module-là est activé) plutôt que toujours vers la page historique classique d'AO3~~ ✅ Fait — automatique : quand le module `readingDashboard` est activé (vérifié via ses flags), le lien 📚 History pointe vers la page personnelle `/users/{user}` où ce tableau de bord s'affiche
+- ~~Se déplacer dans les menus du haut avec les flèches du clavier, pour les personnes qui n'utilisent pas la souris~~ ✅ Fait — dans `menuActivation.js` : ←/→ passe d'un menu à l'autre, ↓ ouvre le menu et descend dans ses entrées, ↑ remonte, Échap ferme et rend le focus au titre du menu. Actif dans les deux modes (survol et clic)
 
 ## Explicitement écarté
 
@@ -78,11 +101,11 @@ vraiment dans ce module (pas de code pour ça) :
 
 ## Précision
 
-⚠️ Les docs historiques présentent un bouton "← Back to Search" (retour
-intelligent vers la recherche) comme un comportement automatique central
-de ce module. Il n'y a pourtant aucune trace de ce bouton dans le code
-actuel — ni dans les 3 fichiers de fonctionnalités, ni ailleurs dans le
-dossier. Cette fonctionnalité n'existe pas.
+⚠️ Les docs historiques présentaient un bouton "← Back to Search" comme un
+comportement automatique central de ce module, alors qu'il n'existait pas
+dans le code. Depuis le passage chantier 4 (2026-07-18), la fonctionnalité
+existe réellement (`backToSearch.js`) — la doc et le code sont désormais
+d'accord.
 
 
 AO3 Helper - Main Navigation Module Coordinator
@@ -92,13 +115,22 @@ AO3 Helper - Main Navigation Module Coordinator
 
     Submodules (imported directly as ES modules):
         ./addNavLinks.js      -- nav links injection (Bookmarks/MFL/History)
-        ./quickLinks.js       -- custom quick links
-        ./menuActivation.js   -- hover vs click menu mode
+        ./quickLinks.js       -- custom quick links (flat or dropdown)
+        ./menuActivation.js   -- hover vs click menu mode + arrow-key navigation
+        ./backToSearch.js     -- "← Back to search" link on work pages (chantier 4)
+        ./breadcrumbs.js      -- URL-derived breadcrumb bar (chantier 4)
+        ./navHelpers.js       -- pure helpers for the two above (chantier 4)
 
     Config keys:
         addNavLinks        -- inject Bookmarks/MFL/History links in header
+                              (History retargets to /users/{user} when the
+                              readingDashboard module's enabled flag is set)
         quickLinksEnabled  -- custom quick links (URL + label)
+        quickLinksDropdown -- group quick links under a "☆ Quick Links" menu
         menuActivation     -- 'hover' | 'click'
+        backToSearch       -- work-page link back to the last listing URL
+                              (sessionStorage: ao3h:nav:lastSearchUrl)
+        breadcrumbs        -- breadcrumb bar under the header
 
 ═══════════════════════════════════════════════════════════════════════════
   # mainNavigation
@@ -132,13 +164,16 @@ Le module **Main Navigation** améliore la barre de navigation principale d’AO
 
 # Structure du module
 
-Le module est composé d’un fichier coordinateur, de trois sous-modules fonctionnels et d’une feuille de style.
+Le module est composé d’un fichier coordinateur, de cinq sous-modules fonctionnels, d'un fichier de calculs purs et d’une feuille de style (les trois derniers ajoutés au passage chantier 4).
 
 ```text
 _mainNavigation.js
 addNavLinks.js
 menuActivation.js
 quickLinks.js
+backToSearch.js
+breadcrumbs.js
+navHelpers.js
 mainNavigation.css
 ```
 
@@ -433,11 +468,16 @@ Il définit notamment l’apparence :
 
 # Fonctionnalités non implémentées
 
-Les fonctionnalités ci-dessous sont mentionnées dans d’autres documents du projet, mais ne sont pas actuellement présentes dans le module.
+État après le passage chantier 4 (2026-07-18) — chaque sous-section garde sa
+description d'origine, complétée par une note de résolution.
 
 ---
 
 ## Retour intelligent vers la recherche
+
+> ✅ Fait — `backToSearch.js` : dernière page de listing mémorisée en
+> sessionStorage (URL complète, filtres inclus), lien "← Back to search"
+> au-dessus du texte sur les pages de work. Réglage `backToSearch`.
 
 Ajouter un bouton :
 
@@ -453,11 +493,16 @@ Ce bouton ramènerait l’utilisateur à la page de résultats précédente tout
 
 ## Liste des pages précédentes
 
+> ❌ Écarté — le navigateur offre déjà exactement ça (appui long sur le
+> bouton Retour).
+
 Permettre d’afficher plusieurs pages précédemment consultées dans une liste déroulante.
 
 ---
 
 ## Bouton Suivant
+
+> ❌ Écarté — c'est le bouton Suivant du navigateur.
 
 Ajouter un bouton **Suivant** pour compléter le système de retour vers les pages précédentes.
 
@@ -465,11 +510,17 @@ Ajouter un bouton **Suivant** pour compléter le système de retour vers les pag
 
 ## Pages récemment fermées
 
+> ❌ Écarté — un userscript n'a pas d'accès aux onglets du navigateur ; les
+> navigateurs le font déjà (Ctrl+Shift+T).
+
 Conserver temporairement les pages fermées récemment afin de pouvoir les rouvrir.
 
 ---
 
 ## Navigation vers la page parente
+
+> ❌ Écarté — AO3 affiche déjà ces liens sur chaque page de work (byline,
+> bloc série, collections) ; un doublon en barre de navigation n'apporte rien.
 
 Ajouter un raccourci intelligent vers la page liée à l’œuvre actuellement consultée.
 
@@ -483,11 +534,17 @@ La page parente pourrait notamment être :
 
 ## Accès rapide aux tags et fandoms
 
+> ✅ Fait (déjà couvert) — c'est exactement l'usage des quick links, aidés
+> désormais par la recherche autocomplete du panneau.
+
 Permettre d’ajouter des accès rapides vers des tags ou des fandoms personnalisés.
 
 ---
 
 ## Liens récemment visités
+
+> ❌ Écarté — doublon de l'historique du navigateur ; pour les fics,
+> readingTracker/readingDashboard/fanficBingeMode couvrent déjà ce besoin.
 
 Afficher une liste des liens visités récemment.
 
@@ -495,11 +552,17 @@ Afficher une liste des liens visités récemment.
 
 ## Menus déroulants personnalisés
 
+> ✅ Fait — réglage `quickLinksDropdown` : les quick links se regroupent sous
+> un menu "☆ Quick Links" reprenant la structure native des menus AO3.
+
 Permettre de créer des menus déroulants personnalisés dans la barre de navigation.
 
 ---
 
 ## Personnalisation des icônes
+
+> ✅ Fait (déjà possible) — un emoji en début de libellé de quick link fait
+> office d'icône ; suggéré par le placeholder du panneau.
 
 Permettre de modifier les icônes associées aux liens ajoutés.
 
@@ -507,11 +570,17 @@ Permettre de modifier les icônes associées aux liens ajoutés.
 
 ## Masquage des éléments du menu
 
+> ❌ Écarté — extension de la décision déjà prise pour la recherche ("jugée
+> risquée") : masquer des entrées natives porte le même risque.
+
 Permettre de cacher certains éléments de la barre de navigation principale.
 
 ---
 
 ## Historique de navigation intelligent
+
+> ❌ Écarté — doublon de l'historique du navigateur ; les redirections ne
+> sont pas observables de façon fiable depuis un userscript.
 
 Ajouter un historique capable d’ignorer les redirections afin de ne conserver que les pages réellement utiles.
 
@@ -519,17 +588,27 @@ Ajouter un historique capable d’ignorer les redirections afin de ne conserver 
 
 ## Fil d’Ariane
 
+> ✅ Fait — `breadcrumbs.js` + `navHelpers.js` → `buildBreadcrumbs()`,
+> construit depuis l'URL, aucune requête. Réglage `breadcrumbs`.
+
 Ajouter un fil d’Ariane permettant de mieux situer la page actuelle dans la structure d’AO3.
 
 ---
 
 ## Lien vers l’historique des kudos
 
+> ❌ Écarté — aucune page à cibler : AO3 n'a pas de page native des kudos
+> donnés et la route virtuelle `/kudos-history` de l'extension est un vestige
+> non rendu.
+
 Ajouter un lien rapide vers la page contenant l’historique des kudos donnés.
 
 ---
 
 ## Compteurs de nouveautés
+
+> ❌ Écarté — demanderait de récupérer et parser ces pages à chaque
+> chargement (coût réseau) ; notificationCenter notifie déjà les mises à jour.
 
 Afficher un compteur sur les liens :
 
@@ -542,17 +621,27 @@ Ce compteur indiquerait le nombre de nouveautés disponibles.
 
 ## Recherche de fandom ou de pairing
 
+> ✅ Fait — recherche Fandom/Pairing dans le panneau, branchée sur
+> l'autocomplete natif d'AO3 ; un résultat choisi remplit le premier
+> emplacement de lien vide.
+
 Lors de l’ajout d’un lien personnalisé, permettre de rechercher un fandom ou un pairing dans une liste au lieu de devoir saisir manuellement son adresse.
 
 ---
 
 ## Intégration au tableau de bord de lecture
 
+> ✅ Fait — automatique quand le flag du module readingDashboard est activé :
+> le lien Historique pointe vers `/users/{user}`.
+
 Lorsque le module de tableau de bord de lecture est actif, permettre au lien **Historique** de pointer vers ce tableau de bord plutôt que vers la page historique classique d’AO3.
 
 ---
 
 ## Navigation au clavier dans les menus
+
+> ✅ Fait — ←/→ entre menus, ↓/↑ dans un menu ouvert, Échap ferme ; actif en
+> mode survol comme en mode clic (`menuActivation.js`).
 
 Permettre de se déplacer dans les menus de la barre supérieure avec les touches fléchées.
 
@@ -619,14 +708,10 @@ Les documentations historiques présentent un bouton :
 
 comme une fonctionnalité automatique centrale du module.
 
-Cette information ne correspond pas au code actuel.
+Cette information a longtemps été fausse : aucune trace de ce bouton
+n'existait dans le code.
 
-Aucune trace de ce bouton n’est présente :
-
-* dans `addNavLinks.js` ;
-* dans `menuActivation.js` ;
-* dans `quickLinks.js` ;
-* dans les autres fichiers du dossier du module.
-
-La fonctionnalité de retour intelligent vers la recherche n’existe donc pas actuellement.
+**Mise à jour (chantier 4, 2026-07-18) :** la fonctionnalité existe
+désormais réellement, implémentée dans `backToSearch.js` (voir plus haut).
+La doc historique et le code sont donc redevenus cohérents.
 
