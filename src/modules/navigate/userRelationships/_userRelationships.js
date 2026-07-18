@@ -14,10 +14,11 @@ AO3 Helper — User Relationships Coordinator
     Submodules
 
     - authorBlocking.js: hides listing blurbs from blocked authors
-    - authorPreference.js: per-author visibility and favorite controls
+    - authorPreference.js: per-author visibility, favorite, priority, and tag controls
     - authorTracking.js: followed-author notes and new-work detection
-    - blockingInterface.js: contextual block and unblock actions
-    - blocklistManagement.js: blocklist editing interface
+    - authorCard.js: read-only hover popover summarizing an author's status
+    - blockingInterface.js: contextual block and unblock actions (whole account or one pseud)
+    - blocklistManagement.js: blocklist editing interface (with reasons and stats)
     - commentHiding.js: filters blocked-user comments and bookmark notes
 
     Notes
@@ -40,6 +41,7 @@ import { DEFAULTS } from './userRelationshipsSettings.js';
 import './authorBlocking.js';
 import './authorPreference.js';
 import './authorTracking.js';
+import './authorCard.js';
 import './blockingInterface.js';
 import './blocklistManagement.js';
 import './commentHiding.js';

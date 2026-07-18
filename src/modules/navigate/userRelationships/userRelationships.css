@@ -64,6 +64,26 @@
   color: #666;
   font-size: 0.9em;
 }
+.ao3h-author-pref-tags {
+  margin-left: 0.3em;
+}
+.ao3h-author-tag-pill {
+  display: inline-block;
+  background: #eef2ff;
+  color: #4338ca;
+  border-radius: 999px;
+  padding: 0 6px;
+  margin-right: 3px;
+  font-size: 0.85em;
+}
+.ao3h-author-pref-tags-input {
+  width: 90px;
+  font-size: 0.85em;
+  padding: 1px 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  margin-left: 3px;
+}
 
 /* ── authorTracking — Author activity badges ────────────────────────────── */
 
@@ -87,6 +107,31 @@
 .ao3h-tracking-note-icon {
   cursor: help;
   margin-right: 2px;
+}
+.ao3h-author-popular-link {
+  display: block;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+
+/* ── authorCard — Read-only hover popover ───────────────────────────────── */
+
+.ao3h-author-card {
+  z-index: 10000;
+  max-width: 240px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .2);
+  padding: 8px 10px;
+  font-size: 0.85em;
+}
+.ao3h-author-card strong {
+  display: block;
+  margin-bottom: 4px;
+}
+.ao3h-author-card p {
+  margin: 2px 0;
 }
 
 /* ── blockingInterface — Context menu ───────────────────────────────────── */
@@ -127,6 +172,22 @@
   margin: 0 0 0.8em;
   font-size: 1em;
   font-weight: bold;
+}
+.ao3h-bl-stats {
+  margin: 0 0 0.6em;
+  color: #666;
+  font-size: 0.85em;
+}
+.ao3h-bl-reason-text {
+  color: #888;
+  font-style: italic;
+  font-size: 0.9em;
+}
+#ao3h-bl-reason {
+  min-width: 140px;
+  padding: 0.3em 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 3px;
 }
 #ao3h-bl-list {
   list-style: none;

@@ -19,6 +19,7 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
+import { cyclePriority, priorityIcon, parseTags } from './userRelationshipsHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -44,7 +45,7 @@ function savePrefs (prefs) {
 }
 
 function getAuthorPrefs (author) {
-  return getPrefs()[author] || { hidden: false, favorite: false, readCount: 0 };
+  return getPrefs()[author] || { hidden: false, favorite: false, readCount: 0, priority: 'normal', tags: [] };
 }
 
 function setAuthorPrefs (author, patch) {
@@ -135,11 +136,51 @@ function addControls (blurb) {
     applyFavoriteStyle(blurb, newFav);
   });
 
+  const prioBtn = document.createElement('button');
+  prioBtn.textContent = priorityIcon(prefs.priority) || '➖';
+  prioBtn.title = `Reading priority: ${prefs.priority} (click to cycle)`;
+  prioBtn.className = `${NS}-author-pref-btn`;
+  prioBtn.addEventListener('click', e => {
+    e.preventDefault();
+    const current = getAuthorPrefs(author);
+    const next = cyclePriority(current.priority);
+    setAuthorPrefs(author, { priority: next });
+    prioBtn.textContent = priorityIcon(next) || '➖';
+    prioBtn.title = `Reading priority: ${next} (click to cycle)`;
+  });
+
   const readSpan = document.createElement('span');
   readSpan.className = `${NS}-author-pref-read`;
   readSpan.textContent = prefs.readCount > 0 ? `(${prefs.readCount} read)` : '';
 
-  wrap.append(hideBtn, favBtn, readSpan);
+  const tagsSpan = document.createElement('span');
+  tagsSpan.className = `${NS}-author-pref-tags`;
+  (prefs.tags || []).forEach(tag => {
+    const pill = document.createElement('span');
+    pill.className = `${NS}-author-tag-pill`;
+    pill.textContent = tag;
+    tagsSpan.appendChild(pill);
+  });
+
+  const tagsInput = document.createElement('input');
+  tagsInput.type = 'text';
+  tagsInput.className = `${NS}-author-pref-tags-input`;
+  tagsInput.placeholder = 'Tags…';
+  tagsInput.value = (prefs.tags || []).join(', ');
+  tagsInput.title = 'Comma-separated tags for this author';
+  tagsInput.addEventListener('change', () => {
+    const tags = parseTags(tagsInput.value);
+    setAuthorPrefs(author, { tags });
+    tagsSpan.innerHTML = '';
+    tags.forEach(tag => {
+      const pill = document.createElement('span');
+      pill.className = `${NS}-author-tag-pill`;
+      pill.textContent = tag;
+      tagsSpan.appendChild(pill);
+    });
+  });
+
+  wrap.append(hideBtn, favBtn, prioBtn, readSpan, tagsSpan, tagsInput);
 
   const authorsEl = blurb.querySelector('.authors');
   if (authorsEl) authorsEl.appendChild(wrap);

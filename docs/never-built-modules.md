@@ -934,7 +934,7 @@ Le gain ici est surtout une réduction du nombre de fichiers ; la séparation ac
 
 
 
-## Modules déjà traités (20/38)
+## Modules déjà traités (21/38)
 
 Chaque module listé ci-dessous a son .md à jour (specs cochées ✅ ou
 déplacées vers "Explicitement écarté" avec raison), code + tests + build +
@@ -960,13 +960,13 @@ typecheck + e2e vérifiés :
 - ficPeek
 - notificationCenter
 - keyboardShortcuts
+- userRelationships
 
-## Modules restants (18/38)
+## Modules restants (17/38)
 
 Dans l'ordre de taille croissante (nombre d'items non résolus dans leur
 .md au moment du dernier passage) :
 
-- userRelationships (11)
 - ficEngagement (12)
 - instantFootnotes (12)
 - textToSpeech (14)

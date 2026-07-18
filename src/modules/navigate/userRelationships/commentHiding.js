@@ -20,6 +20,8 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
+import { parseUserHref, isBlockedIdentity } from './userRelationshipsHelpers.js';
+import { bumpHiddenStat } from './blockingStats.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -42,14 +44,16 @@ function getBlockedUsers () {
   } catch (_) { return new Set(); }
 }
 
-function getCommentAuthor (comment) {
+function getCommentAuthorIdentity (comment) {
   const link = comment.querySelector('.heading a[href*="/users/"]');
-  return link ? link.textContent.trim().toLowerCase() : null;
+  if (!link) return null;
+  return parseUserHref(link.getAttribute('href'));
 }
 
 function hideComment (comment, author) {
   if (comment.dataset.ao3hHidden) return;
   comment.dataset.ao3hHidden   = '1';
+  bumpHiddenStat('comments');
   if (!originalDisplays.has(comment)) originalDisplays.set(comment, comment.style.display);
   comment.style.display        = 'none';
 
@@ -93,15 +97,23 @@ function processPage (blocked) {
   if (!blocked.size) return;
 
   document.querySelectorAll('.comment').forEach(comment => {
-    const author = getCommentAuthor(comment);
-    if (author && blocked.has(author)) hideComment(comment, author);
+    const identity = getCommentAuthorIdentity(comment);
+    if (!identity) return;
+    const { username, pseud } = identity;
+    if (isBlockedIdentity(blocked, username, pseud)) {
+      hideComment(comment, pseud ? `${username} (${pseud})` : username);
+    }
   });
 
   document.querySelectorAll('li.bookmark.blurb').forEach(blurb => {
     const link = blurb.querySelector('a.author[href*="/users/"]');
     if (!link) return;
-    const author = link.textContent.trim().toLowerCase();
-    if (blocked.has(author)) hideBookmarkNote(blurb, author);
+    const identity = parseUserHref(link.getAttribute('href'));
+    if (!identity) return;
+    const { username, pseud } = identity;
+    if (isBlockedIdentity(blocked, username, pseud)) {
+      hideBookmarkNote(blurb, pseud ? `${username} (${pseud})` : username);
+    }
   });
 }
 

@@ -20,6 +20,8 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
+import { parseUserHref, isBlockedIdentity } from './userRelationshipsHelpers.js';
+import { bumpHiddenStat } from './blockingStats.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -43,14 +45,16 @@ function getBlockedAuthors () {
   }
 }
 
-function getAuthorName (blurb) {
+function getAuthorIdentity (blurb) {
   const link = blurb.querySelector('a[rel="author"], .authors a[href*="/users/"]');
-  return link ? link.textContent.trim().toLowerCase() : null;
+  if (!link) return null;
+  return parseUserHref(link.getAttribute('href'));
 }
 
 function hideBlurb (blurb, authorName) {
   if (blurb.dataset.ao3hBlocked) return;
   blurb.dataset.ao3hBlocked = '1';
+  bumpHiddenStat('works');
 
   if (!originalDisplays.has(blurb)) originalDisplays.set(blurb, blurb.style.display);
   blurb.style.display = 'none';
@@ -100,8 +104,12 @@ function processBlurbs (blocked) {
   if (!blocked.size) return;
   document.querySelectorAll('li.work.blurb, li.bookmark.blurb').forEach(blurb => {
     if (/** @type {HTMLElement} */ (blurb).dataset.ao3hBlocked) return;
-    const author = getAuthorName(blurb);
-    if (author && blocked.has(author)) hideBlurb(blurb, author);
+    const identity = getAuthorIdentity(blurb);
+    if (!identity) return;
+    const { username, pseud } = identity;
+    if (isBlockedIdentity(blocked, username, pseud)) {
+      hideBlurb(blurb, pseud ? `${username} (${pseud})` : username);
+    }
   });
 }
 

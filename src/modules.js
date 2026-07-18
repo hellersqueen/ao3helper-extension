@@ -43,6 +43,7 @@ async function loadUserRelationships() {
     () => import('./modules/navigate/userRelationships/authorBlocking.js'),
     () => import('./modules/navigate/userRelationships/authorPreference.js'),
     () => import('./modules/navigate/userRelationships/authorTracking.js'),
+    () => import('./modules/navigate/userRelationships/authorCard.js'),
     () => import('./modules/navigate/userRelationships/blockingInterface.js'),
     () => import('./modules/navigate/userRelationships/blocklistManagement.js'),
     () => import('./modules/navigate/userRelationships/commentHiding.js'),

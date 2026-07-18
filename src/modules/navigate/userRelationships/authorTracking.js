@@ -19,6 +19,7 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
+import { sortByKudosURL } from './userRelationshipsHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -93,6 +94,17 @@ function showNewWorksBanner (author, newCount) {
   if (main) main.prepend(banner);
 }
 
+/** Link to the same author works page, sorted by kudos via AO3's own sort — no scraping needed. */
+function showMostPopularLink () {
+  if (document.querySelector(`.${NS}-author-popular-link`)) return;
+  const link = document.createElement('a');
+  link.className   = `${NS}-author-popular-link`;
+  link.href        = sortByKudosURL(location.href);
+  link.textContent = '🏆 Sort by kudos (most popular first)';
+  const main = document.querySelector('#main');
+  if (main) main.prepend(link);
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — LISTING ANNOTATIONS
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -157,6 +169,7 @@ register(MOD, {
         const newWorks = checkAndUpdateSnapshot(author.toLowerCase(), count);
         if (newWorks > 0) showNewWorksBanner(author, newWorks);
       }
+      showMostPopularLink();
     }
 
     annotateBlurbs();
@@ -168,6 +181,7 @@ register(MOD, {
     observer?.disconnect();
     document.querySelectorAll(`.${NS}-author-tracking-badges`).forEach(el => el.remove());
     document.querySelectorAll(`.${NS}-author-new-works`).forEach(el => el.remove());
+    document.querySelectorAll(`.${NS}-author-popular-link`).forEach(el => el.remove());
     document.querySelectorAll('[data-ao3h-tracked]').forEach(blurbEl => {
       delete (/** @type {HTMLElement} */ (blurbEl)).dataset.ao3hTracked;
     });

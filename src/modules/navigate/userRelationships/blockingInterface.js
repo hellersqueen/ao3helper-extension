@@ -17,12 +17,14 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { parseUserHref, accountKey, pseudKey, isBlockedIdentity } from './userRelationshipsHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const STORAGE_KEY = 'userBlocker:list';
+const REASONS_KEY = 'userBlocker:reasons';
 const MENU_CLASS  = 'ao3h-user-context-menu';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -31,7 +33,8 @@ const MENU_CLASS  = 'ao3h-user-context-menu';
 
 class BlockingInterface {
   constructor() {
-    this._blockedUsers   = new Set();
+    this._blockedKeys    = new Set();
+    this._reasons        = {};
     this._boundOnContext = this._onContextMenu.bind(this);
     this._boundOnClick   = this._onDocClick.bind(this);
     this._clickTimer     = null;
@@ -39,33 +42,43 @@ class BlockingInterface {
 
   init() {
     this._loadList();
+    this._loadReasons();
     document.addEventListener('contextmenu', this._boundOnContext);
   }
 
-  isBlocked(username) {
-    return this._blockedUsers.has(username.toLowerCase());
+  /** @param {string} username @param {string|null} [pseud] */
+  isBlocked(username, pseud = null) {
+    return isBlockedIdentity(this._blockedKeys, username, pseud);
   }
 
-  block(username) {
-    const key = username.toLowerCase();
-    if (this._blockedUsers.has(key)) return false;
-    this._blockedUsers.add(key);
+  /**
+   * @param {string} key - accountKey(username) or pseudKey(username, pseud)
+   * @param {string} [reason]
+   */
+  block(key, reason) {
+    if (this._blockedKeys.has(key)) return false;
+    this._blockedKeys.add(key);
     this._saveList();
+    if (reason) { this._reasons[key] = reason; this._saveReasons(); }
     this._dispatch('ao3h:blocking-changed', { action: 'block', username: key });
     return true;
   }
 
-  unblock(username) {
-    const key = username.toLowerCase();
-    if (!this._blockedUsers.has(key)) return false;
-    this._blockedUsers.delete(key);
+  unblock(key) {
+    if (!this._blockedKeys.has(key)) return false;
+    this._blockedKeys.delete(key);
     this._saveList();
+    if (key in this._reasons) { delete this._reasons[key]; this._saveReasons(); }
     this._dispatch('ao3h:blocking-changed', { action: 'unblock', username: key });
     return true;
   }
 
   getList() {
-    return Array.from(this._blockedUsers);
+    return Array.from(this._blockedKeys);
+  }
+
+  getReasons() {
+    return { ...this._reasons };
   }
 
   cleanup() {
@@ -80,15 +93,29 @@ class BlockingInterface {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const arr = raw ? JSON.parse(raw) : [];
-      this._blockedUsers = new Set(arr.map(u => String(u).toLowerCase()));
+      this._blockedKeys = new Set(arr.map(u => String(u).toLowerCase()));
     } catch (_) {
-      this._blockedUsers = new Set();
+      this._blockedKeys = new Set();
     }
   }
 
   _saveList() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(this._blockedUsers)));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(this._blockedKeys)));
+    } catch (_) {}
+  }
+
+  _loadReasons() {
+    try {
+      this._reasons = JSON.parse(localStorage.getItem(REASONS_KEY) || '{}');
+    } catch (_) {
+      this._reasons = {};
+    }
+  }
+
+  _saveReasons() {
+    try {
+      localStorage.setItem(REASONS_KEY, JSON.stringify(this._reasons));
     } catch (_) {}
   }
 
@@ -96,41 +123,58 @@ class BlockingInterface {
     const link = e.target.closest('a[rel="author"], a[href*="/users/"]');
     if (!link) return;
 
-    const username = this._usernameFromLink(link);
-    if (!username) return;
+    const identity = parseUserHref(link.href);
+    if (!identity?.username) return;
 
     e.preventDefault();
-    this._showMenu(e.clientX, e.clientY, username);
+    this._showMenu(e.clientX, e.clientY, identity);
   }
 
-  _usernameFromLink(link) {
-    const match = (link.href || '').match(/\/users\/([^/?#]+)/);
-    return match ? decodeURIComponent(match[1]) : null;
-  }
-
-  _showMenu(x, y, username) {
+  _showMenu(x, y, { username, pseud }) {
     this._removeMenu();
 
     const menu = document.createElement('div');
     menu.className = MENU_CLASS;
     Object.assign(menu.style, {
-      left: `${Math.min(x, window.innerWidth - 180)}px`,
-      top:  `${Math.min(y, window.innerHeight - 60)}px`,
+      left: `${Math.min(x, window.innerWidth - 200)}px`,
+      top:  `${Math.min(y, window.innerHeight - 90)}px`,
     });
 
-    const blocked = this.isBlocked(username);
-    const label   = blocked ? `Unblock ${username}` : `Block ${username}`;
+    const addItem = (label, color, onClick) => {
+      const item = document.createElement('div');
+      item.textContent = label;
+      item.className   = `${MENU_CLASS}-item`;
+      item.style.color = color;
+      item.addEventListener('click', () => { onClick(); this._removeMenu(); });
+      menu.appendChild(item);
+    };
 
-    const item = document.createElement('div');
-    item.textContent = label;
-    item.className   = `${MENU_CLASS}-item`;
-    item.style.color = blocked ? '#0d6efd' : '#dc3545';
-    item.addEventListener('click', () => {
-      blocked ? this.unblock(username) : this.block(username);
-      this._removeMenu();
-    });
+    const accKey = accountKey(username);
+    const accountBlocked = this._blockedKeys.has(accKey);
+    addItem(
+      accountBlocked ? `Unblock ${username} (all pseuds)` : `Block ${username} (all pseuds)`,
+      accountBlocked ? '#0d6efd' : '#dc3545',
+      () => {
+        if (accountBlocked) { this.unblock(accKey); return; }
+        const reason = window.prompt(`Optional: why are you blocking ${username}?`, '') || '';
+        this.block(accKey, reason.trim());
+      },
+    );
 
-    menu.appendChild(item);
+    if (pseud) {
+      const pKey = pseudKey(username, pseud);
+      const pseudBlocked = this._blockedKeys.has(pKey);
+      addItem(
+        pseudBlocked ? `Unblock this pseud only (${pseud})` : `Block this pseud only (${pseud})`,
+        pseudBlocked ? '#0d6efd' : '#dc3545',
+        () => {
+          if (pseudBlocked) { this.unblock(pKey); return; }
+          const reason = window.prompt(`Optional: why are you blocking the pseud "${pseud}"?`, '') || '';
+          this.block(pKey, reason.trim());
+        },
+      );
+    }
+
     document.body.appendChild(menu);
 
     // Close when clicking outside
