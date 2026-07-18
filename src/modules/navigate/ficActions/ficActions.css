@@ -47,6 +47,23 @@ li.ao3h-dragging { opacity: 0.4; }
   vertical-align: middle;
 }
 
+/* ── Icon-only buttons ──────────────────────────────────────────────────── */
+
+.ao3h-action-icon {
+  font-size: 1.05em;
+}
+.ao3h-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ── Subscription status badge ─────────────────────────────────────────── */
 
 .ao3h-sub-badge {

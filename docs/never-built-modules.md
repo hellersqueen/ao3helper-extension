@@ -934,7 +934,7 @@ Le gain ici est surtout une réduction du nombre de fichiers ; la séparation ac
 
 
 
-## Modules déjà traités (15/38)
+## Modules déjà traités (16/38)
 
 Chaque module listé ci-dessous a son .md à jour (specs cochées ✅ ou
 déplacées vers "Explicitement écarté" avec raison), code + tests + build +
@@ -955,13 +955,13 @@ typecheck + e2e vérifiés :
 - surpriseMe
 - readingDashboard
 - readingTimeline
+- ficActions
 
-## Modules restants (23/38)
+## Modules restants (22/38)
 
 Dans l'ordre de taille croissante (nombre d'items non résolus dans leur
 .md au moment du dernier passage) :
 
-- ficActions (9)
 - povTracker (10)
 - ficPeek (11)
 - notificationCenter (11)

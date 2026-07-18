@@ -36,6 +36,7 @@ import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { subscribeToWork } from '../../../../lib/ao3/actions.js';
 import { getCSRF } from '../../../../lib/ao3/requests.js';
 import { makeListReorderable, applySavedOrder } from '../../../../lib/ui/drag-reorder.js';
+import { getActionIcon, resolveBottomSubscribeContainer } from './ficActionsHelpers.js';
 import styles from './ficActions.css?inline';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -49,9 +50,11 @@ const MOD = 'ficActions';
 
 const DEFAULTS = {
   subscribeButtonBottom:  false,
+  bottomSubscribePosition: 'nearKudos',
   subscribeFromListings:  false,
   showSubscriptionStatus: false,
   buttonReordering:       false,
+  iconOnlyButtons:        false,
   hideShare:              false,
   hideBookmark:           false,
   hideSubscribe:          false,
@@ -137,17 +140,26 @@ register(MOD, {
     if (alreadyInjected()) return true;
 
     const { subscribeLi, kudosAnchor } = findTargets();
-    if (!subscribeLi || !kudosAnchor) return false;
+    if (!subscribeLi) return false;
 
     const clone = subscribeLi.cloneNode(true);
     clone.classList.add(CLONE_MARK);
 
+    const pageEndContainer = resolveBottomSubscribeContainer(document, cfg('bottomSubscribePosition'));
+    if (pageEndContainer) {
+      pageEndContainer.appendChild(clone);
+      applyIconOnlyButtons(cfg('iconOnlyButtons'));
+      return true;
+    }
+
+    if (!kudosAnchor) return false;
     const parent = kudosAnchor.parentElement;
     if (parent && parent.tagName === 'UL') {
       parent.appendChild(clone);
     } else {
       kudosAnchor.insertAdjacentElement('afterend', clone);
     }
+    applyIconOnlyButtons(cfg('iconOnlyButtons'));
     return true;
   }
 
@@ -227,6 +239,36 @@ register(MOD, {
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — ICON-ONLY BUTTONS
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  function applyIconOnlyButtons (enabled) {
+    const buttons = $$(Array.from(REORDER_TARGETS).map(k => `li.${k}`).join(', '));
+    buttons.forEach((li) => {
+      const key = getItemKey(li);
+      const anchor = li.querySelector('a');
+      if (!key || !anchor) return;
+
+      if (enabled) {
+        if (anchor.querySelector(`.${NS}-action-icon`)) return;
+        const label = document.createElement('span');
+        label.className = `${NS}-sr-only`;
+        while (anchor.firstChild) label.appendChild(anchor.firstChild);
+        if (!anchor.title) anchor.title = label.textContent.trim();
+        const icon = document.createElement('span');
+        icon.className = `${NS}-action-icon`;
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = getActionIcon(key);
+        anchor.appendChild(icon);
+        anchor.appendChild(label);
+      } else {
+        const label = anchor.querySelector(`.${NS}-sr-only`);
+        if (label) anchor.textContent = label.textContent;
+      }
+    });
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — BUTTON REORDERING
   ═════════════════════════════════════════════════════════════════════════ */
 
@@ -284,6 +326,7 @@ register(MOD, {
   // CSS class always active when module is enabled
   applyTopButtons(true);
   applyButtonVisibility();
+  applyIconOnlyButtons(cfg('iconOnlyButtons'));
 
   if (cfg('subscribeButtonBottom')) {
     applyBottomSubscribe(true);
@@ -317,6 +360,7 @@ register(MOD, {
     requestController.abort();
     applyTopButtons(false);
     removeButtonVisibility();
+    applyIconOnlyButtons(false);
     applyButtonReordering(false);
     removeSubscribeButton();
     subscribeObserver?.disconnect();
