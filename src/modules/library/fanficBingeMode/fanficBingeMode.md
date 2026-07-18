@@ -14,48 +14,65 @@ personnelle de fics à lire.
 | Réglage | Par défaut | Ce que ça fait |
 |---|---|---|
 | `continueReadingModal` | activé | Affiche une fenêtre "Continue Reading?" quand on arrive à la fin d'une fic |
-| `autoAdvanceDelay` | `0` (désactivé) | Le temps (en secondes) avant de passer automatiquement à une nouvelle fic, si on n'a rien annulé |
-| `showHomepagePanel` | activé | Affiche un bloc "Continue Reading" sur la page d'accueil avec les dernières fics lues |
+| `autoAdvanceDelay` | `0` (désactivé) | Le temps (en secondes) avant de passer automatiquement à une nouvelle fic, si on n'a rien annulé — ouvre la fic prioritaire de la file d'attente si elle contient des fics, sinon `/works` |
+| `showHomepagePanel` | activé | Affiche un bloc "Continue Reading" sur la page d'accueil avec les fics pas encore terminées |
+| `resumeCount` | `5` | Le nombre de fics affichées dans ce bloc |
+| `homepagePanelStyle` | `list` | La présentation du bloc : `list`, `banner` (juste la plus récente) ou `sidebar` (panneau flottant) |
+| `reminderScope` | `home` | Où afficher le rappel de reprise : `home`, `home+search` (+ pages de listing) ou `everywhere` (pastille compacte ailleurs) |
+| `breakReminderMinutes` | `0` (désactivé) | Un rappel de pause discret toutes les N minutes pendant la lecture d'une œuvre (30/45/60) |
 | `showPostReadingSuggestions` | activé | Affiche des suggestions de fics sous le contenu d'une œuvre terminée |
-| `queueEnabled` | désactivé | Active la file d'attente de lecture (bouton "+ Queue" et panneau) |
+| `queueEnabled` | désactivé | Active la file d'attente de lecture (bouton "+ Queue" et panneau, priorité low/medium/high, barre de progression) |
+
+Raccourci clavier (pas un réglage de ce module — fourni par `keyboardShortcuts`,
+dépendance optionnelle) : `Alt+R` ouvre la fic la plus récente pas encore
+terminée.
 
 ## Fichiers
 
 ### `_fanficBingeMode.js` — tout le module en un seul fichier
 
 - Affiche une fenêtre "Continue Reading?" quand on arrive presque à la fin du dernier chapitre d'une fic, avec des boutons "Mark as Read", "Bookmark", "Add to MFL" ou "Dismiss"
-- Un compte à rebours optionnel peut rediriger automatiquement vers la page des œuvres si on ne l'annule pas
-- Affiche sur la page d'accueil un bloc listant les 5 dernières fics lues
+- Un compte à rebours optionnel peut rediriger automatiquement vers la fic prioritaire de la file d'attente (ou vers la page des œuvres si la file est vide), si on ne l'annule pas
+- Affiche sur la page d'accueil un bloc listant les fics pas encore terminées (nombre et présentation réglables), avec le temps écoulé depuis la dernière lecture
+- En dehors de la page d'accueil, peut afficher une pastille compacte de reprise (réglage `reminderScope`)
+- Un rappel de pause discret pendant la lecture, si activé
+- Un raccourci clavier (`Alt+R`, via `keyboardShortcuts`) pour reprendre la fic la plus récente
 - Propose des suggestions après avoir fini une fic : d'autres fics du même auteur, d'autres fics de la même série, ou un tag au hasard
 - Ajoute un bouton "+ Queue" sur les listes de fics pour les mettre dans une file d'attente personnelle
-- La file d'attente s'affiche dans un panneau flottant, où on peut réordonner les fics par glisser-déposer, marquer une fic en priorité (⭐), ou la retirer
+- La file d'attente s'affiche dans un panneau flottant, où on peut réordonner les fics par glisser-déposer, cycler leur priorité (⚪/⭐/🌟), voir leur progression de lecture, ou les retirer
 
 ### `fanficBingeMode.css`
 
-- Les styles visuels de la fenêtre, du panneau d'accueil, des suggestions et de la file d'attente
+- Les styles visuels de la fenêtre, du panneau d'accueil (et ses variantes list/banner/sidebar), de la pastille de reprise compacte, des suggestions et de la file d'attente (dont la barre de progression par fic)
+
+### `fanficBingeModeHelpers.js` — calculs purs (ajouté au passage chantier 4)
+
+- Cycle de priorité de la file (`nextPriority`, low → medium → high → low, avec repli des anciennes valeurs `normal` vers `medium`)
+- Choix de la prochaine fic de la file à ouvrir automatiquement (`pickNextQueueEntry`, priorité la plus haute d'abord)
+- Détection qu'une entrée d'historique est encore "à reprendre" (`isResumable`, `resumableEntries`)
 
 ## Specs non implémentés
 
-Ce sont des idées dont on parle dans d'autres docs, mais qui n'existent pas
-vraiment dans ce module (pas de code pour ça) :
+Ce sont des idées dont on parle dans d'autres docs. État après le passage
+chantier 4 (2026-07-18) :
 
-- Reprendre la lecture exactement là où on s'était arrêté (retour à la position précise dans le chapitre, pas juste un lien vers la fic)
-- Passer automatiquement au chapitre suivant d'une série sans avoir à cliquer
-- Suivre combien de temps on passe à lire, combien de fics on a lues, ou combien de mots on a consommés pendant une session
-- Des objectifs de lecture pour une session (par exemple "5 fics" ou "2 heures")
-- Des badges ou des paliers pour les sessions de lecture intensive
-- Des rappels de pause pendant une longue session de lecture
-- Un mode "playlist" pour enchaîner toute une série d'un coup
-- Un mode marathon sans limite
-- Utiliser les modules de suggestions "fics similaires" ou "pépites cachées" pour proposer la suite — en ce moment la suggestion de secours cherche juste par un tag au hasard
-- Trois niveaux de priorité dans la file d'attente (haute/moyenne/basse) — en ce moment il n'y a que deux niveaux (normal/haute)
-- Choisir l'apparence du panneau d'accueil (bannière, fenêtre ou barre latérale) — en ce moment il n'y a qu'une seule présentation
-- Un raccourci clavier pour reprendre sa lecture rapidement
-- Un message de bienvenue au retour sur le site, avec une petite image de la fic et un rappel du genre "Lu il y a 2 heures"
-- Proposer plusieurs fics à reprendre d'un coup, pas seulement la toute dernière lue
-- Choisir où le rappel de reprise doit apparaître : page d'accueil, résultats de recherche, ou partout sur le site
-- Afficher une barre de progression avec le pourcentage déjà lu pour chaque fic dans la file d'attente
-- Passer automatiquement à la fic suivante de la file d'attente, sans avoir à cliquer pour l'ouvrir soi-même
+- ~~Reprendre la lecture exactement là où on s'était arrêté (retour à la position précise dans le chapitre, pas juste un lien vers la fic)~~ ✅ Fait (déjà couvert ailleurs) — `readingTracker`'s `readingProgress.js` possède déjà tout ça : sauvegarde du scroll + pourcentage (`ao3h:rt:progress:{workId}`), bannière "Resume at Chapter X", et un repère visuel (`<hr>`) au dernier paragraphe lu. Ce module se contente déjà de lier vers le bon chapitre (`chapterHref`), ce qui, combiné au repère de readingTracker, donne l'expérience demandée
+- ~~Passer automatiquement au chapitre suivant d'une série sans avoir à cliquer~~ ❌ Écarté — `seriesHelper` a déjà explicitement rejeté un "mode enchaînement automatique" pour la même raison ("jugé trop intrusif"), voir sa section "Explicitement écarté". Même raisonnement ici
+- ~~Suivre combien de temps on passe à lire, combien de fics on a lues, ou combien de mots on a consommés pendant une session~~ ❌ Écarté — `readingDashboard` a déjà écarté le calcul de la vitesse de lecture ("jugé peu fiable sans vraie mesure du temps de lecture") ; une statistique de "session" serait encore moins fiable (onglets multiples, pauses, etc.)
+- ~~Des objectifs de lecture pour une session (par exemple "5 fics" ou "2 heures")~~ ❌ Écarté — `readingDashboard` a déjà écarté les objectifs de lecture chiffrés ("la lecture reste un loisir, pas un objectif chiffré"), même raisonnement
+- ~~Des badges ou des paliers pour les sessions de lecture intensive~~ ❌ Écarté — `readingDashboard` a déjà écarté badges et séries de jours consécutifs ("pour ne pas trop transformer la lecture en jeu"), même raisonnement
+- ~~Des rappels de pause pendant une longue session de lecture~~ ✅ Fait — réglage `breakReminderMinutes` (off/30/45/60), un toast discret pendant qu'on lit une œuvre, tant que l'onglet reste visible. Ne mesure rien à long terme (pas de stat persistée) : simple minuteur remis à zéro à chaque chargement de page, donc pas concerné par la réserve ci-dessus sur la fiabilité des statistiques
+- ~~Un mode "playlist" pour enchaîner toute une série d'un coup~~ ❌ Écarté — même raison que l'enchaînement automatique de série ci-dessus (déjà rejeté par `seriesHelper`)
+- ~~Un mode marathon sans limite~~ ❌ Écarté — reviendrait au même enchaînement automatique jugé trop intrusif ; combiner `continueReadingModal` désactivé et un `autoAdvanceDelay` long donne déjà une lecture ininterrompue pour qui le souhaite
+- ~~Utiliser les modules de suggestions "fics similaires" ou "pépites cachées" pour proposer la suite — en ce moment la suggestion de secours cherche juste par un tag au hasard~~ ❌ Écarté — `ficEngagement`'s `hiddenGems.js` et `similarFics` n'annotent que des éléments déjà présents sur la page ; aucun des deux ne récupère et n'analyse une autre page. Une vraie intégration demanderait à ce module de charger et parser une page de recherche côté client, un changement d'architecture disproportionné par rapport à ses suggestions actuelles (simples liens)
+- ~~Trois niveaux de priorité dans la file d'attente (haute/moyenne/basse) — en ce moment il n'y a que deux niveaux (normal/haute)~~ ✅ Fait — cycle low/medium/high (⚪/⭐/🌟) au clic sur l'étoile, `fanficBingeModeHelpers.js` → `nextPriority()` ; les anciennes entrées `normal` sont traitées comme `medium`
+- ~~Choisir l'apparence du panneau d'accueil (bannière, fenêtre ou barre latérale) — en ce moment il n'y a qu'une seule présentation~~ ✅ Fait — réglage `homepagePanelStyle` (list/banner/sidebar)
+- ~~Un raccourci clavier pour reprendre sa lecture rapidement~~ ✅ Fait — `Alt+R`, enregistré via l'API publique de `keyboardShortcuts` (`W.AO3H_Keyboard.register`, dépendance optionnelle : n'existe que si ce module est aussi activé)
+- ~~Un message de bienvenue au retour sur le site, avec une petite image de la fic et un rappel du genre "Lu il y a 2 heures"~~ ✅ Fait (partiel) — le temps relatif est affiché (`lib/utils/format-date.js` → `relativeDate()`, déjà utilisé par `readingTracker`) ; pas d'image, AO3 n'a pas de notion de couverture/illustration pour une œuvre
+- ~~Proposer plusieurs fics à reprendre d'un coup, pas seulement la toute dernière lue~~ ✅ Fait — le panneau affichait déjà jusqu'à 5 entrées ; désormais filtrées aux œuvres réellement pas terminées (`isResumable()`) et le nombre est réglable (`resumeCount`)
+- ~~Choisir où le rappel de reprise doit apparaître : page d'accueil, résultats de recherche, ou partout sur le site~~ ✅ Fait — réglage `reminderScope` (home/home+search/everywhere) ; en dehors de la page d'accueil, une pastille compacte "📖 Continue: …" apparaît à la place du panneau complet
+- ~~Afficher une barre de progression avec le pourcentage déjà lu pour chaque fic dans la file d'attente~~ ✅ Fait — lit `ao3h:rt:progress:{workId}` (readingTracker, dépendance optionnelle) et affiche une mini barre si la donnée existe
+- ~~Passer automatiquement à la fic suivante de la file d'attente, sans avoir à cliquer pour l'ouvrir soi-même~~ ✅ Fait — quand le compte à rebours d'auto-avance (déjà optionnel, `autoAdvanceDelay`) arrive à zéro, il ouvre la fic de plus haute priorité de la file si elle n'est pas vide, sinon `/works` comme avant
 
 
 
@@ -75,8 +92,16 @@ AO3 Helper — Fanfic Binge Mode
     Storage keys:
         ao3h:mod:fanficBingeMode:settings  -- user settings
         ao3h:fbm:queue                     -- [{ id, title, href, addedAt, priority }]
+                                              (priority: low | medium | high,
+                                              chantier 4 — legacy 'normal' still
+                                              read as medium)
     Reads (soft dependency — graceful fallback if absent):
         ao3h:rt:history            -- readingTracker history list
+        ao3h:rt:progress:{workId}  -- readingTracker per-work scroll/progress
+                                      (chantier 4 — powers the queue's progress
+                                      bar and the resumable-only homepage filter)
+    External API used (soft dependency — no-op if the module isn't active):
+        W.AO3H_Keyboard.register('fbmResume', 'Alt+R', fn)  -- keyboardShortcuts
 
 
 
@@ -105,19 +130,26 @@ Le module **Fanfic Binge Mode** accompagne les sessions de lecture intensive en 
 | Réglage                      | Description                                                                                                              |
 | ---------------------------- |--------------------------------------------------------------------------------------------------------------------------|
 | `continueReadingModal`       | Affiche une fenêtre « Continue Reading? » lorsque l’utilisateur arrive presque à la fin du dernier chapitre d’une œuvre. |
-| `autoAdvanceDelay`           | Définit le délai, en secondes, avant une redirection automatique. La valeur `0` désactive cette fonctionnalité.          |
-| `showHomepagePanel`          | Affiche un bloc « Continue Reading » sur la page d’accueil avec les dernières œuvres lues.                               |
+| `autoAdvanceDelay`           | Définit le délai, en secondes, avant une redirection automatique. La valeur `0` désactive cette fonctionnalité. Redirige vers la fic prioritaire de la file d'attente si elle en contient (chantier 4). |
+| `showHomepagePanel`          | Affiche un bloc « Continue Reading » sur la page d’accueil avec les œuvres pas encore terminées.                          |
+| `resumeCount`                | Nombre d'œuvres affichées dans ce bloc (chantier 4).                                                                     |
+| `homepagePanelStyle`         | Présentation du bloc : liste, bannière (la plus récente seulement), ou barre latérale flottante (chantier 4).            |
+| `reminderScope`              | Où afficher le rappel de reprise : accueil seul, accueil + listes, ou partout (pastille compacte) (chantier 4).          |
+| `breakReminderMinutes`       | Rappel de pause discret toutes les N minutes pendant la lecture (chantier 4).                                            |
 | `showPostReadingSuggestions` | Affiche des suggestions de lecture sous le contenu d’une œuvre terminée.                                                 |
-| `queueEnabled`               | Active la file d’attente de lecture, le bouton « + Queue » et son panneau de gestion.                                    |
+| `queueEnabled`               | Active la file d’attente de lecture, le bouton « + Queue » et son panneau de gestion (priorité low/medium/high, barre de progression — chantier 4). |
 
 ---
 
 # Structure du module
 
-Le module est composé d’un fichier fonctionnel unique et d’une feuille de style.
+Le module est composé d’un fichier fonctionnel unique, d'un fichier de calculs
+purs (`fanficBingeModeHelpers.js`, ajouté au passage chantier 4), et d’une
+feuille de style.
 
 ```text
 _fanficBingeMode.js
+fanficBingeModeHelpers.js
 fanficBingeMode.css
 ```
 
@@ -166,6 +198,10 @@ La valeur :
 
 désactive complètement la redirection automatique.
 
+Depuis le passage chantier 4, si la file d'attente contient des œuvres, la
+redirection ouvre celle de plus haute priorité plutôt que la page générique
+des œuvres.
+
 ---
 
 ### Panneau de la page d’accueil
@@ -178,7 +214,15 @@ Continue Reading
 
 sur la page d’accueil d’AO3.
 
-Ce bloc affiche les cinq dernières œuvres lues afin de permettre à l’utilisateur de les retrouver rapidement.
+Ce bloc affiche les œuvres pas encore terminées (jusqu'à `resumeCount`
+d'entre elles, 5 par défaut), avec le temps écoulé depuis la dernière
+lecture, afin de permettre à l’utilisateur de les retrouver rapidement.
+
+Sa présentation dépend de `homepagePanelStyle` : liste (par défaut),
+bannière (une seule œuvre mise en avant), ou barre latérale flottante.
+
+En dehors de la page d’accueil, une pastille compacte de reprise peut
+apparaître selon `reminderScope` (pages de listing, ou partout).
 
 Les données sont récupérées depuis l’historique du module de suivi de lecture lorsqu’il est disponible.
 
@@ -235,16 +279,28 @@ Depuis ce panneau, l’utilisateur peut :
 
 ### Priorité des œuvres
 
-Une œuvre peut être marquée comme prioritaire à l’aide d’une étoile :
+Chaque œuvre de la file a un niveau de priorité, affiché sous forme d'icône
+et modifiable en cliquant dessus. Depuis le passage chantier 4, trois
+niveaux existent, dans cet ordre cyclique :
 
-```text
-⭐
-```
+* ⚪ basse (`low`) ;
+* ⭐ moyenne (`medium`) ;
+* 🌟 haute (`high`).
 
-Le système actuel utilise deux niveaux :
+Les entrées créées avant ce changement (`normal`) sont traitées comme une
+priorité moyenne.
 
-* priorité normale ;
-* priorité élevée.
+C'est également la priorité qui détermine quelle œuvre de la file est
+ouverte automatiquement par le compte à rebours d'auto-avance : celle de
+plus haut niveau, à égalité l'œuvre ajoutée en premier.
+
+---
+
+### Progression de lecture dans la file
+
+Quand la donnée est disponible (module de suivi de lecture actif et œuvre
+déjà commencée), chaque entrée de la file affiche une petite barre indiquant
+le pourcentage déjà lu.
 
 ---
 
@@ -324,9 +380,24 @@ Le module peut lire l’historique enregistré sous :
 ao3h:rt:history
 ```
 
-Cette dépendance est facultative.
+et, depuis le passage chantier 4, la progression de lecture par œuvre
+enregistrée sous :
 
-Si l’historique du module de suivi de lecture n’est pas disponible, **Fanfic Binge Mode** continue de fonctionner avec un comportement de repli adapté.
+```text
+ao3h:rt:progress:{workId}
+```
+
+Ces deux dépendances sont facultatives : elles proviennent du module de
+suivi de lecture (**readingTracker**).
+
+Depuis le passage chantier 4, le module peut aussi enregistrer un raccourci
+clavier via l'API publique de **keyboardShortcuts** (`W.AO3H_Keyboard`),
+également une dépendance facultative.
+
+Si l'une de ces dépendances n'est pas disponible, **Fanfic Binge Mode**
+continue de fonctionner avec un comportement de repli adapté (pas de
+raccourci, pas de barre de progression, filtrage "à reprendre" toujours actif
+en traitant une complétion inconnue comme non terminée).
 
 ---
 
@@ -352,7 +423,15 @@ Il définit notamment l’apparence :
 
 # Fonctionnalités non implémentées
 
+État après le passage chantier 4 (2026-07-18) — chaque sous-section garde sa
+description d'origine, complétée par une note de résolution.
+
 ## Reprise à la position précise
+
+> ✅ Fait (déjà couvert ailleurs) — `readingTracker`'s `readingProgress.js`
+> sauvegarde déjà le scroll et le pourcentage (`ao3h:rt:progress:{workId}`),
+> affiche une bannière "Resume at Chapter X" et un repère `<hr>` au dernier
+> paragraphe lu. Ce module se contente déjà de lier vers le bon chapitre.
 
 Permettre de reprendre la lecture exactement à l’endroit où elle a été interrompue dans un chapitre.
 
@@ -362,11 +441,18 @@ Le système actuel fournit uniquement un lien vers l’œuvre et ne restaure pas
 
 ## Passage automatique dans une série
 
+> ❌ Écarté — `seriesHelper` a déjà rejeté un mode d'enchaînement
+> automatique de série ("jugé trop intrusif"). Même raisonnement ici.
+
 Passer automatiquement au chapitre ou à l’œuvre suivante d’une série sans intervention de l’utilisateur.
 
 ---
 
 ## Statistiques de session
+
+> ❌ Écarté — `readingDashboard` a déjà écarté le calcul de la vitesse de
+> lecture ("jugé peu fiable sans vraie mesure du temps de lecture") ; une
+> statistique de session serait encore moins fiable.
 
 Suivre pendant une session de lecture intensive :
 
@@ -377,6 +463,9 @@ Suivre pendant une session de lecture intensive :
 ---
 
 ## Objectifs de session
+
+> ❌ Écarté — `readingDashboard` a déjà écarté les objectifs de lecture
+> chiffrés ("la lecture reste un loisir, pas un objectif chiffré").
 
 Permettre de définir un objectif pour une session, par exemple :
 
@@ -394,11 +483,18 @@ ou :
 
 ## Accomplissements de session
 
+> ❌ Écarté — `readingDashboard` a déjà écarté badges et séries de jours
+> consécutifs ("pour ne pas trop transformer la lecture en jeu").
+
 Ajouter des badges ou des paliers propres aux sessions de lecture intensive.
 
 ---
 
 ## Rappels de pause
+
+> ✅ Fait — réglage `breakReminderMinutes` (off/30/45/60), toast discret
+> pendant qu'on lit une œuvre et que l'onglet reste visible ; minuteur simple
+> remis à zéro à chaque chargement de page, pas une statistique persistée.
 
 Afficher des rappels encourageant l’utilisateur à prendre une pause pendant une longue session.
 
@@ -406,17 +502,30 @@ Afficher des rappels encourageant l’utilisateur à prendre une pause pendant u
 
 ## Mode playlist
 
+> ❌ Écarté — même raison que le passage automatique dans une série
+> ci-dessus (déjà rejeté par `seriesHelper`).
+
 Permettre d’enchaîner automatiquement toutes les œuvres d’une série ou d’une sélection préparée.
 
 ---
 
 ## Mode marathon
 
+> ❌ Écarté — reviendrait au même enchaînement automatique jugé trop
+> intrusif ; désactiver `continueReadingModal` et régler un `autoAdvanceDelay`
+> long donne déjà une lecture ininterrompue pour qui le souhaite.
+
 Ajouter un mode de lecture continue sans limite définie.
 
 ---
 
 ## Suggestions avancées
+
+> ❌ Écarté — `hiddenGems.js` (dans `ficEngagement`) et `similarFics`
+> n'annotent que des éléments déjà présents sur la page ; aucun des deux ne
+> récupère et n'analyse une autre page. Une vraie intégration demanderait à
+> ce module de charger et parser une page de recherche côté client, hors de
+> proportion avec ses suggestions actuelles (simples liens).
 
 Utiliser les modules spécialisés dans les œuvres similaires ou les pépites cachées afin de produire des suggestions plus pertinentes.
 
@@ -425,6 +534,10 @@ Le système actuel utilise comme solution de secours une recherche fondée sur u
 ---
 
 ## Priorités multiples
+
+> ✅ Fait — cycle low/medium/high (⚪/⭐/🌟) au clic sur l'étoile
+> (`fanficBingeModeHelpers.js` → `nextPriority()`) ; les anciennes entrées
+> `normal` sont traitées comme `medium`.
 
 Ajouter trois niveaux de priorité dans la file d’attente :
 
@@ -438,6 +551,8 @@ Le système actuel ne distingue que la priorité normale et la priorité élevé
 
 ## Présentation du panneau d’accueil
 
+> ✅ Fait — réglage `homepagePanelStyle` (list/banner/sidebar).
+
 Permettre de choisir la présentation du rappel de continuation parmi plusieurs formats :
 
 * bannière ;
@@ -450,11 +565,18 @@ Une seule présentation est actuellement disponible.
 
 ## Raccourci clavier
 
+> ✅ Fait — `Alt+R`, enregistré via l'API publique de `keyboardShortcuts`
+> (dépendance optionnelle).
+
 Ajouter un raccourci clavier permettant de reprendre rapidement la lecture.
 
 ---
 
 ## Message de retour
+
+> ✅ Fait (partiel) — le temps relatif est affiché (`relativeDate()`,
+> réutilisé depuis `lib/utils/format-date.js`) ; pas d'image, AO3 n'a pas de
+> notion de couverture/illustration pour une œuvre.
 
 Afficher au retour sur AO3 un message de bienvenue contenant :
 
@@ -472,11 +594,17 @@ Lu il y a 2 heures
 
 ## Plusieurs œuvres à reprendre
 
+> ✅ Fait — le panneau affichait déjà jusqu'à 5 entrées ; désormais filtrées
+> aux œuvres réellement pas terminées et le nombre est réglable (`resumeCount`).
+
 Afficher plusieurs propositions de reprise en même temps plutôt que seulement la dernière œuvre lue.
 
 ---
 
 ## Emplacement du rappel
+
+> ✅ Fait — réglage `reminderScope` (home/home+search/everywhere) ; en
+> dehors de la page d'accueil, une pastille compacte remplace le panneau complet.
 
 Permettre de choisir où afficher les rappels de reprise :
 
@@ -488,11 +616,18 @@ Permettre de choisir où afficher les rappels de reprise :
 
 ## Progression dans la file d’attente
 
+> ✅ Fait — lit `ao3h:rt:progress:{workId}` (readingTracker, dépendance
+> optionnelle) et affiche une mini barre si la donnée existe.
+
 Afficher une barre de progression et le pourcentage déjà lu pour chaque œuvre placée dans la file d’attente.
 
 ---
 
 ## Passage automatique à l’œuvre suivante
+
+> ✅ Fait — quand le compte à rebours d'auto-avance (déjà optionnel) arrive
+> à zéro, il ouvre la fic de plus haute priorité de la file si elle n'est pas
+> vide, sinon `/works` comme avant.
 
 Ouvrir automatiquement la prochaine œuvre de la file d’attente lorsque la lecture actuelle est terminée.
 
@@ -502,7 +637,19 @@ Le système actuel exige que l’utilisateur sélectionne lui-même l’œuvre s
 
 # Décisions de conception
 
-Aucune fonctionnalité n’est explicitement indiquée comme définitivement écartée dans la documentation actuelle.
+Plusieurs idées ont été écartées lors du passage chantier 4 (2026-07-18) en
+s'alignant sur des décisions déjà prises par des modules voisins plutôt qu'en
+les retranchant isolément :
+
+- L'enchaînement automatique (série, playlist, mode marathon) reste écarté
+  pour la même raison que `seriesHelper` : jugé trop intrusif.
+- Les statistiques de session, objectifs chiffrés et badges restent écartés
+  pour la même raison que `readingDashboard` : peu fiables à mesurer
+  correctement, et le risque de trop transformer la lecture en jeu.
+- Les suggestions basées sur `similarFics`/`hiddenGems` restent écartées car
+  elles demanderaient à ce module de récupérer et analyser une autre page,
+  un changement d'architecture hors de proportion avec sa conception actuelle
+  (suggestions sous forme de simples liens).
 
 
 

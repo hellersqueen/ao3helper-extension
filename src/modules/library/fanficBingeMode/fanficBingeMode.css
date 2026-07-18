@@ -213,6 +213,49 @@
 /*- Numéro de chapitre affiché après le titre */
 #ao3h-fbm-homepage-panel .ao3h-fbm-meta { font-size: .78em; color: #888; margin-left: 6px; }
 
+/*- Variante "banner" — une seule entrée mise en avant */
+#ao3h-fbm-homepage-panel.ao3h-fbm-hp--banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+#ao3h-fbm-homepage-panel.ao3h-fbm-hp--banner h3 { margin: 0; }
+#ao3h-fbm-homepage-panel.ao3h-fbm-hp--banner div { font-size: .95em; }
+
+/*- Variante "sidebar" — panneau flottant plutôt qu'inséré dans le contenu */
+#ao3h-fbm-homepage-panel.ao3h-fbm-hp--sidebar {
+  position: fixed;
+  top: 80px;
+  right: 16px;
+  width: 220px;
+  z-index: 8000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+  margin: 0;
+}
+
+/*- Pastille de reprise compacte, affichée hors de la page d'accueil
+   quand `reminderScope` vaut "home+search" ou "everywhere" */
+#ao3h-fbm-resume-widget {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 8000;
+  background: var(--ao3h-fbm-color-primary);
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: .85em;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+  max-width: 260px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+#ao3h-fbm-resume-widget:hover { filter: brightness(1.1); }
+
 
 /*=   
   ═══════════════════════════════════════════════════════════════════════
@@ -389,10 +432,24 @@
   font-size: 1em;
   line-height: 1;
   padding: 0 2px;
-  color: #ccc;
 }
 
-#ao3h-fbm-queue-panel li .ao3h-fbm-qp-priority.high { color: #e6a800; }
+/*- Barre de progression de lecture (depuis readingTracker), si connue */
+#ao3h-fbm-queue-panel li .ao3h-fbm-qp-progress {
+  flex-shrink: 0;
+  width: 32px;
+  height: 4px;
+  background: #eee;
+  border-radius: 2px;
+  overflow: hidden;
+  display: inline-block;
+}
+
+#ao3h-fbm-queue-panel li .ao3h-fbm-qp-progress-bar {
+  display: block;
+  height: 100%;
+  background: var(--ao3h-fbm-color-primary);
+}
 
 #ao3h-fbm-queue-panel li .ao3h-fbm-qp-remove {
   background: none;

@@ -35,6 +35,9 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet, observe, onReady } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { relativeDate } from '../../../../lib/utils/format-date.js';
+import { showToast, clearAllToasts } from '../../../../lib/ui/toast.js';
+import { nextPriority, priorityIcon, pickNextQueueEntry, resumableEntries } from './fanficBingeModeHelpers.js';
 import styles from './fanficBingeMode.css?inline';
 
 
@@ -55,10 +58,15 @@ const DEFAULTS = {
   showPostReadingSuggestions : true,
   queueEnabled               : false,
   autoAdvanceDelay           : 0,    // seconds; 0 = disabled
+  resumeCount                : 5,
+  homepagePanelStyle         : 'list',   // list | banner | sidebar
+  reminderScope              : 'home',   // home | home+search | everywhere
+  breakReminderMinutes       : 0,        // 0 = off
 };
 
 const SK_QUEUE    = 'ao3h:fbm:queue';
 const SK_RT_HIST  = 'ao3h:rt:history';  // readingTracker — soft dep
+const SK_RT_PROGRESS_PREFIX = 'ao3h:rt:progress:';  // readingTracker — soft dep
 
 const cfg = makeCfg(MOD, DEFAULTS);
 
@@ -186,7 +194,8 @@ function showContinueModal () {
       remaining--;
       if (remaining <= 0) {
         removeModal();
-        location.href = '/works';
+        const next = pickNextQueueEntry(getQueue());
+        location.href = next ? (next.href || `/works/${next.id}`) : '/works';
       } else {
         update();
       }
@@ -200,28 +209,74 @@ function showContinueModal () {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const HP_PANEL_ID = `${NS}-fbm-homepage-panel`;
+const RESUME_WIDGET_ID = `${NS}-fbm-resume-widget`;
+
+function getResumableEntries () {
+  const history = lsGet(SK_RT_HIST) || [];
+  return resumableEntries(history, cfg('resumeCount'));
+}
+
+function buildResumeItemHTML (entry) {
+  const title = entry.title ? entry.title.replace(/</g, '&lt;') : `Work ${entry.id}`;
+  const href  = entry.chapterHref || entry.href || `/works/${entry.id}`;
+  const ch    = entry.chapter ? `<span class="${NS}-fbm-meta">Ch ${entry.chapter}</span>` : '';
+  const ago   = entry.lastReadAt ? relativeDate(entry.lastReadAt) : null;
+  const agoEl = ago ? `<span class="${NS}-fbm-meta">${ago}</span>` : '';
+  return `<li><a href="${href}">${title}</a>${ch}${agoEl}</li>`;
+}
 
 function injectHomepagePanel () {
   if (document.getElementById(HP_PANEL_ID)) return;
 
-  const history = lsGet(SK_RT_HIST) || [];
-  const recent  = history.slice(0, 5);
+  const recent = getResumableEntries();
   if (recent.length === 0) return;
 
-  const panel   = document.createElement('div');
-  panel.id      = HP_PANEL_ID;
+  const style = cfg('homepagePanelStyle') || 'list';
+  const panel = document.createElement('div');
+  panel.id    = HP_PANEL_ID;
+  panel.className = `${NS}-fbm-hp--${style}`;
 
-  const items   = recent.map(entry => {
-    const title = entry.title ? entry.title.replace(/</g, '&lt;') : `Work ${entry.id}`;
-    const href  = entry.chapterHref || entry.href || `/works/${entry.id}`;
-    const ch    = entry.chapter ? `<span class="${NS}-fbm-meta">Ch ${entry.chapter}</span>` : '';
-    return `<li><a href="${href}">${title}</a>${ch}</li>`;
-  }).join('');
+  if (style === 'banner') {
+    // Banner: a single prominent entry — the most recently read work
+    panel.innerHTML = `<h3>Continue Reading</h3>${buildResumeItemHTML(recent[0]).replace('<li>', '<div>').replace('</li>', '</div>')}`;
+  } else {
+    const items = recent.map(buildResumeItemHTML).join('');
+    panel.innerHTML = `<h3>Continue Reading</h3><ul>${items}</ul>`;
+  }
 
-  panel.innerHTML = `<h3>Continue Reading</h3><ul>${items}</ul>`;
+  if (style === 'sidebar') {
+    document.body.appendChild(panel);  // fixed position, see CSS
+  } else {
+    const main = document.getElementById('main') || document.querySelector('#content .inner');
+    if (main) main.insertAdjacentElement('afterbegin', panel);
+  }
+}
 
-  const main = document.getElementById('main') || document.querySelector('#content .inner');
-  if (main) main.insertAdjacentElement('afterbegin', panel);
+// Compact "📖 Continue: <title>" pill for pages that aren't the homepage,
+// shown when reminderScope extends past 'home'.
+function injectResumeWidget () {
+  if (document.getElementById(RESUME_WIDGET_ID)) return;
+  const [entry] = getResumableEntries();
+  if (!entry) return;
+
+  const title = entry.title ? entry.title.replace(/</g, '&lt;') : `Work ${entry.id}`;
+  const href  = entry.chapterHref || entry.href || `/works/${entry.id}`;
+  const widget = document.createElement('a');
+  widget.id        = RESUME_WIDGET_ID;
+  widget.href      = href;
+  widget.innerHTML = `📖 Continue: ${title}`;
+  document.body.appendChild(widget);
+}
+
+function maybeInjectReminders () {
+  const scope = cfg('reminderScope') || 'home';
+
+  if (cfg('showHomepagePanel') && isHomePage()) injectHomepagePanel();
+
+  if (scope === 'home') return;
+  if (isHomePage()) return; // homepage already has the full panel above
+  if (scope === 'home+search' && !isListPage()) return;
+  injectResumeWidget();
 }
 
 const SUGG_ID  = `${NS}-fbm-suggestions`;
@@ -287,7 +342,7 @@ function isInQueue (workId) { return getQueue().some(e => e.id === workId); }
 function addToQueue (workId, title, href) {
   const queue = getQueue();
   if (queue.some(e => e.id === workId)) return;
-  queue.push({ id: workId, title, href, addedAt: Date.now(), priority: 'normal' });
+  queue.push({ id: workId, title, href, addedAt: Date.now(), priority: 'medium' });
   saveQueue(queue);
   refreshQueuePanel();
 }
@@ -300,12 +355,17 @@ function removeFromQueue (workId) {
 function togglePriority (workId) {
   const queue = getQueue();
   const entry = queue.find(e => e.id === workId);
-  if (entry) entry.priority = entry.priority === 'high' ? 'normal' : 'high';
+  if (entry) entry.priority = nextPriority(entry.priority);
   saveQueue(queue);
   refreshQueuePanel();
 }
 
-// Build a single <li> element with drag, priority, link and remove controls
+function getReadProgress (workId) {
+  const progress = lsGet(`${SK_RT_PROGRESS_PREFIX}${workId}`);
+  return typeof progress?.progress === 'number' ? progress.progress : null;
+}
+
+// Build a single <li> element with drag, priority, progress, link and remove controls
 function buildQueueItem (e) {
   const li  = document.createElement('li');
   li.dataset.id = e.id;
@@ -313,12 +373,17 @@ function buildQueueItem (e) {
 
   const safeTitle = e.title?.replace(/</g, '&lt;') ?? `Work ${e.id}`;
   const safeAttr  = e.title?.replace(/"/g, '&quot;') ?? '';
-  const isHigh    = e.priority === 'high';
+  const icon      = priorityIcon(e.priority);
+  const pct       = getReadProgress(e.id);
+  const progressEl = pct !== null
+    ? `<span class="${NS}-fbm-qp-progress" title="${pct}% read"><span class="${NS}-fbm-qp-progress-bar" style="width:${pct}%"></span></span>`
+    : '';
 
   li.innerHTML = `
     <span class="${NS}-fbm-qp-drag" title="Drag to reorder">&#9776;</span>
     <a href="${e.href}" title="${safeAttr}">${safeTitle}</a>
-    <button class="${NS}-fbm-qp-priority${isHigh ? ' high' : ''}" data-id="${e.id}" title="${isHigh ? 'High priority — click to reset' : 'Set high priority'}">&#9733;</button>
+    ${progressEl}
+    <button class="${NS}-fbm-qp-priority" data-id="${e.id}" title="Priority: ${e.priority || 'medium'} — click to cycle">${icon}</button>
     <button class="${NS}-fbm-qp-remove" data-id="${e.id}" title="Remove">&times;</button>`;
 
   return li;
@@ -444,6 +509,38 @@ function startObserver () {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — BREAK REMINDER
+═══════════════════════════════════════════════════════════════════════════ */
+
+// Coarse elapsed-active-time counter (visible tab only) — deliberately simple,
+// not a persisted lifetime stat (see fanficBingeMode.md for why session stats
+// and goals were dropped: unreliable without a real time measurement, and
+// this project avoids turning reading into a numbers game).
+const BREAK_TICK_MS = 30000;
+let _breakInterval  = null;
+let _breakElapsedMs = 0;
+
+function startBreakReminder (minutes) {
+  stopBreakReminder();
+  _breakElapsedMs = 0;
+  const thresholdMs = minutes * 60000;
+  _breakInterval = setInterval(() => {
+    if (document.visibilityState !== 'visible') return;
+    _breakElapsedMs += BREAK_TICK_MS;
+    if (_breakElapsedMs >= thresholdMs) {
+      _breakElapsedMs = 0;
+      showToast('You’ve been reading for a while — maybe take a break? 🌿', { type: 'info', duration: 6000 });
+    }
+  }, BREAK_TICK_MS);
+}
+
+function stopBreakReminder () {
+  if (_breakInterval) { clearInterval(_breakInterval); _breakInterval = null; }
+  _breakElapsedMs = 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
    MODULE LIFECYCLE
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -457,13 +554,12 @@ register(MOD, {
   // report, l'appendChild/l'observer plantaient (Cannot read properties of
   // null), constaté sur plusieurs modules similaires en test.
   let active = true;
+  let unregisterShortcut = null;
   onReady(() => {
     if (!active) return;
 
-    // Homepage panel
-    if (cfg('showHomepagePanel') && isHomePage()) {
-      injectHomepagePanel();
-    }
+    // Homepage panel + compact resume widget on other pages
+    maybeInjectReminders();
 
     // Continue-reading modal (work pages, last chapter, 95% scroll)
     if (cfg('continueReadingModal') && isWorkPage() && isLastChapter()) {
@@ -481,6 +577,18 @@ register(MOD, {
       if (isListPage()) addQueueButtonsToBlurbs();
       startObserver();
     }
+
+    // Break reminder (work pages only — that's where a "session" happens)
+    if (cfg('breakReminderMinutes') > 0 && isWorkPage()) {
+      startBreakReminder(cfg('breakReminderMinutes'));
+    }
+
+    // Keyboard shortcut to jump to the top resumable work (soft dep)
+    unregisterShortcut = W.AO3H_Keyboard?.register('fbmResume', 'Alt+R', () => {
+      const [entry] = getResumableEntries();
+      if (entry) location.href = entry.chapterHref || entry.href || `/works/${entry.id}`;
+      return true;
+    }) || null;
   });
 
   return function cleanup () {
@@ -493,6 +601,7 @@ register(MOD, {
     }
     // Homepage panel
     document.getElementById(HP_PANEL_ID)?.remove();
+    document.getElementById(RESUME_WIDGET_ID)?.remove();
     // Suggestions
     document.getElementById(SUGG_ID)?.remove();
     // Queue
@@ -500,5 +609,11 @@ register(MOD, {
     document.querySelectorAll(`.${QUEUE_BTN_CLASS}`).forEach(el => el.remove());
     _observer?.disconnect();
     _observer = null;
+    // Break reminder
+    stopBreakReminder();
+    clearAllToasts();
+    // Keyboard shortcut
+    unregisterShortcut?.();
+    unregisterShortcut = null;
   };
 });
