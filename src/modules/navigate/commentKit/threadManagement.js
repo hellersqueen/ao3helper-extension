@@ -22,6 +22,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import { observe } from '../../../../lib/utils/index.js';
+import { shouldAutoCollapse } from './commentKitHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -35,6 +36,8 @@ const NS   = 'ao3h';
 const DEFAULTS = {
   collapseExpandButtons : true,
   unreadTracking        : false,
+  autoCollapseThreshold : '0', // '0' = off, else reply count above which a thread auto-collapses
+  showQuoteReplyButton  : true,
 };
 
 const cfg = makeCfg('commentKit', DEFAULTS);
@@ -56,14 +59,25 @@ function saveJSON (key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch (_) {}
 }
 
+/**
+ * Manual per-thread collapse overrides: { [commentId]: true|false }. A
+ * present key always wins over the auto-collapse threshold (shouldAutoCollapse).
+ * Legacy shape was { ts, collapsed: [ids] } — every listed id was explicitly
+ * collapsed, so it migrates 1:1 into manual[id] = true.
+ */
 function loadCollapseState (workId) {
-  const data = loadJSON(collapseKey(workId), { ts: 0, collapsed: [] });
-  if (Date.now() - (data.ts || 0) > MAX_AGE_MS) return [];
-  return Array.isArray(data.collapsed) ? data.collapsed : [];
+  const data = loadJSON(collapseKey(workId), { ts: 0, manual: {} });
+  if (Date.now() - (data.ts || 0) > MAX_AGE_MS) return {};
+  if (Array.isArray(data.collapsed)) {
+    const manual = {};
+    data.collapsed.forEach(id => { manual[id] = true; });
+    return manual;
+  }
+  return data.manual && typeof data.manual === 'object' ? data.manual : {};
 }
 
-function saveCollapseState (workId, collapsedIds) {
-  saveJSON(collapseKey(workId), { ts: Date.now(), collapsed: collapsedIds });
+function saveCollapseState (workId, manual) {
+  saveJSON(collapseKey(workId), { ts: Date.now(), manual });
 }
 
 function loadSeenIds (workId) {
@@ -129,10 +143,10 @@ const CSS = `
    FEATURE — THREAD COLLAPSING
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function setupCollapse (workId) {
-  const collapsed = new Set(loadCollapseState(workId));
+function setupCollapse (workId, threshold) {
+  const manual = loadCollapseState(workId);
 
-  function persist () { saveCollapseState(workId, [...collapsed]); }
+  function persist () { saveCollapseState(workId, manual); }
 
   function addButton (comment) {
     if (comment.querySelector(`.${NS}-collapse-btn`)) return;
@@ -142,25 +156,27 @@ function setupCollapse (workId) {
     if (!thread) return;
 
     const id = comment.id; // e.g. "comment_12345"
+    const replyCount = thread.querySelectorAll('li.comment').length;
+    const isCollapsed = shouldAutoCollapse(replyCount, threshold, manual[id]);
 
     const btn = D.createElement('button');
     btn.type      = 'button';
     btn.className = `${NS}-collapse-btn`;
     btn.title     = 'Toggle thread';
-    btn.textContent = collapsed.has(id) ? 'Expand' : 'Collapse';
+    btn.textContent = isCollapsed ? 'Expand' : 'Collapse';
 
-    if (collapsed.has(id)) comment.classList.add(`${NS}-thread-collapsed`);
+    if (isCollapsed) comment.classList.add(`${NS}-thread-collapsed`);
 
     btn.addEventListener('click', () => {
-      const isCollapsed = collapsed.has(id);
-      if (isCollapsed) {
-        collapsed.delete(id);
+      const nowCollapsed = comment.classList.contains(`${NS}-thread-collapsed`);
+      if (nowCollapsed) {
         comment.classList.remove(`${NS}-thread-collapsed`);
         btn.textContent = 'Collapse';
+        manual[id] = false;
       } else {
-        collapsed.add(id);
         comment.classList.add(`${NS}-thread-collapsed`);
         btn.textContent = 'Expand';
+        manual[id] = true;
       }
       persist();
     });
@@ -198,7 +214,7 @@ function setupCollapse (workId) {
       D.querySelectorAll('li.comment[id]').forEach(c => {
         const thread = c.querySelector(':scope > ol.thread, :scope > .thread');
         if (!thread) return;
-        collapsed.add(c.id);
+        manual[c.id] = true;
         c.classList.add(`${NS}-thread-collapsed`);
         const btn = c.querySelector(`.${NS}-collapse-btn`);
         if (btn) btn.textContent = 'Expand';
@@ -212,7 +228,7 @@ function setupCollapse (workId) {
     expandAll.textContent = '⊞ Expand all';
     expandAll.addEventListener('click', () => {
       D.querySelectorAll('li.comment[id]').forEach(c => {
-        collapsed.delete(c.id);
+        manual[c.id] = false;
         c.classList.remove(`${NS}-thread-collapsed`);
         const btn = c.querySelector(`.${NS}-collapse-btn`);
         if (btn) btn.textContent = 'Collapse';
@@ -225,6 +241,75 @@ function setupCollapse (workId) {
     commentsSection.before(bar);
   }
 
+  return processAll;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — QUOTE & REPLY
+═══════════════════════════════════════════════════════════════════════════ */
+
+function getCommentHeaderAuthor (comment) {
+  const a = comment.querySelector(
+    ':scope > .comment-reply > h4.heading a[href*="/users/"], :scope > .thread > .comment-reply > h4.heading a[href*="/users/"]'
+  );
+  return a ? a.textContent.trim() : 'them';
+}
+
+function getCommentExcerpt (comment) {
+  const bq = comment.querySelector(
+    ':scope > .comment-reply blockquote.userstuff, :scope > .thread > .comment-reply blockquote.userstuff'
+  );
+  const text = bq ? bq.textContent.trim() : '';
+  return text.length > 150 ? `${text.slice(0, 147)}…` : text;
+}
+
+function findReplyLink (comment) {
+  const links = comment.querySelectorAll(':scope > .comment-reply ul.actions a, :scope > ul.actions a');
+  return Array.from(links).find(a => /^reply$/i.test((a.textContent || '').trim()));
+}
+
+/** AO3 lazily injects the reply form via its own AJAX — poll briefly for its textarea. */
+function waitForReplyTextarea (comment, cb, tries = 15) {
+  const ta = comment.querySelector('textarea[name="comment[comment_content]"], textarea#comment_content');
+  if (ta) { cb(ta); return; }
+  if (tries <= 0) return;
+  setTimeout(() => waitForReplyTextarea(comment, cb, tries - 1), 200);
+}
+
+function addQuoteReplyButton (comment) {
+  if (comment.querySelector(`.${NS}-quote-reply-btn`)) return;
+
+  const btn = D.createElement('button');
+  btn.type      = 'button';
+  btn.className = `${NS}-quote-reply-btn`;
+  btn.title     = 'Quote this comment in your reply';
+  btn.textContent = '❝ Reply';
+  btn.addEventListener('click', () => {
+    const existingTa = comment.querySelector('textarea[name="comment[comment_content]"], textarea#comment_content');
+    if (!existingTa) findReplyLink(comment)?.click();
+    waitForReplyTextarea(comment, (ta) => {
+      const quote = `<blockquote>${getCommentHeaderAuthor(comment)} wrote: "${getCommentExcerpt(comment)}"</blockquote>\n\n`;
+      if (!ta.value.startsWith(quote)) ta.value = quote + ta.value;
+      ta.focus();
+      ta.setSelectionRange(ta.value.length, ta.value.length);
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  });
+
+  const actions = comment.querySelector(':scope > .comment-reply ul.actions, :scope > ul.actions');
+  if (actions) {
+    const li = D.createElement('li');
+    li.appendChild(btn);
+    actions.appendChild(li);
+  } else {
+    const heading = comment.querySelector(':scope > .comment-reply h4.heading, :scope > h4.heading');
+    if (heading) heading.appendChild(btn);
+  }
+}
+
+function setupQuoteReply () {
+  const processAll = () => D.querySelectorAll('li.comment[id]').forEach(addQuoteReplyButton);
+  processAll();
   return processAll;
 }
 
@@ -289,26 +374,35 @@ register(MOD, {
   const workId = extractWorkIdFromHref(W.location.pathname);
   if (!workId) return () => {};
 
-  let processNew = null;
+  let processCollapse = null;
+  let processQuoteReply = null;
 
   if (cfg('collapseExpandButtons')) {
-    processNew = setupCollapse(workId);
+    const threshold = parseInt(cfg('autoCollapseThreshold'), 10) || 0;
+    processCollapse = setupCollapse(workId, threshold);
+  }
+
+  if (cfg('showQuoteReplyButton')) {
+    processQuoteReply = setupQuoteReply();
   }
 
   if (cfg('unreadTracking')) {
     setupUnread(workId);
   }
 
-  // Rien à observer si collapseExpandButtons est désactivé (processNew reste
-  // null) : pas d'objet MutationObserver inerte, juste rien à connecter.
-  const obs = processNew
-    ? observe(D.body, { childList: true, subtree: true }, () => processNew?.())
+  // Rien à observer si aucune des deux fonctionnalités par-commentaire n'est
+  // active : pas d'objet MutationObserver inerte, juste rien à connecter.
+  const obs = (processCollapse || processQuoteReply)
+    ? observe(D.body, { childList: true, subtree: true }, () => {
+        processCollapse?.();
+        processQuoteReply?.();
+      })
     : null;
 
   return () => {
     obs?.disconnect();
     D.querySelectorAll(
-      `.${NS}-collapse-btn, .${NS}-thread-bulk-bar, .${NS}-thread-bulk-btn, .${NS}-new-badge`
+      `.${NS}-collapse-btn, .${NS}-thread-bulk-bar, .${NS}-thread-bulk-btn, .${NS}-new-badge, .${NS}-quote-reply-btn`
     ).forEach(el => el.remove());
     D.querySelectorAll(`.${NS}-thread-collapsed`)
       .forEach(el => el.classList.remove(`${NS}-thread-collapsed`));

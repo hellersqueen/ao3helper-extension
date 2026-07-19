@@ -31,6 +31,7 @@ const NS   = 'ao3h';
 const DEFAULTS = {
   chapterIndicator:   true,   // show chapter badge on inbox comments
   guestCommentsDefault: false, // auto-tick "Allow guest comments" on new works
+  commentDensity: 'normal',   // 'normal' | 'compact' | 'spacious'
 };
 const guestCheckboxStates = new Map();
 
@@ -79,6 +80,19 @@ function applyGuestCommentDefault () {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — COMMENT DISPLAY DENSITY
+═══════════════════════════════════════════════════════════════════════════ */
+
+const DENSITY_CLASS_PREFIX = `${NS}-comment-density-`;
+
+function applyCommentDensity (mode) {
+  document.documentElement.classList.remove(`${DENSITY_CLASS_PREFIX}compact`, `${DENSITY_CLASS_PREFIX}spacious`);
+  if (mode === 'compact' || mode === 'spacious') {
+    document.documentElement.classList.add(`${DENSITY_CLASS_PREFIX}${mode}`);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    FEATURE LIFECYCLE
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -104,6 +118,8 @@ register(MOD, {
     if (cfg('guestCommentsDefault')) {
       applyGuestCommentDefault();
     }
+
+    applyCommentDensity(cfg('commentDensity'));
   });
 
   return () => {
@@ -115,5 +131,6 @@ register(MOD, {
       delete checkbox.dataset.ao3hDefault;
     });
     guestCheckboxStates.clear();
+    applyCommentDensity('normal');
   };
 });

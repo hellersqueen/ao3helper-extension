@@ -22,6 +22,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import { observe } from '../../../../lib/utils/index.js';
+import { draftKeyFor, draftScopeForForm } from './commentKitHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -48,30 +49,38 @@ const DRAFT_PREFIX  = `${NS}:draft:`;
 const MAX_AGE_MS    = 30 * 24 * 60 * 60 * 1000; // 30 days
 const DEBOUNCE_MS   = 500;
 
-function draftKey (workId) { return `${DRAFT_PREFIX}${workId}`; }
+/**
+ * The nearest ancestor comment's id, if `form` is a reply form nested inside
+ * an existing comment — used to scope its draft separately from the
+ * top-level new-comment form (and from other comments' reply forms), so
+ * writing in two reply boxes at once doesn't overwrite either draft.
+ */
+function parentCommentIdFor (form) {
+  return form.closest('li.comment')?.id || null;
+}
 
-function saveDraft (workId, content) {
+function saveDraft (key, content) {
   try {
     if (content.trim()) {
-      localStorage.setItem(draftKey(workId), JSON.stringify({ content, ts: Date.now() }));
+      localStorage.setItem(key, JSON.stringify({ content, ts: Date.now() }));
     } else {
-      localStorage.removeItem(draftKey(workId));
+      localStorage.removeItem(key);
     }
   } catch (_) {}
 }
 
-function loadDraft (workId) {
+function loadDraft (key) {
   try {
-    const raw = localStorage.getItem(draftKey(workId));
+    const raw = localStorage.getItem(key);
     if (!raw) return null;
     const { content, ts } = JSON.parse(raw);
-    if (Date.now() - ts > MAX_AGE_MS) { localStorage.removeItem(draftKey(workId)); return null; }
+    if (Date.now() - ts > MAX_AGE_MS) { localStorage.removeItem(key); return null; }
     return content || null;
   } catch (_) { return null; }
 }
 
-function clearDraft (workId) {
-  try { localStorage.removeItem(draftKey(workId)); } catch (_) {}
+function clearDraft (key) {
+  try { localStorage.removeItem(key); } catch (_) {}
 }
 
 function pruneOldDrafts () {
@@ -91,13 +100,31 @@ function pruneOldDrafts () {
    FEATURE — FLOATING COMMENT BOX
 ═══════════════════════════════════════════════════════════════════════════ */
 
+const BOX_POS_KEY = `${NS}:commentKit:floatingBoxPos`;
+
+function loadBoxPos () {
+  try { return JSON.parse(localStorage.getItem(BOX_POS_KEY)); } catch { return null; }
+}
+function saveBoxPos (pos) {
+  try { localStorage.setItem(BOX_POS_KEY, JSON.stringify(pos)); } catch (_) {}
+}
+
 function buildFloatingBox (form, textarea) {
   const box = D.createElement('div');
   box.className = `${NS}-floating-box ${NS}-float-box-widget`;
 
+  const savedPos = loadBoxPos();
+  if (savedPos) {
+    box.style.left = `${savedPos.left}px`;
+    box.style.top  = `${savedPos.top}px`;
+    box.style.right = 'auto';
+    box.style.bottom = 'auto';
+  }
+
   // Header
   const header = D.createElement('div');
   header.className = `${NS}-floating-box-header`;
+  header.title = 'Drag to move';
   const title = D.createElement('span');
   title.textContent = '💬 Comment';
   const toggleBtn = D.createElement('button');
@@ -107,6 +134,35 @@ function buildFloatingBox (form, textarea) {
   toggleBtn.title = 'Minimize';
   header.appendChild(title);
   header.appendChild(toggleBtn);
+
+  // Dragging (mouse only — this is a desktop convenience widget)
+  let dragging = false, dragDX = 0, dragDY = 0;
+  const onDragMove = (e) => {
+    if (!dragging) return;
+    const left = e.clientX - dragDX;
+    const top  = e.clientY - dragDY;
+    box.style.left = `${left}px`;
+    box.style.top  = `${top}px`;
+    box.style.right = 'auto';
+    box.style.bottom = 'auto';
+  };
+  const onDragEnd = () => {
+    if (!dragging) return;
+    dragging = false;
+    const rect = box.getBoundingClientRect();
+    saveBoxPos({ left: rect.left, top: rect.top });
+  };
+  const onDragStart = (e) => {
+    if (e.target === toggleBtn) return;
+    dragging = true;
+    const rect = box.getBoundingClientRect();
+    dragDX = e.clientX - rect.left;
+    dragDY = e.clientY - rect.top;
+    e.preventDefault();
+  };
+  header.addEventListener('mousedown', onDragStart);
+  D.addEventListener('mousemove', onDragMove);
+  D.addEventListener('mouseup', onDragEnd);
 
   // Body
   const body = D.createElement('div');
@@ -167,6 +223,9 @@ function buildFloatingBox (form, textarea) {
     io.disconnect();
     floatTA.removeEventListener('input', onFloatInput);
     textarea.removeEventListener('input', onRealInput);
+    header.removeEventListener('mousedown', onDragStart);
+    D.removeEventListener('mousemove', onDragMove);
+    D.removeEventListener('mouseup', onDragEnd);
     box.remove();
   };
 }
@@ -186,11 +245,12 @@ function enhanceForm (form, workId) {
   if (!textarea) return;
 
   const cleanups = [];
+  const draftKey = draftKeyFor(workId, draftScopeForForm(parentCommentIdFor(form)));
 
   // ── Auto-save ────────────────────────────────────────────────────────
   if (cfg('enableAutoSave') && workId) {
     // Restore draft
-    const saved = loadDraft(workId);
+    const saved = loadDraft(draftKey);
     if (saved && !textarea.value.trim()) {
       textarea.value = saved;
 
@@ -217,16 +277,16 @@ function enhanceForm (form, workId) {
     let timer = null;
     const onInput = () => {
       clearTimeout(timer);
-      timer = setTimeout(() => saveDraft(workId, textarea.value), DEBOUNCE_MS);
+      timer = setTimeout(() => saveDraft(draftKey, textarea.value), DEBOUNCE_MS);
     };
     textarea.addEventListener('input', onInput);
-    const onBeforeUnload = () => saveDraft(workId, textarea.value);
+    const onBeforeUnload = () => saveDraft(draftKey, textarea.value);
     W.addEventListener('beforeunload', onBeforeUnload);
 
     // Clear draft on submit
     let submitTimer = null;
     const onSubmit = () => { submitTimer = setTimeout(() => {
-      if (!textarea.value.trim()) clearDraft(workId);
+      if (!textarea.value.trim()) clearDraft(draftKey);
     }, 1000); };
     form.addEventListener('submit', onSubmit);
 

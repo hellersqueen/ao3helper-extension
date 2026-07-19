@@ -22,6 +22,8 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { observe } from '../../../../lib/utils/index.js';
+import { getWorkTitle, getWorkAuthor } from '../../../../lib/ao3/work-page.js';
+import { fillTemplateVariables, filterTemplates } from './commentKitHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -37,12 +39,15 @@ const DEFAULTS = {
   showQuickTemplates    : false,
   commentTemplates      : false,
   enablePreview         : true,
+  quoteFicSelection     : true,
 };
 
 const cfg = makeCfg('commentKit', DEFAULTS);
 
 const TEMPLATES_KEY = `${NS}:commentComposing:templates`;
 
+// {title} and {author} are substituted with the current work's title/author
+// at insertion time (fillTemplateVariables) — works for custom templates too.
 const DEFAULT_TEMPLATES = [
   'Loved this! ❤️',
   'This was so good!',
@@ -52,6 +57,7 @@ const DEFAULT_TEMPLATES = [
   'Thank you for sharing this! 💖',
   'The characterization is spot on!',
   'This deserves all the kudos!',
+  'I loved {title}! Thank you for writing this, {author}.',
 ];
 
 function loadTemplates () {
@@ -87,10 +93,12 @@ function buildToolbar (textarea, cleanups) {
   toolbar.className = `${NS}-format-toolbar ${NS}-composing-toolbar`;
 
   const BUTTONS = [
-    { label: 'B',  title: 'Bold (Ctrl+B)',   before: '<b>',           after: '</b>',           placeholder: 'bold text'   },
-    { label: 'I',  title: 'Italic (Ctrl+I)', before: '<i>',           after: '</i>',           placeholder: 'italic text' },
-    { label: '🔗', title: 'Link (Ctrl+K)',   before: null,            after: null,             action: 'link'             },
-    { label: '❝',  title: 'Quote',           before: '<blockquote>',  after: '</blockquote>',  placeholder: 'quoted text' },
+    { label: 'B',  title: 'Bold (Ctrl+B)',   before: '<b>',           after: '</b>',           placeholder: 'bold text'      },
+    { label: 'I',  title: 'Italic (Ctrl+I)', before: '<i>',           after: '</i>',           placeholder: 'italic text'    },
+    { label: 'U',  title: 'Underline',       before: '<u>',           after: '</u>',           placeholder: 'underlined text' },
+    { label: 'S',  title: 'Strikethrough',   before: '<s>',           after: '</s>',           placeholder: 'struck text'     },
+    { label: '🔗', title: 'Link (Ctrl+K)',   before: null,            after: null,             action: 'link'                },
+    { label: '❝',  title: 'Quote',           before: '<blockquote>',  after: '</blockquote>',  placeholder: 'quoted text'    },
   ];
 
   BUTTONS.forEach(({ label, title, before, after, placeholder, action }) => {
@@ -138,6 +146,13 @@ function buildTemplatesPanel (textarea) {
   const container = D.createElement('div');
   container.className = `${NS}-templates-panel ${NS}-composing-templates`;
 
+  const search = D.createElement('input');
+  search.type = 'search';
+  search.className = `${NS}-templates-search`;
+  search.placeholder = 'Search your templates…';
+  search.hidden = true;
+  container.appendChild(search);
+
   const row = D.createElement('div');
   row.className = `${NS}-templates-row`;
   container.appendChild(row);
@@ -147,17 +162,24 @@ function buildTemplatesPanel (textarea) {
   container.appendChild(managePanel);
 
   function refreshButtons () {
+    const all = loadTemplates();
+    search.hidden = all.length <= 5;
+    const visible = filterTemplates(all, search.value);
     row.innerHTML = '';
 
-    loadTemplates().forEach(text => {
+    visible.forEach(text => {
       const btn = D.createElement('button');
       btn.type      = 'button';
       btn.className = `${NS}-template-btn`;
       btn.textContent = text.length > 30 ? text.slice(0, 28) + '…' : text;
       btn.title     = text;
       btn.addEventListener('click', () => {
+        const filled = fillTemplateVariables(text, {
+          title: getWorkTitle() || '',
+          author: getWorkAuthor()?.name || '',
+        });
         const cur = textarea.value;
-        textarea.value = cur ? `${cur}\n\n${text}` : text;
+        textarea.value = cur ? `${cur}\n\n${filled}` : filled;
         textarea.focus();
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
       });
@@ -244,6 +266,7 @@ function buildTemplatesPanel (textarea) {
     managePanel.appendChild(actions);
   }
 
+  search.addEventListener('input', refreshButtons);
   refreshButtons();
   return container;
 }
@@ -270,7 +293,20 @@ function sanitiseHTML (raw) {
   return div.innerHTML;
 }
 
-function buildPreviewToggle (textarea, cleanups) {
+/** "Posting as Guest: Name" or "Posting as username", or '' when undetectable. */
+function postingAsLabel (form) {
+  const nameField = form.querySelector('#comment_name, input[name="comment[name]"]');
+  const emailField = form.querySelector('#comment_email, input[name="comment[email]"]');
+  if (nameField || emailField) {
+    const name = /** @type {HTMLInputElement} */ (nameField)?.value.trim();
+    return `Posting as Guest${name ? `: ${name}` : ''}`;
+  }
+  const me = D.querySelector('#header .user a[href^="/users/"]');
+  const m = me?.href.match(/\/users\/([^/]+)/);
+  return m ? `Posting as ${decodeURIComponent(m[1])}` : '';
+}
+
+function buildPreviewToggle (form, textarea, cleanups) {
   const btn = D.createElement('button');
   btn.type      = 'button';
   btn.className = `${NS}-preview-toggle-btn ${NS}-composing-preview-btn`;
@@ -279,20 +315,20 @@ function buildPreviewToggle (textarea, cleanups) {
   const preview = D.createElement('div');
   preview.className = `${NS}-comment-preview ${NS}-composing-preview-box`;
 
+  const renderPreview = () => {
+    const label = postingAsLabel(form);
+    const labelHtml = label ? `<div class="${NS}-comment-preview-as">${label}</div>` : '';
+    preview.innerHTML = labelHtml + (sanitiseHTML(textarea.value) || '<em style="color:#999">Nothing to preview yet.</em>');
+  };
+
   btn.addEventListener('click', () => {
     const open = preview.classList.toggle('open');
     btn.classList.toggle('active', open);
-    if (open) {
-      preview.innerHTML = sanitiseHTML(textarea.value) || '<em style="color:#999">Nothing to preview yet.</em>';
-    }
+    if (open) renderPreview();
   });
 
   // Keep preview in sync while it's open
-  const onInput = () => {
-    if (preview.classList.contains('open')) {
-      preview.innerHTML = sanitiseHTML(textarea.value) || '<em style="color:#999">Nothing to preview yet.</em>';
-    }
-  };
+  const onInput = () => { if (preview.classList.contains('open')) renderPreview(); };
   textarea.addEventListener('input', onInput);
   cleanups.push(() => textarea.removeEventListener('input', onInput));
 
@@ -328,7 +364,7 @@ function enhanceForm (form) {
   }
 
   if (cfg('enablePreview')) {
-    const { btn, preview } = buildPreviewToggle(textarea, cleanups);
+    const { btn, preview } = buildPreviewToggle(form, textarea, cleanups);
     textarea.after(preview);
     textarea.after(btn);
     cleanups.push(() => { btn.remove(); preview.remove(); });
@@ -338,6 +374,65 @@ function enhanceForm (form) {
 
 function enhanceAll () {
   D.querySelectorAll('form.comment.new, form.comment.edit').forEach(enhanceForm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — QUOTE A FIC-TEXT SELECTION INTO THE MAIN COMMENT BOX
+═══════════════════════════════════════════════════════════════════════════ */
+
+let quotePopup = null;
+
+function removeQuotePopup () {
+  quotePopup?.remove();
+  quotePopup = null;
+}
+
+function isInFicProse (node) {
+  const el = node instanceof Element ? node : node?.parentElement;
+  const prose = el?.closest?.('.userstuff');
+  return !!prose && !prose.closest('li.comment') && !prose.closest('form.comment.new, form.comment.edit');
+}
+
+function setupQuoteFicSelection (cleanups) {
+  const onMouseUp = () => {
+    removeQuotePopup();
+    const sel = W.getSelection?.();
+    const text = sel?.toString().trim();
+    if (!text || !sel.rangeCount || !isInFicProse(sel.anchorNode)) return;
+
+    const rect = sel.getRangeAt(0).getBoundingClientRect();
+    quotePopup = D.createElement('button');
+    quotePopup.type = 'button';
+    quotePopup.className = `${NS}-quote-fic-popup`;
+    quotePopup.textContent = '❝ Quote in comment';
+    quotePopup.style.top  = `${rect.bottom + W.scrollY + 4}px`;
+    quotePopup.style.left = `${rect.left + W.scrollX}px`;
+
+    quotePopup.addEventListener('mousedown', (e) => e.preventDefault()); // keep the selection alive
+    quotePopup.addEventListener('click', () => {
+      const target = D.querySelector('form.comment.new textarea[name="comment[comment_content]"], form.comment.new textarea#comment_content');
+      if (target) {
+        const quote = `<blockquote>${text}</blockquote>\n\n`;
+        target.value = target.value ? `${target.value}\n\n${quote}` : quote;
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.focus();
+      }
+      removeQuotePopup();
+    });
+
+    D.body.appendChild(quotePopup);
+  };
+
+  D.addEventListener('mouseup', onMouseUp);
+  const onDocMouseDown = (e) => { if (e.target !== quotePopup) removeQuotePopup(); };
+  D.addEventListener('mousedown', onDocMouseDown);
+
+  cleanups.push(() => {
+    D.removeEventListener('mouseup', onMouseUp);
+    D.removeEventListener('mousedown', onDocMouseDown);
+    removeQuotePopup();
+  });
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -353,9 +448,13 @@ register(MOD, {
 
   const obs = observe(D.body, { childList: true, subtree: true }, enhanceAll);
 
+  const globalCleanups = [];
+  if (cfg('quoteFicSelection')) setupQuoteFicSelection(globalCleanups);
+
   return () => {
     obs.disconnect();
     formCleanups.forEach(cleanup => cleanup());
     formCleanups.clear();
+    globalCleanups.forEach(cleanup => cleanup());
   };
 });

@@ -21,6 +21,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { observe } from '../../../../lib/utils/index.js';
+import { parseHighlightRules, matchesCustomHighlight } from './commentKitHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -34,6 +35,8 @@ const NS   = 'ao3h';
 const DEFAULTS = {
   highlightAuthorReplies : false,
   highlightRepliesToMe   : true,
+  authorFilterMode       : 'off', // 'off' | 'hide' | 'only'
+  customHighlights       : '',    // comma-separated usernames/keywords
 };
 
 const cfg = makeCfg('commentKit', DEFAULTS);
@@ -100,7 +103,16 @@ function getParentCommentAuthor (comment) {
   return null;
 }
 
-function processComment (comment, authorNames, myName, doAuthors, doReplies) {
+/** Own comment text (not nested replies' text). */
+function getCommentText (comment) {
+  const bq = comment.querySelector(
+    ':scope > .comment-reply blockquote.userstuff, :scope > .thread > .comment-reply blockquote.userstuff'
+  );
+  return bq ? bq.textContent.trim() : '';
+}
+
+function processComment (comment, ctx) {
+  const { authorNames, myName, doAuthors, doReplies, filterMode, highlightRules } = ctx;
   if (comment.dataset[`${NS}Highlighted`]) return;
   comment.dataset[`${NS}Highlighted`] = '1';
 
@@ -108,8 +120,9 @@ function processComment (comment, authorNames, myName, doAuthors, doReplies) {
   if (!author) return;
 
   const heading = comment.querySelector('h4.heading.byline');
+  const isAuthorComment = authorNames.has(author);
 
-  if (doAuthors && authorNames.has(author)) {
+  if (doAuthors && isAuthorComment) {
     comment.classList.add(`${NS}-author-comment`);
     if (heading && !heading.querySelector(`.${NS}-author-badge`)) {
       const badge = D.createElement('span');
@@ -131,12 +144,25 @@ function processComment (comment, authorNames, myName, doAuthors, doReplies) {
       }
     }
   }
+
+  if (filterMode !== 'off') {
+    const shouldHide = filterMode === 'hide' ? isAuthorComment : !isAuthorComment;
+    comment.classList.toggle(`${NS}-filter-hidden`, shouldHide);
+  }
+
+  if (highlightRules.length && matchesCustomHighlight({ author, text: getCommentText(comment) }, highlightRules)) {
+    comment.classList.add(`${NS}-custom-highlight-comment`);
+    if (heading && !heading.querySelector(`.${NS}-custom-highlight-badge`)) {
+      const badge = D.createElement('span');
+      badge.className = `${NS}-custom-highlight-badge`;
+      badge.textContent = '★';
+      heading.appendChild(badge);
+    }
+  }
 }
 
-function processAll (authorNames, myName, doAuthors, doReplies) {
-  D.querySelectorAll('li.comment').forEach(c =>
-    processComment(c, authorNames, myName, doAuthors, doReplies)
-  );
+function processAll (ctx) {
+  D.querySelectorAll('li.comment').forEach(c => processComment(c, ctx));
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -150,28 +176,34 @@ register(MOD, {
 }, async function init () {
   if (!/^\/works\/\d+/.test(W.location.pathname)) return () => {};
 
-  const doAuthors = cfg('highlightAuthorReplies');
-  const doReplies = cfg('highlightRepliesToMe');
-  if (!doAuthors && !doReplies) return () => {};
+  const doAuthors     = cfg('highlightAuthorReplies');
+  const doReplies     = cfg('highlightRepliesToMe');
+  const filterMode    = cfg('authorFilterMode');
+  const highlightRules = parseHighlightRules(cfg('customHighlights'));
+  if (!doAuthors && !doReplies && filterMode === 'off' && !highlightRules.length) return () => {};
 
-  const authorNames = getWorkAuthors();
-  const myName      = getMyUsername();
+  const ctx = {
+    authorNames: getWorkAuthors(),
+    myName: getMyUsername(),
+    doAuthors, doReplies, filterMode, highlightRules,
+  };
 
-  processAll(authorNames, myName, doAuthors, doReplies);
+  processAll(ctx);
 
-  const obs = observe(D.body, { childList: true, subtree: true }, () =>
-    processAll(authorNames, myName, doAuthors, doReplies)
-  );
+  const obs = observe(D.body, { childList: true, subtree: true }, () => processAll(ctx));
 
   return () => {
     obs.disconnect();
     D.querySelectorAll(
-      `.${NS}-author-comment, .${NS}-reply-to-me-comment`
+      `.${NS}-author-comment, .${NS}-reply-to-me-comment, .${NS}-filter-hidden, .${NS}-custom-highlight-comment`
     ).forEach(el => {
-      el.classList.remove(`${NS}-author-comment`, `${NS}-reply-to-me-comment`);
+      el.classList.remove(
+        `${NS}-author-comment`, `${NS}-reply-to-me-comment`,
+        `${NS}-filter-hidden`, `${NS}-custom-highlight-comment`
+      );
       delete el.dataset[`${NS}Highlighted`];
     });
-    D.querySelectorAll(`.${NS}-author-badge, .${NS}-reply-badge`)
+    D.querySelectorAll(`.${NS}-author-badge, .${NS}-reply-badge, .${NS}-custom-highlight-badge`)
       .forEach(el => el.remove());
   };
 });
