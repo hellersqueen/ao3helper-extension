@@ -23,7 +23,9 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { getBlurbStats } from '../../../../lib/ao3/work-stats.js';
+import { parseChapterCount } from '../../../../lib/ao3/parsers.js';
 import { buildKudosRatioBadge, RATIO_BADGE_CLASS } from '../../../../lib/ui/badges.js';
+import { scoreForMode } from './resultsSortingHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -39,9 +41,12 @@ const SORT_SK = `${NS}:se:sort`;
 // Settings are shared across all searchEnhancer children and saved by the
 // panel under the parent module id (explore/searchEnhancer-config.js).
 const DEFAULTS = {
-  sortByKudosRatio: true,
-  sortBySaveRate:   true,
-  showRatioInline:  true,
+  sortByKudosRatio:      true,
+  sortBySaveRate:        true,
+  showRatioInline:       true,
+  sortByKudosPerChapter: true,
+  sortByRecentActivity:  true,
+  sortByBalanced:        true,
 };
 function readCfg () {
   return loadModuleSettings('searchEnhancer', DEFAULTS);
@@ -60,20 +65,32 @@ function isListingPage () {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const SORT_MODES = [
-  { value: 'default',     label: 'Default order' },
-  { value: 'kudos_ratio', label: 'Kudos ratio (kudos÷hits)' },
-  { value: 'save_rate',   label: 'Save rate (bookmarks÷kudos)' },
-  { value: 'kudos',       label: 'Kudos (high to low)' },
-  { value: 'hits',        label: 'Hits (high to low)' },
+  { value: 'default',           label: 'Default order' },
+  { value: 'kudos_ratio',       label: 'Kudos ratio (kudos÷hits)' },
+  { value: 'save_rate',         label: 'Save rate (bookmarks÷kudos)' },
+  { value: 'kudos',             label: 'Kudos (high to low)' },
+  { value: 'hits',              label: 'Hits (high to low)' },
+  { value: 'kudos_per_chapter', label: 'Kudos per chapter' },
+  { value: 'recent',            label: 'Recently updated' },
+  { value: 'balanced',          label: 'Balanced (kudos ratio + recency)' },
 ];
+
+// AO3 renders the update date as <abbr class="datetime" title="YYYY-MM-DD">
+// inside the blurb's stats block (same markup readingTracker's seenTracking
+// reads for its "Updated" badge).
+function getBlurbUpdatedAt (blurb) {
+  const abbr = blurb.querySelector('abbr.datetime[title], p.datetime abbr[title]');
+  const title = abbr?.getAttribute('title');
+  if (!title) return null;
+  const ts = Date.parse(title);
+  return Number.isNaN(ts) ? null : ts;
+}
 
 function scoreBlurb (blurb, mode) {
   const { kudos, hits, bookmarks } = getBlurbStats(blurb);
-  if (mode === 'kudos_ratio') return hits > 0 ? kudos / hits : 0;
-  if (mode === 'save_rate')   return kudos > 0 ? bookmarks / kudos : 0;
-  if (mode === 'kudos')       return kudos;
-  if (mode === 'hits')        return hits;
-  return 0; // default = no reorder
+  const { published: chapters } = parseChapterCount(blurb.querySelector('dd.chapters'));
+  const updatedAt = getBlurbUpdatedAt(blurb);
+  return scoreForMode(mode, { kudos, hits, bookmarks, chapters, updatedAt });
 }
 
 // Badge partagé avec ficEngagement (browse) — voir lib/ui/badges.js
@@ -109,8 +126,11 @@ function injectSortBar (container, blurbs, originalPositions, cfg) {
 
   const options = SORT_MODES
     .filter(m => {
-      if (m.value === 'kudos_ratio' && !cfg.sortByKudosRatio) return false;
-      if (m.value === 'save_rate'   && !cfg.sortBySaveRate)   return false;
+      if (m.value === 'kudos_ratio'       && !cfg.sortByKudosRatio)      return false;
+      if (m.value === 'save_rate'         && !cfg.sortBySaveRate)        return false;
+      if (m.value === 'kudos_per_chapter' && !cfg.sortByKudosPerChapter) return false;
+      if (m.value === 'recent'            && !cfg.sortByRecentActivity) return false;
+      if (m.value === 'balanced'          && !cfg.sortByBalanced)        return false;
       return true;
     })
     .map(m => `<option value="${m.value}"${m.value === savedMode ? ' selected' : ''}>${m.label}</option>`)
@@ -198,7 +218,8 @@ register(
     if (cfg.showRatioInline) addRatioBadges(blurbs);
 
     // Sort toolbar
-    if (cfg.sortByKudosRatio || cfg.sortBySaveRate) {
+    if (cfg.sortByKudosRatio || cfg.sortBySaveRate || cfg.sortByKudosPerChapter ||
+        cfg.sortByRecentActivity || cfg.sortByBalanced) {
       injectSortBar(container, blurbs, originalPositions, cfg);
     }
 

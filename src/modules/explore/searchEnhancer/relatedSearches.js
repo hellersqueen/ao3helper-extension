@@ -2,14 +2,18 @@
 
 AO3 Helper - Search Enhancer › Related Searches
 
-Suggests related tags and recent queries from the current search context, with
-one-click controls for applying a refinement or opening a new search.
+Suggests related tags and recent queries from the current search context,
+built-in quick-search templates, locally-derived search insights, and a
+short refinement tip based on the result count — with one-click controls for
+applying a refinement or opening a new search.
 
 Notes
 
 - Related tags come from a curated local co-occurrence table.
 - Suggestion results are cached for seven days.
 - Active filters are excluded and displayed suggestions are capped at eight.
+- Insights (top searches, trending, fandom bars) are derived entirely from
+  the local search history — no network calls, no crawling.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -23,6 +27,10 @@ import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { createPersistedCache } from '../../../../lib/storage/cache.js';
+import {
+  topSearches, trendingSearches, fandomBarData, buildRefinementTip,
+  QUICK_TEMPLATES, buildTemplateUrl,
+} from './searchHistoryHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -39,6 +47,9 @@ const DEFAULTS = {
   tagSuggestions:          true,
   historyBasedSuggestions: true,
   suggestionWorkCount:     true,
+  searchTemplates:         true,
+  searchInsights:          true,
+  refinementTips:          true,
 };
 function readCfg () {
   return loadModuleSettings('searchEnhancer', DEFAULTS);
@@ -135,10 +146,52 @@ function addTagToSearch (tag) {
   }
 }
 
-function renderPanel (suggestions, cfg, historyQueries) {
+function buildSectionHtml (title, bodyHtml, spaced) {
+  return `
+    <div class="${NS}-se-related-title${spaced ? ` ${NS}-se-related-title--spaced` : ''}">${title}</div>
+    ${bodyHtml}
+  `;
+}
+
+function buildTemplatesHtml () {
+  const links = QUICK_TEMPLATES
+    .map(t => `<a class="${NS}-se-tag-pill ${NS}-se-template-pill" href="${escapeHtml(buildTemplateUrl(location.href, t.params))}">${escapeHtml(t.label)}</a>`)
+    .join('');
+  return buildSectionHtml('⚡ Quick templates', `<div class="${NS}-se-related-tags">${links}</div>`);
+}
+
+function buildInsightsHtml (history) {
+  const top = topSearches(history);
+  const trending = trendingSearches(history);
+  const fandoms = fandomBarData(history);
+  if (!top.length && !trending.length && !fandoms.length) return '';
+
+  const topHtml = top.length
+    ? `<div class="${NS}-se-insights-row">Most searched: ${top.map(t => `${escapeHtml(t.query)} (${t.count}×)`).join(', ')}</div>`
+    : '';
+  const trendingHtml = trending.length
+    ? `<div class="${NS}-se-insights-row">📈 Trending for you: ${trending.map(escapeHtml).join(', ')}</div>`
+    : '';
+  const fandomHtml = fandoms.length
+    ? `<div class="${NS}-se-fandom-bars">${fandoms.map(f => `
+        <div class="${NS}-se-fandom-bar-row">
+          <span class="${NS}-se-fandom-bar-label">${escapeHtml(f.fandom)}</span>
+          <span class="${NS}-se-fandom-bar-track"><span class="${NS}-se-fandom-bar-fill" style="width:${f.pct}%"></span></span>
+          <span class="${NS}-se-fandom-bar-count">${f.count}</span>
+        </div>`).join('')}</div>`
+    : '';
+
+  return buildSectionHtml('📊 Your search insights', `${topHtml}${trendingHtml}${fandomHtml}`, true);
+}
+
+function renderPanel (suggestions, cfg, historyQueries, { fullHistory = [], resultCount = null } = {}) {
   const hasSuggestions = suggestions.length > 0;
   const hasHistory     = cfg.historyBasedSuggestions && historyQueries.length > 0;
-  if (!hasSuggestions && !hasHistory) return;
+  const hasTemplates    = cfg.searchTemplates;
+  const insightsHtml    = cfg.searchInsights && fullHistory.length >= 3 ? buildInsightsHtml(fullHistory) : '';
+  const tip              = cfg.refinementTips && resultCount != null ? buildRefinementTip(resultCount) : null;
+
+  if (!hasSuggestions && !hasHistory && !hasTemplates && !insightsHtml && !tip) return;
 
   const pills = suggestions
     .slice(0, 8)
@@ -162,17 +215,14 @@ function renderPanel (suggestions, cfg, historyQueries) {
   panelEl = document.createElement('div');
   panelEl.className = `${NS}-se-related-panel`;
   panelEl.innerHTML = `
-    ${hasSuggestions ? `
-      <div class="${NS}-se-related-title">🏷 You might also like</div>
-      <div class="${NS}-se-related-tags">${pills}</div>
-    ` : ''}
-    ${hasHistory ? `
-      <div class="${NS}-se-related-title${hasSuggestions ? ` ${NS}-se-related-title--spaced` : ''}">🕐 From your history</div>
-      <div class="${NS}-se-related-tags">${historyPills}</div>
-    ` : ''}
+    ${tip ? `<div class="${NS}-se-tip">💡 ${escapeHtml(tip)}</div>` : ''}
+    ${hasSuggestions ? buildSectionHtml('🏷 You might also like', `<div class="${NS}-se-related-tags">${pills}</div>`) : ''}
+    ${hasHistory ? buildSectionHtml('🕐 From your history', `<div class="${NS}-se-related-tags">${historyPills}</div>`, hasSuggestions) : ''}
+    ${hasTemplates ? buildTemplatesHtml() : ''}
+    ${insightsHtml}
   `;
 
-  panelEl.querySelectorAll(`.${NS}-se-tag-pill`).forEach(pill => {
+  panelEl.querySelectorAll(`.${NS}-se-tag-pill:not(.${NS}-se-template-pill)`).forEach(pill => {
     pill.addEventListener('click', () => addTagToSearch(pill.dataset.tag));
   });
 
@@ -193,16 +243,21 @@ register(
     const cfg = readCfg();
     console.log(LOG, 'init', cfg);
 
-    if (!cfg.tagSuggestions && !cfg.historyBasedSuggestions) return;
+    const anyFeatureOn = cfg.tagSuggestions || cfg.historyBasedSuggestions ||
+      cfg.searchTemplates || cfg.searchInsights || cfg.refinementTips;
+    if (!anyFeatureOn) return;
     if (!isSearchPage()) return;
 
     const activeTags = getActiveTags();
     const historyQueries = cfg.historyBasedSuggestions ? historyLoad() : [];
+    const fullHistory = cfg.searchInsights ? historyLoad() : [];
+    // A results count of 0 only means something once a search actually ran
+    // (query params present, or a /tags/*/works page) — a blank search form
+    // also has zero blurbs and shouldn't trigger a "no results" tip.
+    const searchWasRun = location.search.includes('work_search') || /^\/tags\/.*\/works/.test(location.pathname);
+    const resultCount  = searchWasRun ? document.querySelectorAll('li.work.blurb').length : null;
 
-    if (!activeTags.length && !historyQueries.length) return;
-
-    const suggestions = activeTags.length ? getSuggestions(activeTags) : [];
-    renderPanel(suggestions, cfg, historyQueries);
+    renderPanel(activeTags.length ? getSuggestions(activeTags) : [], cfg, historyQueries, { fullHistory, resultCount });
 
     return function cleanup () {
       panelEl?.remove();

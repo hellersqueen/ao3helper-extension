@@ -20,6 +20,9 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { lsGet } from '../../../../lib/utils/index.js';
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { sortGroupsByReadHistory } from './seriesGroupingHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -52,6 +55,14 @@ function isListingPage () {
 
 const WRAP_CLS = `${NS}-se-series-group`;
 
+// L'historique de visites de readingTracker est une dépendance souple : sans
+// lui (module désactivé ou aucune visite), le tri "history" retombe
+// simplement sur l'ordre d'insertion, comme avant.
+function loadReadWorkIds () {
+  const history = lsGet('ao3h:rt:history') || [];
+  return new Set(history.map(e => String(e.id)).filter(Boolean));
+}
+
 function groupSeriesByWork (container, cfg) {
   const blurbs = Array.from(container.querySelectorAll('li.work.blurb'));
   const groups = new Map(); // seriesTitle → [blurb]
@@ -62,8 +73,11 @@ function groupSeriesByWork (container, cfg) {
     if (seriesEl) {
       const link = seriesEl.querySelector('a[href*="/series/"]');
       const key  = link ? link.href : seriesEl.textContent.trim();
-      if (!groups.has(key)) groups.set(key, { label: seriesEl.textContent.trim(), blurbs: [] });
-      groups.get(key).blurbs.push(blurb);
+      if (!groups.has(key)) groups.set(key, { label: seriesEl.textContent.trim(), blurbs: [], workIds: [] });
+      const group = groups.get(key);
+      group.blurbs.push(blurb);
+      const workId = extractWorkIdFromBlurb(blurb);
+      if (workId) group.workIds.push(workId);
     } else {
       ungrouped.push(blurb);
     }
@@ -77,8 +91,11 @@ function groupSeriesByWork (container, cfg) {
     groupEntries.sort((a, b) => a.label.localeCompare(b.label));
   } else if (cfg.fandomSortMode === 'popularity') {
     groupEntries.sort((a, b) => b.blurbs.length - a.blurbs.length);
+  } else if (cfg.fandomSortMode === 'history') {
+    // Real reading history: series with more actually-visited works first,
+    // instead of just the order they appear on the page.
+    groupEntries = sortGroupsByReadHistory(groupEntries, loadReadWorkIds());
   }
-  // 'history' = insertion order (no sort needed)
 
   // Remove all blurbs from DOM temporarily
   blurbs.forEach(b => b.remove());

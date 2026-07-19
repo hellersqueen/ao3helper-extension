@@ -8,7 +8,8 @@ adds quick-search controls beside listing tags and author links.
 Notes
 
 - Search history is deduplicated and capped at 25 entries.
-- Remote AO3 tag autocomplete remains a documented future implementation.
+- The main query field's dropdown merges local history with AO3's own
+  `/autocomplete/tag` suggestions (same-origin fetch, silently no-ops offline).
 - Modifier activation opens quick searches in a new tab.
 
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -22,6 +23,7 @@ import { register } from '../../../core/lifecycle.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet, onReady, observe } from '../../../../lib/utils/index.js';
+import { fuzzyFilterHistory, extractFandomFromContext } from './searchHistoryHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -35,8 +37,9 @@ const LOG  = `[AO3H][${MOD}]`;
 // Settings are shared across all searchEnhancer children and saved by the
 // panel under the parent module id (explore/searchEnhancer-config.js).
 const DEFAULTS = {
-  searchHistory:   true,
-  tagAutocomplete: true,
+  searchHistory:        true,
+  tagAutocomplete:      true,
+  historyTypoTolerance: true,
 };
 function readCfg () {
   return loadModuleSettings('searchEnhancer', DEFAULTS);
@@ -50,20 +53,20 @@ function readCfg () {
 const HIST_KEY = `${NS}:se:history`;
 const HIST_MAX = 25;
 
-/** @typedef {{ query: string, ts: number }} HistoryItem */
-/** @typedef {{ searchHistory: boolean, tagAutocomplete: boolean }} SearchAutocompleteConfig */
+/** @typedef {{ query: string, ts: number, fandom?: string|null }} HistoryItem */
+/** @typedef {{ searchHistory: boolean, tagAutocomplete: boolean, historyTypoTolerance: boolean }} SearchAutocompleteConfig */
 
 /** @returns {HistoryItem[]} */
 function historyLoad () { return lsGet(HIST_KEY) || []; }
 /** @param {HistoryItem[]} list */
 function historySave (list) { lsSet(HIST_KEY, list); }
 
-/** @param {string} query */
-function historyPush (query) {
+/** @param {string} query @param {string|null} [fandom] */
+function historyPush (query, fandom = null) {
   if (!query?.trim()) return;
   const q = query.trim();
   let list = historyLoad().filter(e => e.query !== q);
-  list.unshift({ query: q, ts: Date.now() });
+  list.unshift({ query: q, ts: Date.now(), fandom: fandom || null });
   if (list.length > HIST_MAX) list = list.slice(0, HIST_MAX);
   historySave(list);
 }
@@ -86,6 +89,9 @@ let activeIdx    = -1;
 /** @type {ReturnType<typeof setTimeout>|null} */
 let debounceTimer = null;
 const DEBOUNCE_MS = 300;
+// Guards against an older, slower fetchTagAutocomplete() response landing
+// after the user has kept typing and a newer request is already in flight.
+let inputRequestId = 0;
 
 function closeDropdown () {
   dropdown?.remove();
@@ -94,24 +100,39 @@ function closeDropdown () {
 }
 
 /** @param {HistoryItem[]} items */
-function buildDropdownItems (items) {
+function buildHistoryItemsHtml (items) {
   return items.map((item, i) => `
     <div class="${NS}-se-ac-item" data-idx="${i}" data-query="${escapeHtml(item.query)}">
       <span class="${NS}-se-ac-icon">🕐</span>
       <span class="${NS}-se-ac-query">${escapeHtml(item.query)}</span>
       <span class="${NS}-se-ac-ts">${formatTs(item.ts)}</span>
-    </div>`).join('') +
-    `<div class="${NS}-se-ac-clear" data-action="clear">Clear history</div>`;
+    </div>`).join('');
 }
 
-/** @param {HTMLInputElement} input @param {HistoryItem[]} items */
-function showDropdown (input, items) {
+/** @param {{name:string, icon:string}[]} items */
+function buildTagItemsHtml (items) {
+  return items.map((item, i) => `
+    <div class="${NS}-se-ac-item ${NS}-se-ac-tag-item" data-idx="hist-${items.length}-${i}" data-query="${escapeHtml(item.name)}">
+      <span class="${NS}-se-ac-icon">${item.icon}</span>
+      <span class="${NS}-se-ac-query">${escapeHtml(item.name)}</span>
+    </div>`).join('');
+}
+
+/**
+ * @param {HTMLInputElement} input
+ * @param {HistoryItem[]} historyItems
+ * @param {{name:string, icon:string}[]} tagItems
+ */
+function showDropdown (input, historyItems, tagItems = []) {
   closeDropdown();
-  if (!items.length) return;
+  if (!historyItems.length && !tagItems.length) return;
 
   dropdown = document.createElement('div');
   dropdown.className = `${NS}-se-autocomplete`;
-  dropdown.innerHTML = buildDropdownItems(items);
+  dropdown.innerHTML =
+    buildHistoryItemsHtml(historyItems) +
+    buildTagItemsHtml(tagItems) +
+    (historyItems.length ? `<div class="${NS}-se-ac-clear" data-action="clear">Clear history</div>` : '');
 
   // Position below input
   const rect = input.getBoundingClientRect();
@@ -135,8 +156,42 @@ function showDropdown (input, items) {
   });
 }
 
-/** @param {string} query @param {HistoryItem[]} list */
-function filterHistory (query, list) {
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — REAL AO3 TAG AUTOCOMPLETE
+═══════════════════════════════════════════════════════════════════════════ */
+
+// AO3's own tag suggestions come back as [{ id, name }], with `name` often
+// including a usage count like "Angst (28,571)" — stripped before use.
+// Some responses also carry a category via `type`/`class` (e.g. "Fandom"),
+// used only to pick an icon; missing/unknown categories fall back to 🏷.
+const TAG_TYPE_ICON = { fandom: '🌐', character: '👤', relationship: '💞', freeform: '#' };
+
+function cleanTagName (name) {
+  return String(name || '').replace(/\s*\(\d[\d,]*\)\s*$/, '').trim();
+}
+
+function iconForTagResult (item) {
+  const type = String(item?.type || item?.class || '').toLowerCase();
+  return TAG_TYPE_ICON[type] || '🏷';
+}
+
+/** @param {string} term @returns {Promise<{name:string, icon:string}[]>} */
+async function fetchTagAutocomplete (term) {
+  try {
+    const res = await fetch(`/autocomplete/tag?term=${encodeURIComponent(term)}`, { credentials: 'same-origin' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data.slice(0, 8).map(item => ({ name: cleanTagName(item.name), icon: iconForTagResult(item) }))
+      .filter(item => item.name);
+  } catch {
+    return []; // offline, blocked, or unexpected response shape — fail silently
+  }
+}
+
+/** @param {string} query @param {HistoryItem[]} list @param {boolean} typoTolerant */
+function filterHistory (query, list, typoTolerant = true) {
+  if (typoTolerant) return fuzzyFilterHistory(list, query);
   const q = query.toLowerCase();
   return q.length >= 2
     ? list.filter(e => e.query.toLowerCase().includes(q))
@@ -175,20 +230,24 @@ function handleKey (e, input) {
 function attachToInput (input, cfg, cleanup_fns) {
   const onInput = () => {
     if (debounceTimer !== null) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
+    debounceTimer = setTimeout(async () => {
       const val = input.value;
+      const requestId = ++inputRequestId;
 
-      // History-based suggestions
-      if (cfg.searchHistory) {
-        const history = historyLoad();
-        const filtered = filterHistory(val, history);
-        if (filtered.length) { showDropdown(input, filtered); return; }
-      }
+      const historyItems = cfg.searchHistory
+        ? filterHistory(val, historyLoad(), cfg.historyTypoTolerance)
+        : [];
 
-      // Tag autocomplete via AO3 endpoint (stub — pending implementation)
-      // When cfg.tagAutocomplete is true and val.length >= 2, this would
-      // call AO3's /autocomplete/tag?term=... and merge results into dropdown.
-      // Deferred: requires GM_xmlhttpRequest + response parsing.
+      // AO3's own canonical tags, merged in alongside history suggestions —
+      // this input has no native AO3 autocomplete of its own (unlike the
+      // dedicated fandom/character/relationship fields), that's the gap
+      // the `tagAutocomplete` setting fills.
+      const tagItems = (cfg.tagAutocomplete && val.trim().length >= 2)
+        ? await fetchTagAutocomplete(val.trim())
+        : [];
+
+      if (requestId !== inputRequestId) return; // stale response, input changed since
+      showDropdown(input, historyItems, tagItems);
     }, DEBOUNCE_MS);
   };
 
@@ -203,7 +262,15 @@ function attachToInput (input, cfg, cleanup_fns) {
   const onBlur = () => setTimeout(closeDropdown, 150);
 
   const onFormSubmit = () => {
-    if (input.value.trim()) historyPush(input.value.trim());
+    if (!input.value.trim()) return;
+    const fandomField = input.form?.querySelector(
+      'input[name="work_search[fandom_names]"], input[name*="fandom_names"]'
+    );
+    const fandom = extractFandomFromContext({
+      pathname: location.pathname,
+      fandomFieldValue: fandomField?.value,
+    });
+    historyPush(input.value.trim(), fandom);
   };
 
   input.addEventListener('input', onInput);
@@ -308,9 +375,10 @@ register(
     console.log(LOG, 'init', cfg);
 
     // Reset per-boot state
-    dropdown     = null;
-    activeIdx    = -1;
+    dropdown      = null;
+    activeIdx     = -1;
     debounceTimer = null;
+    inputRequestId = 0;
 
     /** @type {Array<() => void>} */
     const cleanup_fns = [];

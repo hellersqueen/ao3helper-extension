@@ -138,6 +138,9 @@
 .ao3h-se-ac-query { flex: 1; }
 .ao3h-se-ac-ts { font-size: .75em; opacity: .55; }
 
+/*- Suggestions venant du vrai autocomplete AO3 (/autocomplete/tag), pas de l'historique local */
+.ao3h-se-ac-tag-item { border-left: 2px solid var(--ao3h-se-color-accent); }
+
 /*+ ─────────────────────────────────────────────────────────────
     Bouton "Effacer l'historique"
   ────────────────────────────────────────────────────────────── */
@@ -203,6 +206,50 @@
 .ao3h-se-tag-pill:hover { background: #ede0ff; }
 
 .ao3h-se-tag-count { font-size: .78em; opacity: .65; margin-left: 3px; }
+
+/*+ ─────────────────────────────────────────────────────────────
+    Astuce d'affinage, modèles de recherche, aperçu des habitudes
+  ────────────────────────────────────────────────────────────── */
+
+.ao3h-se-tip {
+  font-size: .85em;
+  color: var(--ao3h-se-color-accent);
+  margin-bottom: 8px;
+}
+
+.ao3h-se-template-pill { text-decoration: none; }
+
+.ao3h-se-insights-row {
+  font-size: .85em;
+  color: #555;
+  margin: 3px 0;
+}
+
+.ao3h-se-fandom-bars { margin-top: 4px; }
+
+.ao3h-se-fandom-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .82em;
+  margin: 2px 0;
+}
+
+.ao3h-se-fandom-bar-label { width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ao3h-se-fandom-bar-track {
+  flex: 1;
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ao3h-se-fandom-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--ao3h-se-color-accent);
+  border-radius: 4px;
+}
+.ao3h-se-fandom-bar-count { opacity: .65; width: 1.5em; text-align: right; }
 
 
 /*=
