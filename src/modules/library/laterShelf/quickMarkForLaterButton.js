@@ -6,14 +6,18 @@ Adds a configurable save-for-later control to work and bookmark blurbs.
 
 Features
 
-- Injects a quick-save button into each blurb heading.
+- Injects a quick-save button into each blurb heading (position configurable).
 - Reflects whether a work is already stored in the Later Shelf.
 - Adds or removes works immediately and keeps the related status badge in sync.
+- Optional note prompt on add, and an "Undo" toast after add/remove.
+- Optional bulk-add from any listing page, and one-click whole-series add.
 - Re-injects controls when AO3 loads dynamic content.
 
 Notes
 
 - The `showQuickButton` setting enables or disables the feature.
+- Removing a work archives it (see laterShelfStore.removeItem) rather than
+  deleting it outright — the Undo toast restores it from that archive.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -22,11 +26,12 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { loadItems, saveItems, cfg } from './laterShelfStore.js';
-import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
+import { loadItems, addItem, removeItem, restoreItem, cfg } from './laterShelfStore.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
-import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromBlurb, parseChapterCount } from '../../../../lib/ao3/parsers.js';
+import { showToast } from '../../../../lib/ui/toast.js';
+import { createBulkSelect } from '../../../../lib/ui/bulk-select.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -60,20 +65,13 @@ register(MOD, {
     return a ? a.textContent.trim() : '';
   }
 
+  function chapterSnapshotFromBlurb (blurb) {
+    var parsed = parseChapterCount(blurb && blurb.querySelector('dd.chapters'));
+    return { chaptersAtAdd: parsed.published, completeAtAdd: parsed.isComplete };
+  }
+
   function isInShelf (wid) {
     return loadItems().some(function (i) { return String(i.wid || i) === String(wid); });
-  }
-
-  function addToShelf (wid, title) {
-    var items = loadItems();
-    if (items.some(function (i) { return String(i.wid || i) === String(wid); })) return;
-    items.push({ wid: wid, title: title, addedAt: Date.now() });
-    saveItems(items);
-    document.dispatchEvent(new CustomEvent(EV_MARKED_FOR_LATER, { detail: { workId: wid, title: title } }));
-  }
-
-  function removeFromShelf (wid) {
-    saveItems(loadItems().filter(function (i) { return String(i.wid || i) !== String(wid); }));
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -90,31 +88,67 @@ register(MOD, {
     btn.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
+      var blurb = btn.closest('li.work.blurb, li.bookmark.blurb');
       var nowActive = btn.classList.contains('ao3h-ls-active');
       if (nowActive) {
-        removeFromShelf(wid);
+        removeItem(wid, { archive: true });
         btn.classList.remove('ao3h-ls-active');
         btn.textContent = '📌 Save for later';
         btn.title = 'Add to Later Shelf';
-        // update sibling badge in markedForLaterStatus
-        var blurb = btn.closest('li.work.blurb, li.bookmark.blurb');
         if (blurb) {
           var badge = blurb.querySelector('.ao3h-ls-badge');
           if (badge) badge.remove();
         }
+        showToast('Removed from Later Shelf', {
+          actionLabel: 'Undo',
+          onAction: function () {
+            restoreItem(wid);
+            btn.classList.add('ao3h-ls-active');
+            btn.textContent = '📌 Saved';
+            btn.title = 'Remove from Later Shelf';
+            if (blurb) appendHeadingBadge(blurb, { className: 'ao3h-ls-badge', text: '📌', title: 'In your Later Shelf' });
+          },
+        });
       } else {
-        addToShelf(wid, title);
+        var note = cfg('noteOnAdd') ? (prompt('Quick note for "' + title + '" (optional):') || '') : '';
+        var extra = Object.assign({}, chapterSnapshotFromBlurb(blurb), note ? { note: note } : {});
+        addItem(wid, title, extra);
         btn.classList.add('ao3h-ls-active');
         btn.textContent = '📌 Saved';
         btn.title = 'Remove from Later Shelf';
-        // inject badge immediately without waiting for markedForLaterStatus repaint
-        var blurb = btn.closest('li.work.blurb, li.bookmark.blurb');
         if (blurb) {
           appendHeadingBadge(blurb, { className: 'ao3h-ls-badge', text: '📌', title: 'In your Later Shelf' });
         }
+        showToast('Added to Later Shelf', {
+          actionLabel: 'Undo',
+          onAction: function () {
+            removeItem(wid, { archive: false });
+            btn.classList.remove('ao3h-ls-active');
+            btn.textContent = '📌 Save for later';
+            btn.title = 'Add to Later Shelf';
+            if (blurb) {
+              var b = blurb.querySelector('.ao3h-ls-badge');
+              if (b) b.remove();
+            }
+          },
+        });
       }
     });
     return btn;
+  }
+
+  function placeButton (blurb, btn) {
+    var position = cfg('buttonPosition') || 'after-title';
+    var heading = blurb.querySelector('h4.heading');
+    if (position === 'before-title' && heading) {
+      heading.insertBefore(btn, heading.firstChild);
+    } else if (position === 'end-of-blurb') {
+      blurb.appendChild(btn);
+    } else if (heading) {
+      heading.appendChild(btn);
+    } else {
+      blurb.appendChild(btn);
+    }
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -129,8 +163,64 @@ register(MOD, {
       var title = titleFromBlurb(blurb);
       var active = isInShelf(wid);
       var btn = makeBtn(wid, title, active);
-      var heading = blurb.querySelector('h4.heading');
-      if (heading) heading.appendChild(btn);
+      placeButton(blurb, btn);
+    });
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — ADD WHOLE SERIES IN ONE CLICK
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  function isSeriesPage () {
+    return /^\/series\/\d+/.test(location.pathname);
+  }
+
+  function injectSeriesAddButton () {
+    if (!isSeriesPage() || D.getElementById('ao3h-ls-series-add')) return;
+    var main = D.getElementById('main');
+    if (!main) return;
+    var btn = D.createElement('button');
+    btn.type = 'button';
+    btn.id = 'ao3h-ls-series-add';
+    btn.className = 'ao3h-ls-series-btn';
+    btn.textContent = '📌 Add whole series to Later Shelf';
+    btn.addEventListener('click', function () {
+      var added = 0;
+      main.querySelectorAll('li.work.blurb').forEach(function (blurb) {
+        var wid = widFromBlurb(blurb);
+        if (!wid || isInShelf(wid)) return;
+        addItem(wid, titleFromBlurb(blurb), chapterSnapshotFromBlurb(blurb));
+        added++;
+      });
+      injectButtons();
+      showToast(added ? ('Added ' + added + ' work' + (added > 1 ? 's' : '') + ' to Later Shelf') : 'Already all in your Later Shelf',
+        { type: 'success' });
+    });
+    var meta = main.querySelector('.series.meta, dl.series.meta');
+    if (meta) meta.insertAdjacentElement('afterend', btn);
+    else main.insertBefore(btn, main.firstChild);
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — BULK-ADD FROM ANY LISTING PAGE
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  var bulkAdd = null;
+  if (cfg('bulkAddEnabled')) {
+    bulkAdd = createBulkSelect({
+      id: 'ao3h-ls-bulk-add',
+      labels: { remove: '📌 Add Selected to Shelf' },
+      onRemove: function (blurbs) {
+        var added = 0;
+        blurbs.forEach(function (blurb) {
+          var wid = widFromBlurb(blurb);
+          if (!wid || isInShelf(wid)) return;
+          addItem(wid, titleFromBlurb(blurb), chapterSnapshotFromBlurb(blurb));
+          added++;
+        });
+        injectButtons();
+        showToast(added + ' work' + (added === 1 ? '' : 's') + ' added to Later Shelf', { type: 'success' });
+      },
     });
   }
 
@@ -141,10 +231,15 @@ register(MOD, {
   var debTimer = null;
   var observer = observe(D.body, { childList: true, subtree: true }, function () {
     clearTimeout(debTimer);
-    debTimer = setTimeout(injectButtons, 250);
+    debTimer = setTimeout(function () {
+      injectButtons();
+      if (bulkAdd) bulkAdd.scan();
+    }, 250);
   });
 
   injectButtons();
+  injectSeriesAddButton();
+  if (bulkAdd) bulkAdd.scan();
 
   /* ═════════════════════════════════════════════════════════════════════════
      CLEANUP
@@ -155,6 +250,8 @@ register(MOD, {
     observer.disconnect();
     D.querySelectorAll('.ao3h-ls-btn').forEach(function (el) { el.remove(); });
     D.querySelectorAll('.ao3h-ls-badge').forEach(function (el) { el.remove(); });
+    D.getElementById('ao3h-ls-series-add')?.remove();
+    if (bulkAdd) bulkAdd.destroy();
   };
 
 });

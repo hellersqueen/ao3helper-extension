@@ -177,7 +177,7 @@ function actionMarkForLater () {
   const fn = W.AO3H_LaterShelf?.markCurrent;
   if (typeof fn === 'function') { fn(); return true; }
   // Fallback: click the injected 📌 button if present
-  const btn = document.querySelector(`.${NS}-mfl-btn, [data-ao3h-action="markForLater"]`);
+  const btn = document.querySelector(`.${NS}-mfl-btn, .${NS}-ls-btn, [data-ao3h-action="markForLater"]`);
   if (btn) { btn.click(); return true; }
   return false;
 }

@@ -13,9 +13,13 @@ AO3 Helper — Later Shelf Coordinator
 
     Submodules
 
-    - quickMarkForLaterButton.js: listing-page pin control
-    - markedForLaterStatus.js: badges, sorting, filtering, and batch removal
-    - workReminder.js: scheduled reminder notifications
+    - quickMarkForLaterButton.js: listing-page pin control, note/priority on
+      add, undo toast, bulk-add, whole-series add
+    - markedForLaterStatus.js: badges, sorting, filtering, priority/note/group
+      editing, drag reorder, grid view, CSV/links export, batch removal
+    - workReminder.js: scheduled reminder notifications, snooze, recurrence,
+      habit-based timing, abandoned/stale nudges, history
+    - laterShelfCounterBadge.js: permanent header nav counter + preview
 
     Notes
 
@@ -36,6 +40,7 @@ import { SK_ITEMS, cfg, loadItems, markCurrent, saveItems } from './laterShelfSt
 import './markedForLaterStatus.js';
 import './quickMarkForLaterButton.js';
 import './workReminder.js';
+import './laterShelfCounterBadge.js';
 import styles from './laterShelf.css?inline';
 
 

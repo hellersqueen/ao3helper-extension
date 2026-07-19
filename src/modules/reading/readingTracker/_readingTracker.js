@@ -144,6 +144,7 @@ register(
       getProgress,
       markSeen: null,
       getHistory,
+      getReadingSpeed: ReadingProgress.getReadingSpeed,
     };
 
     document.documentElement.style.setProperty('--ao3h-rt-seen-opacity', cfg('seenWorksOpacity') ?? 0.4);

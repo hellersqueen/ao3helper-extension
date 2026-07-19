@@ -190,7 +190,8 @@ AO3 Helper - Reading Tracker Module Coordinator
         ao3h:rt:readingSpeed -- { wordsTotal, msTotal } rolling accumulator
 
     Public API (W.AO3H_ReadingTracker):
-        getProgress(workId), markSeen(workId), getHistory()
+        getProgress(workId), markSeen(workId), getHistory(), getReadingSpeed()
+        (getReadingSpeed added for laterShelf's total-reading-time estimate)
 
     Submodules (imported directly as ES modules):
         ./seenTracking.js    -- work visit recording, updated-since badges (listing pages)

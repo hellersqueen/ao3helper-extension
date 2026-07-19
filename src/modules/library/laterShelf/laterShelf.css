@@ -55,6 +55,18 @@
 /*#        |                                                 */
 /*====     ├─  06. Rappels (workReminder)                    */
 /*#        |                                                 */
+/*=====    ├─  07. Contrôles par fic (priorité/groupe/note)  */
+/*#        |                                                 */
+/*======   ├─  08. Tri manuel & pioche aléatoire             */
+/*#        |                                                 */
+/*=======  ├─  09. Vue grille                                */
+/*#        |                                                 */
+/*======== ├─  10. Série, snooze, badge de mise à jour       */
+/*#        |                                                 */
+/*=========├─  11. Compteur de navigation (header)           */
+/*#        |                                                 */
+/*==========├─ 12. Panneau de réglages (Chantier 4)          */
+/*#        |                                                 */
 /*#        └─*/
 
 
@@ -358,4 +370,242 @@
   cursor: pointer;
   color: var(--ao3h-ls-text-counter);
   vertical-align: middle;
+}
+
+/*- Bouton "Snooze" sur la page MFL, affiché à côté d'un rappel actif */
+.ao3h-ls-snooze-btn {
+  margin-left: 4px;
+  font-size: .78em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--ao3h-ls-border);
+  background: #fff;
+  cursor: pointer;
+  color: var(--ao3h-ls-text-counter);
+  vertical-align: middle;
+}
+
+
+/*=====
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 07 — CONTRÔLES PAR FIC (priorité / groupe / note)
+  ───────────────────────────────────────────────────────────────────────
+    Ligne de contrôles affichée sous chaque fic de la page MFL : niveau de
+    priorité, groupe personnalisé, note rapide.
+    À l'écran :
+      ┌──────────────────────────────────────────────────┐
+      │  [🟡 Normal ▾]  [Group…______]  [📝 Add note]    │
+      └──────────────────────────────────────────────────┘
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-ls-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 3px;
+  font-size: .8em;
+}
+
+.ao3h-ls-priority-sel,
+.ao3h-ls-group-input {
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--ao3h-ls-border);
+  font-size: .95em;
+}
+
+.ao3h-ls-group-input { width: 110px; }
+
+.ao3h-ls-note-btn {
+  border: 1px solid var(--ao3h-ls-border);
+  background: #fff;
+  border-radius: 4px;
+  padding: 1px 5px;
+  cursor: pointer;
+  color: var(--ao3h-ls-text-counter);
+}
+
+
+/*======
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 08 — TRI MANUEL & PIOCHE ALÉATOIRE
+  ───────────────────────────────────────────────────────────────────────
+    Curseur de glisser-déposer en mode de tri "Manual", et surbrillance
+    temporaire de la fic choisie par "🎲 Pick for me" / "⏱ Suggest".
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-ls-draggable { cursor: grab; }
+.ao3h-ls-draggable:active { cursor: grabbing; }
+
+.ao3h-ls-picked {
+  outline: 3px solid #f2ce68;
+  outline-offset: 2px;
+  transition: outline-color 2s ease;
+}
+
+
+/*=======
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 09 — VUE GRILLE
+  ───────────────────────────────────────────────────────────────────────
+    Active via la case "Grid view" de la barre de tri : affiche les fics
+    de la page MFL en cartes plutôt qu'en liste.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-ls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.ao3h-ls-grid > li {
+  border: 1px solid var(--ao3h-ls-border);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+
+/*========
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 10 — SÉRIE, BADGE DE MISE À JOUR
+  ───────────────────────────────────────────────────────────────────────
+    Bouton "Add whole series" sur les pages /series/, et badge affiché sur
+    un blurb dont la fic a un nouveau chapitre ou a été terminée depuis
+    qu'elle a été sauvegardée.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-ls-series-btn {
+  display: inline-block;
+  margin: 8px 0;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--ao3h-ls-btn-border);
+  background: #fff;
+  cursor: pointer;
+  font-size: .9em;
+}
+
+.ao3h-ls-update-badge {
+  margin-left: 4px;
+  font-size: .82em;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--ao3h-ls-btn-active-bg);
+  color: var(--ao3h-ls-btn-active-color);
+  vertical-align: middle;
+}
+
+
+/*=========
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 11 — COMPTEUR DE NAVIGATION (header)
+  ───────────────────────────────────────────────────────────────────────
+    Badge "📌 N" ajouté au menu principal du site, sur toutes les pages.
+    Un clic ouvre un aperçu rapide des dernières fics sauvegardées.
+    ⚠️ #ao3h-ls-nav-counter est utilisé par le JS pour retrouver et
+       supprimer le badge au cleanup.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+#ao3h-ls-nav-counter { position: relative; }
+
+.ao3h-ls-nav-counter-btn {
+  cursor: pointer;
+}
+
+#ao3h-ls-nav-preview {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid var(--ao3h-ls-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .15);
+  padding: 8px;
+  min-width: 220px;
+  font-size: .85em;
+}
+
+#ao3h-ls-nav-preview ul {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+}
+
+#ao3h-ls-nav-preview li { padding: 2px 0; }
+
+.ao3h-ls-nav-preview-empty {
+  color: var(--ao3h-ls-text-muted);
+  font-style: italic;
+}
+
+.ao3h-ls-nav-preview-viewall {
+  display: block;
+  text-align: right;
+  font-size: .9em;
+}
+
+
+/*==========
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 12 — PANNEAU DE RÉGLAGES (Chantier 4)
+  ───────────────────────────────────────────────────────────────────────
+    Listes rendues par lib/ui/panel/configs/library/laterShelf-config.js
+    dans le panneau de réglages : groupes, archive, historique des
+    rappels, rappels de reprise, statistiques.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-ls-cfg-list {
+  max-height: 260px;
+  overflow-y: auto;
+  margin-top: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+.ao3h-ls-cfg-empty {
+  color: #888;
+  font-style: italic;
+  font-size: .85em;
+  margin: 4px 0;
+}
+
+.ao3h-ls-cfg-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: .85em;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ao3h-ls-cfg-row a {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ao3h-ls-cfg-meta {
+  color: #888;
+  font-size: .85em;
+  white-space: nowrap;
+}
+
+.ao3h-ls-cfg-row button {
+  background: none;
+  border: 1px solid var(--ao3h-ls-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: .9em;
+  padding: 1px 5px;
+  flex-shrink: 0;
 }
