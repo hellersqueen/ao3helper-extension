@@ -19,6 +19,7 @@ Notes
 
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { fetchAO3PageText } from '../../../../lib/ao3/requests.js';
+import { buildContinueReadingList } from './readingTrackerHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -110,6 +111,38 @@ export class ViewHistory {
     });
     saveHistory(history);
     alert(`Imported ${imported} new work${imported !== 1 ? 's' : ''} from your AO3 history.`);
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — "CONTINUE READING" HOME-PAGE WIDGET
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  injectContinueReadingWidget () {
+    const { NS, getHistory } = this;
+    if (document.getElementById(`${NS}-continue-reading`)) return;
+    const items = buildContinueReadingList(getHistory(), 5);
+    if (!items.length) return;
+    const main = document.querySelector('#main');
+    if (!main) return;
+
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const wrap = document.createElement('div');
+    wrap.id        = `${NS}-continue-reading`;
+    wrap.className = `${NS}-continue-reading`;
+    wrap.innerHTML = `
+      <h3>📖 Continue Reading</h3>
+      <ul>
+        ${items.map(e => `
+          <li>
+            <a href="${esc(e.chapterHref || e.href || `/works/${e.id}`)}">${esc(e.title || `Work #${e.id}`)}</a>
+            ${e.totalChapters ? `<span class="${NS}-continue-reading-progress">Ch ${e.chapter}/${e.totalChapters}</span>` : ''}
+          </li>`).join('')}
+      </ul>`;
+    main.prepend(wrap);
+  }
+
+  removeContinueReadingWidget () {
+    document.getElementById(`${this.NS}-continue-reading`)?.remove();
   }
 
   /* ═════════════════════════════════════════════════════════════════════════

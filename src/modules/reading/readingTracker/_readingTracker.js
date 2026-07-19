@@ -73,6 +73,17 @@ const DEFAULTS = {
   showClearProgressButton: true,
   updatedBadge:            true,
   updatedOnlyMode:         false,
+  updatedDateFormat:       'relative', // 'relative' | 'exact'
+  bulkMarkSeen:            true,
+  keyboardToggleSeen:      true,
+  progressStyle:           'badge', // 'badge' | 'bar' | 'donut'
+  clickToSeek:             true,
+  progressMilestones:      true,
+  manualBookmarks:         true,
+  readingSpeedTracking:    true,
+  historyGroupByPeriod:    true,
+  continueReadingWidget:   true,
+  cleanupOlderThanDays:    0, // 0 = disabled
 };
 
 const cfg = makeCfg(MOD, DEFAULTS);
@@ -93,6 +104,10 @@ function isListingPage () {
 
 function isHistoryPage () {
   return /^\/users\/[^/]+\/readings/.test(location.pathname);
+}
+
+function isHomePage () {
+  return location.pathname === '/' || location.pathname === '/welcome';
 }
 
 const SK_HISTORY  = 'ao3h:rt:history';
@@ -188,6 +203,7 @@ register(
           }
 
           readingProgress.injectFloatingBadge();
+          readingProgress.injectBookmarkControls(workId);
           readingProgress.setupScrollTracking(workId);
           readingProgress.schedulePositionMarker(workId, getProgress(workId));
         });
@@ -199,11 +215,16 @@ register(
       seenTracking.setup();
     }
 
+    if (isHomePage() && cfg('continueReadingWidget') !== false) {
+      viewHistory.injectContinueReadingWidget();
+    }
+
     return function cleanup () {
       active = false;
       seenTracking.teardown();
       visualMarkers.teardown();
       readingProgress.cleanup();
+      viewHistory.removeContinueReadingWidget();
       viewHistory.teardown();
       document.documentElement.style.removeProperty('--ao3h-rt-seen-opacity');
       document.documentElement.classList.remove('ao3h-rt-hide-history-clear', 'ao3h-rt-hide-progress-clear');

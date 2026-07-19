@@ -59,6 +59,10 @@
 /*#        |                                                 */
 /*---      ├─  09. Toast de bienvenue                        */
 /*#        |                                                 */
+/*++++     ├─  10. Continue Reading (Chantier 4)              */
+/*#        |                                                 */
+/*=====     ├─  11. Historique navigable (Chantier 4)         */
+/*#        |                                                 */
 /*#        └─*/
 
 
@@ -121,6 +125,21 @@
   display: none !important;
 }
 
+/*- Chantier 4 : styles supplémentaires pour "seenMode" ────────────────── */
+.ao3h-seen-blur {
+  filter: blur(3px);
+  transition: filter .15s;
+}
+.ao3h-seen-blur:hover { filter: blur(0); }
+
+.ao3h-seen-strike h4.heading a {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/*- Un raccourci clavier peut révéler temporairement les works masqués ── */
+html.ao3h-rt-reveal-seen .ao3h-seen-hidden { display: revert !important; outline: 1px dashed #999; }
+
 .ao3h-seen-badge {
   display: inline-block;
   font-size: 0.75em;
@@ -163,6 +182,26 @@
   background: #666;
   color: #fff;
 }
+
+/*- Chantier 4 : masquage multiple ("bulk mark as seen") ───────────────── */
+.ao3h-bulk-cb {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.ao3h-bulk-mark-bar {
+  margin: 4px 0 10px;
+}
+.ao3h-bulk-mark-bar button {
+  font-size: 0.82em;
+  padding: 3px 10px;
+  border: 1px solid #900;
+  border-radius: var(--ao3h-rt-radius);
+  background: #fff;
+  color: #900;
+  cursor: pointer;
+}
+.ao3h-bulk-mark-bar button:hover { background: #900; color: #fff; }
 
 
 /*=
@@ -273,6 +312,111 @@
   pointer-events: none;
   user-select: none;
   transition: opacity .3s;
+}
+
+/*- Chantier 4 : variantes "bar" et "donut" du badge de progression ────── */
+.ao3h-progress-badge--bar {
+  pointer-events: auto;
+  width: 160px;
+  padding: 6px 10px;
+}
+
+.ao3h-progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.ao3h-progress-bar-fill {
+  height: 100%;
+  background: #fff;
+  transition: width .2s;
+}
+
+.ao3h-progress-badge--donut {
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ao3h-progress-donut {
+  width: 44px;
+  height: 44px;
+  transform: rotate(-90deg);
+}
+
+.ao3h-progress-donut-bg {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.25);
+  stroke-width: 4;
+}
+
+.ao3h-progress-donut-fill {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dasharray .2s;
+}
+
+.ao3h-progress-donut-label {
+  position: absolute;
+  color: #fff;
+  font-size: 0.7em;
+  font-weight: bold;
+}
+
+/*- Chantier 4 : marque-pages manuels multiples ─────────────────────────── */
+.ao3h-bookmark-controls {
+  position: fixed;
+  bottom: 70px;
+  right: 18px;
+  z-index: 9000;
+  background: rgba(0, 0, 0, .75);
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.78em;
+  max-width: 220px;
+}
+
+.ao3h-bookmark-add {
+  background: none;
+  border: 1px solid rgba(255,255,255,.4);
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  padding: 2px 8px;
+  margin-bottom: 4px;
+}
+
+.ao3h-bookmark-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.ao3h-bookmark-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.ao3h-bookmark-list a { color: #cdeaff; }
+
+.ao3h-bookmark-remove {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.7);
+  cursor: pointer;
+  font-size: 0.9em;
 }
 
 
@@ -409,3 +553,145 @@
   /*- ⚠️ La transition est déclenchée par le JS via toast.style.opacity = '0' */
   transition: opacity .4s;
 }
+
+
+/*++++
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 10 — "CONTINUE READING" (page d'accueil) — Chantier 4
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-continue-reading {
+  margin: 0 0 1em;
+  padding: 10px 14px;
+  border: 1px solid #dde;
+  border-radius: 6px;
+  background: #f7f7fc;
+}
+
+.ao3h-continue-reading h3 {
+  margin: 0 0 0.5em;
+  font-size: 1em;
+  color: #2a2a5e;
+}
+
+.ao3h-continue-reading ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ao3h-continue-reading li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 0.9em;
+}
+
+.ao3h-continue-reading-progress {
+  color: var(--ao3h-rt-text-muted);
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+
+/*=====
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 11 — HISTORIQUE NAVIGABLE (panneau de réglages) — Chantier 4
+  ───────────────────────────────────────────────────────────────────────
+    Liste rendue par lib/ui/panel/configs/reading/readingTracker-config.js
+    dans le panneau de réglages : recherche, tri, groupement par période,
+    épinglage, note, suppression — et la liste d'exclusions de vie privée.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+.ao3h-rt-history-list {
+  max-height: 320px;
+  overflow-y: auto;
+  margin-top: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+.ao3h-rt-history-empty {
+  color: #888;
+  font-style: italic;
+  font-size: 0.85em;
+  margin: 4px 0;
+}
+
+.ao3h-rt-history-group-label {
+  font-weight: bold;
+  font-size: 0.78em;
+  color: #666;
+  margin: 8px 0 2px;
+  text-transform: uppercase;
+}
+
+.ao3h-rt-history-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ao3h-rt-history-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 0.85em;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ao3h-rt-history-entry a {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ao3h-rt-entry-meta {
+  color: #888;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.ao3h-rt-pin-btn,
+.ao3h-rt-note-btn,
+.ao3h-rt-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 0.9em;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+
+.ao3h-rt-pin-btn.ao3h-rt-pinned { color: #f0a500; }
+.ao3h-rt-delete-btn:hover { color: #c0392b; }
+
+.ao3h-rt-exclusion-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: 0.82em;
+}
+
+.ao3h-rt-exclusion-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+.ao3h-rt-exclusion-empty { color: #888; font-style: italic; }
+
+.ao3h-rt-exclusion-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+}
+.ao3h-rt-exclusion-remove:hover { color: #c0392b; }

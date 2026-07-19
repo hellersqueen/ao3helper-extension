@@ -19,6 +19,14 @@ Notes
 
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { nextVisitCount, formatUpdatedLabel } from './readingTrackerHelpers.js';
+
+const SK_EXCLUDED = 'ao3h:rt:excludedWorks';
+
+function loadExcluded () {
+  try { return new Set(JSON.parse(localStorage.getItem(SK_EXCLUDED) || '[]')); }
+  catch { return new Set(); }
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -50,6 +58,7 @@ export class SeenTracking {
   parseWorkMeta () {
     const title  = document.querySelector('h2.title')?.textContent.trim() || '';
     const author = document.querySelector('h3.byline a')?.textContent.trim() || '';
+    const fandoms = [...document.querySelectorAll('dd.fandom.tags a')].map(a => a.textContent.trim());
     const chapDd    = document.querySelector('dd.chapters');
     const chapText  = chapDd?.textContent.trim() || '';
     const chapMatch = chapText.match(/^(\d+)\/(\d+|\?)$/);
@@ -60,27 +69,54 @@ export class SeenTracking {
     const chapterId = selOpt?.value || null;
     const workId    = this.parseWorkId();
     return {
-      title, author, chapter, chapterId, totalChapters,
+      title, author, fandoms, chapter, chapterId, totalChapters,
       href:        location.pathname,
       chapterHref: chapterId && workId ? `/works/${workId}/chapters/${chapterId}` : null,
     };
   }
 
+  /** True if this work — or a fandom it belongs to — is on the "never track" exclusion list. */
+  isExcluded (workId, fandoms = []) {
+    const excluded = loadExcluded();
+    if (excluded.has(workId)) return true;
+    return fandoms.some(f => excluded.has(`fandom:${f}`));
+  }
+
+  /** Adds a workId to the "never track in history" list (used by the privacy toggle). */
+  excludeWork (workId) {
+    const excluded = loadExcluded();
+    excluded.add(workId);
+    try { localStorage.setItem(SK_EXCLUDED, JSON.stringify([...excluded])); } catch {}
+  }
+
+  includeWork (workId) {
+    const excluded = loadExcluded();
+    excluded.delete(workId);
+    try { localStorage.setItem(SK_EXCLUDED, JSON.stringify([...excluded])); } catch {}
+  }
+
   recordVisit (workId, meta) {
+    if (this.isExcluded(workId, meta.fandoms)) return;
     const { getHistory, saveHistory } = this;
     const history  = getHistory();
     const existing = history.findIndex(e => e.id === workId);
+    const prev     = existing >= 0 ? history[existing] : null;
     const entry    = {
       id:            workId,
       title:         meta.title         || '',
       author:        meta.author        || '',
       href:          meta.href          || location.pathname,
-      seenAt:        existing >= 0 ? history[existing].seenAt : Date.now(),
+      seenAt:        prev ? prev.seenAt : Date.now(),
       lastReadAt:    Date.now(),
       chapter:       meta.chapter       || null,
       chapterId:     meta.chapterId     || null,
       chapterHref:   meta.chapterHref   || null,
       totalChapters: meta.totalChapters || null,
+      visitCount:    nextVisitCount(prev),
+      // Carried forward from the history browser (pin/note) — recordVisit
+      // must never silently wipe them out on the next page load.
+      ...(prev?.pinned ? { pinned: prev.pinned } : {}),
+      ...(prev?.note ? { note: prev.note } : {}),
     };
     if (existing >= 0) history.splice(existing, 1);
     history.push(entry);
@@ -95,6 +131,7 @@ export class SeenTracking {
       id: workId, seenAt: Date.now(), lastReadAt: Date.now(),
       title: '', author: '', href: `/works/${workId}`,
       chapter: null, chapterId: null, chapterHref: null, totalChapters: null,
+      visitCount: 1,
     });
     saveHistory(history);
   }
@@ -158,7 +195,7 @@ export class SeenTracking {
 
       updatedCount++;
       const recency = this._recencyClass(updatedAt);
-      const label   = relativeTime(updatedAt);
+      const label   = formatUpdatedLabel(updatedAt, this.cfg('updatedDateFormat') || 'relative', relativeTime);
       appendHeadingBadge(blurb, {
         className: `${_BADGE_CLS} ${_BADGE_CLS}--${recency}`,
         guardSelector: `.${_BADGE_CLS}`,
