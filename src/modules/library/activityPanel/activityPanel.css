@@ -70,9 +70,87 @@
   color: #888;
 }
 
-.ao3h-fb-row td:nth-child(3),
-.ao3h-fb-row td:nth-child(4) {
+.ao3h-fb-row td:nth-child(4),
+.ao3h-fb-row td:nth-child(5),
+.ao3h-fb-row td:nth-child(6),
+.ao3h-fb-row td:nth-child(7) {
   text-align: right;
+}
+
+/* ── Fandom Breakdown — Pie chart ─────────────────────────────────────── */
+
+.ao3h-fb-pie-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-bottom: 0.8em;
+}
+
+.ao3h-fb-pie {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ao3h-fb-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.82em;
+  color: #444;
+}
+
+.ao3h-fb-legend li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+
+.ao3h-fb-swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+/* ── Fandom Breakdown — Compare mode ──────────────────────────────────── */
+
+.ao3h-fb-compare-hint {
+  font-size: 0.78em;
+  color: #888;
+  margin: 0 0 0.4em;
+}
+
+.ao3h-fb-compare-result {
+  margin-top: 0.8em;
+  padding-top: 0.6em;
+  border-top: 1px dashed #ccc;
+}
+
+.ao3h-fb-compare-result h5 {
+  margin: 0 0 0.4em;
+  font-size: 0.85em;
+  color: #2c5f8a;
+}
+
+.ao3h-fb-compare-result table {
+  width: 100%;
+  font-size: 0.85em;
+  border-collapse: collapse;
+}
+
+.ao3h-fb-compare-result td,
+.ao3h-fb-compare-result th {
+  padding: 3px 6px;
+  text-align: right;
+}
+
+.ao3h-fb-compare-result td:first-child,
+.ao3h-fb-compare-result th:first-child {
+  text-align: left;
+  color: #666;
 }
 
 
@@ -155,6 +233,47 @@
   color: #888;
 }
 
+/* ── Habits Analysis — Prediction and reader profile ─────────────────── */
+
+.ao3h-habits-prediction,
+.ao3h-habits-profile {
+  margin: 0.6em 0 0;
+  font-size: 0.85em;
+  color: #444;
+}
+
+/* ── Habits Analysis — Weekly heatmap ─────────────────────────────────── */
+
+.ao3h-heatmap-wrap { margin-top: 0.8em; }
+
+.ao3h-heatmap-wrap h5 {
+  margin: 0 0 0.4em;
+  font-size: 0.82em;
+  color: #666;
+  font-weight: 600;
+}
+
+.ao3h-heatmap-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.ao3h-heatmap-daylabel {
+  width: 28px;
+  font-size: 0.7em;
+  color: #888;
+  flex-shrink: 0;
+}
+
+.ao3h-heatmap-cell {
+  flex: 1;
+  height: 10px;
+  border-radius: 1px;
+  background: #eee;
+}
+
 
 /* ══════════════════════════════════════════════════════════════════════════
    Pattern Analysis widget
@@ -212,12 +331,82 @@
   font-size: 0.92em;
 }
 
-/* ── Reading Insights — Heading ──────────────────────────────────────── */
+/* ── Reading Insights — Heading row and controls ──────────────────────── */
+
+.ao3h-insights-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0.6em;
+}
 
 #ao3h-reading-insights h3 {
-  margin: 0 0 0.6em;
+  margin: 0;
   font-size: 1em;
   color: #2a2a5e;
+}
+
+.ao3h-insights-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ao3h-insights-period {
+  font-size: 0.8em;
+  padding: 2px 4px;
+  border: 1px solid #ccd;
+  border-radius: 3px;
+}
+
+.ao3h-insights-refresh,
+.ao3h-insights-export {
+  background: none;
+  border: 1px solid #ccd;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.85em;
+  padding: 2px 6px;
+}
+
+.ao3h-insights-refresh:hover,
+.ao3h-insights-export:hover {
+  background: #eef;
+}
+
+/* ── Reading Insights — Recap line ────────────────────────────────────── */
+
+.ao3h-insights-recap {
+  margin: 0 0 0.6em;
+  font-size: 0.88em;
+  font-style: italic;
+  color: #555;
+}
+
+/* ── Reading Insights — Tag cloud ─────────────────────────────────────── */
+
+.ao3h-tag-cloud {
+  margin-top: 0.7em;
+  line-height: 1.8;
+}
+
+.ao3h-tag-cloud-item {
+  display: inline-block;
+  margin: 0 6px 4px 0;
+  color: #5b4ea3;
+  text-decoration: none;
+}
+
+.ao3h-tag-cloud-item:hover { text-decoration: underline; }
+
+/* ── Reading Insights — Quick links ───────────────────────────────────── */
+
+.ao3h-insights-quicklinks {
+  margin-top: 0.7em;
+  font-size: 0.82em;
+  color: #555;
 }
 
 /* ── Reading Insights — Stat cards row ──────────────────────────────── */

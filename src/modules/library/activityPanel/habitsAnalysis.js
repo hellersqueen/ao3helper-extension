@@ -19,6 +19,9 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import {
+  dayHourHeatmap, bestReadingSlot, formatSlotLabel, isNightOwl, regularityScore,
+} from './activityPanelHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -58,7 +61,7 @@ function analyzeHabits (sessions) {
   return { byHour, maxVal, peakHour, periods, preferred };
 }
 
-function buildWidget (habits, total) {
+function buildWidget (habits, total, sessions) {
   const wrap = document.createElement('div');
   wrap.id = `${NS}-habits-widget`;
 
@@ -82,6 +85,14 @@ function buildWidget (habits, total) {
     </div>`;
   }).join('');
 
+  const slot = bestReadingSlot(dayHourHeatmap(sessions));
+  const slotLabel = formatSlotLabel(slot);
+  const nightOwl = isNightOwl(byHour);
+  const regularity = regularityScore(sessions);
+  const profileLine = `${nightOwl ? '🌙 You mostly read at night' : '☀️ You mostly read during the day'} &nbsp;·&nbsp; ${
+    regularity >= 60 ? '📅 Very regular reader' : regularity >= 25 ? '📆 Fairly regular reader' : '🎲 Reads in bursts'
+  } (${regularity}% of days active)`;
+
   wrap.innerHTML = `
     <h4>🕐 Reading Habits</h4>
     <p class="ao3h-habits-meta">
@@ -91,9 +102,27 @@ function buildWidget (habits, total) {
     </p>
     <div class="ao3h-habits-bars">
       ${bars}
-    </div>`;
+    </div>
+    ${slotLabel ? `<p class="ao3h-habits-prediction">🔮 You're most likely to read on <strong>${slotLabel}</strong></p>` : ''}
+    <p class="ao3h-habits-profile">${profileLine}</p>
+    ${buildHeatmap(sessions)}`;
 
   return wrap;
+}
+
+function buildHeatmap (sessions) {
+  const grid = dayHourHeatmap(sessions);
+  const max  = Math.max(1, ...grid.flat());
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const rows = grid.map((row, day) => `
+    <div class="ao3h-heatmap-row">
+      <span class="ao3h-heatmap-daylabel">${dayLabels[day]}</span>
+      ${row.map(count => {
+        const alpha = count ? 0.15 + 0.85 * (count / max) : 0;
+        return `<span class="ao3h-heatmap-cell" style="background: rgba(44,95,138,${alpha.toFixed(2)});" title="${count} session${count !== 1 ? 's' : ''}"></span>`;
+      }).join('')}
+    </div>`).join('');
+  return `<div class="ao3h-heatmap-wrap"><h5>Weekly heatmap</h5>${rows}</div>`;
 }
 
 function isDashboardPage () {
@@ -114,7 +143,7 @@ register(MOD, {
   if (!isDashboardPage()) return () => {};
 
   const sessions = loadSessions();
-  const widget   = buildWidget(analyzeHabits(sessions), sessions.length);
+  const widget   = buildWidget(analyzeHabits(sessions), sessions.length, sessions);
   const anchor   = document.querySelector('#dashboard-modules, #main');
   if (anchor) anchor.prepend(widget);
 

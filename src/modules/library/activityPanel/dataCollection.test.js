@@ -35,4 +35,19 @@ describe('DataCollection.aggregate — totalBookmarks lu via lib/storage/keys.js
     expect(result.totalWords).toBe(5000);
     expect(result.topFandoms[0]).toEqual({ name: 'Harry Potter', count: 1 });
   });
+
+  it('récupère fandoms/tags/rating depuis les sessions quand readingTracker ne les fournit pas (cas réel)', () => {
+    // readingTracker's own history entries never carry fandoms/tags/rating —
+    // this reproduces the real-world shape (seenTracking.js's recordVisit),
+    // where only `id`/`title`/`author`/dates are ever populated.
+    const storage = fakeStorage({
+      'rt:history': [{ id: 'w1', title: 'A Fic', author: 'alice', seenAt: Date.now() }],
+      'activityPanel:sessions': [{ workId: 'w1', words: 5000, fandoms: ['Star Wars'], tags: ['Fluff'], rating: 'General Audiences' }],
+    });
+    const dc = new DataCollection({ storage });
+    const result = dc.aggregate();
+    expect(result.topFandoms[0]).toEqual({ name: 'Star Wars', count: 1 });
+    expect(result.topTags[0]).toEqual({ name: 'Fluff', count: 1 });
+    expect(result.favoriteRating).toBe('General Audiences');
+  });
 });

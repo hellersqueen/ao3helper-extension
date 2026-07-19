@@ -19,6 +19,13 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import {
+  detectTagTrend, quarterlyBreakdown, groupByField, compareByPeriod,
+  detectRereads, detectIntensiveSessions, estimateAbandonPoint,
+} from './activityPanelHelpers.js';
+
+const W = getGlobalWindow();
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -84,7 +91,35 @@ function detectPatterns (sessions) {
   const topRecent   = countFandoms(recentSessions);
   const fandomShift = topOverall && topRecent && topOverall !== topRecent;
 
-  return { peakSeason, lengthPreference, slump, topOverall, topRecent, fandomShift };
+  // Rising tags (last 30 days vs the 30 days before that)
+  const tagTrend = detectTagTrend(sessions);
+
+  // Quarterly breakdown and top category (genre) per season
+  const quarters = quarterlyBreakdown(sessions);
+  const bySeasonCategory = {};
+  for (const [season, months] of Object.entries(SEASON_MONTHS)) {
+    const seasonSessions = sessions.filter(s => s.startedAt && months.includes(new Date(s.startedAt).getMonth()));
+    const top = groupByField(seasonSessions, 'category')[0];
+    if (top) bySeasonCategory[season] = top.name;
+  }
+
+  // This month/year vs the previous one
+  const monthCompare = compareByPeriod(sessions, 'month');
+  const yearCompare   = compareByPeriod(sessions, 'year');
+
+  // Rereads and unusually long sessions
+  const rereads    = detectRereads(sessions);
+  const intensive  = detectIntensiveSessions(sessions);
+
+  // Typical abandon point: average pages viewed on works never marked finished
+  const isFinished = (workId) => !!W.AO3H?.ficAppreciation?.isFinished?.(workId);
+  const abandonPoint = estimateAbandonPoint(sessions, isFinished);
+
+  return {
+    peakSeason, lengthPreference, slump, topOverall, topRecent, fandomShift,
+    tagTrend, quarters, bySeasonCategory, monthCompare, yearCompare,
+    rereads, intensive, abandonPoint,
+  };
 }
 
 
@@ -112,9 +147,34 @@ function buildWidget (p) {
       ? `🔀 Fandom shift detected — you've moved from <strong>${esc(p.topOverall)}</strong> to <strong>${esc(p.topRecent)}</strong>`
       : `🎯 Consistent fandom: <strong>${esc(p.topOverall || '—')}</strong>`,
     p.slump
-      ? `⚠️ <strong>Reading slump detected</strong> — no sessions in the last 14 days`
+      ? `⚠️ <strong>Reading slump detected</strong> — no sessions in the last 14 days. Whenever you're ready, there's always something good waiting for you 💛`
       : `✅ Active reader`,
   ];
+
+  if (p.tagTrend.length) {
+    items.push(`📈 Reading more <strong>${esc(p.tagTrend[0].tag)}</strong> lately (${p.tagTrend[0].count} recently vs ${p.tagTrend[0].priorCount} before)`);
+  }
+  if (p.monthCompare.previous.works > 0 || p.monthCompare.current.works > 0) {
+    const d = p.monthCompare.deltaPct;
+    items.push(`📅 This month: <strong>${p.monthCompare.current.works}</strong> work${p.monthCompare.current.works !== 1 ? 's' : ''} vs <strong>${p.monthCompare.previous.works}</strong> last month${d !== null ? ` (${d >= 0 ? '+' : ''}${d}%)` : ''}`);
+  }
+  if (p.rereads.length) {
+    items.push(`🔁 You've reread <strong>${esc(p.rereads[0].title)}</strong>${p.rereads.length > 1 ? ` and ${p.rereads.length - 1} other work${p.rereads.length > 2 ? 's' : ''}` : ''}`);
+  }
+  if (p.intensive.length) {
+    items.push(`🚀 ${p.intensive.length} intensive reading session${p.intensive.length !== 1 ? 's' : ''} detected (well above your usual pace)`);
+  }
+  if (p.abandonPoint !== null) {
+    items.push(`📉 On works you haven't finished, you typically stop after about <strong>${p.abandonPoint}</strong> page view${p.abandonPoint !== 1 ? 's' : ''}`);
+  }
+  if (p.quarters.length) {
+    const lastQ = p.quarters[p.quarters.length - 1];
+    items.push(`📊 ${p.quarters.length} quarter${p.quarters.length !== 1 ? 's' : ''} tracked — most recent (${esc(lastQ.label)}): ${lastQ.count} session${lastQ.count !== 1 ? 's' : ''}`);
+  }
+  const seasonCategoryEntries = Object.entries(p.bySeasonCategory);
+  if (seasonCategoryEntries.length) {
+    items.push(`🎭 Category by season: ${seasonCategoryEntries.map(([s, c]) => `${s} → ${esc(c)}`).join(', ')}`);
+  }
 
   wrap.innerHTML = `
     <h4>🔍 Reading Patterns</h4>

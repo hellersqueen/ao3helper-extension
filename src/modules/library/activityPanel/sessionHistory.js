@@ -53,10 +53,14 @@ function getWorkMeta () {
                 document.title.split('|')[0].trim();
   const fandomTags = [...document.querySelectorAll('.fandom.tags a')]
     .map(a => a.textContent.trim());
+  const freeformTags = [...document.querySelectorAll('dd.freeform.tags a')]
+    .map(a => a.textContent.trim());
   const words = parseInt(
     (document.querySelector('.stats dd.words')?.textContent || '0').replace(/,/g, ''), 10
   ) || 0;
-  return { workId, title, fandoms: fandomTags, words };
+  const rating   = document.querySelector('dd.rating.tags a')?.textContent.trim() || null;
+  const category = document.querySelector('dd.category.tags a')?.textContent.trim() || null;
+  return { workId, title, fandoms: fandomTags, tags: freeformTags, words, rating, category };
 }
 
 function startSession (meta) {
@@ -64,6 +68,9 @@ function startSession (meta) {
     workId:      meta.workId,
     title:       meta.title,
     fandoms:     meta.fandoms,
+    tags:        meta.tags,
+    rating:      meta.rating,
+    category:    meta.category,
     words:       meta.words,
     startedAt:   Date.now(),
     lastActiveAt: Date.now(),
