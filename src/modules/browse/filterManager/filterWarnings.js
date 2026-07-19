@@ -25,10 +25,14 @@ import { ARCHIVE_WARNING_FORM_LABELS as ARCHIVE_WARNINGS } from '../../../../lib
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
+const KEY_DISMISSED_FOREVER = 'filterManager:warningBannerDismissed';
+
 export class FilterWarnings {
-  constructor ({ NS, cfg }) {
-    this.NS  = NS;
-    this.cfg = cfg;
+  constructor ({ NS, cfg, storeGet, storeSet }) {
+    this.NS       = NS;
+    this.cfg      = cfg;
+    this.storeGet = storeGet;
+    this.storeSet = storeSet;
   }
 
 
@@ -50,10 +54,15 @@ export class FilterWarnings {
      FEATURE — WARNING BANNER
   ═════════════════════════════════════════════════════════════════════════ */
 
+  /** True once the user has permanently dismissed the exclusion banner. */
+  isDismissedForever () { return !!this.storeGet?.(KEY_DISMISSED_FOREVER, false); }
+
   /** Inserts the warning banner and returns the element (or null if nothing to show). */
   insert (excluded) {
     const NS = this.NS;
     if (!excluded.length) return null;
+    if (excluded.length < (this.cfg('warningBannerMinCount') || 1)) return null;
+    if (this.isDismissedForever()) return null;
     if (document.getElementById(`${NS}-fm-warning-banner`)) return null;
 
     const labels = excluded.map(w => `"${escapeHtml(w)}"`).join(', ');
@@ -69,11 +78,18 @@ export class FilterWarnings {
       ${this.cfg('excludeWarningRemoveButton') ? `
         <button class="${NS}-fm-warn-remove">Remove exclusion</button>
       ` : ''}
+      <button class="${NS}-fm-warn-dismiss-forever">Don't show again</button>
       <button class="${NS}-fm-warn-dismiss" aria-label="Dismiss">✕</button>
     `;
 
     banner.querySelector(`.${NS}-fm-warn-dismiss`)
       ?.addEventListener('click', () => banner.remove());
+
+    banner.querySelector(`.${NS}-fm-warn-dismiss-forever`)
+      ?.addEventListener('click', () => {
+        this.storeSet?.(KEY_DISMISSED_FOREVER, true);
+        banner.remove();
+      });
 
     if (this.cfg('excludeWarningRemoveButton')) {
       banner.querySelector(`.${NS}-fm-warn-remove`)

@@ -59,6 +59,8 @@ export class LanguageBadges {
     const NS       = this.NS;
     const show     = this.cfg('showLanguageBadge');
     const canClick = this.cfg('clickBadgeToFilter');
+    const hidePreferred = this.cfg('hidePreferredLanguageBadge');
+    const preferred = new Set((this.cfg('preferredLanguages') || []).map(l => l.toLowerCase()));
     const langs = new Set(
       [...blurbs].map(b => this._langFromBlurb(b)).filter(Boolean)
     );
@@ -70,6 +72,7 @@ export class LanguageBadges {
 
       const lang = this._langFromBlurb(blurb);
       if (!lang) continue;
+      if (hidePreferred && preferred.has(lang.toLowerCase())) continue;
 
       blurb.querySelector(`.${NS}-lang-badge`)?.remove();
 

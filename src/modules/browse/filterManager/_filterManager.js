@@ -57,6 +57,8 @@ const LOG  = `[AO3H][${MOD}]`;
 const KEY_PRESETS = 'filterManager:presets';
 const KEY_BUNDLES = 'filterManager:bundles';
 const KEY_LAST    = 'filterManager:lastPreset';
+const KEY_HISTORY = 'filterManager:searchHistory';
+const KEY_USAGE   = 'filterManager:presetUsage';
 
 // ── Route helpers ─────────────────────────────────────────────────────────
 const _path   = location.pathname;
@@ -65,7 +67,7 @@ const _params = new URLSearchParams(location.search);
 function isListingPage () {
   return /^\/works$/.test(_path) ||
          /^\/tags\/[^/]+\/works/.test(_path) ||
-         /^\/users\/[^/]+\/(bookmarks|works|pseuds\/[^/]+\/works)/.test(_path) ||
+         /^\/users\/[^/]+\/(bookmarks|works|readings|pseuds\/[^/]+\/works)/.test(_path) ||
          /^\/collections\/[^/]+\/works/.test(_path);
 }
 
@@ -95,12 +97,26 @@ const DEFAULTS = {
   // Quick filters
   quickFilterOneshot          : true,
   quickFilterCrossover        : true,
+  quickFilterLowTags          : false,
+  lowTagThreshold             : 3,
+  quickFilterAnonymous        : false,
+  quickFilterSummary          : false,
+  minSummaryLength            : 0,
+  quickFilterRatio            : false,
+  minKudosRatio               : 2,
+  quickFilterDate             : false,
+  quickFilterAbandoned        : false,
+  showOneshotBadge            : false,
+  manualHideEnabled           : true,
+  manualHideShortcut          : true,
   // History filters
   hideKudosed                 : false,
   hideSubscribed              : false,
   hideBookmarked              : false,
   hideMFL                     : false,
+  hideRead                    : false,
   hideReadSeries              : false,
+  historyFilterMode           : 'hide', // 'hide' | 'dim'
   showHiddenCount             : true,
   // Misc
   rememberFilters             : true,
@@ -108,6 +124,13 @@ const DEFAULTS = {
   selectedLanguages           : [],
   oneshotDefault               : false,
   crossoverDefault            : false,
+  // Language badges: preferred-language suppression
+  preferredLanguages          : ['English'],
+  hidePreferredLanguageBadge  : false,
+  // Archive warning banner
+  warningBannerMinCount       : 1,
+  // Presets: auto search history + usage stats
+  searchHistoryEnabled        : true,
 };
 
 const cfg = makeCfg(MOD, DEFAULTS);
@@ -197,11 +220,11 @@ register(MOD, {
   console.log(LOG, 'init');
 
   // ── Instantiate submodules ───────────────────────────────────────────
-  const presetMgmt    = new PresetManagement({ NS, storeGet, storeSet, cfg, detectCurrentFandom, getBundleFor, loadBundles, saveBundles, KEY_PRESETS, KEY_BUNDLES, KEY_LAST });
+  const presetMgmt    = new PresetManagement({ NS, storeGet, storeSet, cfg, detectCurrentFandom, getBundleFor, loadBundles, saveBundles, KEY_PRESETS, KEY_BUNDLES, KEY_LAST, KEY_HISTORY, KEY_USAGE });
   const langBadges    = new LanguageBadges({ NS, cfg });
-  const filterWarnings = new FilterWarnings({ NS, cfg });
-  const historyFilters = new UserHistoryFilters({ NS, cfg, W, AO3H });
-  const wfm           = new WorksFilterManager({ NS, cfg });
+  const filterWarnings = new FilterWarnings({ NS, cfg, storeGet, storeSet });
+  const historyFilters = new UserHistoryFilters({ NS, cfg, W, AO3H, onAsyncUpdate: () => processBlurbs() });
+  const wfm           = new WorksFilterManager({ NS, cfg, storeGet, storeSet });
 
   // ── Always expose the public bundle/preset API ───────────────────────
   exposePublicApi(presetMgmt);

@@ -134,6 +134,19 @@
 html.ao3h-fm-filter-oneshot li.blurb:not([data-fm-oneshot="1"]) { display: none !important; }
 html.ao3h-fm-hide-crossover li.blurb[data-fm-crossover="1"]     { display: none !important; }
 
+/* ─── Chantier 4: three-state one-shot / crossover, and additional quick filters ─── */
+html.ao3h-fm-oneshot-only   li.blurb:not([data-fm-oneshot="1"])   { display: none !important; }
+html.ao3h-fm-oneshot-hide   li.blurb[data-fm-oneshot="1"]         { display: none !important; }
+html.ao3h-fm-crossover-only li.blurb:not([data-fm-crossover="1"]) { display: none !important; }
+html.ao3h-fm-crossover-hide li.blurb[data-fm-crossover="1"]       { display: none !important; }
+html.ao3h-fm-lowtags-active    li.blurb[data-fm-lowtags="1"]    { display: none !important; }
+html.ao3h-fm-anon-active       li.blurb[data-fm-anon="1"]       { display: none !important; }
+html.ao3h-fm-nosummary-active  li.blurb[data-fm-nosummary="1"]  { display: none !important; }
+html.ao3h-fm-lowratio-active   li.blurb[data-fm-lowratio="1"]   { display: none !important; }
+html.ao3h-fm-abandoned-active  li.blurb[data-fm-abandoned="1"]  { display: none !important; }
+html.ao3h-fm-date-active       li.blurb[data-fm-staledate="1"]  { display: none !important; }
+li.blurb[data-fm-manual-hidden="1"] { display: none !important; }
+
 
 /*+ ───────────────────────────────────────────────────────────
     BARRE DE FILTRES RAPIDES
@@ -318,6 +331,7 @@ dt.ao3h-presets-dt {
   white-space: nowrap;
 }
 
+.ao3h-preset-rename,
 .ao3h-preset-delete {
   background: none;
   border: none;
@@ -329,11 +343,30 @@ dt.ao3h-presets-dt {
   line-height: 1;
 }
 
+.ao3h-preset-rename:hover { color: #2c5f8a; }
 .ao3h-preset-delete:hover { color: #c0392b; }
+
+/* ─── Chantier 4: recent-searches dropdown (same shape as the preset one) ─── */
+.ao3h-recent-dropdown {
+  position: relative;
+  min-width: 230px;
+  max-width: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #c9d8e8;
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.13);
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px 0;
+}
 
 .ao3h-preset-save,
 .ao3h-preset-import,
-.ao3h-preset-export {
+.ao3h-preset-export,
+.ao3h-preset-merge,
+.ao3h-preset-recent {
   padding: 5px 10px;
   background: white;
   border: 1px solid #b0c4de;
@@ -346,7 +379,9 @@ dt.ao3h-presets-dt {
 
 .ao3h-preset-save:hover,
 .ao3h-preset-import:hover,
-.ao3h-preset-export:hover {
+.ao3h-preset-export:hover,
+.ao3h-preset-merge:hover,
+.ao3h-preset-recent:hover {
   background: #e8f0f8;
   border-color: #2c5f8a;
 }
@@ -408,8 +443,39 @@ dt.ao3h-presets-dt {
   margin-left: auto;
 }
 
-/* ═══ History Filter: hidden works ══════════════════════════════════ */
+/* ═══ History Filter: hidden / dimmed works ══════════════════════════ */
 .ao3h-fm-history-hidden { display: none !important; }
+.ao3h-fm-history-dimmed { opacity: 0.3; }
+
+/* ─── Chantier 4: per-category "peek" — temporarily reveal one reason ─── */
+html.ao3h-fm-peek-kudosed     li.blurb.ao3h-fm-history-hidden[data-fm-hidden*=",kudosed,"],
+html.ao3h-fm-peek-subscribed  li.blurb.ao3h-fm-history-hidden[data-fm-hidden*=",subscribed,"],
+html.ao3h-fm-peek-bookmarked  li.blurb.ao3h-fm-history-hidden[data-fm-hidden*=",bookmarked,"],
+html.ao3h-fm-peek-mfl         li.blurb.ao3h-fm-history-hidden[data-fm-hidden*=",mfl,"],
+html.ao3h-fm-peek-readHistory li.blurb.ao3h-fm-history-hidden[data-fm-hidden*=",readHistory,"],
+html.ao3h-fm-peek-readSeries  li.blurb.ao3h-fm-history-hidden[data-fm-hidden*=",readSeries,"] {
+  display: block !important;
+  outline: 1px dashed #b0c4de;
+}
+html.ao3h-fm-peek-kudosed     li.blurb.ao3h-fm-history-dimmed[data-fm-hidden*=",kudosed,"],
+html.ao3h-fm-peek-subscribed  li.blurb.ao3h-fm-history-dimmed[data-fm-hidden*=",subscribed,"],
+html.ao3h-fm-peek-bookmarked  li.blurb.ao3h-fm-history-dimmed[data-fm-hidden*=",bookmarked,"],
+html.ao3h-fm-peek-mfl         li.blurb.ao3h-fm-history-dimmed[data-fm-hidden*=",mfl,"],
+html.ao3h-fm-peek-readHistory li.blurb.ao3h-fm-history-dimmed[data-fm-hidden*=",readHistory,"],
+html.ao3h-fm-peek-readSeries  li.blurb.ao3h-fm-history-dimmed[data-fm-hidden*=",readSeries,"] {
+  opacity: 1 !important;
+  outline: 1px dashed #b0c4de;
+}
+
+.ao3h-fm-peek-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #2c5f8a;
+  font-size: 11px;
+  padding: 0 2px;
+  text-decoration: underline dotted;
+}
 
 /* ═══ Hidden-by-filters count ════════════════════════════════════════ */
 .ao3h-fm-hidden-count {
@@ -417,6 +483,50 @@ dt.ao3h-presets-dt {
   color: #666;
   font-style: italic;
   margin: 4px 0 8px;
+}
+
+/* ═══ Chantier 4: manual per-work hide button and one-shot badge ═════ */
+.ao3h-fm-hide-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 12px;
+  padding: 0 4px;
+  vertical-align: middle;
+}
+.ao3h-fm-hide-btn:hover { color: #c0392b; }
+
+.ao3h-fm-manual-count {
+  font-size: 11px;
+  color: #666;
+  margin-left: 8px;
+}
+.ao3h-fm-unhide-all {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #2c5f8a;
+  font-size: 11px;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.ao3h-fm-oneshot-badge {
+  margin-left: 6px;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.ao3h-fm-date-wrap {
+  font-size: 12px;
+  color: #555;
+}
+.ao3h-fm-date-select {
+  font-size: 12px;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
 }
 
 /* ═══ Preset Action Row (Apply / Edit as chips) ══════════════════════ */

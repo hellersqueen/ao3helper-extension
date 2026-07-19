@@ -20,6 +20,7 @@ Notes
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { mergePresetFilters, addSearchHistoryEntry, incrementUsage, topUsage } from './filterManagerHelpers.js';
 
 
 
@@ -84,7 +85,7 @@ const MULTI_TAG_FIELDS = new Set([
 ]);
 
 export class PresetManagement {
-  constructor ({ NS, storeGet, storeSet, cfg, detectCurrentFandom, getBundleFor, loadBundles, saveBundles, KEY_PRESETS, KEY_BUNDLES, KEY_LAST }) {
+  constructor ({ NS, storeGet, storeSet, cfg, detectCurrentFandom, getBundleFor, loadBundles, saveBundles, KEY_PRESETS, KEY_BUNDLES, KEY_LAST, KEY_HISTORY, KEY_USAGE }) {
     this.NS                  = NS;
     this.storeGet            = storeGet;
     this.storeSet            = storeSet;
@@ -96,9 +97,12 @@ export class PresetManagement {
     this.KEY_PRESETS         = KEY_PRESETS;
     this.KEY_BUNDLES         = KEY_BUNDLES;
     this.KEY_LAST            = KEY_LAST;
+    this.KEY_HISTORY         = KEY_HISTORY;
+    this.KEY_USAGE           = KEY_USAGE;
     this.toolbar             = null;
     this.toolbarHeading      = null;
     this.listenerController  = null;
+    this._formSubmitHandler  = null;
   }
 
 
@@ -129,9 +133,77 @@ export class PresetManagement {
     return { id, name, starred: false, fandom: fandom || null, createdAt: Date.now(), filters };
   }
 
+  renamePreset (id, newName) {
+    if (!newName?.trim()) return;
+    const updated = this.loadPresets().map(p => p.id === id ? { ...p, name: newName.trim() } : p);
+    this.savePresets(updated);
+  }
+
+  /** Merges two presets' filters into a brand-new preset (originals kept). */
+  mergePresets (idA, idB) {
+    const presets = this.loadPresets();
+    const a = presets.find(p => p.id === idA);
+    const b = presets.find(p => p.id === idB);
+    if (!a || !b) return null;
+    const filters = mergePresetFilters(a, b, MULTI_TAG_FIELDS);
+    const merged = this.createPreset(`${a.name} + ${b.name}`, filters, a.fandom || b.fandom);
+    presets.push(merged);
+    this.savePresets(presets);
+    return merged;
+  }
+
   sortedPresets (presets) {
     if (!this.cfg('starredPresetsFirst')) return presets;
     return [...presets].sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
+  }
+
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — SEARCH HISTORY (auto-captured, distinct from named presets)
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  loadSearchHistory ()  { return this.KEY_HISTORY ? this.storeGet(this.KEY_HISTORY, []) : []; }
+  saveSearchHistory (h) { if (this.KEY_HISTORY) this.storeSet(this.KEY_HISTORY, h); }
+
+  recordSearch (filters) {
+    if (!this.KEY_HISTORY || !this.cfg('searchHistoryEnabled')) return;
+    const nonEmpty = Object.fromEntries(
+      Object.entries(filters).filter(([, v]) => v && String(v).trim() && v !== '0')
+    );
+    if (!Object.keys(nonEmpty).length) return;
+    const entry = { ts: Date.now(), filters: nonEmpty };
+    this.saveSearchHistory(addSearchHistoryEntry(this.loadSearchHistory(), entry, 20));
+  }
+
+  /** Wires the filter form's submit event to auto-capture the search into history. */
+  watchFormSubmissions (formSelector) {
+    if (this._formSubmitHandler) return;
+    const form = document.querySelector(formSelector);
+    if (!form) return;
+    this._formSubmitHandler = () => this.recordSearch(this.captureCurrentFilters());
+    form.addEventListener('submit', this._formSubmitHandler);
+  }
+
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     FEATURE — FILTER USAGE STATISTICS
+  ═════════════════════════════════════════════════════════════════════════ */
+
+  loadUsage ()  { return this.KEY_USAGE ? this.storeGet(this.KEY_USAGE, {}) : {}; }
+  saveUsage (u) { if (this.KEY_USAGE) this.storeSet(this.KEY_USAGE, u); }
+
+  recordPresetUsage (name) {
+    if (!this.KEY_USAGE) return;
+    this.saveUsage(incrementUsage(this.loadUsage(), name));
+  }
+
+  topUsedPresets (limit = 5) { return topUsage(this.loadUsage(), limit); }
+
+  _usageStatsHTML () {
+    const top = this.topUsedPresets(3);
+    if (!top.length) return '';
+    const rows = top.map(({ key, count }) => `<li>${escapeHtml(key)} — ${count}×</li>`).join('');
+    return `<p><strong>Your most-used presets</strong></p><ul>${rows}</ul>`;
   }
 
 
@@ -261,7 +333,10 @@ export class PresetManagement {
           <li>Click <strong>↩ Apply</strong> to fill the filters, then submit the form.</li>
           <li>Click <strong>🏷 Edit as chips</strong> to fine-tune each filter individually before searching.</li>
           <li>Click ★ to pin a preset to the top of the list.</li>
+          <li>Click ✎ to rename, or 🔗 Merge to combine two presets into a new one.</li>
+          <li>🕐 Recent shows your last searches, even without saving a preset.</li>
         </ul>
+        ${this._usageStatsHTML()}
       </div>
     `;
 
@@ -308,6 +383,9 @@ export class PresetManagement {
                         role="button"
                         tabindex="0">★</span>
                   <span class="${NS}-preset-name">${escapeHtml(p.name)}</span>
+                  <button type="button" class="${NS}-preset-rename"
+                          data-rename="${escapeHtml(p.id)}"
+                          aria-label="Rename preset ${escapeHtml(p.name)}">✎</button>
                   <button type="button" class="${NS}-preset-delete"
                           data-del="${escapeHtml(p.id)}"
                           aria-label="Delete preset ${escapeHtml(p.name)}">✕</button>
@@ -321,7 +399,10 @@ export class PresetManagement {
           <button type="button" class="${NS}-preset-save"   title="Save current filters as a new preset (Ctrl+Shift+S)">💾 Save</button>
           <button type="button" class="${NS}-preset-import" title="Import presets from JSON file">⬆ Import</button>
           <button type="button" class="${NS}-preset-export" title="Export all presets as JSON file">⬇ Export</button>
+          <button type="button" class="${NS}-preset-merge"  title="Combine two saved presets into a new one">🔗 Merge</button>
+          <button type="button" class="${NS}-preset-recent" title="Recently used search filters" aria-haspopup="listbox" aria-expanded="false">🕐 Recent</button>
         </div>
+        <ul class="${NS}-recent-dropdown" role="listbox" aria-label="Recent searches" hidden></ul>
         <div class="${NS}-preset-action-row" hidden>
           <span class="${NS}-preset-ready-label"></span>
           <button type="button" class="${NS}-preset-apply"  title="Fill the search form with all filters from this preset">↩ Apply</button>
@@ -374,9 +455,10 @@ export class PresetManagement {
     }, { capture: true, signal });
 
     dropdown?.addEventListener('click', (e) => {
-      const delBtn  = e.target.closest(`.${NS}-preset-delete`);
-      const starBtn = e.target.closest(`.${NS}-preset-star`);
-      const item    = e.target.closest(`.${NS}-preset-item`);
+      const delBtn    = e.target.closest(`.${NS}-preset-delete`);
+      const renameBtn = e.target.closest(`.${NS}-preset-rename`);
+      const starBtn   = e.target.closest(`.${NS}-preset-star`);
+      const item      = e.target.closest(`.${NS}-preset-item`);
 
       if (delBtn) {
         e.stopPropagation();
@@ -384,6 +466,19 @@ export class PresetManagement {
         const updated = this.loadPresets().filter(p => p.id !== id);
         this.savePresets(updated);
         const fresh = this._replaceToolbar(toolbar, updated);
+        this.attachPresetToolbarEvents(fresh);
+        return;
+      }
+
+      if (renameBtn) {
+        e.stopPropagation();
+        const id = renameBtn.dataset.rename;
+        const preset = this.loadPresets().find(p => p.id === id);
+        if (!preset) return;
+        const name = W.prompt('New name for this preset:', preset.name);
+        if (!name?.trim()) return;
+        this.renamePreset(id, name);
+        const fresh = this._replaceToolbar(toolbar, this.loadPresets());
         this.attachPresetToolbarEvents(fresh);
         return;
       }
@@ -417,6 +512,7 @@ export class PresetManagement {
           if (activeFilters) { activeFilters.innerHTML = ''; activeFilters.hidden = true; }
         } else {
           this.applyPresetToForm(preset);
+          this.recordPresetUsage(preset.name);
           const fandom = this.detectCurrentFandom();
           if (fandom && this.cfg('rememberLastPresetByFandom')) {
             const last = this.storeGet(this.KEY_LAST, {});
@@ -480,8 +576,67 @@ export class PresetManagement {
       input.click();
     });
 
+    const mergeBtn  = toolbar.querySelector(`.${NS}-preset-merge`);
+    mergeBtn?.addEventListener('click', () => {
+      const list = this.loadPresets();
+      if (list.length < 2) { W.alert('You need at least two saved presets to merge.'); return; }
+      const names = list.map(p => p.name).join(', ');
+      const nameA = W.prompt(`Merge which preset? (available: ${names})`);
+      const a = list.find(p => p.name === nameA?.trim());
+      if (!a) return;
+      const nameB = W.prompt(`Merge with which other preset? (available: ${names})`);
+      const b = list.find(p => p.name === nameB?.trim() && p.id !== a.id);
+      if (!b) return;
+      const merged = this.mergePresets(a.id, b.id);
+      if (merged) {
+        const fresh = this._replaceToolbar(toolbar, this.loadPresets());
+        this.attachPresetToolbarEvents(fresh, { preselectId: merged.id });
+      }
+    });
+
+    const recentBtn      = toolbar.querySelector(`.${NS}-preset-recent`);
+    const recentDropdown = toolbar.querySelector(`.${NS}-recent-dropdown`);
+    const _renderRecent = () => {
+      if (!recentDropdown) return;
+      const history = this.loadSearchHistory();
+      recentDropdown.innerHTML = history.length
+        ? history.map((entry, i) => {
+            const summary = Object.entries(entry.filters)
+              .map(([k, v]) => `${this._friendlyFieldName(k)}: ${v}`)
+              .join(', ');
+            return `<li class="${NS}-preset-item" role="option" data-recent-index="${i}" title="${escapeHtml(summary)}">
+              <span class="${NS}-preset-name">${escapeHtml(summary.slice(0, 60))}${summary.length > 60 ? '…' : ''}</span>
+            </li>`;
+          }).join('')
+        : `<li class="${NS}-preset-empty" role="option" aria-disabled="true">No recent searches yet</li>`;
+    };
+    recentBtn?.addEventListener('click', () => {
+      const open = recentBtn.getAttribute('aria-expanded') === 'true';
+      recentBtn.setAttribute('aria-expanded', String(!open));
+      if (!open) _renderRecent();
+      if (recentDropdown) recentDropdown.hidden = open;
+    });
+    recentDropdown?.addEventListener('click', (e) => {
+      const item = e.target.closest(`.${NS}-preset-item`);
+      if (!item) return;
+      const entry = this.loadSearchHistory()[parseInt(item.dataset.recentIndex, 10)];
+      if (!entry) return;
+      this.applyPresetToForm({ filters: entry.filters });
+      recentDropdown.hidden = true;
+      recentBtn?.setAttribute('aria-expanded', 'false');
+    });
+    document.addEventListener('click', (e) => {
+      if (recentDropdown && !recentBtn?.contains(e.target) && !recentDropdown.contains(e.target)) {
+        recentDropdown.hidden = true;
+        recentBtn?.setAttribute('aria-expanded', 'false');
+      }
+    }, { signal });
+
+    this.watchFormSubmissions(FILTER_FORM_SEL);
+
     const _commitPreset = (preset) => {
       this.applyPresetToForm(preset);
+      this.recordPresetUsage(preset.name);
       const fandom = this.detectCurrentFandom();
       if (fandom && this.cfg('rememberLastPresetByFandom')) {
         const last = this.storeGet(this.KEY_LAST, {});
@@ -581,6 +736,10 @@ export class PresetManagement {
   cleanup () {
     this.listenerController?.abort();
     this.listenerController = null;
+    if (this._formSubmitHandler) {
+      document.querySelector(FILTER_FORM_SEL)?.removeEventListener('submit', this._formSubmitHandler);
+      this._formSubmitHandler = null;
+    }
     this.toolbar?.remove();
     this.toolbarHeading?.remove();
     this.toolbar = null;
