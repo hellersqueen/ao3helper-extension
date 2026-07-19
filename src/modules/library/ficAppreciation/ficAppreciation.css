@@ -37,6 +37,10 @@
         ├─  📋 Le menu de statut et les badges kudos
         │     → SECTION 04 — STATUT ET KUDOS
 
+        ├─  🔍 Le chercheur "kudosé mais non favori", les catégories de
+        │     notation, les mood tags et les demi-étoiles
+        │     → SECTION 05 — EXTRAS (Chantier 4)
+
         ────────────────────────────────────────────────────────────── */
 
 
@@ -51,6 +55,8 @@
 /*=        ├─  03. Étoiles de notation                       */
 /*#        |                                                 */
 /*==       ├─  04. Statut et kudos                           */
+/*#        |                                                 */
+/*===      ├─  05. Extras (Chantier 4)                       */
 /*#        |                                                 */
 /*#        └─*/
 
@@ -353,4 +359,161 @@
 .ao3h-fa-check-result {
   margin-left: 8px;
   font-size: 12px;
+}
+
+
+/*===
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 05 — EXTRAS (Chantier 4)
+  ───────────────────────────────────────────────────────────────────────
+    Demi-étoiles, catégories de notation, mood tags, comparaison
+    communautaire, mise en avant du widget d'étoiles, et le bouton
+    "kudosé mais non favori" de la page Bookmarks.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+/*+ ─────────────────────────────────────────────────────────────
+    DEMI-ÉTOILES
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-fa-star.ao3h-fa-star-half {
+  position: relative;
+}
+
+.ao3h-fa-star-back  { color: var(--ao3h-fa-color-star); }
+
+.ao3h-fa-star-front {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  overflow: hidden;
+  color: var(--ao3h-fa-color-star);
+}
+
+
+/*+ ─────────────────────────────────────────────────────────────
+    CATÉGORIES DE NOTATION (Plot / Characters / Writing)
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-fa-categories {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--ao3h-fa-color-blue-border);
+}
+
+.ao3h-fa-category-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.ao3h-fa-category-label {
+  min-width: 80px;
+  font-size: 12px;
+  color: var(--ao3h-fa-text-muted);
+}
+
+.ao3h-fa-category-score {
+  font-size: 12px;
+  color: var(--ao3h-fa-color-blue);
+  margin-top: 4px;
+}
+
+.ao3h-fa-category-score-badge {
+  font-size: 12px;
+  color: var(--ao3h-fa-color-blue);
+  vertical-align: middle;
+}
+
+
+/*+ ─────────────────────────────────────────────────────────────
+    MOOD TAGS
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-fa-mood-tags {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.ao3h-fa-mood-tags-label {
+  margin-right: 6px;
+  color: var(--ao3h-fa-text-muted);
+}
+
+.ao3h-fa-mood-tags-input {
+  font-size: 12px;
+  padding: 2px 4px;
+  border: 1px solid var(--ao3h-fa-color-blue-border);
+  border-radius: 3px;
+  width: 220px;
+  max-width: 100%;
+}
+
+
+/*+ ─────────────────────────────────────────────────────────────
+    COMPARAISON COMMUNAUTAIRE ET HISTORIQUE DE NOTE
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-fa-community-stats {
+  font-size: 12px;
+  color: var(--ao3h-fa-text-muted);
+  margin-top: 4px;
+}
+
+.ao3h-fa-rating-history-info {
+  margin-left: 6px;
+  cursor: help;
+  font-size: 12px;
+}
+
+/*- ⚠️ Mise en avant temporaire du widget d'étoiles — ajoutée/retirée par JS
+    quand "Prompt to rate when marking a work finished" est activé */
+.ao3h-fa-star-wrap.ao3h-fa-star-wrap-highlight {
+  outline: 2px solid var(--ao3h-fa-color-star);
+  outline-offset: 2px;
+  border-radius: var(--ao3h-fa-radius);
+  transition: outline-color 0.3s;
+}
+
+
+/*+ ─────────────────────────────────────────────────────────────
+    CHERCHEUR "KUDOSÉ MAIS NON FAVORI" (page Bookmarks)
+  ───────────────────────────────────────────────────────────── */
+
+.ao3h-fa-bookmark-finder {
+  margin: 10px 0;
+  padding: 8px 12px;
+  background: var(--ao3h-fa-color-blue-bg);
+  border: 1px solid var(--ao3h-fa-color-blue-border);
+  border-radius: var(--ao3h-fa-radius);
+}
+
+.ao3h-fa-bookmark-finder-btn {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ao3h-fa-color-blue);
+  background: none;
+  border: 1px solid var(--ao3h-fa-color-blue-border);
+  border-radius: var(--ao3h-fa-radius);
+  padding: 5px 12px;
+}
+
+.ao3h-fa-bookmark-finder-btn:hover { background: var(--ao3h-fa-color-blue-hover); }
+
+.ao3h-fa-bookmark-finder-result {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.ao3h-fa-bookmark-finder-list {
+  max-height: 240px;
+  overflow-y: auto;
+  padding-left: 18px;
 }

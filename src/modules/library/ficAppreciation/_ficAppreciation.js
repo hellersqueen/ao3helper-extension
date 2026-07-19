@@ -35,6 +35,8 @@ import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, observe } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromHref, extractWorkIdFromBlurb as parseWorkIdFromBlurb, isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
+import { clearAllToasts } from '../../../../lib/ui/toast.js';
 import styles from './ficAppreciation.css?inline';
 
 import { MarkAsFinished } from './markAsFinished.js';
@@ -45,6 +47,7 @@ import { KudosManager } from './kudosManager.js';
 import { KudosExtendedFeatures } from './kudosExtendedFeatures.js';
 import { StarRatings } from './starRatings.js';
 import { MultiStatusTracker } from './multiStatusTracker.js';
+import { KudosBookmarkFinder } from './kudosBookmarkFinder.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -70,6 +73,15 @@ const DEFAULTS = {
   hideStatusFilter:       [],      // array of status keys to hide, e.g. ['finished','dropped']
   tooltipDateFormat:      'long',  // 'long' | 'short' | 'relative'
   kudosIcon:              '',      // custom icon string, e.g. '❤️'; '' = use default 🧡
+  kudosReminder:          false,   // banner on work pages you finished but never kudosed
+  confirmBeforeKudos:     false,   // require a second click on the blurb quick-kudos button
+  ratingCategories:       false,   // plot / characters / writing mini star rows
+  moodTags:               false,   // free-form mood/emotion tags alongside your rating
+  halfStars:              false,   // allow .5 precision on the work-page star widget
+  showCommunityStats:     false,   // show AO3's kudos/hits count next to your personal rating
+  completionMilestones:   true,    // celebratory toast at 10/25/50/100/... finished works
+  promptRatingOnFinish:   false,   // highlight the star widget right after marking finished
+  kudosBookmarkFinder:    true,    // "find kudosed works not bookmarked" button on your bookmarks page
 };
 
 function cfg (key) {
@@ -128,6 +140,7 @@ register(MOD, {
   const kef  = new KudosExtendedFeatures({ storeGet });
   const sr   = new StarRatings(diOpts);
   const mst  = new MultiStatusTracker(diOpts);
+  const kbf  = new KudosBookmarkFinder({ NS, storeGet });
   const hiddenBlurbs = new Map();
 
   function hideBlurb (blurb) {
@@ -163,6 +176,13 @@ register(MOD, {
     getStatusStats:  ()          => mst.getStats(),
     exportKudos:     (fmt)       => kef.exportKudos(fmt),
     exportStatuses:  (fmt)       => mst.exportStatuses(fmt),
+    getKudosHistory: (opts)      => kef.getHistory(opts),
+    getKudosTimeHabits: ()       => kef.getTimeHabits(),
+    getRatingStats:  ()          => sr.getRatingStats(),
+    getRatingHistory: (id)       => sr.getRatingHistory(id),
+    getCategoryRatings: (id)     => sr.getCategoryRatings(id),
+    getMoodTags:     (id)        => sr.getMoodTags(id),
+    findKudosedNotBookmarked: () => kbf.findMissing(),
   };
 
   function processBlurbs () {
@@ -197,10 +217,24 @@ register(MOD, {
     sr.injectStarWidgetOnWorkPage(workId);
     mst.injectWorkPageStatusToggle(workId);
 
+    if (cfg('kudosReminder') && maf.isFinished(workId) && !kt.hasGivenKudos(workId)) {
+      kt.injectKudosReminderBanner(workId);
+    }
+
     // Cross-tab kudos sync: refresh badge if another tab gives kudos
     km.startTabSync((changedId) => {
       if (changedId === workId) km.wireWorkPage(workId);
     });
+
+    // Nudge toward rating right after finishing, if not already rated.
+    const onFinished = (e) => {
+      if (!cfg('promptRatingOnFinish') || e.detail?.workId !== workId || sr.getRating(workId) !== null) return;
+      const widget = document.getElementById(`${NS}-fa-star-widget`);
+      widget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      widget?.classList.add(`${NS}-fa-star-wrap-highlight`);
+      setTimeout(() => widget?.classList.remove(`${NS}-fa-star-wrap-highlight`), 3000);
+    };
+    W.addEventListener(EV_WORK_FINISHED, onFinished);
 
     return () => {
       document.getElementById(`${NS}-fa-finish-btn`)?.remove();
@@ -208,12 +242,16 @@ register(MOD, {
       document.getElementById(`${NS}-fa-revisit-prompt`)?.remove();
       document.getElementById(`${NS}-fa-kudos-check-btn`)?.remove();
       document.getElementById(`${NS}-fa-work-status`)?.remove();
+      document.getElementById(`${NS}-fa-kudos-reminder`)?.remove();
+      W.removeEventListener(EV_WORK_FINISHED, onFinished);
+      clearAllToasts();
       km.cleanup();
       delete AO3H.ficAppreciation;
     };
 
   } else if (isListingPage()) {
     processBlurbs();
+    if (cfg('kudosBookmarkFinder')) kbf.injectFinderButton();
 
     const root     = document.querySelector('#main') || document.body;
     const observer = observe(root, { childList: true, subtree: true }, () => processBlurbs());
@@ -231,6 +269,7 @@ register(MOD, {
         delete el.dataset.mstBadge;
         delete el.dataset.mstToggle;
       });
+      kbf.cleanup();
       km.cleanup();
       delete AO3H.ficAppreciation;
     };

@@ -21,6 +21,8 @@ Notes
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
+import { showToast } from '../../../../lib/ui/toast.js';
+import { milestonesCrossed } from './ficAppreciationHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -50,9 +52,18 @@ export class MarkAsFinished {
 
   markFinished (workId, note) {
     const map = this._load();
+    const prevCount = Object.keys(map).length;
     map[workId] = { date: new Date().toISOString().slice(0, 10), ...(note ? { note } : {}) };
     this._save(map);
     W.dispatchEvent?.(new CustomEvent(EV_WORK_FINISHED, { detail: { workId } }));
+
+    if (this.cfg('completionMilestones') !== false) {
+      const crossed = milestonesCrossed(prevCount, Object.keys(map).length);
+      if (crossed.length) {
+        const milestone = crossed[crossed.length - 1];
+        showToast(`🎉 ${milestone} works finished!`, { type: 'success', duration: 4000 });
+      }
+    }
   }
 
   unmarkFinished (workId) {

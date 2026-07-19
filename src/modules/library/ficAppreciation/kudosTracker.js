@@ -21,6 +21,7 @@ Notes
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { EV_KUDOS_GIVEN } from '../../../../lib/utils/event-names.js';
 import { giveKudos } from '../../../../lib/ao3/actions.js';
+import { getBlurbMeta } from '../../../../lib/ao3/parsers.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 
 
@@ -51,12 +52,31 @@ export class KudosTracker {
 
   hasGivenKudos (workId) { return workId in this._load(); }
 
-  recordKudos (workId) {
+  /**
+   * Record a kudos. `meta` (title/author/fandoms) is captured opportunistically
+   * from whatever page triggered the recording, so fandom/author breakdowns and
+   * kudos-history search can work — older entries without it degrade gracefully.
+   * @param {string} workId
+   * @param {{title?: string, author?: string, fandoms?: string[]}} [meta]
+   */
+  recordKudos (workId, meta = {}) {
     const map = this._load();
     if (map[workId]) return;
-    map[workId] = { date: new Date().toISOString().slice(0, 10) };
+    map[workId] = { date: new Date().toISOString().slice(0, 10), ts: Date.now(), ...meta };
     this._save(map);
     W.dispatchEvent?.(new CustomEvent(EV_KUDOS_GIVEN, { detail: { workId } }));
+  }
+
+  /** Extract title/author/fandoms from the current work page, for kudos records. */
+  _extractWorkPageMeta () {
+    const title    = document.querySelector('h2.title.heading')?.textContent.trim();
+    const author   = document.querySelector('h3.byline.heading a[rel="author"]')?.textContent.trim();
+    const fandoms  = Array.from(document.querySelectorAll('dd.fandom.tags a.tag')).map(a => a.textContent.trim());
+    const meta = {};
+    if (title) meta.title = title;
+    if (author) meta.author = author;
+    if (fandoms.length) meta.fandoms = fandoms;
+    return meta;
   }
 
   /** Detect kudos given on the current work page (by checking the kudos list). */
@@ -70,7 +90,7 @@ export class KudosTracker {
 
     const kudosList = document.querySelector('.kudos');
     if (kudosList && kudosList.textContent.includes(username)) {
-      this.recordKudos(workId);
+      this.recordKudos(workId, this._extractWorkPageMeta());
       return true;
     }
     return false;
@@ -85,7 +105,7 @@ export class KudosTracker {
       const form = document.querySelector('#kudos form, .kudos form');
       if (form && !form.dataset.faWatched) {
         form.dataset.faWatched = '1';
-        const handler = () => this.recordKudos(workId);
+        const handler = () => this.recordKudos(workId, this._extractWorkPageMeta());
         form.addEventListener('submit', handler);
         this._forms.set(form, handler);
       }
@@ -102,6 +122,43 @@ export class KudosTracker {
     if (this.cfg('commentAssistOnRevisit')) {
       this._injectRevisitPrompt(workId);
     }
+  }
+
+  /**
+   * Reminder banner shown on a work page you've finished but never kudosed.
+   * Offers a one-click "Give kudos" action; caller is responsible for deciding
+   * when this applies (needs MarkAsFinished's data, which this class doesn't own).
+   */
+  injectKudosReminderBanner (workId) {
+    const { NS } = this;
+    if (this.hasGivenKudos(workId)) return;
+    if (document.getElementById(`${NS}-fa-kudos-reminder`)) return;
+
+    const banner = document.createElement('div');
+    banner.id        = `${NS}-fa-kudos-reminder`;
+    banner.className = `${NS}-fa-revisit-prompt`;
+    banner.innerHTML = `
+      <span>You finished this work but haven't left kudos yet.</span>
+      <button type="button" class="${NS}-fa-kudos-reminder-btn ${NS}-fa-revisit-link">🧡 Give kudos</button>
+      <button type="button" class="${NS}-fa-revisit-dismiss" aria-label="Dismiss">✕</button>
+    `;
+    banner.querySelector(`.${NS}-fa-kudos-reminder-btn`)?.addEventListener('click', async (e) => {
+      const btn = /** @type {HTMLButtonElement} */ (e.currentTarget);
+      btn.disabled    = true;
+      btn.textContent = 'Giving kudos…';
+      const ok = await giveKudos(workId, { signal: this._requestController.signal });
+      if (this._requestController.signal.aborted) return;
+      if (ok) {
+        this.recordKudos(workId, this._extractWorkPageMeta());
+        banner.remove();
+        this.applyKudosStateOnWorkPage(workId);
+      } else {
+        btn.disabled    = false;
+        btn.textContent = '🧡 Give kudos';
+      }
+    });
+    banner.querySelector(`.${NS}-fa-revisit-dismiss`)?.addEventListener('click', () => banner.remove());
+    document.querySelector('#kudos, .kudos')?.after(banner);
   }
 
   _injectRevisitPrompt (workId) {
@@ -155,14 +212,33 @@ export class KudosTracker {
     btn.textContent = '🤍';
     btn.title       = 'Give kudos (no reload needed)';
 
+    /** @type {ReturnType<typeof setTimeout>|null} */
+    let confirmTimer = null;
+
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();
+
+      if (this.cfg('confirmBeforeKudos') && btn.dataset.faConfirm !== '1') {
+        btn.dataset.faConfirm = '1';
+        btn.textContent = '❓';
+        btn.title       = 'Click again to confirm';
+        confirmTimer = setTimeout(() => {
+          if (!btn.isConnected) return;
+          btn.dataset.faConfirm = '';
+          btn.textContent = '🤍';
+          btn.title       = 'Give kudos (no reload needed)';
+        }, 4000);
+        return;
+      }
+      if (confirmTimer) clearTimeout(confirmTimer);
+
       try {
         const ok = await giveKudos(workId, { signal: this._requestController.signal });
         if (this._requestController.signal.aborted) return;
         if (ok) {
-          this.recordKudos(workId);
+          const meta = getBlurbMeta(blurb);
+          this.recordKudos(workId, meta ? { title: meta.title, author: meta.author, fandoms: meta.fandoms } : {});
           if (btn.isConnected) {
             btn.textContent = '🧡';
             btn.title       = 'Kudos given!';

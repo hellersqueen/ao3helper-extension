@@ -22,6 +22,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { EV_STATUS_CHANGED } from '../../../../lib/utils/event-names.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
+import { nextRereadCount } from './ficAppreciationHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -62,11 +63,16 @@ export class MultiStatusTracker {
 
   setStatus (workId, status, note) {
     if (!STATUSES[status]) return;
-    const map   = this._load();
+    const map  = this._load();
+    const prev = map[workId];
+    // Re-read count survives status changes: it's how many times this work
+    // was explicitly marked "re-read", not tied to the currently-set status.
+    const rereadCount = status === 're-read' ? nextRereadCount(prev) : prev?.rereadCount;
     map[workId] = {
       status,
       date: new Date().toISOString().slice(0, 10),
       ...(note ? { note } : {}),
+      ...(rereadCount ? { rereadCount } : {}),
     };
     this._save(map);
     W.dispatchEvent?.(new CustomEvent(EV_STATUS_CHANGED, { detail: { workId, status } }));
@@ -95,11 +101,22 @@ export class MultiStatusTracker {
     const def = STATUSES[entry.status];
     if (!def) return;
 
+    // Show a live reading-progress percentage instead of a flat icon while a work
+    // is still in progress, using data readingTracker already tracks (if enabled).
+    const progressPct = entry.status === 'reading'
+      ? W.AO3H_ReadingTracker?.getProgress?.(workId)?.progress
+      : null;
+    const text = (typeof progressPct === 'number') ? `${def.icon} ${progressPct}%` : def.icon;
+
     appendHeadingBadge(blurb, {
       className: `${NS}-fa-badge ${NS}-fa-badge-status ${NS}-fa-badge-status-${entry.status}`,
       guardSelector: `.${NS}-fa-badge-status`,
-      text: def.icon,
-      title: `${def.label}${entry.date ? ' — ' + entry.date : ''}${entry.note ? '\n' + entry.note : ''}`,
+      text,
+      title: `${def.label}` +
+        (typeof progressPct === 'number' ? ` — ${progressPct}% read` : '') +
+        (entry.date ? ' — ' + entry.date : '') +
+        (entry.rereadCount ? ` — re-read ${entry.rereadCount}×` : '') +
+        (entry.note ? '\n' + entry.note : ''),
     });
   }
 
