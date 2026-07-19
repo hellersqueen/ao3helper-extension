@@ -14,15 +14,19 @@ AO3 Helper — Similar Fics
     Features
 
     - Metadata-driven AO3 recommendation queries
-    - Similar-pairing, general, and same-author result sections
-    - Match scores with already-read work exclusion
+    - Similar-pairing, general, same-author, and same-series result sections
+    - Match scores with already-read and dismissed work exclusion
+    - Removable "Based on" criteria chips to refine a search on the fly
     - Inline “Mark for Later” actions
 
     Notes
 
     - Cross-page result loading uses the userscript request transport.
     - Active searches and Mark-for-Later requests are aborted during cleanup.
-    - Results below the fixed similarity threshold are excluded.
+    - Results below the score threshold (set by `matchStyle`) are excluded.
+    - Recommendations stay local: same-tag matching only, no external/AI
+      recommendation service, no cross-work taste profile (see similarFics.md
+      "Décisions de conception").
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -33,11 +37,16 @@ AO3 Helper — Similar Fics
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { getHistoryWorkIdSet } from '../../../../lib/storage/keys.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { createPersistedCache } from '../../../../lib/storage/cache.js';
 import { markWorkForLater } from '../../../../lib/ao3/actions.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import {
+  getWordRangeForMode, minScoreForStyle, scoreWork, passesLengthFilter,
+  buildReasonText, filterDismissed, addDismissed, parseSeriesPartOf,
+} from './similarFicsHelpers.js';
 import styles from './similarFics.css?inline';
 
 
@@ -57,10 +66,12 @@ const BUTTON_LI_ID = 'ao3h-similar-stories-li';
 const activeRequests = new Set();
 let active = false;
 
-const MAX_TAGS = 4;
-const MAX_PER_SECTION = 5;
-const MIN_SCORE = 70;
-const WORD_BUCKET_SIZES = [2_000, 5_000, 10_000, 20_000, 50_000, 100_000];
+const MAX_REL_TAGS   = 2;
+const MAX_OTHER_TAGS = 2;
+const MAX_PER_SECTION_OPTIONS = [5, 10, 15];
+
+const SK_DISMISSED = 'ao3h:sf:dismissed';
+const resultsCache = createPersistedCache({ key: 'ao3h:sf:cache', ttlMs: 60 * 60 * 1000 });
 
 const DEFAULTS = {
   numResults:           '10',
@@ -69,12 +80,35 @@ const DEFAULTS = {
   showSummary:          true,
   includeWIP:           false,
   openInNewTab:         false,
+  lengthMode:           'similar',  // 'similar' | 'shorter' | 'longer' | 'quick' | 'epic'
+  matchStyle:           'balanced', // 'close' | 'balanced' | 'variety'
+  matchRating:          true,
+  cacheResults:         true,
+  showSeriesSection:    true,
 };
 
 const cfg = makeCfg(MOD, DEFAULTS);
 
 function log(...args) {
   console.log(LOG, ...args);
+}
+
+function maxPerSection() {
+  const n = parseInt(cfg('numResults'), 10);
+  return MAX_PER_SECTION_OPTIONS.includes(n) ? n : 10;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — DISMISSED ("NOT INTERESTED") WORKS
+═══════════════════════════════════════════════════════════════════════════ */
+
+function loadDismissed() {
+  return new Set((lsGet(SK_DISMISSED) || []).map(String));
+}
+
+function dismissWork(workId) {
+  lsSet(SK_DISMISSED, addDismissed(lsGet(SK_DISMISSED) || [], workId));
 }
 
 
@@ -130,34 +164,6 @@ function getWordCount() {
 }
 
 /**
- * Given a word count, find an approximate "from/to" range.
- * Ex: 23k → [20k, 30k]
- */
-function getWordRangeAround(count) {
-  if (typeof count !== 'number' || !isFinite(count) || count <= 0) {
-    return { from: null, to: null };
-  }
-
-  // Use the closest bucket as step.
-  let step = 5000;
-  for (const size of WORD_BUCKET_SIZES) {
-    if (count <= size) {
-      step = size / 2;
-      break;
-    }
-  }
-
-  const half = step / 2;
-  let from = Math.max(0, Math.floor((count - half) / 100) * 100);
-  let to = Math.floor((count + half) / 100) * 100;
-
-  if (from < 1000) from = 0;
-  if (to < from) to = from;
-
-  return { from, to };
-}
-
-/**
  * Extract fandom (first fandom tag) from the work.
  */
 function getFandomTag() {
@@ -167,39 +173,39 @@ function getFandomTag() {
   return (el.textContent || '').trim();
 }
 
-/**
- * Collect "key tags" from relationships + additional tags.
- * We'll reuse the first few for similarity.
- */
-function getKeyTags() {
-  const tags = [];
-
-  // Relationships
-  const relEls = document.querySelectorAll('dd.relationship.tags li a, li.relationships a.tag');
-  relEls.forEach((el) => {
-    const t = (el.textContent || '').trim();
-    if (t) tags.push(t);
-  });
-
-  // Additional tags
-  const addEls = document.querySelectorAll('dd.freeform.tags li a, dd.additional.tags li a, dd.freeform a.tag');
-  addEls.forEach((el) => {
-    const t = (el.textContent || '').trim();
-    if (t) tags.push(t);
-  });
-
-  // Deduplicate, keep first few.
-  const unique = [];
+function uniqueTags(elements, cap) {
+  const out = [];
   const seen = new Set();
-  for (const t of tags) {
+  elements.forEach((el) => {
+    const t = (el.textContent || '').trim();
+    if (!t) return;
     const key = t.toLowerCase();
-    if (seen.has(key)) continue;
+    if (seen.has(key)) return;
     seen.add(key);
-    unique.push(t);
-    if (unique.length >= MAX_TAGS) break;
-  }
+    out.push(t);
+  });
+  return cap ? out.slice(0, cap) : out;
+}
 
-  return unique;
+/** Relationship/pairing tags, capped for query length. */
+function getRelationshipTags() {
+  return uniqueTags(document.querySelectorAll('dd.relationship.tags li a, li.relationships a.tag'), MAX_REL_TAGS);
+}
+
+/** Character/freeform ("additional") tags, capped for query length. */
+function getOtherTags() {
+  return uniqueTags(document.querySelectorAll('dd.freeform.tags li a, dd.additional.tags li a, dd.freeform a.tag'), MAX_OTHER_TAGS);
+}
+
+/** Series info for the current work, if it belongs to one — used to prioritize sequels/prequels. */
+function getSeriesInfo() {
+  const a = document.querySelector('dd.series a[href*="/series/"]');
+  if (!a) return null;
+  const seriesId = (a.getAttribute('href').match(/\/series\/(\d+)/) || [])[1] || null;
+  if (!seriesId) return null;
+  const dd = a.closest('dd.series');
+  const partOf = parseSeriesPartOf(dd?.textContent || '');
+  return { seriesId, seriesName: a.textContent.trim(), seriesHref: a.getAttribute('href'), ...partOf };
 }
 
 // Build an AO3 search URL from the similarity info (used as the fetch target).
@@ -211,22 +217,23 @@ function buildSimilarWorksUrl(info) {
     base.searchParams.set('tag_id', info.fandomTag);
   }
 
-  // Rating
-  const ratingParam = mapRatingToParam(info.rating);
-  if (ratingParam) {
-    base.searchParams.set('work_search[ratings]', ratingParam);
+  // Rating (only when the user wants matches restricted to the same rating).
+  if (cfg('matchRating')) {
+    const ratingParam = mapRatingToParam(info.rating);
+    if (ratingParam) base.searchParams.set('work_search[ratings]', ratingParam);
   }
 
-  // Words range
-  if (info.wordsFrom != null && info.wordsTo != null) {
-    if (info.wordsFrom > 0) base.searchParams.set('work_search[words_from]', String(info.wordsFrom));
-    base.searchParams.set('work_search[words_to]', String(info.wordsTo));
-  }
+  // Words range, shaped by the configured length preference.
+  if (info.wordsFrom != null) base.searchParams.set('work_search[words_from]', String(info.wordsFrom));
+  if (info.wordsTo != null)   base.searchParams.set('work_search[words_to]', String(info.wordsTo));
 
-  // Tags as search query (simple space-joined)
-  if (info.keyTags && info.keyTags.length) {
-    const query = info.keyTags.join(' ');
-    base.searchParams.set('work_search[query]', query);
+  // Complete-only unless the user opted in to works-in-progress.
+  if (!cfg('includeWIP')) base.searchParams.set('work_search[complete]', 'T');
+
+  // Tags as search query (simple space-joined) — relationships + other tags.
+  const keyTags = [...(info.relationshipTags || []), ...(info.otherTags || [])];
+  if (keyTags.length) {
+    base.searchParams.set('work_search[query]', keyTags.join(' '));
   }
 
   // Sort by kudos (as a nice default for recs).
@@ -239,17 +246,19 @@ function collectSimilarityInfo() {
   const rating    = getRating();
   const words     = getWordCount();
   const fandomTag = getFandomTag();
-  const keyTags   = getKeyTags();
-  const { from, to } = getWordRangeAround(words || 0);
+  const relationshipTags = getRelationshipTags();
+  const otherTags = getOtherTags();
+  const { from, to } = getWordRangeForMode(words || 0, cfg('lengthMode'));
   const authorEl      = document.querySelector('a[rel="author"]');
   const authorName    = authorEl ? authorEl.textContent.trim() : null;
   const authorHref    = authorEl ? (authorEl.getAttribute('href') || '') : '';
   const authorUsername = (authorHref.match(/\/users\/([^/]+)/) || [])[1] || null;
+  const series = getSeriesInfo();
 
   return {
-    rating, words, fandomTag, keyTags,
+    rating, words, fandomTag, relationshipTags, otherTags,
     wordsFrom: from, wordsTo: to,
-    authorName, authorUsername,
+    authorName, authorUsername, series,
   };
 }
 
@@ -268,7 +277,7 @@ function buildAuthorWorksUrl(username) {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   FEATURE — REQUESTS, RESULT PARSING, AND SCORING
+   FEATURE — REQUESTS, RESULT PARSING
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function runRequest(options) {
@@ -325,7 +334,7 @@ async function markForLater(workId) {
   }
 }
 
-// Fetch an AO3 search results page via GM_xmlhttpRequest.
+// Fetch an AO3 search results (or series) page via GM_xmlhttpRequest.
 async function fetchSimilarWorks(url) {
   const response = await runRequest({
     method: 'GET',
@@ -334,7 +343,7 @@ async function fetchSimilarWorks(url) {
   return response.responseText;
 }
 
-// Parse AO3 work blurbs from a search-results HTML string.
+// Parse AO3 work blurbs from a search-results (or series) HTML string.
 function parseWorkBlurbs(html) {
   const doc     = new DOMParser().parseFromString(html, 'text/html');
   const results = [];
@@ -346,6 +355,7 @@ function parseWorkBlurbs(html) {
     const authorEl  = blurb.querySelector('a[rel="author"]');
     const kudosEl   = blurb.querySelector('dd.kudos');
     const wordsEl   = blurb.querySelector('dd.words');
+    const summaryEl = blurb.querySelector('.summary blockquote, blockquote.userstuff');
     const fandoms       = Array.from(blurb.querySelectorAll('.fandoms a.tag')).map(e => e.textContent.trim());
     const relationships = Array.from(blurb.querySelectorAll('.relationships a.tag')).map(e => e.textContent.trim());
     const freeforms     = Array.from(blurb.querySelectorAll('.freeforms a.tag')).map(e => e.textContent.trim());
@@ -356,39 +366,11 @@ function parseWorkBlurbs(html) {
       author:    authorEl ? authorEl.textContent.trim()                                      : 'Anonymous',
       kudos:     kudosEl  ? parseInt((kudosEl.textContent || '').replace(/,/g, ''), 10) || 0 : 0,
       wordCount: wordsEl  ? parseInt((wordsEl.textContent  || '').replace(/,/g, ''), 10) || 0 : 0,
+      summary:   summaryEl ? summaryEl.textContent.trim() : '',
       fandoms, relationships, freeforms,
     });
   });
   return results;
-}
-
-// Score a blurb against the current work's info. Returns { score, reasons, relMatchCount }.
-function scoreWork(blurb, info) {
-  let score = 0;
-  const reasons = [];
-
-  if (info.fandomTag && blurb.fandoms.some(f => f.toLowerCase() === info.fandomTag.toLowerCase())) {
-    score += 40;
-    reasons.push('fandom');
-  }
-
-  const blurbRelsLower  = blurb.relationships.map(t => t.toLowerCase());
-  const blurbTagsLower  = [...blurbRelsLower, ...blurb.freeforms.map(t => t.toLowerCase())];
-  const infoTagsLower   = (info.keyTags || []).map(t => t.toLowerCase());
-  const relMatchCount   = infoTagsLower.filter(t => blurbRelsLower.includes(t)).length;
-  const tagMatchCount   = infoTagsLower.filter(t => blurbTagsLower.includes(t)).length;
-  if (tagMatchCount > 0) {
-    score += Math.min(tagMatchCount * 10, 40);
-    reasons.push(`${tagMatchCount} tag${tagMatchCount > 1 ? 's' : ''}`);
-  }
-
-  if (info.words && blurb.wordCount > 0) {
-    const ratio = Math.min(info.words, blurb.wordCount) / Math.max(info.words, blurb.wordCount);
-    if (ratio >= 0.8)      { score += 20; reasons.push('length'); }
-    else if (ratio >= 0.5) { score += 10; }
-  }
-
-  return { score, reasons, relMatchCount };
 }
 
 
@@ -442,7 +424,7 @@ function renderError(panel, msg) {
 }
 
 // Build a single work card element.
-function createWorkCard(r, showScore) {
+function createWorkCard(r, { showScore, showSummary, onDismiss }) {
   const card     = document.createElement('div');
   card.className = 'ao3h-sf-card';
 
@@ -452,8 +434,7 @@ function createWorkCard(r, showScore) {
   const titleLink       = document.createElement('a');
   titleLink.className   = 'ao3h-sf-work-title';
   titleLink.href        = r.href || `/works/${r.workId}`;
-  titleLink.target      = '_blank';
-  titleLink.rel         = 'noopener noreferrer';
+  if (cfg('openInNewTab')) { titleLink.target = '_blank'; titleLink.rel = 'noopener noreferrer'; }
   titleLink.textContent = r.title || `Work #${r.workId}`;
   top.appendChild(titleLink);
 
@@ -461,7 +442,7 @@ function createWorkCard(r, showScore) {
     const scoreEl       = document.createElement('span');
     scoreEl.className   = 'ao3h-sf-score';
     scoreEl.textContent = `${r.score}% match`;
-    if (r.reasons && r.reasons.length) scoreEl.textContent += ` · ${r.reasons.join(', ')}`;
+    if (r.reasons && r.reasons.length) scoreEl.textContent += ` · ${buildReasonText(r.reasons)}`;
     top.appendChild(scoreEl);
   }
 
@@ -472,14 +453,23 @@ function createWorkCard(r, showScore) {
   if (r.kudos > 0)     mp.push(`${r.kudos.toLocaleString()} kudos`);
   metaEl.textContent = mp.join(' · ');
 
+  card.appendChild(top);
+  card.appendChild(metaEl);
+
+  if (showSummary && r.summary) {
+    const summaryEl     = document.createElement('p');
+    summaryEl.className = 'ao3h-sf-card-summary';
+    summaryEl.textContent = r.summary;
+    card.appendChild(summaryEl);
+  }
+
   const actions     = document.createElement('div');
   actions.className = 'ao3h-sf-actions';
 
   const openLink       = document.createElement('a');
   openLink.className   = 'ao3h-sf-open';
   openLink.href        = r.href || `/works/${r.workId}`;
-  openLink.target      = '_blank';
-  openLink.rel         = 'noopener noreferrer';
+  if (cfg('openInNewTab')) { openLink.target = '_blank'; openLink.rel = 'noopener noreferrer'; }
   openLink.textContent = 'Open';
 
   const mflBtn       = document.createElement('button');
@@ -493,16 +483,22 @@ function createWorkCard(r, showScore) {
     if (active && mflBtn.isConnected) mflBtn.textContent = ok ? '✓ MFL' : '✗ failed';
   });
 
+  const dismissBtn       = document.createElement('button');
+  dismissBtn.type        = 'button';
+  dismissBtn.className   = 'ao3h-sf-dismiss-btn';
+  dismissBtn.title       = 'Not interested — don’t suggest this again';
+  dismissBtn.textContent = '✕';
+  dismissBtn.addEventListener('click', () => onDismiss(r.workId, card));
+
   actions.appendChild(openLink);
   actions.appendChild(mflBtn);
-  card.appendChild(top);
-  card.appendChild(metaEl);
+  actions.appendChild(dismissBtn);
   card.appendChild(actions);
   return card;
 }
 
 // Append a titled section of work cards to frag.
-function renderSection(frag, title, items, showScore) {
+function renderSection(frag, title, items, { showScore, showSummary, onDismiss }) {
   if (!items.length) return;
   const section     = document.createElement('div');
   section.className = 'ao3h-sf-section';
@@ -510,74 +506,139 @@ function renderSection(frag, title, items, showScore) {
   hdr.className     = 'ao3h-sf-section-title';
   hdr.textContent   = title;
   section.appendChild(hdr);
-  for (const r of items) section.appendChild(createWorkCard(r, showScore));
+  for (const r of items) section.appendChild(createWorkCard(r, { showScore, showSummary, onDismiss }));
   frag.appendChild(section);
 }
 
-function renderResults(panel, { pairings, general, authorItems, info, excludedCount }) {
+// Render the "Based on: ..." line as removable criteria chips.
+function renderCriteriaChips(frag, info, onExclude) {
+  const chips = [];
+  if (info.fandomTag) chips.push({ label: info.fandomTag, kind: 'fandom', value: info.fandomTag });
+  (info.relationshipTags || []).forEach(t => chips.push({ label: t, kind: 'relationshipTags', value: t }));
+  (info.otherTags || []).forEach(t => chips.push({ label: t, kind: 'otherTags', value: t }));
+  if (!chips.length) return;
+
+  const wrap     = document.createElement('div');
+  wrap.className = 'ao3h-sf-criteria';
+  const label     = document.createElement('span');
+  label.className = 'ao3h-sf-criteria-label';
+  label.textContent = 'Based on:';
+  wrap.appendChild(label);
+
+  chips.forEach(chip => {
+    const pill       = document.createElement('span');
+    pill.className   = 'ao3h-sf-criteria-chip';
+    pill.textContent = chip.label;
+    const remove       = document.createElement('button');
+    remove.type         = 'button';
+    remove.className    = 'ao3h-sf-criteria-remove';
+    remove.title         = `Exclude "${chip.label}" from this search`;
+    remove.textContent   = '✕';
+    remove.addEventListener('click', () => onExclude(chip));
+    pill.appendChild(remove);
+    wrap.appendChild(pill);
+  });
+
+  frag.appendChild(wrap);
+}
+
+function renderResults(panel, { pairings, general, authorItems, seriesItems, info, excludedCount, onExclude, onDismiss }) {
   const body = panel?.querySelector('.ao3h-sf-body');
   if (!body) return;
-  if (!pairings.length && !general.length && !authorItems.length) {
+  if (!pairings.length && !general.length && !authorItems.length && !seriesItems.length) {
     body.innerHTML = '<p class="ao3h-sf-empty">No similar stories found.</p>';
     return;
   }
 
   const frag = document.createDocumentFragment();
 
+  renderCriteriaChips(frag, info, onExclude);
+
   const desc       = document.createElement('p');
   desc.className   = 'ao3h-sf-desc';
-  const basedParts = [];
-  if (info.fandomTag)                      basedParts.push(info.fandomTag);
-  if (info.keyTags && info.keyTags.length) basedParts.push(`${info.keyTags.length} tag${info.keyTags.length > 1 ? 's' : ''}`);
-  desc.textContent = `Based on: ${basedParts.join(' · ')}` +
-    (excludedCount > 0 ? ` · ${excludedCount} already-read excluded` : '');
-  frag.appendChild(desc);
+  desc.textContent = excludedCount > 0 ? `${excludedCount} already-read excluded` : '';
+  if (desc.textContent) frag.appendChild(desc);
 
-  renderSection(frag, 'Similar Pairings', pairings, true);
-  renderSection(frag, 'Similar Stories', general, true);
-  if (info.authorName) renderSection(frag, `More by ${info.authorName}`, authorItems, false);
+  const showScore   = cfg('showSimilarityScore');
+  const showSummary = cfg('showSummary');
+  const opts = { showScore, showSummary, onDismiss };
+
+  if (seriesItems.length && cfg('showSeriesSection')) {
+    renderSection(frag, `More in ${info.series?.seriesName || 'this series'}`, seriesItems, { ...opts, showScore: false });
+  }
+  renderSection(frag, 'Similar Pairings', pairings, opts);
+  renderSection(frag, 'Similar Stories', general, opts);
+  if (info.authorName) renderSection(frag, `More by ${info.authorName}`, authorItems, { ...opts, showScore: false });
 
   body.innerHTML = '';
   body.appendChild(frag);
 }
 
-// Fetch (in parallel), filter by seen works, score, split into sections and render.
-async function loadAndRenderResults(panel, info) {
-  renderLoading(panel);
-  try {
-    const mainUrl   = buildSimilarWorksUrl(info);
-    const authorUrl = info.authorUsername ? buildAuthorWorksUrl(info.authorUsername) : null;
+function cacheKeyFor(workId, info) {
+  return JSON.stringify([
+    workId, cfg('lengthMode'), cfg('matchStyle'), cfg('matchRating'), cfg('includeWIP'),
+    info.fandomTag, info.relationshipTags, info.otherTags,
+  ]);
+}
 
-    const [mainHtml, authorHtml] = await Promise.all([
-      fetchSimilarWorks(mainUrl),
-      authorUrl ? fetchSimilarWorks(authorUrl) : Promise.resolve(null),
-    ]);
+// Fetch (in parallel), filter by seen/dismissed works, score, split into sections and render.
+async function loadAndRenderResults(panel, info, { onExclude, onDismiss }) {
+  renderLoading(panel);
+  const workId = getCurrentWorkId();
+  const cacheKey = cacheKeyFor(workId, info);
+
+  try {
+    let payload = cfg('cacheResults') ? resultsCache.get(cacheKey) : null;
+
+    if (!payload) {
+      const mainUrl   = buildSimilarWorksUrl(info);
+      const authorUrl = info.authorUsername ? buildAuthorWorksUrl(info.authorUsername) : null;
+      const seriesUrl = info.series?.seriesId ? new URL(`/series/${info.series.seriesId}`, W.location.origin).toString() : null;
+
+      const [mainHtml, authorHtml, seriesHtml] = await Promise.all([
+        fetchSimilarWorks(mainUrl),
+        authorUrl ? fetchSimilarWorks(authorUrl) : Promise.resolve(null),
+        seriesUrl ? fetchSimilarWorks(seriesUrl) : Promise.resolve(null),
+      ]);
+      if (!active || !panel.isConnected) return;
+
+      payload = { mainHtml, authorHtml, seriesHtml };
+      if (cfg('cacheResults')) resultsCache.set(cacheKey, payload);
+    }
     if (!active || !panel.isConnected) return;
 
     const seenIds = getHistoryWorkIdSet();
-    const curId   = getCurrentWorkId();
-    if (curId) seenIds.add(curId);
+    const dismissed = loadDismissed();
+    if (workId) seenIds.add(workId);
 
     // Main results: score, threshold, split into pairings vs general.
-    const mainBlurbs    = parseWorkBlurbs(mainHtml);
-    const mainFiltered  = mainBlurbs.filter(b => !seenIds.has(b.workId));
+    const mainBlurbs    = parseWorkBlurbs(payload.mainHtml);
+    const mainFiltered  = filterDismissed(mainBlurbs.filter(b => !seenIds.has(b.workId)), dismissed);
     const excludedCount = mainBlurbs.length - mainFiltered.length;
+    const minScore       = minScoreForStyle(cfg('matchStyle'));
 
     const mainScored = mainFiltered
       .map(b   => ({ ...b, ...scoreWork(b, info) }))
-      .filter(b => b.score >= MIN_SCORE)
+      .filter(b => b.score >= minScore)
+      .filter(b => passesLengthFilter(b, info.words, cfg('lengthMode')))
       .sort((a, b) => b.score - a.score);
 
-    const pairings   = mainScored.filter(b => b.relMatchCount > 0).slice(0, MAX_PER_SECTION);
+    const perSection = maxPerSection();
+    const pairings   = mainScored.filter(b => b.relMatchCount > 0).slice(0, perSection);
     const pairingIds = new Set(pairings.map(b => b.workId));
-    const general    = mainScored.filter(b => !pairingIds.has(b.workId)).slice(0, MAX_PER_SECTION);
+    const general    = mainScored.filter(b => !pairingIds.has(b.workId)).slice(0, perSection);
 
-    // Author results: filter seen, no score threshold.
-    const authorItems = authorHtml
-      ? parseWorkBlurbs(authorHtml).filter(b => !seenIds.has(b.workId)).slice(0, MAX_PER_SECTION)
+    // Author results: filter seen/dismissed, no score threshold.
+    const authorItems = payload.authorHtml
+      ? filterDismissed(parseWorkBlurbs(payload.authorHtml).filter(b => !seenIds.has(b.workId)), dismissed).slice(0, perSection)
       : [];
 
-    renderResults(panel, { pairings, general, authorItems, info, excludedCount });
+    // Series results: filter seen/dismissed/current work, no score threshold — precise, not fuzzy.
+    const seriesItems = payload.seriesHtml
+      ? filterDismissed(parseWorkBlurbs(payload.seriesHtml).filter(b => !seenIds.has(b.workId) && b.workId !== workId), dismissed).slice(0, perSection)
+      : [];
+
+    renderResults(panel, { pairings, general, authorItems, seriesItems, info, excludedCount, onExclude, onDismiss });
   } catch (err) {
     if (!active || err?.name === 'AbortError') return;
     log('fetch error', err);
@@ -586,7 +647,7 @@ async function loadAndRenderResults(panel, info) {
 }
 
 // Inject the "Similar Stories" button into the work actions nav.
-function injectSimilarStoriesButton(info) {
+function injectSimilarStoriesButton(baseInfo) {
   if (document.getElementById(BUTTON_LI_ID)) return;
 
   const actionsList = document.querySelector('ul.work.navigation.actions');
@@ -603,18 +664,35 @@ function injectSimilarStoriesButton(info) {
   btn.setAttribute('aria-expanded', 'false');
   btn.setAttribute('aria-controls', PANEL_ID);
 
-  let loaded = false;
+  let currentInfo = baseInfo;
+  const panel = () => document.getElementById(PANEL_ID);
+
+  const refresh = () => {
+    const p = panel();
+    if (p) loadAndRenderResults(p, currentInfo, { onExclude, onDismiss });
+  };
+
+  function onExclude(chip) {
+    if (chip.kind === 'fandom') {
+      currentInfo = { ...currentInfo, fandomTag: null };
+    } else {
+      currentInfo = { ...currentInfo, [chip.kind]: currentInfo[chip.kind].filter(t => t !== chip.value) };
+    }
+    refresh();
+  }
+
+  function onDismiss(workId, cardEl) {
+    dismissWork(workId);
+    cardEl?.remove();
+  }
 
   btn.addEventListener('click', async () => {
-    const panel   = createSimilarPanel();
-    const opening = panel.hidden;
-    panel.hidden  = !opening;
+    const p       = createSimilarPanel();
+    const opening = p.hidden;
+    p.hidden      = !opening;
     btn.setAttribute('aria-expanded', String(opening));
 
-    if (opening && !loaded) {
-      loaded = true;
-      await loadAndRenderResults(panel, info);
-    }
+    if (opening) await loadAndRenderResults(p, currentInfo, { onExclude, onDismiss });
   });
 
   li.appendChild(btn);

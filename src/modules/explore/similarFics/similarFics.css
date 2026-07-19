@@ -226,9 +226,16 @@ html.ao3h-similar-fics-enabled .ao3h-sf-card-meta {
   margin: 0.2em 0;
 }
 
+html.ao3h-similar-fics-enabled .ao3h-sf-card-summary {
+  font-size: 0.82em;
+  color: #333;
+  margin: 0.3em 0;
+  line-height: 1.4;
+}
+
 
 /*+ ───────────────────────────────────────────────────────────
-    BOUTONS D'ACTION (Open, + MFL)
+    BOUTONS D'ACTION (Open, + MFL, ✕ Pas intéressé)
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-similar-fics-enabled .ao3h-sf-actions {
@@ -238,7 +245,8 @@ html.ao3h-similar-fics-enabled .ao3h-sf-actions {
 }
 
 html.ao3h-similar-fics-enabled .ao3h-sf-open,
-html.ao3h-similar-fics-enabled .ao3h-sf-mfl-btn {
+html.ao3h-similar-fics-enabled .ao3h-sf-mfl-btn,
+html.ao3h-similar-fics-enabled .ao3h-sf-dismiss-btn {
   font-size: 0.78em;
   padding: 0.2em 0.6em;
   border-radius: 999px;
@@ -250,13 +258,58 @@ html.ao3h-similar-fics-enabled .ao3h-sf-mfl-btn {
 }
 
 html.ao3h-similar-fics-enabled .ao3h-sf-open:hover,
-html.ao3h-similar-fics-enabled .ao3h-sf-mfl-btn:hover {
+html.ao3h-similar-fics-enabled .ao3h-sf-mfl-btn:hover,
+html.ao3h-similar-fics-enabled .ao3h-sf-dismiss-btn:hover {
   background: rgba(59, 130, 246, 0.15);
 }
 
 html.ao3h-similar-fics-enabled .ao3h-sf-mfl-btn:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-dismiss-btn {
+  margin-left: auto;
+  border-color: rgba(120, 120, 120, 0.4);
+  color: #777;
+}
+
+
+/*+ ───────────────────────────────────────────────────────────
+    CRITÈRES DE RECHERCHE (chips retirables "Based on: ...")
+  ───────────────────────────────────────────────────────────── */
+
+html.ao3h-similar-fics-enabled .ao3h-sf-criteria {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
+  margin-bottom: 0.5em;
+  font-size: 0.8em;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-criteria-label {
+  color: #555;
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-criteria-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.1em 0.5em;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+}
+
+html.ao3h-similar-fics-enabled .ao3h-sf-criteria-remove {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #900;
+  padding: 0;
+  font-size: 0.9em;
+  line-height: 1;
 }
 
 
