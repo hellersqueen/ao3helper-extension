@@ -100,13 +100,19 @@
   margin-left: 0.4em;
   font-size: 0.8em;
 }
-.ao3h-tracking-star {
-  color: #e6ac00;
+.ao3h-tracking-btn {
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 3px;
+  padding: 0 4px;
   margin-right: 2px;
 }
+.ao3h-tracking-star {
+  color: #e6ac00;
+}
 .ao3h-tracking-note-icon {
-  cursor: help;
-  margin-right: 2px;
+  color: #555;
 }
 .ao3h-author-popular-link {
   display: block;

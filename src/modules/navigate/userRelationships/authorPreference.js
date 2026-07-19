@@ -19,6 +19,9 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
+import { getWorkAuthor } from '../../../../lib/ao3/work-page.js';
 import { cyclePriority, priorityIcon, parseTags } from './userRelationshipsHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -27,6 +30,7 @@ import { cyclePriority, priorityIcon, parseTags } from './userRelationshipsHelpe
 
 const MOD  = 'authorPreference';
 const NS   = 'ao3h';
+const W    = getGlobalWindow();
 
 const PREFS_KEY = 'authorPreferences:data';
 const originalStates = new Map();
@@ -52,6 +56,22 @@ function setAuthorPrefs (author, patch) {
   const prefs = getPrefs();
   prefs[author] = { ...getAuthorPrefs(author), ...patch };
   savePrefs(prefs);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FEATURE — READ-COUNT TRACKING
+═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * ficAppreciation dispatches EV_WORK_FINISHED (soft cross-module dependency,
+ * no import of that module's files) whenever a work is marked finished on its
+ * own work page — the author is read straight off that same page.
+ */
+function onWorkFinished () {
+  const { name } = getWorkAuthor();
+  if (!name) return;
+  const current = getAuthorPrefs(name);
+  setAuthorPrefs(name, { readCount: (current.readCount || 0) + 1 });
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -209,6 +229,7 @@ register(MOD, {
   // sur plusieurs modules similaires en test.
   let active = true;
   let observer = null;
+  W.addEventListener?.(EV_WORK_FINISHED, onWorkFinished);
   onReady(() => {
     if (!active) return;
     processBlurbs();
@@ -218,6 +239,7 @@ register(MOD, {
   return () => {
     active = false;
     observer?.disconnect();
+    W.removeEventListener?.(EV_WORK_FINISHED, onWorkFinished);
     document.querySelectorAll(`.${NS}-author-pref-controls`).forEach(el => el.remove());
     document.querySelectorAll(`.${NS}-hidden-author-blurb`).forEach(el => el.remove());
     originalStates.forEach((state, blurb) => {

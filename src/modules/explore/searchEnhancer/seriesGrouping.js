@@ -45,7 +45,7 @@ function readCfg () {
 
 function isListingPage () {
   const p = location.pathname;
-  return /^\/works($|\?)/.test(p) || /\/tags\/[^/]+\/works/.test(p);
+  return /^\/works($|\?)/.test(p) || /^\/works\/search/.test(p) || /\/tags\/[^/]+\/works/.test(p);
 }
 
 

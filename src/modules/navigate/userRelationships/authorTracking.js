@@ -55,6 +55,20 @@ function saveSnapshots (snaps) {
   localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(snaps));
 }
 
+function setFollowed (key, isFollowed) {
+  const followed = getFollowed();
+  if (isFollowed) followed.add(key);
+  else followed.delete(key);
+  localStorage.setItem(FOLLOWED_KEY, JSON.stringify([...followed]));
+}
+
+function setNote (key, note) {
+  const notes = getNotes();
+  if (note) notes[key] = note;
+  else delete notes[key];
+  localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — NEW-WORK DETECTION
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -110,9 +124,6 @@ function showMostPopularLink () {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function annotateBlurbs () {
-  const followed = getFollowed();
-  const notes    = getNotes();
-
   document.querySelectorAll('li.work.blurb, li.bookmark.blurb').forEach(blurbEl => {
     const blurb = /** @type {HTMLElement} */ (blurbEl);
     if (blurb.dataset.ao3hTracked) return;
@@ -126,23 +137,43 @@ function annotateBlurbs () {
     const badges = document.createElement('span');
     badges.className = `${NS}-author-tracking-badges`;
 
-    if (followed.has(key)) {
-      const star = document.createElement('span');
-      star.textContent = '★';
-      star.title       = 'You follow this author';
-      star.className   = `${NS}-tracking-star`;
-      badges.appendChild(star);
-    }
+    const followBtn = document.createElement('button');
+    followBtn.type      = 'button';
+    followBtn.className = `${NS}-tracking-star ${NS}-tracking-btn`;
+    const paintFollow = isFollowing => {
+      followBtn.textContent = isFollowing ? '★' : '☆';
+      followBtn.title = isFollowing
+        ? 'You follow this author — click to unfollow'
+        : 'Click to follow this author';
+    };
+    paintFollow(getFollowed().has(key));
+    followBtn.addEventListener('click', e => {
+      e.preventDefault();
+      const nowFollowing = !getFollowed().has(key);
+      setFollowed(key, nowFollowing);
+      paintFollow(nowFollowing);
+    });
+    badges.appendChild(followBtn);
 
-    if (notes[key]) {
-      const noteIcon = document.createElement('span');
-      noteIcon.textContent = '📝';
-      noteIcon.title       = `Your note: ${notes[key]}`;
-      noteIcon.className   = `${NS}-tracking-note-icon`;
-      badges.appendChild(noteIcon);
-    }
+    const noteBtn = document.createElement('button');
+    noteBtn.type      = 'button';
+    noteBtn.className = `${NS}-tracking-note-icon ${NS}-tracking-btn`;
+    const paintNote = note => {
+      noteBtn.textContent = note ? '📝' : '📝?';
+      noteBtn.title = note ? `Your note: ${note} (click to edit)` : 'Add a note about this author';
+    };
+    paintNote(getNotes()[key] || '');
+    noteBtn.addEventListener('click', e => {
+      e.preventDefault();
+      const next = window.prompt(`Note about ${author}:`, getNotes()[key] || '');
+      if (next === null) return;
+      const trimmed = next.trim();
+      setNote(key, trimmed);
+      paintNote(trimmed);
+    });
+    badges.appendChild(noteBtn);
 
-    if (badges.children.length) link.parentNode.appendChild(badges);
+    link.parentNode.appendChild(badges);
   });
 }
 
