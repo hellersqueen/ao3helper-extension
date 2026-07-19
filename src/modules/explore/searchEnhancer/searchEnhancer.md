@@ -151,10 +151,10 @@ AO3 Helper - Search Enhancer Module Coordinator
 
     Pages: /works/search, /tags/{tag}/works and any listing with a search form
 
-    Note (Chantier 4): seriesGrouping's own isListingPage() only matches bare
-    /works or /tags/*/works, NOT /works/search — a pre-existing gap (not one
-    of this pass's 21 items) meaning series grouping silently never runs on
-    the most common search-results URL. Left as-is; flag if revisited.
+    Note (Chantier 4): ✅ Fait — seriesGrouping's own isListingPage() only
+    matched bare /works or /tags/*/works, NOT /works/search, meaning series
+    grouping silently never ran on the most common search-results URL.
+    Fixed by adding /^\/works\/search/ to the same regex.
 
 
 

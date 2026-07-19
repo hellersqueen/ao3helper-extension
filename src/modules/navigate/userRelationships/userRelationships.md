@@ -153,14 +153,18 @@ Ce sont des idées dont on parle dans d'autres docs, avec leur statut :
 
 ## Point relevé pendant la revue (hors périmètre des 11 items)
 
-⚠️ `authorTracking.js` affiche des badges ★ (auteur suivi) et 📝 (note) sur
-les listes, mais **aucune interface n'existe pour suivre un auteur ou
-écrire une note** — les clés `authorTracking:followed` et
-`authorTracking:notes` ne sont actuellement jamais écrites nulle part dans
-le code. `authorPreference.js`'s `readCount` a le même problème : affiché
-s'il est positif, mais jamais incrémenté. Ce sont des lacunes préexistantes,
-distinctes des 11 points ci-dessus (qui décrivaient ces fonctionnalités
-comme déjà actives) — à traiter dans un prochain passage.
+✅ Fait — `authorTracking.js` affichait des badges ★ (auteur suivi) et 📝
+(note) sur les listes, mais **aucune interface n'existait pour suivre un
+auteur ou écrire une note** — les clés `authorTracking:followed` et
+`authorTracking:notes` n'étaient jamais écrites nulle part dans le code.
+Réparé : les badges sont devenus de vrais boutons cliquables (`setFollowed()`
+/ `setNote()`), style repris de `authorPreference.js`.
+
+`authorPreference.js`'s `readCount` avait le même problème : affiché s'il
+était positif, mais jamais incrémenté. Réparé : branché sur l'événement
+`ao3h:workFinished` déjà émis par `ficAppreciation` quand une œuvre est
+marquée terminée (dépendance douce, auteur lu directement sur la page via
+`lib/ao3/work-page.js`'s `getWorkAuthor()`).
 
 ## Précision
 

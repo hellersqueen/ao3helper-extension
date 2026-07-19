@@ -10,27 +10,16 @@
 //
 // Lancer : npm run build && npm run test:e2e
 
-import { chromium } from 'playwright';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { existsSync } from 'node:fs';
-import { startBundleServer } from './bundle-server.mjs';
+import { resolveE2EPaths, launchWithBundles, createChecker } from './harness.mjs';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(__dirname, '../..');
-const distScript = path.join(repoRoot, 'dist/ao3-helper.user.js');
-const gmShim = path.join(__dirname, 'gm-shim.js');
-const mockPage = path.join(repoRoot, 'ao3-mock/bookmarks.html');
+const { root, distScript, gmShimPath } = resolveE2EPaths(import.meta.url);
+const mockPage = path.join(root, 'ao3-mock/bookmarks.html');
 
-let failures = 0;
-function check(label, condition) {
-  if (condition) {
-    console.log(`  ✓ ${label}`);
-  } else {
-    console.error(`  ✗ ${label}`);
-    failures++;
-  }
-}
+const checker = createChecker();
+const check = checker.check;
 
 async function main() {
   if (!existsSync(distScript)) {
@@ -38,14 +27,13 @@ async function main() {
     process.exit(1);
   }
 
-  const bundles = await startBundleServer();
-  const browser = await chromium.launch();
+  const { bundles, browser, close } = await launchWithBundles();
   const page = await browser.newPage();
 
   const consoleErrors = [];
   page.on('pageerror', (err) => consoleErrors.push(String(err)));
 
-  await page.addInitScript({ path: gmShim });
+  await page.addInitScript({ path: gmShimPath });
   await page.addInitScript({ content: `window.__AO3H_ASSET_BASE__ = ${JSON.stringify(bundles.baseURL)};` });
   await page.addInitScript({ path: distScript });
 
@@ -126,11 +114,10 @@ async function main() {
     console.error('Erreurs JS détectées :\n' + consoleErrors.join('\n'));
   }
 
-  await browser.close();
-  await bundles.close();
+  await close();
 
-  if (failures > 0) {
-    console.error(`\n${failures} vérification(s) échouée(s).`);
+  if (checker.failures > 0) {
+    console.error(`\n${checker.failures} vérification(s) échouée(s).`);
     process.exit(1);
   }
   console.log('\nTout est OK — le script démarre correctement sur une vraie page.');

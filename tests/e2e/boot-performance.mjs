@@ -2,18 +2,14 @@
 // Le coût global dépend du fixture et de la machine. Seules les longues tâches
 // créées après le début du chargement des modules ont un budget de régression.
 
-import { chromium } from 'playwright';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { readFileSync } from 'node:fs';
-import { startBundleServer } from './bundle-server.mjs';
+import { pathToFileURL } from 'node:url';
+import { resolveE2EPaths, readUserscriptAndShim, launchWithBundles, MODULE_LONG_TASK_BUDGET_MS } from './harness.mjs';
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(dirname, '../..');
-const userscript = readFileSync(path.join(root, 'dist/ao3-helper.user.js'), 'utf8');
-const gmShim = readFileSync(path.join(dirname, 'gm-shim.js'), 'utf8');
+const e2ePaths = resolveE2EPaths(import.meta.url);
+const { root } = e2ePaths;
+const { userscript, gmShim } = readUserscriptAndShim(e2ePaths);
 const mockPage = path.join(root, 'ao3-mock/bookmarks.html');
-const MODULE_LONG_TASK_BUDGET_MS = 200;
 
 const instrumentation = `
   window.__AO3H_PERF__ = { start: performance.now(), longTasks: [] };
@@ -33,8 +29,7 @@ const instrumentation = `
 `;
 
 async function main() {
-  const bundles = await startBundleServer();
-  const browser = await chromium.launch();
+  const { bundles, browser, close } = await launchWithBundles();
   const page = await browser.newPage();
   await page.addInitScript({ content: `${gmShim}\nwindow.__AO3H_ASSET_BASE__ = ${JSON.stringify(bundles.baseURL)};\n${instrumentation}\n${userscript}\nwindow.__AO3H_PERF__.scriptEnd = performance.now();` });
 
@@ -69,8 +64,7 @@ async function main() {
   });
 
   console.log(JSON.stringify(result, null, 2));
-  await browser.close();
-  await bundles.close();
+  await close();
 
   if (result.maxModuleLongTaskMs > MODULE_LONG_TASK_BUDGET_MS) {
     throw new Error(

@@ -2,17 +2,16 @@
 // Each fixture enables both compatible and incompatible modules, then checks
 // that only the compatible implementations enter the startup graph.
 
-import { chromium } from 'playwright';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { readFileSync } from 'node:fs';
-import { startBundleServer } from './bundle-server.mjs';
+import { pathToFileURL } from 'node:url';
+import {
+  resolveE2EPaths, readUserscriptAndShim, launchWithBundles, createChecker,
+  MODULE_LONG_TASK_BUDGET_MS,
+} from './harness.mjs';
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(dirname, '../..');
-const userscript = readFileSync(path.join(root, 'dist/ao3-helper.user.js'), 'utf8');
-const gmShim = readFileSync(path.join(dirname, 'gm-shim.js'), 'utf8');
-const MODULE_LONG_TASK_BUDGET_MS = 200;
+const e2ePaths = resolveE2EPaths(import.meta.url);
+const { root } = e2ePaths;
+const { userscript, gmShim } = readUserscriptAndShim(e2ePaths);
 
 const defaultOff = {
   'mod:hideByTags:enabled': false,
@@ -54,13 +53,9 @@ const scenarios = [
   },
 ];
 
-let failures = 0;
+const checker = createChecker();
 function check(scenario, label, condition) {
-  if (condition) console.log(`  ✓ [${scenario}] ${label}`);
-  else {
-    console.error(`  ✗ [${scenario}] ${label}`);
-    failures++;
-  }
+  checker.check(`[${scenario}] ${label}`, condition);
 }
 
 function subtractBaseline(errors, baseline) {
@@ -157,20 +152,18 @@ async function runScenario(browser, scenario, baselineErrors, assetBase) {
 }
 
 async function main() {
-  const bundles = await startBundleServer();
-  const browser = await chromium.launch();
+  const { bundles, browser, close } = await launchWithBundles();
   try {
     for (const scenario of scenarios) {
       const baselineErrors = await collectBaselineErrors(browser, scenario.fixture);
       await runScenario(browser, scenario, baselineErrors, bundles.baseURL);
     }
   } finally {
-    await browser.close();
-    await bundles.close();
+    await close();
   }
 
-  if (failures) {
-    console.error(`\n${failures} vérification(s) de route échouée(s).`);
+  if (checker.failures) {
+    console.error(`\n${checker.failures} vérification(s) de route échouée(s).`);
     process.exit(1);
   }
   console.log('\nMatrice de routes AO3 validée.');
