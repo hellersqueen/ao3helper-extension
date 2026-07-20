@@ -22,7 +22,6 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
-import { medalIcon } from './tropeGamesHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -163,7 +162,7 @@ function showToast (ach) {
   el.className = `${NS}-tg-achievement-toast`;
   el.innerHTML = `
     <div class="${NS}-tg-ach-icon">${escapeHtml(ach.icon)}</div>
-    <div class="${NS}-tg-ach-subtitle">🎉 Achievement Unlocked! ${escapeHtml(medalIcon(ach.tier))}</div>
+    <div class="${NS}-tg-ach-subtitle">🎉 Achievement Unlocked! ${escapeHtml(W.AO3H_TropeGames.medalIcon(ach.tier))}</div>
     <div class="${NS}-tg-ach-title-text">${escapeHtml(ach.title)}</div>
     <div class="${NS}-tg-ach-desc-text">${escapeHtml(ach.desc)}</div>
   `;
@@ -199,7 +198,7 @@ function renderPanel () {
       <div class="${NS}-tg-ach-row${done ? ' is-done' : ''}">
         <span class="${NS}-tg-ach-row-icon">${escapeHtml(ach.icon)}</span>
         <div>
-          <div class="${NS}-tg-ach-row-title">${escapeHtml(ach.title)} <span class="${NS}-tg-ach-medal">${escapeHtml(medalIcon(ach.tier))}</span></div>
+          <div class="${NS}-tg-ach-row-title">${escapeHtml(ach.title)} <span class="${NS}-tg-ach-medal">${escapeHtml(W.AO3H_TropeGames.medalIcon(ach.tier))}</span></div>
           <div class="${NS}-tg-ach-row-desc">${escapeHtml(ach.desc)}</div>
         </div>
       </div>
@@ -212,7 +211,7 @@ function renderPanel () {
       const ach = ACHIEVEMENTS.find(a => a.id === u.id);
       if (!ach) return '';
       const when = new Date(u.unlockedAt).toLocaleDateString();
-      return `<div class="${NS}-tg-ach-history-row">${escapeHtml(medalIcon(ach.tier))} ${escapeHtml(ach.title)} — <span class="${NS}-tg-ach-history-date">${escapeHtml(when)}</span></div>`;
+      return `<div class="${NS}-tg-ach-history-row">${escapeHtml(W.AO3H_TropeGames.medalIcon(ach.tier))} ${escapeHtml(ach.title)} — <span class="${NS}-tg-ach-history-date">${escapeHtml(when)}</span></div>`;
     }).join('');
 
   return `

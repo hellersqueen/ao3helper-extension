@@ -37,7 +37,6 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { TROPE_NAMES } from '../../../../lib/ao3/constants.js';
-import { getSeasonalTheme } from './tropeGamesHelpers.js';
 import styles from './tropeGames.css?inline';
 
 import './tropeAchievements.js';
@@ -83,6 +82,154 @@ const DEFAULTS = {
 };
 
 const cfg = makeCfg(MOD, DEFAULTS);
+
+export const TROPE_CATEGORIES = {
+  'Slow Burn': 'Romance', 'Enemies to Lovers': 'Romance', 'Fake Dating': 'Romance',
+  'Soulmates': 'Romance', 'Mutual Pining': 'Romance', 'Idiots in Love': 'Romance',
+  'Second Chance Romance': 'Romance', 'Forbidden Love': 'Romance', 'Pining': 'Romance',
+  'Fake Marriage': 'Romance', 'Unrequited Love': 'Romance', 'Jealousy': 'Romance',
+  'Miscommunication': 'Romance', 'Hurt/Comfort': 'Comfort',
+  'Angst with a Happy Ending': 'Comfort', 'Whump': 'Comfort',
+  'Comfort without Hurt': 'Comfort', 'Touch-Starved': 'Comfort', 'Sickfic': 'Comfort',
+  'Protective': 'Comfort', 'Found Family': 'Found Family', 'Chosen Family': 'Found Family',
+  'Childhood Friends': 'Found Family', 'Mentor/Protégé': 'Found Family',
+  'Loyalty': 'Found Family', 'Coffee Shop AU': 'AU', 'AU: Human': 'AU',
+  'AU: Fantasy': 'AU', 'AU: Modern': 'AU', 'Roommates': 'AU',
+  'Time Travel': 'Speculative', 'Bodyswap': 'Speculative', 'Reincarnation': 'Speculative',
+  'Hanahaki Disease': 'Speculative', 'Dreams': 'Speculative',
+  'Canon Divergence': 'Plot', 'Fix-It': 'Plot', 'Pre-Canon': 'Plot', 'Post-Canon': 'Plot',
+  "Villain's POV": 'Plot', 'Secret Identity': 'Plot', 'Undercover': 'Plot',
+  'Sacrifice': 'Plot', 'Road Trip': 'Adventure', 'Stranded Together': 'Adventure',
+  'Amnesia': 'Adventure', 'First Meeting': 'Slice of Life', 'Reunion': 'Slice of Life',
+  'Letters/Emails': 'Slice of Life', 'Epistolary': 'Slice of Life',
+};
+export function categoryOf (trope) { return TROPE_CATEGORIES[trope] || 'Other'; }
+export function getCategories (list) { return [...new Set((list || []).map(categoryOf))].sort(); }
+export function filterTropesByCategory (list, category) {
+  return category ? (list || []).filter(trope => categoryOf(trope) === category) : list || [];
+}
+export function groupStatsByCategory (stats) {
+  const groups = {};
+  Object.entries(stats || {}).forEach(([trope, count]) => {
+    const category = categoryOf(trope);
+    groups[category] = (groups[category] || 0) + count;
+  });
+  return groups;
+}
+export function dateKey (date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+export function monthKey (date) { return typeof date === 'string' ? date.slice(0, 7) : null; }
+function daysAgoKey (days, from = new Date()) {
+  const date = new Date(from);
+  date.setDate(date.getDate() - days);
+  return dateKey(date);
+}
+export const WEEKLY_CHALLENGE_TARGET = 5;
+export const WEEKLY_CHALLENGE_WINDOW_DAYS = 7;
+export function computeWeeklyChallenge (entries, {
+  windowDays = WEEKLY_CHALLENGE_WINDOW_DAYS,
+  target = WEEKLY_CHALLENGE_TARGET,
+  now = new Date(),
+} = {}) {
+  const dates = new Set(Array.from({ length: windowDays }, (_, index) => daysAgoKey(index, now)));
+  const distinct = new Set();
+  (entries || []).forEach(entry => {
+    if (entry && dates.has(entry.date)) (entry.tropes || []).forEach(trope => distinct.add(trope));
+  });
+  return { distinct: distinct.size, target, complete: distinct.size >= target };
+}
+export function bucketTropesByMonth (entries) {
+  const buckets = {};
+  (entries || []).forEach(entry => {
+    const month = monthKey(entry?.date);
+    if (!month) return;
+    buckets[month] ||= {};
+    (entry.tropes || []).forEach(trope => { buckets[month][trope] = (buckets[month][trope] || 0) + 1; });
+  });
+  return buckets;
+}
+function topN (counts, size) {
+  return Object.entries(counts || {}).sort((a, b) => b[1] - a[1]).slice(0, size);
+}
+export function monthlyTrend (entries, { now = new Date(), topSize = 3 } = {}) {
+  const buckets = bucketTropesByMonth(entries);
+  const current = topN(buckets[monthKey(dateKey(now))], topSize);
+  const previousDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const previous = topN(buckets[monthKey(dateKey(previousDate))], topSize);
+  const previousTropes = new Set(previous.map(([trope]) => trope));
+  return { current, previous, rising: current.map(([trope]) => trope).filter(trope => !previousTropes.has(trope)) };
+}
+export function unexploredTropes (list, stats) { return (list || []).filter(trope => !(stats?.[trope] > 0)); }
+export function bingoProgressPercent (checked, freeIndex) {
+  if (!Array.isArray(checked) || !checked.length) return 0;
+  const total = checked.length - (freeIndex != null ? 1 : 0);
+  if (total <= 0) return 100;
+  return Math.round((checked.filter((value, index) => value && index !== freeIndex).length / total) * 100);
+}
+export function freeCenterIndex (size) { return Math.floor((size * size) / 2); }
+export function buildBingoPatterns (size) {
+  const patterns = {};
+  for (let row = 0; row < size; row++) patterns[`Row ${row + 1}`] = Array.from({ length: size }, (_, col) => row * size + col);
+  for (let col = 0; col < size; col++) patterns[`Col ${col + 1}`] = Array.from({ length: size }, (_, row) => row * size + col);
+  const first = Array.from({ length: size }, (_, index) => index * size + index);
+  const second = Array.from({ length: size }, (_, index) => index * size + size - 1 - index);
+  patterns['Diagonal \\'] = first;
+  patterns['Diagonal /'] = second;
+  patterns.X = [...new Set([...first, ...second])];
+  patterns.Corners = [0, size - 1, size * (size - 1), size * size - 1];
+  const frame = new Set();
+  for (let col = 0; col < size; col++) { frame.add(col); frame.add((size - 1) * size + col); }
+  for (let row = 0; row < size; row++) { frame.add(row * size); frame.add(row * size + size - 1); }
+  patterns.Frame = [...frame];
+  patterns.Blackout = Array.from({ length: size * size }, (_, index) => index);
+  return patterns;
+}
+const SEASONS = [
+  { id: 'winter', months: [12, 1, 2] }, { id: 'spring', months: [3, 4, 5] },
+  { id: 'summer', months: [6, 7, 8] }, { id: 'halloween', months: [10] },
+  { id: 'autumn', months: [9, 11] },
+];
+export function getSeasonalTheme (date = new Date()) {
+  const month = date.getMonth() + 1;
+  return SEASONS.find(season => season.months.includes(month))?.id || null;
+}
+export const MOOD_QUIZ = [{
+  question: 'What are you in the mood for?',
+  options: [
+    { label: '💔 Something emotional', mood: 'emotional' },
+    { label: '😂 Something light and fun', mood: 'fun' },
+    { label: '😳 Something swoony', mood: 'romantic' },
+    { label: '🗺️ Something adventurous', mood: 'adventurous' },
+  ],
+}];
+const MOOD_TROPES = {
+  emotional: ['Hurt/Comfort', 'Angst with a Happy Ending', 'Whump', 'Found Family'],
+  fun: ['Idiots in Love', 'Coffee Shop AU', 'Fake Dating', 'Roommates'],
+  romantic: ['Slow Burn', 'Mutual Pining', 'Soulmates', 'Enemies to Lovers'],
+  adventurous: ['Road Trip', 'Time Travel', 'Stranded Together', 'Canon Divergence'],
+};
+export function pickTropeForMood (mood, list) {
+  const candidates = (MOOD_TROPES[mood] || []).filter(trope => (list || []).includes(trope));
+  const pool = candidates.length ? candidates : list || [];
+  return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+}
+export const MEDAL_ICON = { bronze: '🥉', silver: '🥈', gold: '🥇', platinum: '💎' };
+export function medalIcon (tier) { return MEDAL_ICON[tier] || ''; }
+export function horoscopeCameTrue (entries, trope, date) {
+  if (!trope || !date) return null;
+  const sameDay = (entries || []).filter(entry => entry?.date === date);
+  if (!sameDay.length) return null;
+  return sameDay.some(entry => (entry.tropes || []).includes(trope));
+}
+
+const tropeGamesHelpers = {
+  TROPE_CATEGORIES, categoryOf, getCategories, filterTropesByCategory,
+  groupStatsByCategory, dateKey, monthKey, computeWeeklyChallenge,
+  bucketTropesByMonth, monthlyTrend, unexploredTropes, bingoProgressPercent,
+  freeCenterIndex, buildBingoPatterns, getSeasonalTheme, MOOD_QUIZ,
+  pickTropeForMood, medalIcon, horoscopeCameTrue,
+};
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -153,7 +300,7 @@ register(
 
     // Expose shared API for submodules
     W.AO3H_TropeGames = {
-      TROPE_LIST, lsGet, lsSet, NS, cfg,
+      TROPE_LIST, lsGet, lsSet, NS, cfg, ...tropeGamesHelpers,
       registerMenuItem (btn) { menu ? menu.registerMenuItem(btn) : onReady(() => menu?.registerMenuItem(btn)); },
     };
 

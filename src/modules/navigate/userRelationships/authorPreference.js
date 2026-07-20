@@ -17,12 +17,10 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
 import { getWorkAuthor } from '../../../../lib/ao3/work-page.js';
-import { cyclePriority, priorityIcon, parseTags } from './userRelationshipsHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -31,6 +29,10 @@ import { cyclePriority, priorityIcon, parseTags } from './userRelationshipsHelpe
 const MOD  = 'authorPreference';
 const NS   = 'ao3h';
 const W    = getGlobalWindow();
+const cyclePriority = (...args) => W.AO3H_UserRelationships.cyclePriority(...args);
+const priorityIcon = (...args) => W.AO3H_UserRelationships.priorityIcon(...args);
+const parseTags = (...args) => W.AO3H_UserRelationships.parseTags(...args);
+const getUserRelationshipsSettings = (...args) => W.AO3H_UserRelationships.getUserRelationshipsSettings(...args);
 
 const PREFS_KEY = 'authorPreferences:data';
 const originalStates = new Map();

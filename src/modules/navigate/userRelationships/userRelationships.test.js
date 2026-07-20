@@ -69,7 +69,7 @@ describe('userRelationships — blocage par pseudonyme (intégration)', () => {
 
     const { setEnabled } = await import('../../../core/lifecycle.js');
     await import('./_userRelationships.js');
-    const { getHiddenStats } = await import('./blockingStats.js');
+    const { getHiddenStats } = await import('./_userRelationships.js');
     await setEnabled('userRelationships', true);
     await setEnabled('authorBlocking', true);
 

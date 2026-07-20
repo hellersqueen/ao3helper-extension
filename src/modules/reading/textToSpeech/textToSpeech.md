@@ -76,34 +76,12 @@ bouton muet — voir les sections des fichiers ci-dessous.
 
 - Les styles visuels du panneau, des boutons, du surlignage et de la barre de progression
 
-### 8. `playbackHelpers.js` — calculs purs pour la lecture
-
-- Les profils de vitesse prédéfinis (`SPEED_PRESETS`)
-- Bornage du volume et de la hauteur de voix
-- Calcul du facteur de fondu avant la fin de la minuterie de sommeil
-- Calcul de la nouvelle échéance de la minuterie après un "+5 minutes"
-- Bornage de l'index de phrase pour le saut manuel
-
-### 9. `voiceHelpers.js` — filtrage et étiquetage des voix
-
-- Liste des langues disponibles parmi les voix du navigateur
-- Filtrage des voix par langue
-- Étiquette de qualité approximative (Local/Network, Default) — l'API Web
-  Speech n'exposant aucune vraie métrique de qualité audio
-
-### 10. `scrollHelpers.js` — calculs purs pour le défilement automatique
-
-- Durée de défilement associée à chaque vitesse (slow/normal/fast)
-- Fonction d'accélération/décélération (easing) et position intermédiaire,
-  utilisées par `visualFeedback.js` pour animer son propre défilement
-  (`scrollIntoView({behavior:'smooth'})` n'ayant pas de réglage de vitesse)
-
 ## Specs non implémentés
 
 Ce sont des idées dont on parle dans d'autres docs. État après le passage
 chantier 4 (2026-07-17) :
 
-- ~~Des vitesses de lecture prédéfinies ("confortable", "rapide", "façon livre audio") plutôt qu'un simple curseur libre~~ ✅ Fait — quatre boutons de profil (🐢 Comfortable 0.85×, Normal 1×, 🐇 Fast 1.25×, 🎧 Audiobook 1.5×) dans le panneau flottant, à côté du curseur (`playbackHelpers.js` → `SPEED_PRESETS`)
+- ~~Des vitesses de lecture prédéfinies ("confortable", "rapide", "façon livre audio") plutôt qu'un simple curseur libre~~ ✅ Fait — quatre boutons de profil (🐢 Comfortable 0.85×, Normal 1×, 🐇 Fast 1.25×, 🎧 Audiobook 1.5×) dans le panneau flottant, à côté du curseur (`_textToSpeech.js` → `SPEED_PRESETS`)
 - ~~Des dictionnaires de prononciation tout prêts partagés par fandom, avec contributions de la communauté~~ ❌ Écarté — nécessiterait un serveur communautaire (hébergement + modération des contributions) ; l'extension reste 100% locale sans backend. L'import/export JSON déjà présent dans `pronunciationManager.js` permet déjà un partage manuel des dictionnaires
 - ~~Régler le volume ou la hauteur de la voix~~ ✅ Fait — curseurs Volume et Pitch dans le panneau flottant et le panneau de réglages (`speechEngine.js` applique `utterance.volume`/`utterance.pitch`)
 - ~~Une base de prononciation de noms de personnages déjà prête, sans avoir à tout ajouter soi-même~~ ❌ Écarté — même raison que les dictionnaires partagés : aucune base multi-fandom fiable à maintenir sans infrastructure serveur ; le dictionnaire personnel + import/export couvre déjà ce besoin
@@ -113,7 +91,7 @@ chantier 4 (2026-07-17) :
 - ~~Une confirmation demandée avant de passer automatiquement au chapitre suivant~~ ✅ Fait — réglage `confirmNextChapter` (case à cocher), utilise `confirm()`
 - ~~Une notification quand un chapitre vient de se terminer~~ ✅ Fait — réglage `notifyChapterEnd`, affiche un toast partagé (`lib/ui/toast.js`)
 - ~~Personnaliser la couleur ou le style du surlignage pendant la lecture~~ ✅ Fait (couleur) — réglage `highlightColor` (sélecteur de couleur), appliqué en style inline sur le `<mark>` ; le style (au-delà de la couleur de fond) reste volontairement simple, cohérent avec la décision de conception ci-dessous sur le surlignage
-- ~~Régler la vitesse du défilement automatique de la page~~ ✅ Fait — réglage `scrollSpeed` (slow/normal/fast), anime le défilement soi-même (`scrollHelpers.js`) puisque `scrollIntoView({behavior:'smooth'})` n'a pas de réglage de vitesse
+- ~~Régler la vitesse du défilement automatique de la page~~ ✅ Fait — réglage `scrollSpeed` (slow/normal/fast), anime le défilement soi-même (calcul dans `_textToSpeech.js`) puisque `scrollIntoView({behavior:'smooth'})` n'a pas de réglage de vitesse
 - ~~Filtrer les voix disponibles par langue et voir un indicateur de qualité pour chaque voix~~ ✅ Fait — menu de filtre par langue dans le panneau flottant ; pour la "qualité", l'API Web Speech n'expose aucune métrique réelle donc chaque voix est étiquetée Local/Network (`voice.localService`) et Default, la meilleure indication disponible en pratique (latence/dépendance réseau)
 - ~~Un bouton pour sauter manuellement un passage pendant la lecture, en plus du saut automatique des notes~~ ✅ Fait — boutons ⏮/⏭ dans le panneau, sautent d'une phrase en avant/arrière
 - ~~Une transition plus douce quand la lecture passe automatiquement au chapitre suivant~~ ✅ Fait — un court fondu d'opacité (classe `.ao3h-tts-chapter-fade`) et un délai de 300ms précèdent le clic automatique sur le lien du chapitre suivant

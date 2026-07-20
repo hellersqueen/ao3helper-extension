@@ -19,7 +19,6 @@ Notes
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
-import { buildWorkHTML } from './workHtmlTemplate.js';
 import { onReady, observe } from '../../../../lib/utils/index.js';
 
 
@@ -29,6 +28,7 @@ import { onReady, observe } from '../../../../lib/utils/index.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const W = getGlobalWindow();
+const buildWorkHTML = (...args) => W.AO3H.ficDownloader.buildWorkHTML(...args);
 
 export class BatchDownload {
   constructor(config = {}) {

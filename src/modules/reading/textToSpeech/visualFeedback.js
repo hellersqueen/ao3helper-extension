@@ -20,7 +20,6 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
-import { getScrollDuration, computeScrollY } from './scrollHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -78,12 +77,12 @@ register(MOD, { title: 'Visual Feedback', parent: 'textToSpeech', enabledByDefau
     const rect = el.getBoundingClientRect();
     const startY = W.scrollY;
     const targetY = startY + rect.top - (W.innerHeight / 2 - rect.height / 2);
-    const duration = getScrollDuration(cfg('scrollSpeed'));
+    const duration = shared().getScrollDuration(cfg('scrollSpeed'));
     const startTime = W.performance.now();
 
     function step (now) {
       const elapsed = now - startTime;
-      W.scrollTo(0, computeScrollY(startY, targetY, elapsed, duration));
+      W.scrollTo(0, shared().computeScrollY(startY, targetY, elapsed, duration));
       if (elapsed < duration) {
         scrollRafId = W.requestAnimationFrame(step);
       } else {

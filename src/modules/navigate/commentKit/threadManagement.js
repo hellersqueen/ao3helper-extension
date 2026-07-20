@@ -22,7 +22,6 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import { observe } from '../../../../lib/utils/index.js';
-import { shouldAutoCollapse } from './commentKitHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -157,7 +156,7 @@ function setupCollapse (workId, threshold) {
 
     const id = comment.id; // e.g. "comment_12345"
     const replyCount = thread.querySelectorAll('li.comment').length;
-    const isCollapsed = shouldAutoCollapse(replyCount, threshold, manual[id]);
+    const isCollapsed = W.AO3H_CommentKit.shouldAutoCollapse(replyCount, threshold, manual[id]);
 
     const btn = D.createElement('button');
     btn.type      = 'button';

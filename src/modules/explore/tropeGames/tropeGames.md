@@ -78,7 +78,7 @@ l'utilisent ; les réglages fonctionnent désormais réellement.
 
 - Une question, quatre humeurs possibles, recommande un trope adapté avec un lien de recherche AO3
 
-### 8. `tropeGamesHelpers.js` — calculs purs (ajouté au passage chantier 4)
+### 8. Calculs purs intégrés à `_tropeGames.js` (ajoutés au passage chantier 4)
 
 - Catégories de tropes, défi hebdomadaire, tendance mensuelle, tropes non explorés, motifs de bingo génériques (n'importe quelle taille impaire), pourcentage de progression, thème saisonnier, mapping humeur→trope, icônes de médaille, vérification rétrospective de l'horoscope
 
@@ -91,7 +91,7 @@ l'utilisent ; les réglages fonctionnent désormais réellement.
 Ce sont des idées dont on parle dans d'autres docs. État après le passage
 chantier 4 (2026-07-18) :
 
-- ~~Des défis de tropes à réaliser (par exemple "lire un trope différent chaque jour du mois")~~ ✅ Fait — un "Weekly Challenge" dans le panneau Stats : nombre de tropes distincts lus dans les 7 derniers jours, objectif fixe de 5 (`computeWeeklyChallenge` dans `tropeGamesHelpers.js`)
+- ~~Des défis de tropes à réaliser (par exemple "lire un trope différent chaque jour du mois")~~ ✅ Fait — un "Weekly Challenge" dans le panneau Stats : nombre de tropes distincts lus dans les 7 derniers jours, objectif fixe de 5 (`computeWeeklyChallenge` dans `_tropeGames.js`)
 - ~~Voir comment tes tropes préférés ont changé avec le temps~~ ✅ Fait — section "Trend" du panneau Stats : top 3 du mois en cours vs top 3 du mois précédent, avec un repère 📈 sur les tropes montants (`monthlyTrend`)
 - ~~Un mode "chasseur de tropes rares" pour dénicher des tropes peu utilisés~~ ✅ Fait — section "tropes non explorés" du panneau Stats : liste des tropes suivis jamais rencontrés dans tes lectures (`unexploredTropes`). "Rare" est ici personnel (jamais lu par toi), AO3 n'exposant aucune statistique d'usage global par trope à comparer
 - ~~Des cartes de bingo personnalisées avec différents niveaux de difficulté~~ ✅ Fait — réglages `bingoSize` (3×3 facile / 5×5 classique), `bingoCategory` et `bingoExclude` ; les motifs (lignes/colonnes/diagonales/X/cadre/coins/blackout) sont désormais calculés génériquement pour n'importe quelle taille impaire (`buildBingoPatterns`)
@@ -103,7 +103,7 @@ chantier 4 (2026-07-18) :
 - ~~Un menu flottant unique qui regroupe tous les mini-jeux au même endroit~~ ✅ Fait — un seul bouton "🃏" ouvre une colonne regroupant Bingo/Roulette/Stats/Achievements/Mood Quiz/Horoscope ; chaque sous-module s'y enregistre via `W.AO3H_TropeGames.registerMenuItem()` au lieu de flotter indépendamment
 - ~~Relier la roulette de tropes au module de fic au hasard~~ ✅ Fait — bouton "🎲 Surprise Pick" dans la modal roulette : ouvre la recherche AO3 combinée et signale à `surpriseMe` (via `sessionStorage`, drapeau consommé une fois) de tirer automatiquement un résultat au chargement de la page
 - ~~Relier les statistiques de tropes au module de fics similaires~~ ❌ Écarté — `similarFics` n'expose aucune API publique (contrairement à `surpriseMe`) ; une vraie intégration demanderait de récupérer et analyser une autre page côté client, hors de portée pour ce module (même constat déjà fait pour `fanficBingeMode` et `hiddenGems`)
-- ~~Regrouper les tropes lus par catégories (romance, réconfort, univers alternatif, fantastique...)~~ ✅ Fait — table `TROPE_CATEGORIES` (huit catégories) dans `tropeGamesHelpers.js`, utilisée à la fois pour la section "By category" des Stats et pour filtrer les cartes de bingo personnalisées
+- ~~Regrouper les tropes lus par catégories (romance, réconfort, univers alternatif, fantastique...)~~ ✅ Fait — table `TROPE_CATEGORIES` (huit catégories) dans `_tropeGames.js`, utilisée à la fois pour la section "By category" des Stats et pour filtrer les cartes de bingo personnalisées
 - ~~Des graphiques ou une vue de l'évolution dans le temps de tes habitudes de lecture, pas juste une liste~~ ✅ Fait (fusionné avec la tendance mensuelle ci-dessus) — reprend les barres déjà utilisées pour le top 10, pas de bibliothèque de graphiques, cohérent avec le choix déjà fait par `readingDashboard` de rester simple
 - ~~Pouvoir forcer l'affichage de l'horoscope du jour manuellement, même si on l'a déjà fermé aujourd'hui~~ ✅ Fait — bouton "🔮 Horoscope" dans le menu flottant, ouvre une modal avec le trope du jour et la rétrospective d'hier, indépendamment de l'état "fermé aujourd'hui" de la bannière automatique
 - ~~Pouvoir partager sa carte de bingo avec d'autres personnes (un mode à plusieurs joueurs)~~ ❌ Écarté — contredit directement la décision de conception déjà prise "Jeux individuels" (pas de classement, pas de serveur, pour éviter toute pression compétitive)

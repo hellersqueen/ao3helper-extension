@@ -21,10 +21,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { extractWorkIdFromBlurb, parseChapterCount } from '../../../../lib/ao3/parsers.js';
-import {
-  nextThreeState, shouldHideForThreeState, parseAO3Date, isWithinDateRange,
-  looksAbandoned, kudosRatio, belowRatioThreshold, belowTagThreshold, summaryTooShort,
-} from './filterManagerHelpers.js';
 
 
 
@@ -35,11 +31,12 @@ import {
 const KEY_MANUAL_HIDDEN = 'filterManager:manualHidden';
 
 export class WorksFilterManager {
-  constructor ({ NS, cfg, storeGet, storeSet }) {
+  constructor ({ NS, cfg, storeGet, storeSet, helpers }) {
     this.NS        = NS;
     this.cfg       = cfg;
     this.storeGet  = storeGet;
     this.storeSet  = storeSet;
+    this.helpers   = helpers;
     this._panel    = null;
     this._hoveredBlurb   = null;
     this._keydownHandler = null;
@@ -85,7 +82,7 @@ export class WorksFilterManager {
   }
 
   _lastUpdated (blurb) {
-    return parseAO3Date(blurb.querySelector('p.datetime')?.textContent);
+    return this.helpers.parseAO3Date(blurb.querySelector('p.datetime')?.textContent);
   }
 
   apply (blurbs) {
@@ -97,18 +94,18 @@ export class WorksFilterManager {
       if (this._isOneshot(blurb))   blurb.dataset.fmOneshot   = '1';
       if (this._isCrossover(blurb)) blurb.dataset.fmCrossover = '1';
 
-      if (cfg('quickFilterLowTags') && belowTagThreshold(this._tagCount(blurb), cfg('lowTagThreshold') || 0)) {
+      if (cfg('quickFilterLowTags') && this.helpers.belowTagThreshold(this._tagCount(blurb), cfg('lowTagThreshold') || 0)) {
         blurb.dataset.fmLowtags = '1';
       }
       if (cfg('quickFilterAnonymous') && this._isAnonymous(blurb)) {
         blurb.dataset.fmAnon = '1';
       }
-      if (cfg('quickFilterSummary') && summaryTooShort(this._summaryText(blurb), cfg('minSummaryLength') || 0)) {
+      if (cfg('quickFilterSummary') && this.helpers.summaryTooShort(this._summaryText(blurb), cfg('minSummaryLength') || 0)) {
         blurb.dataset.fmNosummary = '1';
       }
       if (cfg('quickFilterRatio')) {
         const { kudos, hits } = this._kudosAndHits(blurb);
-        if (belowRatioThreshold(kudosRatio(kudos, hits), cfg('minKudosRatio') || 0)) {
+        if (this.helpers.belowRatioThreshold(this.helpers.kudosRatio(kudos, hits), cfg('minKudosRatio') || 0)) {
           blurb.dataset.fmLowratio = '1';
         }
       }
@@ -118,7 +115,7 @@ export class WorksFilterManager {
       }
       if (cfg('quickFilterAbandoned')) {
         const { isComplete } = parseChapterCount(blurb.querySelector('dd.chapters'));
-        if (looksAbandoned(updated, isComplete)) blurb.dataset.fmAbandoned = '1';
+        if (this.helpers.looksAbandoned(updated, isComplete)) blurb.dataset.fmAbandoned = '1';
       }
 
       if (this.cfg('showOneshotBadge') && this._isOneshot(blurb) && !blurb.querySelector(`.${this.NS}-fm-oneshot-badge`)) {
@@ -139,7 +136,7 @@ export class WorksFilterManager {
   _applyDateFilter (range) {
     document.querySelectorAll('[data-fm-updated-at]').forEach(blurb => {
       const updated = new Date(parseInt(/** @type {HTMLElement} */ (blurb).dataset.fmUpdatedAt, 10));
-      if (range && !isWithinDateRange(updated, range)) {
+      if (range && !this.helpers.isWithinDateRange(updated, range)) {
         blurb.setAttribute('data-fm-staledate', '1');
       } else {
         blurb.removeAttribute('data-fm-staledate');
@@ -300,7 +297,7 @@ export class WorksFilterManager {
       document.documentElement.classList.toggle(`${cls}-hide`, state === 'hide');
     };
     render();
-    btn.addEventListener('click', () => { state = nextThreeState(state); render(); });
+    btn.addEventListener('click', () => { state = this.helpers.nextThreeState(state); render(); });
     return btn;
   }
 

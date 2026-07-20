@@ -22,7 +22,6 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { ThemeValidator } from '../../../../lib/themes/engine/themeUtils.js';
-import { findProtectedViolations } from './themeSafety.js';
 
 
 
@@ -31,6 +30,7 @@ import { findProtectedViolations } from './themeSafety.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const W    = getGlobalWindow();
+const findProtectedViolations = (...args) => W.AO3H_ThemeBuilder.findProtectedViolations(...args);
 const NS   = AO3H.env?.NS || 'ao3h';
 const MOD  = 'customStyling';
 const LOG  = `[AO3H][${MOD}]`;

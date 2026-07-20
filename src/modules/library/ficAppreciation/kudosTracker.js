@@ -2,14 +2,15 @@
 
 AO3 Helper - Fic Appreciation › Kudos Tracker
 
-Detects and records kudos, updates work-page controls, decorates listing blurbs,
-and optionally submits quick kudos without navigation.
+Detects and records kudos, synchronizes their state across tabs, updates
+work-page controls, decorates listing blurbs, and optionally submits quick
+kudos without navigation.
 
 Notes
 
 - Recorded kudos dates use local ISO date strings.
 - New records dispatch the shared kudos-given event.
-- Cleanup aborts quick-kudos requests and removes form listeners.
+- Cleanup aborts quick-kudos requests and removes listeners and pending timers.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -19,6 +20,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { formatDate } from '../../../../lib/utils/format-date.js';
 import { EV_KUDOS_GIVEN } from '../../../../lib/utils/event-names.js';
 import { giveKudos } from '../../../../lib/ao3/actions.js';
 import { getBlurbMeta } from '../../../../lib/ao3/parsers.js';
@@ -40,6 +42,8 @@ export class KudosTracker {
     this.cfg      = cfg;
     this.SK       = 'ficAppreciation:kudosed';
     this._forms   = new Map();
+    this._storageHandler = null;
+    this._timers = new Set();
     this._requestController = new AbortController();
   }
 
@@ -198,6 +202,75 @@ export class KudosTracker {
     });
   }
 
+  injectKudosBadgeOnWorkPage (workId) {
+    const { NS } = this;
+    if (document.getElementById(`${NS}-fa-kudos-badge`)) return;
+    const entry = this._load()[workId];
+    if (!entry) return;
+
+    const kudosEl = document.querySelector('#kudos, .kudos');
+    if (!kudosEl) return;
+
+    const icon = this.cfg('kudosIcon') || '🧡';
+    const badge = document.createElement('p');
+    badge.id = `${NS}-fa-kudos-badge`;
+    badge.className = `${NS}-fa-kudos-badge`;
+    badge.innerHTML =
+      `<span class="${NS}-fa-badge-icon">${icon}</span> ` +
+      `Kudos given${entry.date ? ` on ${formatDate(entry.date, 'long')}` : ''}`;
+    kudosEl.after(badge);
+  }
+
+  setLoadingState (on) {
+    const { NS } = this;
+    const area = document.querySelector('#kudos, .kudos');
+    if (!area) return;
+    if (on) {
+      if (!area.querySelector(`.${NS}-fa-kudos-loading`)) {
+        const indicator = document.createElement('span');
+        indicator.className = `${NS}-fa-kudos-loading`;
+        indicator.textContent = 'Checking kudos status…';
+        area.appendChild(indicator);
+      }
+    } else {
+      area.querySelector(`.${NS}-fa-kudos-loading`)?.remove();
+    }
+  }
+
+  applyTooltip (badge, workId) {
+    const entry = this._load()[workId];
+    if (!entry?.date) return;
+    const dateFormat = this.cfg('tooltipDateFormat') || 'long';
+    const label = `Kudos given on ${formatDate(entry.date, dateFormat)}`;
+    badge.title = label;
+    badge.setAttribute('aria-label', label);
+  }
+
+  applyCustomIcon (badge) {
+    const icon = this.cfg('kudosIcon');
+    if (icon && icon !== '🧡') badge.textContent = icon;
+  }
+
+  wireWorkPage (workId) {
+    this.setLoadingState(true);
+    this.applyKudosStateOnWorkPage(workId);
+    this.setLoadingState(false);
+    this.injectKudosBadgeOnWorkPage(workId);
+    if (this.cfg('showManualCheckButton') !== false) this.injectManualCheckButton(workId);
+  }
+
+  wireBlurb (blurb, workId) {
+    this.applyKudosBadge(blurb, workId);
+    const badge = blurb.querySelector(`.${this.NS}-fa-badge-kudos`);
+    if (badge) {
+      this.applyTooltip(badge, workId);
+      this.applyCustomIcon(badge);
+    }
+    if (this.cfg('quickKudosButton') && !this.hasGivenKudos(workId)) {
+      this.injectQuickKudosButton(blurb, workId);
+    }
+  }
+
   /** Inject a quick-kudos button on a listing blurb (no page reload needed). */
   injectQuickKudosButton (blurb, workId) {
     const { NS } = this;
@@ -258,15 +331,88 @@ export class KudosTracker {
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
+     FEATURE — CROSS-TAB SYNCHRONIZATION AND MANUAL CHECK
+  ═══════════════════════════════════════════════════════════════════════ */
+
+  /**
+   * Start listening for kudos changes made in other tabs.
+   * @param {(workId: string) => void} onKudosChange
+   */
+  startTabSync (onKudosChange) {
+    if (this._storageHandler) return;
+
+    this._storageHandler = (event) => {
+      if (event.key !== this.SK) return;
+      try {
+        const previous = event.oldValue ? JSON.parse(event.oldValue) : {};
+        const next = event.newValue ? JSON.parse(event.newValue) : {};
+        for (const workId of Object.keys(next)) {
+          if (!(workId in previous)) onKudosChange(workId);
+        }
+      } catch { /* ignore malformed storage events */ }
+    };
+
+    W.addEventListener('storage', this._storageHandler);
+  }
+
+  stopTabSync () {
+    if (!this._storageHandler) return;
+    W.removeEventListener('storage', this._storageHandler);
+    this._storageHandler = null;
+  }
+
+  injectManualCheckButton (workId) {
+    const { NS } = this;
+    const id = `${NS}-fa-kudos-check-btn`;
+    if (document.getElementById(id)) return;
+
+    const actionsList = document.querySelector('#feedback ul.actions, .kudos ~ ul.actions, #kudos + ul');
+    if (!actionsList) return;
+
+    const li = document.createElement('li');
+    li.id = id;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `${NS}-fa-check-btn`;
+    btn.textContent = '❤ Check Kudos';
+
+    const result = document.createElement('span');
+    result.className = `${NS}-fa-check-result`;
+
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      result.textContent = 'Checking…';
+      const found = this.detectKudosOnWorkPage(workId);
+      const timer = setTimeout(() => {
+        this._timers.delete(timer);
+        result.textContent = found ? '✓ Kudos given!' : 'Not found in kudos list.';
+        btn.disabled = false;
+      }, 300);
+      this._timers.add(timer);
+    });
+
+    li.appendChild(btn);
+    li.appendChild(result);
+    actionsList.insertBefore(li, actionsList.firstChild);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
      FEATURE LIFECYCLE
   ═══════════════════════════════════════════════════════════════════════ */
 
   cleanup () {
     this._requestController.abort();
+    this._timers.forEach(timer => clearTimeout(timer));
+    this._timers.clear();
+    this.stopTabSync();
     this._forms.forEach((handler, form) => {
       form.removeEventListener('submit', handler);
       delete form.dataset.faWatched;
     });
     this._forms.clear();
+    document.getElementById(`${this.NS}-fa-kudos-check-btn`)?.remove();
+    document.getElementById(`${this.NS}-fa-kudos-badge`)?.remove();
+    this.setLoadingState(false);
   }
 }

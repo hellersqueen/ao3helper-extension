@@ -151,6 +151,93 @@ function storeSet (key, value) {
   } catch {}
 }
 
+const MONTHS = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+};
+const THREE_STATE_CYCLE = ['all', 'only', 'hide'];
+
+export function parseAO3Date (text) {
+  if (!text) return null;
+  const match = /(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/.exec(text.trim());
+  if (!match) return null;
+  const month = MONTHS[match[2].toLowerCase().slice(0, 3)];
+  return month === undefined ? null : new Date(+match[3], month, +match[1]);
+}
+export function isWithinDateRange (date, range) {
+  if (!date) return false;
+  const days = Math.floor((Date.now() - date.getTime()) / 86400000);
+  if (days < 0) return true;
+  if (range === 'today') return days === 0;
+  if (range === 'week') return days <= 7;
+  if (range === 'month') return days <= 31;
+  return true;
+}
+export function looksAbandoned (lastUpdated, isComplete, months = 12) {
+  return Boolean(!isComplete && lastUpdated &&
+    (Date.now() - lastUpdated.getTime()) / 86400000 >= months * 30);
+}
+export function nextThreeState (current) {
+  return THREE_STATE_CYCLE[(THREE_STATE_CYCLE.indexOf(current) + 1) % THREE_STATE_CYCLE.length];
+}
+export function shouldHideForThreeState (state, matches) {
+  if (state === 'only') return !matches;
+  if (state === 'hide') return matches;
+  return false;
+}
+export function kudosRatio (kudos, hits) {
+  return !hits || kudos == null ? null : Math.round((kudos / hits) * 1000) / 10;
+}
+export function belowRatioThreshold (ratio, minPercent) {
+  return ratio !== null && ratio < minPercent;
+}
+export function belowTagThreshold (count, threshold) { return threshold > 0 && count < threshold; }
+export function summaryTooShort (summaryText, minLength) {
+  const length = (summaryText || '').trim().length;
+  return minLength <= 0 ? length === 0 : length < minLength;
+}
+export function isSeriesFullyRead (seriesWorkIds, readWorkIds) {
+  if (!seriesWorkIds.length) return false;
+  const read = readWorkIds instanceof Set ? readWorkIds : new Set(readWorkIds);
+  return seriesWorkIds.every(id => read.has(id));
+}
+export function mergePresetFilters (a, b, multiTagFields) {
+  const merged = { ...(a.filters || {}) };
+  for (const [field, value] of Object.entries(b.filters || {})) {
+    const existing = merged[field];
+    if (multiTagFields.has(field) && typeof existing === 'string' && typeof value === 'string') {
+      merged[field] = [...new Set([
+        ...existing.split(',').map(tag => tag.trim()).filter(Boolean),
+        ...value.split(',').map(tag => tag.trim()).filter(Boolean),
+      ])].join(', ');
+    } else if (Array.isArray(existing) && Array.isArray(value)) {
+      merged[field] = [...new Set([...existing, ...value])];
+    } else if (value !== '' && value != null) {
+      merged[field] = value;
+    }
+  }
+  return merged;
+}
+export function addSearchHistoryEntry (history, entry, cap = 20) {
+  return [entry, ...history].slice(0, cap);
+}
+export function incrementUsage (stats, key) {
+  return { ...stats, [key]: (stats[key] || 0) + 1 };
+}
+export function topUsage (stats, limit = 5) {
+  return Object.entries(stats)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([key, count]) => ({ key, count }));
+}
+
+export const filterManagerHelpers = {
+  parseAO3Date, isWithinDateRange, looksAbandoned, nextThreeState,
+  shouldHideForThreeState, kudosRatio, belowRatioThreshold, belowTagThreshold,
+  summaryTooShort, isSeriesFullyRead, mergePresetFilters,
+  addSearchHistoryEntry, incrementUsage, topUsage,
+};
+
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -220,11 +307,11 @@ register(MOD, {
   console.log(LOG, 'init');
 
   // ── Instantiate submodules ───────────────────────────────────────────
-  const presetMgmt    = new PresetManagement({ NS, storeGet, storeSet, cfg, detectCurrentFandom, getBundleFor, loadBundles, saveBundles, KEY_PRESETS, KEY_BUNDLES, KEY_LAST, KEY_HISTORY, KEY_USAGE });
+  const presetMgmt    = new PresetManagement({ NS, storeGet, storeSet, cfg, detectCurrentFandom, getBundleFor, loadBundles, saveBundles, KEY_PRESETS, KEY_BUNDLES, KEY_LAST, KEY_HISTORY, KEY_USAGE, helpers: filterManagerHelpers });
   const langBadges    = new LanguageBadges({ NS, cfg });
   const filterWarnings = new FilterWarnings({ NS, cfg, storeGet, storeSet });
-  const historyFilters = new UserHistoryFilters({ NS, cfg, W, AO3H, onAsyncUpdate: () => processBlurbs() });
-  const wfm           = new WorksFilterManager({ NS, cfg, storeGet, storeSet });
+  const historyFilters = new UserHistoryFilters({ NS, cfg, W, AO3H, onAsyncUpdate: () => processBlurbs(), helpers: filterManagerHelpers });
+  const wfm           = new WorksFilterManager({ NS, cfg, storeGet, storeSet, helpers: filterManagerHelpers });
 
   // ── Always expose the public bundle/preset API ───────────────────────
   exposePublicApi(presetMgmt);

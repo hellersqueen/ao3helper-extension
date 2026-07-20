@@ -25,7 +25,6 @@ Notes
 
 import { fetchAO3PageText } from '../../../../lib/ao3/requests.js';
 import { parseBookmarksPageHTML } from '../../../../lib/ao3/parsers.js';
-import { diffNotBookmarked } from './ficAppreciationHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -35,10 +34,11 @@ import { diffNotBookmarked } from './ficAppreciationHelpers.js';
 const MAX_PAGES = 5;
 
 export class KudosBookmarkFinder {
-  /** @param {{ NS, storeGet }} opts */
-  constructor ({ NS, storeGet }) {
+  /** @param {{ NS, storeGet, helpers: typeof import('./_ficAppreciation.js').ficAppreciationHelpers }} opts */
+  constructor ({ NS, storeGet, helpers }) {
     this.NS        = NS;
     this.storeGet  = storeGet;
+    this.helpers   = helpers;
     this.SK        = 'ficAppreciation:kudosed';
     this._controller = new AbortController();
   }
@@ -78,7 +78,7 @@ export class KudosBookmarkFinder {
     }
 
     const kudosedIds = this._kudosedIds();
-    return { checked: kudosedIds.length, missing: diffNotBookmarked(kudosedIds, [...bookmarkedIds]), truncated: hasNext };
+    return { checked: kudosedIds.length, missing: this.helpers.diffNotBookmarked(kudosedIds, [...bookmarkedIds]), truncated: hasNext };
   }
 
   /* ═══════════════════════════════════════════════════════════════════════

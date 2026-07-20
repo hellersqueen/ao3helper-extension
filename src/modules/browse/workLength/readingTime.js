@@ -21,7 +21,6 @@ Notes
 import { upsertChapterBadgePart, removeChapterBadgePartsByKey } from '../../../../lib/ui/badges.js';
 import { onReady, observe, countWords } from '../../../../lib/utils/index.js';
 import { getChapterProse } from '../../../../lib/ao3/work-page.js';
-import { parseChapterProgress, remainingWordsAfterChapter, canFinishBy } from './lengthMath.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -29,9 +28,10 @@ import { parseChapterProgress, remainingWordsAfterChapter, canFinishBy } from '.
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export class ReadingTime {
-  constructor(NS, cfg) {
+  constructor(NS, cfg, helpers) {
     this.NS  = NS;
     this.cfg = cfg;
+    this.helpers = helpers;
     this.WPM_MAP = { slow: 150, average: 250, fast: 400 };
   }
 
@@ -96,11 +96,11 @@ export class ReadingTime {
     if (this.cfg('showRemainingTime') === false || !this.cfg('showEstimate')) return;
     if (statEl.querySelector(`.${this.NS}-wl-remaining`)) return;
     const chaptersEl = document.querySelector('dl.stats dd.chapters');
-    const progress   = chaptersEl ? parseChapterProgress(chaptersEl.textContent) : null;
+    const progress   = chaptersEl ? this.helpers.parseChapterProgress(chaptersEl.textContent) : null;
     const current    = this.getCurrentChapterNumber();
     if (!progress || !current || progress.published < 2) return;
 
-    const left = remainingWordsAfterChapter(this.parseWordCount(statEl), current, progress.published);
+    const left = this.helpers.remainingWordsAfterChapter(this.parseWordCount(statEl), current, progress.published);
     if (left === null || left < 100) return;
     const min = left / this.getWPM();
     statEl.insertAdjacentHTML('beforeend',
@@ -115,14 +115,14 @@ export class ReadingTime {
 
     // Use the remaining estimate when on a chapter view, else the whole work
     const chaptersEl = document.querySelector('dl.stats dd.chapters');
-    const progress   = chaptersEl ? parseChapterProgress(chaptersEl.textContent) : null;
+    const progress   = chaptersEl ? this.helpers.parseChapterProgress(chaptersEl.textContent) : null;
     const current    = this.getCurrentChapterNumber();
     const words      = this.parseWordCount(statEl);
     const effective  = (progress && current)
-      ? remainingWordsAfterChapter(words, current, progress.published) ?? words
+      ? this.helpers.remainingWordsAfterChapter(words, current, progress.published) ?? words
       : words;
 
-    const verdict = canFinishBy(effective / this.getWPM(), target);
+    const verdict = this.helpers.canFinishBy(effective / this.getWPM(), target);
     if (!verdict) return;
     const marks = {
       yes:   { icon: '✅', label: 'you can finish it' },

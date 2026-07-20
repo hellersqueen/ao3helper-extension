@@ -18,8 +18,8 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
-import { sortByKudosURL } from './userRelationshipsHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -27,6 +27,8 @@ import { sortByKudosURL } from './userRelationshipsHelpers.js';
 
 const MOD  = 'authorTracking';
 const NS   = 'ao3h';
+const W    = getGlobalWindow();
+const sortByKudosURL = (...args) => W.AO3H_UserRelationships.sortByKudosURL(...args);
 
 const NOTES_KEY     = 'authorTracking:notes';
 const FOLLOWED_KEY  = 'authorTracking:followed';

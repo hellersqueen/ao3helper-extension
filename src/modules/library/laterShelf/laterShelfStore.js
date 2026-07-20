@@ -12,7 +12,7 @@ Notes
 - New additions dispatch the shared marked-for-later event.
 - Item shape: { wid, title, addedAt, priority?, note?, group?, order?,
   chaptersAtAdd?, completeAtAdd? }. Older items may lack the optional fields —
-  always read them through a default (see laterShelfHelpers.js).
+  always read them through a default.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -26,7 +26,6 @@ import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
 import { extractWorkIdFromHref, parseChapterCount } from '../../../../lib/ao3/parsers.js';
 import { showToast } from '../../../../lib/ui/toast.js';
-import { milestonesCrossed } from './laterShelfHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -34,6 +33,16 @@ import { milestonesCrossed } from './laterShelfHelpers.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const MOD = 'laterShelf';
+
+/** @typedef {{ milestonesCrossed: (prevCount: number, newCount: number) => number[] }} LaterShelfHelpers */
+
+/** @type {LaterShelfHelpers} */
+let helpers = { milestonesCrossed: () => [] };
+
+/** @param {LaterShelfHelpers} nextHelpers */
+export function setLaterShelfHelpers (nextHelpers) {
+  helpers = nextHelpers;
+}
 
 export const SK_ITEMS = KEY_LATER_SHELF_ITEMS;
 export const SK_ARCHIVE = 'ao3h:laterShelf:archive';
@@ -81,7 +90,7 @@ export function addItem (wid, title, extra = {}) {
   items.push(item);
   saveItems(items);
   document.dispatchEvent(new CustomEvent(EV_MARKED_FOR_LATER, { detail: { workId: wid, title } }));
-  const crossed = milestonesCrossed(prevCount, items.length);
+  const crossed = helpers.milestonesCrossed(prevCount, items.length);
   if (crossed.length) {
     showToast(`🎉 ${crossed[crossed.length - 1]} works saved for later!`, { type: 'success', duration: 4000 });
   }

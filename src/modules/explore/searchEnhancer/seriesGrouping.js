@@ -19,16 +19,17 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
-import { sortGroupsByReadHistory } from './seriesGroupingHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
+const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'seriesGrouping';
 const LOG  = `[AO3H][${MOD}]`;
@@ -94,7 +95,7 @@ function groupSeriesByWork (container, cfg) {
   } else if (cfg.fandomSortMode === 'history') {
     // Real reading history: series with more actually-visited works first,
     // instead of just the order they appear on the page.
-    groupEntries = sortGroupsByReadHistory(groupEntries, loadReadWorkIds());
+    groupEntries = W.AO3H_SearchEnhancer?.sortGroupsByReadHistory(groupEntries, loadReadWorkIds()) || groupEntries;
   }
 
   // Remove all blurbs from DOM temporarily

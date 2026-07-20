@@ -87,6 +87,64 @@ function isListingPage () {
   );
 }
 
+export function parseChapterOptions (options) {
+  if (!Array.isArray(options)) return [];
+  return options.map((option, index) => {
+    const text = String(option.text ?? '').trim();
+    const match = text.match(/^(\d+)\.\s*(.*)$/);
+    return {
+      id: String(option.value),
+      num: match ? parseInt(match[1], 10) : index + 1,
+      title: match && match[2] ? match[2].trim() : '',
+      selected: Boolean(option.selected),
+    };
+  });
+}
+export function filterChapters (chapters, query) {
+  const normalized = String(query ?? '').trim().toLowerCase();
+  if (!normalized) return chapters;
+  return chapters.filter(chapter =>
+    String(chapter.num).includes(normalized) || chapter.title.toLowerCase().includes(normalized)
+  );
+}
+/**
+ * @template {{ id: string, num: number }} T
+ * @param {T[]} chapters
+ * @param {{ currentId?: string, lastReadNum?: number|null }} [opts]
+ * @returns {(T & { state: string })[]}
+ */
+export function buildChapterStates (chapters, { currentId, lastReadNum } = {}) {
+  return chapters.map(chapter => ({
+    ...chapter,
+    state: chapter.id === currentId
+      ? 'current'
+      : (lastReadNum != null && chapter.num <= lastReadNum ? 'read' : 'unread'),
+  }));
+}
+export function firstUnreadChapter (chapters, lastReadNum) {
+  if (!chapters.length) return null;
+  if (lastReadNum == null) return chapters[0];
+  return chapters.find(chapter => chapter.num > lastReadNum) || chapters[chapters.length - 1];
+}
+export function addRecentEntry (list, entry, cap = 8) {
+  const rest = (Array.isArray(list) ? list : []).filter(item => item.id !== entry.id);
+  return [entry, ...rest].slice(0, cap);
+}
+export function buildBreadcrumbText (workTitle, num, title) {
+  const parts = [workTitle || 'Work', `Chapter ${num}`];
+  if (title) parts.push(title);
+  return parts.join(' > ');
+}
+export function prependChapterToTitle (originalTitle, num, total) {
+  const position = total ? `Ch. ${num}/${total}` : `Ch. ${num}`;
+  return originalTitle ? `${position} · ${originalTitle}` : position;
+}
+
+export const chapterNavigationHelpers = {
+  parseChapterOptions, filterChapters, buildChapterStates, firstUnreadChapter,
+  addRecentEntry, buildBreadcrumbText, prependChapterToTitle,
+};
+
 let navCtrl   = null;
 let autoScroll = null;
 let chaptersPanel = null;
@@ -109,14 +167,14 @@ register(
       const workId = extractWorkIdFromHref(location.pathname);
       const diOpts = { NS, cfg, lsGet, lsSet, SK_LASTCHAP, workId };
 
-      navCtrl = new NavigationControls(diOpts);
+      navCtrl = new NavigationControls({ ...diOpts, helpers: chapterNavigationHelpers });
 
       if (isMultiChapter()) {
         navCtrl.setupStickyNav();
         navCtrl.setupChapterIndexLabel();
         if (workId) navCtrl.cacheLastChapter(workId);
 
-        chaptersPanel = new ChaptersPanel({ NS, cfg, workId });
+        chaptersPanel = new ChaptersPanel({ NS, cfg, workId, helpers: chapterNavigationHelpers });
         chaptersPanel.setup();
       }
 

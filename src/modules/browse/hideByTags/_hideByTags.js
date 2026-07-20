@@ -40,7 +40,7 @@ import styles from './hideByTags.css?inline';
 import { HiddenTags } from './hiddenTags.js';
 import { NopeWords } from './nopeWords.js';
 import { WhitelistExceptions } from './whitelistExceptions.js';
-import { getCustomNoiseWords, isNoiseTag, mergeNoisePatterns, NOISE_PATTERNS } from '../tagsDisplay/noiseTagUtils.js';
+import { getCustomNoiseWords, isNoiseTag, mergeNoisePatterns, NOISE_PATTERNS } from '../../../../lib/utils/noise-tags.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE-SPECIFIC HELPERS

@@ -25,14 +25,9 @@ du simple nombre de kudos ou de vues.
 ### 1. `_ficEngagement.js` — le chef d'orchestre
 
 - Met en route les deux autres fichiers de fonctionnalités de ce module (`engagementMetrics.js` et `hiddenGems.js`) et leur applique les indicateurs sur les œuvres affichées
+- Contient et injecte les calculs de ratios, de classement et de détection des pépites
 
-### 2. `ficEngagementHelpers.js` — logique extraite
-
-- `commentRate`/`classifyLevel` : calcul et classement (haut/moyen/faible) des ratios
-- `isGem`/`gemMedal` : détection de pépite cachée et son niveau de médaille (seuils personnalisables)
-- `averageRatio`/`isGemRelativeToPageAverage` : détection relative à la moyenne des œuvres affichées sur la page
-
-### 3. `engagementMetrics.js` — badges de métriques
+### 2. `engagementMetrics.js` — badges de métriques
 
 - Calcule et affiche quatre badges sous les statistiques de chaque fic, sur les listes d'œuvres comme sur la page individuelle d'une fic :
   - **Kudos Ratio** (`kudos / hits × 100`) → `X.X% ❤️/👁️`
@@ -49,7 +44,7 @@ du simple nombre de kudos ou de vues.
 - Peut colorer les badges (vert/jaune/rouge) selon le niveau d'engagement (réglage `colorCodeMetrics`)
 - Peut cacher entièrement les fics à faible engagement, sur la base du kudos ratio (réglage `hideLowEngagement`)
 
-### 4. `hiddenGems.js` — pépites cachées
+### 3. `hiddenGems.js` — pépites cachées
 
 - Repère les fics peu populaires mais avec un très bon taux d'engagement, et leur ajoute un badge médaille (💎 diamant / 🥇 or / 🥈 argent) selon la force du ratio
 - Critères de détection, réglables dans le panneau au lieu d'être figés (`gemMinRatio` / `gemMaxKudos` / `gemMaxBookmarks` / `gemMinHits`) :

@@ -130,6 +130,78 @@ function sanitizeHref (href) {
   return '#';
 }
 
+export function nextVisitCount (previousEntry) {
+  return previousEntry ? (previousEntry.visitCount || 1) + 1 : 1;
+}
+export function groupHistoryByPeriod (history, now = Date.now()) {
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  const todayStart = startOfToday.getTime();
+  const yesterdayStart = todayStart - 86400000;
+  const weekStart = todayStart - 7 * 86400000;
+  const groups = { today: [], yesterday: [], thisWeek: [], older: [] };
+  history.forEach(entry => {
+    const timestamp = entry.lastReadAt || entry.seenAt || 0;
+    if (timestamp >= todayStart) groups.today.push(entry);
+    else if (timestamp >= yesterdayStart) groups.yesterday.push(entry);
+    else if (timestamp >= weekStart) groups.thisWeek.push(entry);
+    else groups.older.push(entry);
+  });
+  return groups;
+}
+export function sortHistory (history, sortKey = 'date') {
+  return [...history].sort((a, b) => sortKey === 'title'
+    ? (a.title || '').localeCompare(b.title || '')
+    : (b.lastReadAt || b.seenAt || 0) - (a.lastReadAt || a.seenAt || 0));
+}
+export function pinnedFirst (history) {
+  return [...history.filter(entry => entry.pinned), ...history.filter(entry => !entry.pinned)];
+}
+export function entriesToCleanUp (history, olderThanDays, now = Date.now()) {
+  const cutoff = now - olderThanDays * 86400000;
+  return history
+    .filter(entry => !entry.pinned && (entry.lastReadAt || entry.seenAt || 0) < cutoff)
+    .map(entry => entry.id)
+    .filter(Boolean);
+}
+export function computeReadingSpeed (samples) {
+  const valid = samples.filter(sample => sample.words > 0 && sample.ms > 0);
+  if (!valid.length) return null;
+  const words = valid.reduce((sum, sample) => sum + sample.words, 0);
+  const milliseconds = valid.reduce((sum, sample) => sum + sample.ms, 0);
+  return Math.round((words / milliseconds) * 60000);
+}
+export function progressMilestonesCrossed (previousPct, nextPct, thresholds = [25, 50, 75]) {
+  return thresholds.filter(threshold => previousPct < threshold && nextPct >= threshold);
+}
+export function donutDashArray (pct, circumference) {
+  const dash = Math.max(0, Math.min(100, pct)) / 100 * circumference;
+  return {
+    dash: Math.round(dash * 10) / 10,
+    gap: Math.round((circumference - dash) * 10) / 10,
+  };
+}
+export function formatUpdatedLabel (updatedAt, format, relativeFn) {
+  if (format === 'exact') {
+    return new Date(updatedAt).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric',
+    });
+  }
+  return relativeFn(updatedAt);
+}
+export function buildContinueReadingList (history, limit = 5) {
+  return [...history]
+    .filter(entry => entry.chapter && (!entry.totalChapters || entry.chapter < entry.totalChapters))
+    .sort((a, b) => (b.lastReadAt || 0) - (a.lastReadAt || 0))
+    .slice(0, limit);
+}
+
+export const readingTrackerHelpers = {
+  nextVisitCount, groupHistoryByPeriod, sortHistory, pinnedFirst,
+  entriesToCleanUp, computeReadingSpeed, progressMilestonesCrossed,
+  donutDashArray, formatUpdatedLabel, buildContinueReadingList,
+};
+
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE LIFECYCLE
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -144,18 +216,18 @@ register(
       getProgress,
       markSeen: null,
       getHistory,
-      getReadingSpeed: ReadingProgress.getReadingSpeed,
+      getReadingSpeed: () => ReadingProgress.getReadingSpeed(readingTrackerHelpers),
     };
 
     document.documentElement.style.setProperty('--ao3h-rt-seen-opacity', cfg('seenWorksOpacity') ?? 0.4);
     if (cfg('historyClearAll') === false) document.documentElement.classList.add('ao3h-rt-hide-history-clear');
     if (cfg('showClearProgressButton') === false) document.documentElement.classList.add('ao3h-rt-hide-progress-clear');
 
-    const seenTracking    = new SeenTracking({ NS, cfg, getHistory, saveHistory, relativeTime });
+    const seenTracking    = new SeenTracking({ NS, cfg, getHistory, saveHistory, relativeTime, helpers: readingTrackerHelpers });
     W.AO3H_ReadingTracker.markSeen = (id) => seenTracking.markSeen(id);
     const visualMarkers   = new VisualMarkers({ NS, cfg, getHistory, getProgress });
-    const readingProgress = new ReadingProgress({ NS, cfg, saveProgress, getProgress, relativeTime, sanitizeHref });
-    const viewHistory     = new ViewHistory({ NS, LOG, isHistoryPage, getHistory, saveHistory, clearProgress });
+    const readingProgress = new ReadingProgress({ NS, cfg, saveProgress, getProgress, relativeTime, sanitizeHref, helpers: readingTrackerHelpers });
+    const viewHistory     = new ViewHistory({ NS, LOG, isHistoryPage, getHistory, saveHistory, clearProgress, helpers: readingTrackerHelpers });
 
     viewHistory.wirePanelActions({
       parseWorkId:       () => seenTracking.parseWorkId(),

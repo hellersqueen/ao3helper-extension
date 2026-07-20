@@ -23,12 +23,9 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { store, cfg } from './activityPanelShared.js';
-import { DataCollection } from './dataCollection.js';
-import { ReadingStats } from './readingStats.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { detectUser } from '../../../../lib/utils/user-detector.js';
-import { filterSessionsByPeriod, buildTagCloud, buildRecapText } from './activityPanelHelpers.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -37,19 +34,22 @@ import { filterSessionsByPeriod, buildTagCloud, buildRecapText } from './activit
 
 const MOD = 'readingInsights';
 const NS  = 'ao3h';
+const W   = getGlobalWindow();
 
 const WIDGET_ID  = `${NS}-reading-insights`;
 const PREFS_KEY  = 'activityPanel:preferences';
 
 const PERIOD_LABELS = { today: 'Today', week: 'Last 7 days', month: 'Last 30 days', year: 'This year', all: 'All time' };
 
+function getStore () { return W.AO3H_ActivityPanel.store; }
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — PREFERENCES
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function loadPrefs () { return store.get(PREFS_KEY) || {}; }
-function savePrefs (patch) { store.set(PREFS_KEY, { ...loadPrefs(), ...patch }); }
+function loadPrefs () { return getStore().get(PREFS_KEY) || {}; }
+function savePrefs (patch) { getStore().set(PREFS_KEY, { ...loadPrefs(), ...patch }); }
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -62,6 +62,7 @@ function savePrefs (patch) { store.set(PREFS_KEY, { ...loadPrefs(), ...patch });
  * @param {Record<string, {date?: string}>} kudosHistory
  */
 function computePeriodStats (period, allSessions, kudosHistory) {
+  const { filterSessionsByPeriod } = W.AO3H_ActivityPanel;
   const sessions = filterSessionsByPeriod(allSessions, period);
   const totalWorks = new Set(sessions.map(s => s.workId).filter(Boolean)).size;
   const totalWords = sessions.reduce((a, s) => a + (s.words || 0), 0);
@@ -98,6 +99,7 @@ function esc (s) {
 }
 
 function render (container, data, cfg) {
+  const { buildTagCloud, buildRecapText } = W.AO3H_ActivityPanel;
   const { totalWorks, totalWords, totalKudos, streak, achievements, topTags } = data;
   const period = loadPrefs().timePeriod || 'all';
 
@@ -193,6 +195,8 @@ function render (container, data, cfg) {
 }
 
 function collectAndRender (container, cfg) {
+  const store = getStore();
+  const { DataCollection, ReadingStats } = W.AO3H_ActivityPanel;
   const dc   = new DataCollection({ storage: store });
   const data = dc.aggregate();
   if (!data.totalWorks) { container.hidden = true; return false; }
@@ -216,6 +220,8 @@ function collectAndRender (container, cfg) {
 }
 
 function buildWidget (cfg) {
+  const store = getStore();
+  const { DataCollection } = W.AO3H_ActivityPanel;
   const container = document.createElement('div');
   container.id = WIDGET_ID;
   container.className = `${NS}-reading-insights`;
@@ -289,7 +295,7 @@ register(MOD, {
   if (!isTargetPage()) return () => {};
   if (document.getElementById(WIDGET_ID)) return () => {};
 
-  const widget = buildWidget(cfg);
+  const widget = buildWidget(W.AO3H_ActivityPanel.cfg);
   if (!widget) return () => {};
 
   injectWidget(widget);

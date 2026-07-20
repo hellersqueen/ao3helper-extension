@@ -27,7 +27,6 @@ import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 import { showToast } from '../../../../lib/ui/toast.js';
-import { buildBingoPatterns, freeCenterIndex, filterTropesByCategory, bingoProgressPercent } from './tropeGamesHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -60,11 +59,11 @@ function generateCard (size, category, exclude) {
   const excludeSet = new Set((exclude || []).map(t => t.trim().toLowerCase()).filter(Boolean));
   const needed = size * size - 1;
 
-  const preferred = shuffle(filterTropesByCategory(TROPE_LIST, category).filter(t => !excludeSet.has(t.toLowerCase())));
+  const preferred = shuffle(W.AO3H_TropeGames.filterTropesByCategory(TROPE_LIST, category).filter(t => !excludeSet.has(t.toLowerCase())));
   const fillers = shuffle(TROPE_LIST.filter(t => !preferred.includes(t) && !excludeSet.has(t.toLowerCase())));
   const tropes = [...preferred, ...fillers].slice(0, needed);
 
-  tropes.splice(freeCenterIndex(size), 0, 'FREE');
+  tropes.splice(W.AO3H_TropeGames.freeCenterIndex(size), 0, 'FREE');
   return tropes;
 }
 
@@ -75,7 +74,7 @@ function cardOptions (cfg) {
 
 function freshState (opts) {
   const fresh = { card: generateCard(opts.size, opts.category, opts.exclude), checked: Array(opts.size * opts.size).fill(false), completed: [], size: opts.size };
-  fresh.checked[freeCenterIndex(opts.size)] = true;
+  fresh.checked[W.AO3H_TropeGames.freeCenterIndex(opts.size)] = true;
   return fresh;
 }
 
@@ -144,8 +143,8 @@ function renderCard (state, patterns) {
     if (patterns[name]) patterns[name].forEach(i => patternCells.add(i));
   }
   const size = state.size || 5;
-  const freeIdx = freeCenterIndex(size);
-  const progress = bingoProgressPercent(state.checked, freeIdx);
+  const freeIdx = W.AO3H_TropeGames.freeCenterIndex(size);
+  const progress = W.AO3H_TropeGames.bingoProgressPercent(state.checked, freeIdx);
 
   const cellsHtml = state.card.map((trope, i) => {
     const classes = [
@@ -228,7 +227,7 @@ function injectToggle (opts) {
       wrapEl.style.display = 'none';
       isOpen = false;
     } else {
-      const patterns = buildBingoPatterns(opts.size);
+      const patterns = W.AO3H_TropeGames.buildBingoPatterns(opts.size);
       const state = loadState(opts);
       openCard(state, patterns, opts);
     }
@@ -250,7 +249,7 @@ register(
     console.log(LOG, 'init');
 
     const opts = cardOptions(cfg);
-    const patterns = buildBingoPatterns(opts.size);
+    const patterns = W.AO3H_TropeGames.buildBingoPatterns(opts.size);
     let state = loadState(opts);
 
     // document.body peut ne pas encore exister quand ce module boote — sans ce

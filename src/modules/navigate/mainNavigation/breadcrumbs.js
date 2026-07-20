@@ -11,21 +11,24 @@ current URL structure (no network requests).
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { buildBreadcrumbs } from './navHelpers.js';
-
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — BREADCRUMB BAR
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export class Breadcrumbs {
-  constructor (NS) {
+  /**
+   * @param {string} NS
+   * @param {{ buildBreadcrumbs?: (pathname: string) => { label: string, href: string }[] }} [opts]
+   */
+  constructor (NS, { buildBreadcrumbs } = {}) {
     this.NS = NS;
     this._el = null;
+    this._buildBreadcrumbs = buildBreadcrumbs || (() => []);
   }
 
   inject () {
     if (this._el) return;
-    const crumbs = buildBreadcrumbs(location.pathname);
+    const crumbs = this._buildBreadcrumbs(location.pathname);
     if (crumbs.length < 2) return;
 
     const bar = document.createElement('nav');

@@ -22,7 +22,10 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
-import { findMatchingRule } from './tagRules.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+
+const W = getGlobalWindow();
+const findMatchingRule = (...args) => W.AO3H_TagsDisplay.findMatchingRule(...args);
 
 
 /* ═══════════════════════════════════════════════════════════════════════════

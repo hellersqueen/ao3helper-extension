@@ -18,10 +18,8 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { getUserRelationshipsSettings } from './userRelationshipsSettings.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
-import { parseUserHref, isBlockedIdentity } from './userRelationshipsHelpers.js';
-import { bumpHiddenStat } from './blockingStats.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -29,6 +27,11 @@ import { bumpHiddenStat } from './blockingStats.js';
 
 const MOD  = 'authorBlocking';
 const NS   = 'ao3h';
+const W    = getGlobalWindow();
+const parseUserHref = (...args) => W.AO3H_UserRelationships.parseUserHref(...args);
+const isBlockedIdentity = (...args) => W.AO3H_UserRelationships.isBlockedIdentity(...args);
+const getUserRelationshipsSettings = (...args) => W.AO3H_UserRelationships.getUserRelationshipsSettings(...args);
+const bumpHiddenStat = (...args) => W.AO3H_UserRelationships.bumpHiddenStat(...args);
 
 const STORAGE_KEY = 'userBlocker:list';
 const originalDisplays = new Map();

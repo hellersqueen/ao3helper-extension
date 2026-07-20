@@ -21,7 +21,6 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
-import { clampVolume, clampPitch } from './playbackHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -53,8 +52,8 @@ register(MOD, { title: 'Speech Engine', parent: 'textToSpeech', enabledByDefault
   const synth = W.speechSynthesis;
   let voices = [];
   let selectedVoice = null;
-  let currentVolume = clampVolume(parseFloat(lsGet(LS_VOLUME)) || cfg('volume') || 1);
-  let currentPitch  = clampPitch(parseFloat(lsGet(LS_PITCH)) || cfg('pitch') || 1);
+  let currentVolume = shared().clampVolume(parseFloat(lsGet(LS_VOLUME)) || cfg('volume') || 1);
+  let currentPitch  = shared().clampPitch(parseFloat(lsGet(LS_PITCH)) || cfg('pitch') || 1);
 
   /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — VOICE SELECTION AND UTTERANCES
@@ -77,20 +76,20 @@ register(MOD, { title: 'Speech Engine', parent: 'textToSpeech', enabledByDefault
   }
 
   function setVolume (volume) {
-    currentVolume = clampVolume(volume);
+    currentVolume = shared().clampVolume(volume);
     lsSet(LS_VOLUME, currentVolume);
   }
 
   function setPitch (pitch) {
-    currentPitch = clampPitch(pitch);
+    currentPitch = shared().clampPitch(pitch);
     lsSet(LS_PITCH, currentPitch);
   }
 
   function createUtterance (text, rate, opts = {}) {
     const u = new SpeechSynthesisUtterance(text);
     u.rate = rate ?? cfg('playbackSpeed') ?? 1;
-    u.volume = clampVolume(opts.volume ?? currentVolume);
-    u.pitch = clampPitch(opts.pitch ?? currentPitch);
+    u.volume = shared().clampVolume(opts.volume ?? currentVolume);
+    u.pitch = shared().clampPitch(opts.pitch ?? currentPitch);
     if (selectedVoice) u.voice = selectedVoice;
     return u;
   }

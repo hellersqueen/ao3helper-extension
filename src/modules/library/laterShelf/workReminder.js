@@ -35,7 +35,7 @@ import { sendNotification, requestNotifyPermission } from '../../../../lib/utils
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { showToast } from '../../../../lib/ui/toast.js';
 import { KEY_ACTIVITY_PANEL_SESSIONS, getWorkIdsByStatus } from '../../../../lib/storage/keys.js';
-import { isStale, snoozeDate, nextRecurrence, peakHourFromSessions } from './laterShelfHelpers.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -43,6 +43,7 @@ import { isStale, snoozeDate, nextRecurrence, peakHourFromSessions } from './lat
 
 const MOD = 'workReminder';
 const D   = document;
+const W   = getGlobalWindow();
 const SK_REMINDERS = 'ao3h:laterShelf:reminders'; // { [wid]: { title, remindAt, status, message?, frequency?, special? } }
 const SK_HISTORY   = 'ao3h:laterShelf:reminders:history'; // [{ wid, title, action, remindAt, special?, at }]
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
@@ -58,6 +59,7 @@ register(MOD, {
   parent: 'laterShelf',
   enabledByDefault: false,
 }, function init () {
+  const { isStale, snoozeDate, nextRecurrence, peakHourFromSessions } = W.AO3H_LaterShelf;
 
   if (!cfg('remindersEnabled')) return function cleanup () {};
 

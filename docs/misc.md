@@ -30,7 +30,7 @@
 - `ficDownloader/downloadEnhancements.js` : ajoute des options pratiques aux téléchargements.
 - `ficDownloader/individualDownloads.js` : télécharge une seule histoire.
 - `ficDownloader/offlineLibrary.js` : range les histoires conservées hors connexion.
-- `ficDownloader/workHtmlTemplate.js` : fabrique la page HTML de l’histoire téléchargée.
+- `ficDownloader/_ficDownloader.js` : fabrique aussi la page HTML des histoires téléchargées.
 - `ficDownloader/ficDownloader.css` : choisit l’apparence du téléchargeur.
 
 ## Theme Builder — 7 fichiers
@@ -38,7 +38,7 @@
 - `themeBuilder/_themeBuilder.js` : assemble et démarre le créateur de thèmes.
 - `themeBuilder/customStyling.js` : accepte des règles visuelles personnalisées.
 - `themeBuilder/themeManagement.js` : crée, sauvegarde, charge et supprime des thèmes.
-- `themeBuilder/themeSafety.js` : protège les zones importantes de la page et vérifie la lisibilité des thèmes.
+- `themeBuilder/_themeBuilder.js` : protège aussi les zones importantes et vérifie la lisibilité des thèmes.
 - `themeBuilder/typographySystem.js` : règle les polices, tailles et espaces du texte.
 - `themeBuilder/visualBuilder.js` : construit l’écran permettant de choisir les couleurs.
 - `themeBuilder/themeBuilder.css` : choisit l’apparence du créateur de thèmes.
@@ -50,7 +50,7 @@
 - `visualPreferences/_visualPreferences.js` : classe aussi les dates selon leur ancienneté.
 - `visualPreferences/datesTimestamps.js` : change l’affichage des dates et des heures.
 - `visualPreferences/gridView.js` : affiche les listes d’histoires sous forme de grille.
-- `visualPreferences/hoverReveal.js` : révèle certains éléments lorsque la souris passe dessus.
+- `visualPreferences/visualPreferences.css` : révèle certains éléments lorsque la souris passe dessus.
 - `visualPreferences/layoutDensity.js` : règle l’espacement général de l’interface.
 - `visualPreferences/minimalHeader.js` : simplifie l’en-tête d’AO3.
 - `visualPreferences/statsDisplayFormat.js` : choisit la forme des statistiques.
@@ -125,11 +125,10 @@
 - `tagsDisplay/tagsVisibility.js` : contrôle quels tags sont visibles.
 - `tagsDisplay/tagsDisplay.css` : apparence générale des tags.
 
-## Work Length — 5 fichiers
+## Work Length — 4 fichiers
 
-- `workLength/_workLength.js` : assemble et démarre le module.
+- `workLength/_workLength.js` : assemble et démarre le module, et contient ses calculs partagés.
 - `workLength/lengthDisplay.js` : affiche la longueur d’une histoire.
-- `workLength/lengthMath.js` : effectue les calculs de longueur et de durée.
 - `workLength/readingTime.js` : estime le temps nécessaire pour lire.
 - `workLength/workLength.css` : apparence des badges de longueur.
 
@@ -149,7 +148,7 @@
 
 ## Search Enhancer — 6 fichiers
 
-- `searchEnhancer/_searchEnhancer.js` : assemble les outils de recherche.
+- `searchEnhancer/_searchEnhancer.js` : assemble les outils et centralise leurs calculs internes.
 - `searchEnhancer/relatedSearches.js` : suggère des recherches proches.
 - `searchEnhancer/resultsSorting.js` : trie les résultats de différentes manières.
 - `searchEnhancer/searchAutocomplete.js` : propose des mots pendant que l’utilisateur écrit.
@@ -182,13 +181,13 @@
 ## Activity Panel — 10 fichiers
 
 - `activityPanel/_activityPanel.js` : assemble et démarre le panneau.
-- `activityPanel/activityPanelShared.js` : contient les outils partagés du panneau.
-- `activityPanel/dataCollection.js` : rassemble les informations de lecture.
+- `activityPanel/_activityPanel.js` : contient aussi les outils partagés du panneau.
+- `activityPanel/_activityPanel.js` : rassemble aussi les informations de lecture.
 - `activityPanel/fandomBreakdown.js` : classe les lectures par fandom.
 - `activityPanel/habitsAnalysis.js` : analyse les habitudes de lecture.
 - `activityPanel/patternAnalysis.js` : cherche des habitudes qui se répètent.
 - `activityPanel/readingInsights.js` : crée de petites observations sur les lectures.
-- `activityPanel/readingStats.js` : calcule les nombres et statistiques.
+- `activityPanel/_activityPanel.js` : calcule aussi les nombres et statistiques.
 - `activityPanel/sessionHistory.js` : mémorise les séances de lecture.
 - `activityPanel/activityPanel.css` : apparence du panneau.
 
@@ -207,7 +206,7 @@
 - `bookmarkVault/personalRatings.js` : conserve des évaluations personnelles avec cinq étoiles.
 - `bookmarkVault/richTextNotes.js` : permet d’utiliser du texte enrichi dans les notes.
 - `bookmarkVault/sortingAndFiltering.js` : trie et filtre les marque-pages.
-- `bookmarkVault/vaultTools.js` : fournit la recherche avancée, les exports et les outils d’entretien du coffre.
+- `bookmarkVault/_bookmarkVault.js` : fournit aussi la recherche avancée, les exports et les outils d’entretien du coffre.
 - `bookmarkVault/bookmarkVault.css` : apparence du coffre.
 
 ## Fanfic Binge Mode — 2 fichiers
@@ -215,14 +214,12 @@
 - `fanficBingeMode/_fanficBingeMode.js` : enchaîne les histoires ou chapitres.
 - `fanficBingeMode/fanficBingeMode.css` : apparence des commandes.
 
-## Fic Appreciation — 10 fichiers
+## Fic Appreciation — 8 fichiers fonctionnels
 
 - `ficAppreciation/_ficAppreciation.js` : assemble et démarre les outils d’appréciation.
-- `ficAppreciation/kudosDisplay.js` : affiche les informations sur les kudos.
 - `ficAppreciation/kudosExtendedFeatures.js` : ajoute des possibilités supplémentaires aux kudos.
-- `ficAppreciation/kudosManager.js` : coordonne les opérations liées aux kudos.
-- `ficAppreciation/kudosTracker.js` : suit les kudos donnés.
-- `ficAppreciation/kudosTracking.js` : enregistre les informations de suivi.
+- `ficAppreciation/_ficAppreciation.js` coordonne aussi les opérations liées aux kudos.
+- `ficAppreciation/kudosTracker.js` : détecte, enregistre, synchronise et affiche les kudos donnés.
 - `ficAppreciation/markAsFinished.js` : permet de marquer une histoire comme terminée.
 - `ficAppreciation/multiStatusTracker.js` : suit plusieurs états pour une même histoire.
 - `ficAppreciation/starRatings.js` : permet de donner une note avec des étoiles.
@@ -303,7 +300,7 @@
 - `userRelationships/blockingInterface.js` : construit les boutons et fenêtres de blocage.
 - `userRelationships/blocklistManagement.js` : ajoute ou retire des utilisateurs de la liste de blocage.
 - `userRelationships/commentHiding.js` : cache les commentaires de certains utilisateurs.
-- `userRelationships/userRelationshipsSettings.js` : lit et sauvegarde les réglages.
+- `userRelationships/_userRelationships.js` : lit aussi les réglages partagés.
 - `userRelationships/userRelationships.css` : apparence des boutons et indicateurs.
 
 # Reading
@@ -804,28 +801,28 @@ Voici la comparaison complète des **38 modules**. « Prévu » correspond à la
 ### ficDownloader — 6 → 7
 
 - Prévu : `_ficDownloader.js`, `individualDownloads.js`, `batchDownload.js`, `completePageDownload.js`, `downloadEnhancements.js`, `offlineLibrary.js`
-- Réel : `_ficDownloader.js`, `individualDownloads.js`, `batchDownload.js`, `completePageDownload.js`, `downloadEnhancements.js`, `offlineLibrary.js`, `workHtmlTemplate.js`
+- Réel : `_ficDownloader.js`, `individualDownloads.js`, `batchDownload.js`, `completePageDownload.js`, `downloadEnhancements.js`, `offlineLibrary.js`
 
 ### themeBuilder — 5 → 6
 
 - Prévu : `_themeBuilder.js`, `customStyling.js`, `themeManagement.js`, `typographySystem.js`, `visualBuilder.js`
-- Réel : `_themeBuilder.js`, `customStyling.js`, `themeManagement.js`, `themeSafety.js`, `typographySystem.js`, `visualBuilder.js`
+- Réel : `_themeBuilder.js`, `customStyling.js`, `themeManagement.js`, `typographySystem.js`, `visualBuilder.js`
 
 `lib/themes/engine/themeValidator.js`, cité dans l’ancienne documentation, était une dépendance externe au module et non un sous-module de `themeBuilder`.
 
-### visualPreferences — 8 → 14
+### visualPreferences — architecture actuelle
 
-- Prévu : `_visualPreferences.js`, `statsVisibility.js`, `datesTimestamps.js`, `minimalHeader.js`, `statsDisplayFormat.js`, `hoverReveal.js`, `visibilityPresets.js`, `statsOnChaptersList.js`
-- Réel : `_visualPreferences.js`, `blurbSectionOrder.js`, `datesTimestamps.js`, `gridView.js`, `hoverReveal.js`, `layoutDensity.js`, `minimalHeader.js`, `statsDisplayFormat.js`, `statsOnChaptersList.js`, `statsVisibility.js`, `visibilityPresets.js`, `wordOccurrenceCounter.js`
+- La révélation au survol, initialement envisagée comme un fichier séparé, est intégrée à `visualPreferences.css`.
+- Réel : `_visualPreferences.js`, `blurbSectionOrder.js`, `datesTimestamps.js`, `gridView.js`, `layoutDensity.js`, `minimalHeader.js`, `statsDisplayFormat.js`, `statsOnChaptersList.js`, `statsVisibility.js`, `visibilityPresets.js`, `wordOccurrenceCounter.js`
 
 L’ancien `fandomHighlighting.js` était déjà indiqué comme transféré vers `tagsDisplay/tagHighlighting.js`; il ne faisait donc plus partie du plan initial retenu ici.
 
 ## Browse
 
-### ficEngagement — 3 → 4
+### ficEngagement — 3 → 3
 
 - Prévu : `_ficEngagement.js`, `engagementMetrics.js`, `hiddenGems.js`
-- Réel : `_ficEngagement.js`, `engagementMetrics.js`, `ficEngagementHelpers.js`, `hiddenGems.js`
+- Réel : `_ficEngagement.js`, `engagementMetrics.js`, `hiddenGems.js`
 
 ### filterManager — 6 → 6
 
@@ -852,14 +849,14 @@ L’ancien `fandomHighlighting.js` était déjà indiqué comme transféré vers
 ### tagsDisplay — 6 → 12
 
 - Prévu : `archiveWarningsDisplay.js`, `autoHideNoiseTags.js`, `compactModeTags.js`, `tagHighlighting.js`, `tagsReordering.js`, `tagsVisibility.js`
-- Réel : `_tagsDisplay.js`, `archiveWarningsDisplay.js`, `autoHideNoiseTags.js`, `compactModeTags.js`, `externalTagLinks.js`, `noiseTagUtils.js`, `tagHighlighting.js`, `tagImportancePromotion.js`, `tagRules.js`, `tagSeparatorStyle.js`, `tagsReordering.js`, `tagsVisibility.js`
+- Réel : `_tagsDisplay.js`, `archiveWarningsDisplay.js`, `autoHideNoiseTags.js`, `compactModeTags.js`, `externalTagLinks.js`, `tagHighlighting.js`, `tagImportancePromotion.js`, `tagSeparatorStyle.js`, `tagsReordering.js`, `tagsVisibility.js`
 
 Le coordinateur `_tagsDisplay.js` existait déjà, mais n’avait pas été mentionné dans la première fiche.
 
-### workLength — 3 → 4
+### workLength — 3 → 3
 
 - Prévu : `_workLength.js`, `lengthDisplay.js`, `readingTime.js`
-- Réel : `_workLength.js`, `lengthDisplay.js`, `lengthMath.js`, `readingTime.js`
+- Réel : `_workLength.js`, `lengthDisplay.js`, `readingTime.js`
 
 ## Explore
 
@@ -897,23 +894,23 @@ Le coordinateur `_tagsDisplay.js` existait déjà, mais n’avait pas été ment
 
 ### activityPanel — 9 → 9
 
-- Prévu : `_activityPanel.js`, `activityPanelShared.js`, `dataCollection.js`, `fandomBreakdown.js`, `habitsAnalysis.js`, `patternAnalysis.js`, `readingInsights.js`, `readingStats.js`, `sessionHistory.js`
-- Réel : `_activityPanel.js`, `activityPanelShared.js`, `dataCollection.js`, `fandomBreakdown.js`, `habitsAnalysis.js`, `patternAnalysis.js`, `readingInsights.js`, `readingStats.js`, `sessionHistory.js`
+- Prévu : `_activityPanel.js`, `fandomBreakdown.js`, `habitsAnalysis.js`, `patternAnalysis.js`, `readingInsights.js`, `sessionHistory.js`
+- Réel : `_activityPanel.js`, `fandomBreakdown.js`, `habitsAnalysis.js`, `patternAnalysis.js`, `readingInsights.js`, `sessionHistory.js`
 
 ### bookmarkVault — 10 → 13
 
 - Prévu : `_bookmarkVault.js`, `bookmarkMaintenance.js`, `bookmarkNavigation.js`, `bookmarkStatus/readingStatusTracking.js`, `bookmarkStatus/statusIndicators.js`, `noteDisplay.js`, `noteManagement.js`, `organizationTools.js`, `richTextNotes.js`, `sortingAndFiltering.js`
-- Réel : `_bookmarkVault.js`, `blockedBookmarks.js`, `bookmarkMaintenance.js`, `bookmarkNavigation.js`, `bookmarkStatus/readingStatusTracking.js`, `bookmarkStatus/statusIndicators.js`, `noteDisplay.js`, `noteManagement.js`, `organizationTools.js`, `personalRatings.js`, `richTextNotes.js`, `sortingAndFiltering.js`, `vaultTools.js`
+- Réel : `_bookmarkVault.js`, `blockedBookmarks.js`, `bookmarkMaintenance.js`, `bookmarkNavigation.js`, `bookmarkStatus/readingStatusTracking.js`, `bookmarkStatus/statusIndicators.js`, `noteDisplay.js`, `noteManagement.js`, `organizationTools.js`, `personalRatings.js`, `richTextNotes.js`, `sortingAndFiltering.js`
 
 ### fanficBingeMode — 1 → 2
 
 - Prévu : `_fanficBingeMode.js`
 - Réel : `_fanficBingeMode.js`
 
-### ficAppreciation — 9 → 9
+### ficAppreciation — architecture actuelle
 
-- Prévu : `_ficAppreciation.js`, `kudosDisplay.js`, `kudosExtendedFeatures.js`, `kudosManager.js`, `kudosTracker.js`, `kudosTracking.js`, `markAsFinished.js`, `multiStatusTracker.js`, `starRatings.js`
-- Réel : `_ficAppreciation.js`, `kudosDisplay.js`, `kudosExtendedFeatures.js`, `kudosManager.js`, `kudosTracker.js`, `kudosTracking.js`, `markAsFinished.js`, `multiStatusTracker.js`, `starRatings.js`
+- Le suivi, la synchronisation et l’affichage des kudos sont regroupés dans `kudosTracker.js`.
+- Réel : `_ficAppreciation.js`, `kudosBookmarkFinder.js`, `kudosExtendedFeatures.js`, `kudosTracker.js`, `markAsFinished.js`, `multiStatusTracker.js`, `starRatings.js`
 
 ### laterShelf — 5 → 5
 
@@ -962,17 +959,17 @@ Le coordinateur `_tagsDisplay.js` existait déjà, mais n’avait pas été ment
 - Prévu : `_seriesHelper.js`, `seriesOrganization.js`, `seriesProgress.js`
 - Réel : `_seriesHelper.js`, `seriesOrganization.js`, `seriesProgress.js`
 
-### userRelationships — 8 → 11
+### userRelationships — 8 → 10
 
-- Prévu : `_userRelationships.js`, `authorBlocking.js`, `authorPreference.js`, `authorTracking.js`, `blockingInterface.js`, `blocklistManagement.js`, `commentHiding.js`, `userRelationshipsSettings.js`
-- Réel : `_userRelationships.js`, `authorBlocking.js`, `authorCard.js`, `authorPreference.js`, `authorTracking.js`, `blockingInterface.js`, `blockingStats.js`, `blocklistManagement.js`, `commentHiding.js`, `userRelationshipsHelpers.js`, `userRelationshipsSettings.js`
+- Prévu : `_userRelationships.js`, `authorBlocking.js`, `authorPreference.js`, `authorTracking.js`, `blockingInterface.js`, `blocklistManagement.js`, `commentHiding.js`
+- Réel : `_userRelationships.js`, `authorBlocking.js`, `authorCard.js`, `authorPreference.js`, `authorTracking.js`, `blockingInterface.js`, `blocklistManagement.js`, `commentHiding.js`
 
 ## Reading
 
-### chapterNavigation — 5 → 5
+### chapterNavigation — 5 → 6
 
 - Prévu : `_chapterNavigation.js`, `autoScroll.js`, `blurbNavigation.js`, `chapterWordCount.js`, `navigationControls.js`
-- Réel : `_chapterNavigation.js`, `autoScroll.js`, `blurbNavigation.js`, `chapterWordCount.js`, `navigationControls.js`
+- Réel : `_chapterNavigation.js`, `autoScroll.js`, `blurbNavigation.js`, `chaptersPanel.js`, `chapterWordCount.js`, `navigationControls.js`
 
 ### collapseAuthorNotes — 1 → 1
 
@@ -994,10 +991,10 @@ Le coordinateur `_tagsDisplay.js` existait déjà, mais n’avait pas été ment
 - Prévu : `_readingTracker.js`, `readingProgress.js`, `seenTracking.js`, `viewHistory.js`, `visualMarkers.js`
 - Réel : `_readingTracker.js`, `readingProgress.js`, `seenTracking.js`, `viewHistory.js`, `visualMarkers.js`
 
-### textToSpeech — 6 → 9
+### textToSpeech — 6 → 6
 
 - Prévu : `_textToSpeech.js`, `contentFiltering.js`, `playbackControls.js`, `pronunciationManager.js`, `speechEngine.js`, `visualFeedback.js`
-- Réel : `_textToSpeech.js`, `contentFiltering.js`, `playbackControls.js`, `playbackHelpers.js`, `pronunciationManager.js`, `scrollHelpers.js`, `speechEngine.js`, `visualFeedback.js`, `voiceHelpers.js`
+- Réel : `_textToSpeech.js`, `contentFiltering.js`, `playbackControls.js`, `pronunciationManager.js`, `speechEngine.js`, `visualFeedback.js`
 
 ### wordSwap — 1 → 2
 
@@ -1028,14 +1025,14 @@ Voici les **203 fichiers JavaScript réels** présents dans `src/modules`, avec 
 - `downloadEnhancements.js` : ajoute les formats avancés, la file d’attente et les intégrations Kindle ou Calibre.
 - `individualDownloads.js` : ajoute des commandes permettant de télécharger rapidement une seule œuvre.
 - `offlineLibrary.js` : stocke des œuvres localement et fournit les outils de consultation hors connexion.
-- `workHtmlTemplate.js` : construit le document HTML autonome utilisé pour enregistrer une œuvre téléchargée.
+- `_ficDownloader.js` construit aussi le document HTML autonome utilisé pour enregistrer une œuvre téléchargée.
 
 ## Theme Builder
 
 - `_themeBuilder.js` : initialise le créateur de thèmes et réapplique le thème actif au chargement.
 - `customStyling.js` : fournit l’éditeur de CSS personnalisé et applique les styles définis par l’utilisateur.
 - `themeManagement.js` : crée, importe, exporte, applique et supprime les thèmes personnalisés.
-- `themeSafety.js` : vérifie la lisibilité des thèmes et protège les zones sensibles contre certains styles dangereux.
+- `_themeBuilder.js` vérifie aussi la lisibilité des thèmes et protège les zones sensibles contre certains styles dangereux.
 - `typographySystem.js` : gère les polices, tailles, interlignes et préréglages typographiques.
 - `visualBuilder.js` : construit l’éditeur visuel permettant de choisir les couleurs et de prévisualiser un thème.
 
@@ -1046,7 +1043,7 @@ Voici les **203 fichiers JavaScript réels** présents dans `src/modules`, avec 
 - `_visualPreferences.js` : calcule aussi l’ancienneté des dates et les classe dans des périodes lisibles.
 - `datesTimestamps.js` : masque, transforme ou reformate les dates affichées par AO3.
 - `gridView.js` : transforme les listes d’œuvres en une grille de cartes.
-- `hoverReveal.js` : révèle temporairement au survol les informations visuellement cachées.
+- `visualPreferences.css` : révèle temporairement au survol les informations visuellement cachées.
 - `layoutDensity.js` : applique une densité d’interface compacte, confortable ou espacée.
 - `minimalHeader.js` : réduit la taille et la complexité visuelle de l’en-tête d’AO3.
 - `statsDisplayFormat.js` : affiche les statistiques sous forme de texte, d’icônes ou d’icônes accompagnées d’une légende.
@@ -1060,9 +1057,8 @@ Voici les **203 fichiers JavaScript réels** présents dans `src/modules`, avec 
 
 ## Fic Engagement
 
-- `_ficEngagement.js` : initialise les indicateurs d’engagement et la détection des œuvres sous-estimées.
+- `_ficEngagement.js` : initialise les indicateurs et centralise les calculs propres au module.
 - `engagementMetrics.js` : calcule et affiche les ratios entre hits, kudos, commentaires et bookmarks.
-- `ficEngagementHelpers.js` : contient les calculs purs utilisés pour classer l’engagement et reconnaître les « hidden gems ».
 - `hiddenGems.js` : repère les œuvres peu populaires qui obtiennent néanmoins un bon taux d’appréciation.
 
 ## Filter Manager
@@ -1104,19 +1100,18 @@ Voici les **203 fichiers JavaScript réels** présents dans `src/modules`, avec 
 - `autoHideNoiseTags.js` : masque ou floute automatiquement les tags considérés comme peu informatifs.
 - `compactModeTags.js` : replie les catégories de tags et les révèle au survol ou au défilement.
 - `externalTagLinks.js` : ajoute aux tags des liens de recherche vers des sites comme Fanlore ou TV Tropes.
-- `noiseTagUtils.js` : normalise les tags et gère les règles, mots personnalisés et exceptions du filtre anti-bruit.
+- `_tagsDisplay.js` gère l’interface et les exceptions du filtre anti-bruit; la détection partagée avec `hideByTags` vit dans `lib/utils/noise-tags.js`.
 - `tagHighlighting.js` : applique des couleurs ou styles distinctifs aux tags choisis par l’utilisateur.
 - `tagImportancePromotion.js` : déplace les tags importants ou surlignés en tête de leur catégorie.
-- `tagRules.js` : contient les règles de catégorisation, de correspondance et de tri des tags.
+- `_tagsDisplay.js` contient aussi les règles de catégorisation, de correspondance et de tri des tags.
 - `tagSeparatorStyle.js` : remplace le séparateur visuel utilisé entre les tags.
 - `tagsReordering.js` : permet de réordonner les tags et de mémoriser l’ordre choisi.
 - `tagsVisibility.js` : masque les catégories ou tags excédentaires et fournit les commandes pour les révéler.
 
 ## Work Length
 
-- `_workLength.js` : initialise les indicateurs de longueur et de durée de lecture.
+- `_workLength.js` : initialise les indicateurs et centralise les calculs propres au module.
 - `lengthDisplay.js` : affiche les badges décrivant la longueur d’une œuvre.
-- `lengthMath.js` : calcule les catégories de longueur, les vitesses de lecture et les durées estimées.
 - `readingTime.js` : estime le temps nécessaire pour lire une œuvre selon le nombre de mots.
 
 # Explore
@@ -1137,7 +1132,7 @@ Voici les **203 fichiers JavaScript réels** présents dans `src/modules`, avec 
 
 ## Search Enhancer
 
-- `_searchEnhancer.js` : initialise et coordonne les améliorations des pages de recherche.
+- `_searchEnhancer.js` : initialise les améliorations et centralise leurs calculs internes.
 - `relatedSearches.js` : propose des recherches proches ou complémentaires à la recherche actuelle.
 - `resultsSorting.js` : ajoute des méthodes supplémentaires pour trier les résultats.
 - `searchAutocomplete.js` : suggère des termes pendant la saisie d’une recherche.
@@ -1166,13 +1161,13 @@ Voici les **203 fichiers JavaScript réels** présents dans `src/modules`, avec 
 ## Activity Panel
 
 - `_activityPanel.js` : initialise et coordonne le panneau d’analyse de l’activité de lecture.
-- `activityPanelShared.js` : fournit les fonctions et structures de données partagées par les différentes analyses.
-- `dataCollection.js` : collecte et normalise les informations nécessaires aux statistiques de lecture.
+- `_activityPanel.js` fournit aussi les fonctions et structures de données partagées par les différentes analyses.
+- `_activityPanel.js` collecte et normalise aussi les informations nécessaires aux statistiques de lecture.
 - `fandomBreakdown.js` : répartit les lectures par fandom et calcule leur importance relative.
 - `habitsAnalysis.js` : analyse les habitudes de lecture, comme les horaires, longueurs et rythmes préférés.
 - `patternAnalysis.js` : recherche des tendances récurrentes dans les données de lecture.
 - `readingInsights.js` : transforme les statistiques en petites observations compréhensibles.
-- `readingStats.js` : calcule les totaux, moyennes et autres statistiques générales.
+- `_activityPanel.js` calcule aussi les totaux, moyennes et autres statistiques générales.
 - `sessionHistory.js` : enregistre et restitue l’historique des séances de lecture.
 
 ## Bookmark Vault
@@ -1189,7 +1184,7 @@ Voici les **203 fichiers JavaScript réels** présents dans `src/modules`, avec 
 - `personalRatings.js` : permet d’attribuer et de conserver une évaluation personnelle aux œuvres.
 - `richTextNotes.js` : ajoute le formatage enrichi et l’édition avancée aux notes.
 - `sortingAndFiltering.js` : trie et filtre les bookmarks selon leur statut, catégorie ou autre métadonnée.
-- `vaultTools.js` : fournit les outils avancés de recherche, d’exportation, d’analyse et d’entretien du coffre.
+- `_bookmarkVault.js` fournit aussi les outils avancés de recherche, d’exportation, d’analyse et d’entretien du coffre.
 
 ## Fanfic Binge Mode
 
@@ -1199,11 +1194,9 @@ Voici les **203 fichiers JavaScript réels** présents dans `src/modules`, avec 
 ## Fic Appreciation
 
 - `_ficAppreciation.js` : initialise et coordonne les outils de suivi et d’appréciation des œuvres.
-- `kudosDisplay.js` : affiche les informations et indicateurs liés aux kudos.
 - `kudosExtendedFeatures.js` : ajoute des fonctions supplémentaires autour de l’affichage et du suivi des kudos.
-- `kudosManager.js` : coordonne les différentes opérations liées aux kudos.
-- `kudosTracker.js` : suit les œuvres auxquelles l’utilisateur a donné un kudos.
-- `kudosTracking.js` : enregistre et restitue les données utilisées par le suivi des kudos.
+- `_ficAppreciation.js` coordonne aussi les différentes opérations liées aux kudos.
+- `kudosTracker.js` : détecte, enregistre, synchronise et affiche les kudos donnés aux œuvres.
 - `markAsFinished.js` : permet de marquer une œuvre comme terminée.
 - `multiStatusTracker.js` : conserve plusieurs états personnels pour une même œuvre.
 - `starRatings.js` : permet d’attribuer et d’afficher une note en étoiles.
@@ -1276,11 +1269,10 @@ Voici les **203 fichiers JavaScript réels** présents dans `src/modules`, avec 
 - `authorPreference.js` : conserve les auteurs favoris, notes personnelles et priorités de lecture.
 - `authorTracking.js` : suit l’activité des auteurs choisis.
 - `blockingInterface.js` : construit les boutons, dialogues et autres commandes de blocage.
-- `blockingStats.js` : comptabilise les œuvres, commentaires et notes masqués par le système de blocage.
+- `_userRelationships.js` comptabilise aussi les œuvres, commentaires et notes masqués par le système de blocage.
 - `blocklistManagement.js` : ajoute, retire, importe et exporte les utilisateurs de la liste de blocage.
 - `commentHiding.js` : masque les commentaires écrits par des utilisateurs bloqués.
-- `userRelationshipsHelpers.js` : analyse les liens d’utilisateurs et fournit la logique commune d’identification et de blocage.
-- `userRelationshipsSettings.js` : centralise les réglages et valeurs par défaut du module.
+- `_userRelationships.js` centralise aussi les réglages et valeurs par défaut du module.
 
 # Reading
 
@@ -1317,15 +1309,12 @@ Voici les **203 fichiers JavaScript réels** présents dans `src/modules`, avec 
 
 ## Text To Speech
 
-- `_textToSpeech.js` : initialise le lecteur vocal et coordonne ses moteurs, commandes et retours visuels.
+- `_textToSpeech.js` : initialise le lecteur vocal et centralise ses calculs internes.
 - `contentFiltering.js` : prépare le texte à lire et retire les éléments qui doivent être ignorés.
 - `playbackControls.js` : construit les commandes de lecture, pause, vitesse, volume, voix et minuterie.
-- `playbackHelpers.js` : valide les paramètres audio et calcule les profils de vitesse et la minuterie de sommeil.
 - `pronunciationManager.js` : applique les règles de prononciation personnalisées avant la lecture.
-- `scrollHelpers.js` : calcule la durée, la progression et l’animation du défilement automatique.
 - `speechEngine.js` : découpe le texte et contrôle l’API de synthèse vocale du navigateur.
 - `visualFeedback.js` : surligne la phrase courante et affiche l’état de la lecture.
-- `voiceHelpers.js` : filtre, classe et présente les voix disponibles selon leur langue et leur origine.
 
 ## Word Swap
 
@@ -1360,14 +1349,14 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 - `downloadEnhancements.js` : ajoute les formats avancés, la file d’attente et les intégrations Kindle ou Calibre.
 - `individualDownloads.js` : ajoute des commandes permettant de télécharger rapidement une seule œuvre.
 - `offlineLibrary.js` : stocke des œuvres localement et permet leur consultation hors connexion.
-- `workHtmlTemplate.js` : construit le document HTML autonome utilisé pour enregistrer une œuvre.
+- `_ficDownloader.js` construit aussi le document HTML autonome utilisé pour enregistrer une œuvre.
 
 ## Theme Builder — 6 fichiers
 
 - `_themeBuilder.js` : initialise le créateur de thèmes et réapplique le thème actif au chargement.
 - `customStyling.js` : fournit l’éditeur de CSS personnalisé et applique les styles de l’utilisateur.
 - `themeManagement.js` : crée, importe, exporte, applique et supprime les thèmes.
-- `themeSafety.js` : vérifie la lisibilité et protège les zones sensibles contre certains styles dangereux.
+- `_themeBuilder.js` vérifie aussi la lisibilité et protège les zones sensibles contre certains styles dangereux.
 - `typographySystem.js` : gère les polices, tailles, interlignes et préréglages typographiques.
 - `visualBuilder.js` : construit l’éditeur visuel de couleurs et de prévisualisation des thèmes.
 
@@ -1378,7 +1367,7 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 - `_visualPreferences.js` : calcule aussi l’ancienneté des dates et les classe dans des périodes lisibles.
 - `datesTimestamps.js` : masque, transforme ou reformate les dates affichées par AO3.
 - `gridView.js` : transforme les listes d’œuvres en une grille de cartes.
-- `hoverReveal.js` : révèle temporairement au survol les informations cachées.
+- `visualPreferences.css` : révèle temporairement au survol les informations cachées.
 - `layoutDensity.js` : applique une densité d’interface compacte, confortable ou espacée.
 - `minimalHeader.js` : réduit la taille et la complexité visuelle de l’en-tête.
 - `statsDisplayFormat.js` : affiche les statistiques sous forme de texte, d’icônes ou d’icônes avec légende.
@@ -1390,17 +1379,15 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 
 # Browse
 
-## Fic Engagement — 4 fichiers
+## Fic Engagement — 3 fichiers
 
-- `_ficEngagement.js` : initialise les indicateurs d’engagement et la détection des œuvres sous-estimées.
+- `_ficEngagement.js` : initialise les indicateurs et centralise les calculs propres au module.
 - `engagementMetrics.js` : calcule et affiche les ratios entre hits, kudos, commentaires et bookmarks.
-- `ficEngagementHelpers.js` : contient les calculs utilisés pour classer l’engagement et reconnaître les « hidden gems ».
 - `hiddenGems.js` : repère les œuvres peu populaires ayant un bon taux d’appréciation.
 
-## Filter Manager — 7 fichiers
+## Filter Manager — 6 fichiers
 
-- `_filterManager.js` : initialise et coordonne les outils de filtrage.
-- `filterManagerHelpers.js` : regroupe les calculs de dates, ratios, préréglages, historiques et filtres rapides.
+- `_filterManager.js` : initialise les outils et centralise leurs calculs internes.
 - `filterWarnings.js` : affiche des avertissements lorsque certains filtres risquent de produire des résultats inattendus.
 - `languageBadges.js` : affiche la langue des œuvres sous la forme d’un badge visible.
 - `presetManagement.js` : sauvegarde, recharge et supprime des ensembles de filtres.
@@ -1437,19 +1424,18 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 - `autoHideNoiseTags.js` : masque ou floute automatiquement les tags peu informatifs.
 - `compactModeTags.js` : replie les catégories de tags et les révèle au survol ou au défilement.
 - `externalTagLinks.js` : ajoute aux tags des liens vers Fanlore ou TV Tropes.
-- `noiseTagUtils.js` : normalise les tags et gère les règles et exceptions du filtre anti-bruit.
+- `_tagsDisplay.js` contient l’interface et les exceptions du filtre anti-bruit; ses règles communes avec `hideByTags` vivent dans `lib/utils/noise-tags.js`.
 - `tagHighlighting.js` : applique des couleurs ou styles aux tags choisis par l’utilisateur.
 - `tagImportancePromotion.js` : déplace les tags importants ou surlignés en tête de leur catégorie.
-- `tagRules.js` : contient les règles de catégorisation, de correspondance et de tri.
+- `_tagsDisplay.js` contient aussi les règles de catégorisation, de correspondance et de tri.
 - `tagSeparatorStyle.js` : remplace le séparateur visuel utilisé entre les tags.
 - `tagsReordering.js` : permet de réordonner les tags et mémorise l’ordre choisi.
 - `tagsVisibility.js` : masque les catégories ou tags excédentaires et permet de les révéler.
 
-## Work Length — 4 fichiers
+## Work Length — 3 fichiers
 
-- `_workLength.js` : initialise les indicateurs de longueur et de durée de lecture.
+- `_workLength.js` : initialise les indicateurs et centralise les calculs propres au module.
 - `lengthDisplay.js` : affiche les badges décrivant la longueur d’une œuvre.
-- `lengthMath.js` : calcule les catégories de longueur et les durées estimées.
 - `readingTime.js` : estime le temps de lecture selon le nombre de mots.
 
 # Explore
@@ -1468,16 +1454,13 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 - `povPresentation.js` : construit les badges, filtres et statistiques de point de vue.
 - `_povTracker.js` : compte aussi les pronoms et classe le texte selon son point de vue narratif.
 
-## Search Enhancer — 8 fichiers
+## Search Enhancer — 5 fichiers
 
-- `_searchEnhancer.js` : initialise et coordonne les améliorations des pages de recherche.
+- `_searchEnhancer.js` : initialise les améliorations et calcule leurs scores de tri.
 - `relatedSearches.js` : propose des recherches proches ou complémentaires.
 - `resultsSorting.js` : ajoute des méthodes supplémentaires pour trier les résultats.
-- `resultsSortingHelpers.js` : calcule les scores de récence, d’engagement et de kudos par chapitre.
 - `searchAutocomplete.js` : suggère des termes pendant la saisie.
-- `searchHistoryHelpers.js` : filtre l’historique local et produit des tendances, conseils et recherches rapides.
 - `seriesGrouping.js` : regroupe visuellement les œuvres appartenant à une même série.
-- `seriesGroupingHelpers.js` : classe les groupes de séries selon les œuvres déjà lues.
 
 ## Similar Fics — 2 fichiers
 
@@ -1494,7 +1477,7 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 - `_tropeGames.js` : initialise et coordonne les jeux basés sur les tropes.
 - `tropeAchievements.js` : débloque des succès selon les tropes rencontrés.
 - `tropeBingoPatterns.js` : construit les grilles de bingo et détecte les lignes complétées.
-- `tropeGamesHelpers.js` : calcule les catégories, défis, tendances, tropes rares, progrès et niveaux de médailles.
+- `_tropeGames.js` contient aussi les calculs de catégories, défis, tendances, tropes rares, progrès et niveaux de médailles.
 - `tropeHoroscope.js` : produit un horoscope ludique à partir des tropes observés.
 - `tropeMoodQuiz.js` : recommande un trope et une recherche AO3 selon l’humeur choisie.
 - `tropeRoulette.js` : choisit aléatoirement un trope ou un défi.
@@ -1505,14 +1488,14 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 ## Activity Panel — 10 fichiers
 
 - `_activityPanel.js` : initialise et coordonne le panneau d’analyse de l’activité.
-- `activityPanelHelpers.js` : calcule les périodes, tendances, cartes horaires, profils et résumés d’activité.
-- `activityPanelShared.js` : fournit les fonctions et structures partagées par les analyses.
-- `dataCollection.js` : collecte et normalise les informations nécessaires aux statistiques.
+- `_activityPanel.js` contient aussi les calculs de périodes, tendances, cartes horaires, profils et résumés d’activité.
+- `_activityPanel.js` fournit aussi les fonctions et structures partagées par les analyses.
+- `_activityPanel.js` collecte et normalise aussi les informations nécessaires aux statistiques.
 - `fandomBreakdown.js` : répartit les lectures par fandom.
 - `habitsAnalysis.js` : analyse les horaires, longueurs et rythmes de lecture préférés.
 - `patternAnalysis.js` : recherche des tendances récurrentes dans les données.
 - `readingInsights.js` : transforme les statistiques en observations compréhensibles.
-- `readingStats.js` : calcule les totaux, moyennes et statistiques générales.
+- `_activityPanel.js` calcule aussi les totaux, moyennes et statistiques générales.
 - `sessionHistory.js` : enregistre et restitue les séances de lecture.
 
 ## Bookmark Vault — 13 fichiers
@@ -1529,7 +1512,7 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 - `personalRatings.js` : permet d’attribuer une évaluation personnelle aux œuvres.
 - `richTextNotes.js` : ajoute le formatage enrichi aux notes.
 - `sortingAndFiltering.js` : trie et filtre les bookmarks selon leurs métadonnées.
-- `vaultTools.js` : fournit les outils avancés de recherche, exportation, analyse et entretien.
+- `_bookmarkVault.js` fournit aussi les outils avancés de recherche, exportation, analyse et entretien.
 
 ## Fanfic Binge Mode — 2 fichiers
 
@@ -1539,13 +1522,11 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 ## Fic Appreciation — 11 fichiers
 
 - `_ficAppreciation.js` : initialise et coordonne les outils d’appréciation des œuvres.
-- `ficAppreciationHelpers.js` : calcule les statistiques de kudos, notes, habitudes et jalons de lecture.
+- `_ficAppreciation.js` contient aussi les calculs de statistiques de kudos, notes, habitudes et jalons de lecture.
 - `kudosBookmarkFinder.js` : repère les œuvres kudosées qui ne figurent pas dans les bookmarks de l’utilisateur.
-- `kudosDisplay.js` : affiche les informations et indicateurs liés aux kudos.
 - `kudosExtendedFeatures.js` : ajoute des fonctions supplémentaires autour des kudos.
-- `kudosManager.js` : coordonne les différentes opérations liées aux kudos.
-- `kudosTracker.js` : suit les œuvres auxquelles l’utilisateur a donné un kudos.
-- `kudosTracking.js` : enregistre et restitue les données utilisées par ce suivi.
+- `_ficAppreciation.js` coordonne aussi les différentes opérations liées aux kudos.
+- `kudosTracker.js` : détecte, enregistre, synchronise et affiche les kudos donnés aux œuvres.
 - `markAsFinished.js` : permet de marquer une œuvre comme terminée.
 - `multiStatusTracker.js` : conserve plusieurs états personnels pour une même œuvre.
 - `starRatings.js` : permet d’attribuer et d’afficher une note en étoiles.
@@ -1554,7 +1535,7 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 
 - `_laterShelf.js` : initialise et coordonne l’étagère des œuvres à lire plus tard.
 - `laterShelfCounterBadge.js` : affiche dans l’en-tête le nombre d’œuvres placées sur l’étagère.
-- `laterShelfHelpers.js` : gère les priorités, tris, rappels, exports et estimations de lecture.
+- `_laterShelf.js` gère aussi les priorités, tris, rappels, exports et estimations de lecture.
 - `laterShelfStore.js` : enregistre et récupère les œuvres placées sur l’étagère.
 - `markedForLaterStatus.js` : détermine et affiche si une œuvre est déjà marquée.
 - `quickMarkForLaterButton.js` : ajoute un bouton pour placer rapidement une œuvre sur l’étagère.
@@ -1579,13 +1560,12 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 
 # Navigate & Interact
 
-## Comment Kit — 8 fichiers
+## Comment Kit — 7 fichiers
 
-- `_commentKit.js` : initialise et coordonne les outils destinés aux commentaires.
+- `_commentKit.js` : initialise les outils et centralise leur logique commune.
 - `commentComposing.js` : ajoute des outils de formatage, modèles et aides à la rédaction.
 - `commentConfiguration.js` : applique les réglages généraux des commentaires.
 - `commentHighlighting.js` : met en évidence certains commentaires ou auteurs.
-- `commentKitHelpers.js` : gère la logique des modèles, brouillons, surlignages et déplacements.
 - `commentNavigation.js` : facilite le déplacement entre les commentaires.
 - `draftManagement.js` : sauvegarde et restaure automatiquement les brouillons.
 - `threadManagement.js` : replie, déplie et suit les réponses non lues.
@@ -1607,40 +1587,38 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 - `backToSearch.js` : mémorise la dernière liste visitée et ajoute un lien pour y retourner.
 - `breadcrumbs.js` : affiche un fil d’Ariane construit à partir de l’adresse de la page.
 - `menuActivation.js` : contrôle l’ouverture et la fermeture des menus.
-- `navHelpers.js` : calcule les destinations du retour à la recherche et les segments du fil d’Ariane.
+- `_mainNavigation.js` : calcule aussi les destinations du retour à la recherche et les segments du fil d’Ariane.
 - `quickLinks.js` : ajoute des raccourcis vers les pages fréquemment utilisées.
 
 ## Series Helper — 5 fichiers
 
 - `_seriesHelper.js` : initialise et coordonne les outils destinés aux séries.
-- `seriesHelperMath.js` : calcule les mots, temps de lecture, parties indisponibles et prochaine œuvre non lue.
+- `_seriesHelper.js` calcule aussi les mots, temps de lecture, parties indisponibles et prochaine œuvre non lue.
 - `seriesOrganization.js` : organise et présente les œuvres d’une série.
 - `seriesPage.js` : enrichit les pages de séries avec statistiques, progression et bouton « Next unread ».
 - `seriesProgress.js` : suit la progression de lecture dans une série.
 
-## User Relationships — 11 fichiers
+## User Relationships — 10 fichiers
 
-- `_userRelationships.js` : initialise et coordonne le suivi, les préférences et le blocage.
+- `_userRelationships.js` : initialise les fonctionnalités et centralise leur logique commune.
 - `authorBlocking.js` : masque les œuvres publiées par les auteurs bloqués.
 - `authorCard.js` : affiche au survol une fiche résumant les informations d’un auteur.
 - `authorPreference.js` : conserve les auteurs favoris, notes et priorités.
 - `authorTracking.js` : suit l’activité des auteurs choisis.
 - `blockingInterface.js` : construit les boutons et dialogues de blocage.
-- `blockingStats.js` : comptabilise les contenus masqués par le blocage.
+- `_userRelationships.js` comptabilise aussi les contenus masqués par le blocage.
 - `blocklistManagement.js` : gère la liste des utilisateurs bloqués.
 - `commentHiding.js` : masque les commentaires écrits par des utilisateurs bloqués.
-- `userRelationshipsHelpers.js` : analyse les liens d’utilisateurs et fournit la logique commune de blocage.
-- `userRelationshipsSettings.js` : centralise les réglages et valeurs par défaut.
+- `_userRelationships.js` centralise aussi les réglages et valeurs par défaut.
 
 # Reading
 
-## Chapter Navigation — 7 fichiers
+## Chapter Navigation — 6 fichiers
 
-- `_chapterNavigation.js` : initialise et coordonne les commandes de navigation.
+- `_chapterNavigation.js` : initialise les commandes et centralise leurs calculs internes.
 - `autoScroll.js` : fait défiler automatiquement le texte.
 - `blurbNavigation.js` : ajoute des commandes de navigation aux résumés.
 - `chaptersPanel.js` : affiche une liste consultable des chapitres avec progression, notes et favoris.
-- `chaptersPanelHelpers.js` : analyse et filtre les chapitres et calcule leur état de lecture.
 - `chapterWordCount.js` : calcule et affiche le nombre de mots du chapitre.
 - `navigationControls.js` : construit les boutons de navigation entre les chapitres.
 
@@ -1652,34 +1630,29 @@ Voici la liste complète mise à jour des **225 fichiers JavaScript fonctionnels
 
 - `instantFootnotes.js` : affiche les notes de bas de page sans quitter la position de lecture.
 
-## Reading Formatter — 5 fichiers
+## Reading Formatter — 4 fichiers
 
-- `_readingFormatter.js` : initialise et coordonne les outils de mise en forme.
+- `_readingFormatter.js` : initialise les outils et centralise leurs calculs internes.
 - `appearance.js` : applique les couleurs, tailles, largeurs et espacements choisis.
 - `content.js` : prépare, nettoie et organise le contenu de l’œuvre.
 - `readingControls.js` : construit les commandes de présentation du texte.
-- `readingFormatterHelpers.js` : détecte et découpe les murs de texte et nettoie certains défauts de mise en forme.
 
-## Reading Tracker — 6 fichiers
+## Reading Tracker — 5 fichiers
 
-- `_readingTracker.js` : initialise et coordonne le suivi des œuvres et de la progression.
+- `_readingTracker.js` : initialise le suivi et centralise ses calculs internes.
 - `readingProgress.js` : enregistre la position de lecture.
-- `readingTrackerHelpers.js` : calcule revisites, progression, vitesse, historique et sélection « Continue Reading ».
 - `seenTracking.js` : reconnaît et marque les œuvres déjà rencontrées.
 - `viewHistory.js` : conserve l’historique des œuvres et chapitres consultés.
 - `visualMarkers.js` : affiche des indicateurs pour les œuvres vues ou partiellement lues.
 
-## Text To Speech — 9 fichiers
+## Text To Speech — 6 fichiers
 
-- `_textToSpeech.js` : initialise le lecteur vocal et coordonne ses composants.
+- `_textToSpeech.js` : initialise le lecteur vocal et centralise ses calculs internes.
 - `contentFiltering.js` : prépare le texte et retire les éléments à ignorer.
 - `playbackControls.js` : construit les commandes de lecture, vitesse, volume, voix et minuterie.
-- `playbackHelpers.js` : valide les paramètres audio et calcule les profils de lecture.
 - `pronunciationManager.js` : applique les règles de prononciation personnalisées.
-- `scrollHelpers.js` : calcule l’animation du défilement automatique.
 - `speechEngine.js` : découpe le texte et contrôle la synthèse vocale du navigateur.
 - `visualFeedback.js` : surligne la phrase courante et affiche l’état de lecture.
-- `voiceHelpers.js` : filtre, classe et présente les voix disponibles.
 
 ## Word Swap — 2 fichiers
 

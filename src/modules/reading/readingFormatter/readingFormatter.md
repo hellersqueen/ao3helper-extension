@@ -83,11 +83,7 @@ exposés par `W.AO3H_RF`.
 - Avec `perWorkPrefs`, ces choix sont mémorisés par œuvre (repli sur la valeur globale) plutôt que globalement
 - Utilise les utilitaires fournis par `W.AO3H_RF`
 
-### 5. `readingFormatterHelpers.js` — calculs purs (ajouté au passage chantier 4)
-
-- Détection des paragraphes longs (mode Breathe), découpage des murs de texte aux frontières de phrases, nettoyage des artefacts de copier-coller (espaces insécables, paragraphes vides), détection des répliques entre guillemets
-
-### 6. `readingFormatter.css`
+### 5. `readingFormatter.css`
 
 - Les styles visuels de tous les fichiers ci-dessus : nettoyage du contenu, corrections typographiques, séparateurs de scène, mode de lecture épuré, panneau flottant "Aa", réglages de largeur/taille/espacement (dont les ajouts chantier 4 : Breathe, règle de lecture, dialogues, bloc de fin d'œuvre)
 
@@ -96,7 +92,7 @@ exposés par `W.AO3H_RF`.
 Ce sont des idées dont on parle dans d'autres docs. État après le passage
 chantier 4 (2026-07-18) :
 
-- ~~Le mode "Breathe" (espacement de ligne augmenté automatiquement sur les longs paragraphes)~~ ✅ Fait — réglage `breatheMode` : les paragraphes de 600+ caractères reçoivent un interligne élargi (classe posée par `readingViewOptimization`, seuil dans `readingFormatterHelpers.js`)
+- ~~Le mode "Breathe" (espacement de ligne augmenté automatiquement sur les longs paragraphes)~~ ✅ Fait — réglage `breatheMode` : les paragraphes de 600+ caractères reçoivent un interligne élargi (classe posée par `readingViewOptimization`, calcul dans `_readingFormatter.js`)
 - ~~Des règles de formatage personnalisées avec des motifs de recherche~~ ✅ Fait (déjà couvert ailleurs) — c'est exactement le module `wordSwap` : règles find/replace personnalisées avec support regex, sensibilité à la casse, mot entier, import/export
 - ~~Des profils de formatage différents selon l'auteur·ice~~ ❌ Écarté — niche et lourd (une UI de gestion de profils + stockage par auteur) ; les préférences par œuvre (ci-dessous) couvrent le besoin concret de "cette fic se lit mal avec mes réglages habituels"
 - ~~Pouvoir annuler ses changements de formatage après coup~~ ✅ Fait (déjà le cas) — toutes les transformations sont réversibles : chaque sous-module garde une carte de restauration (texte original, éléments remplacés) et désactiver le réglage restaure l'état d'origine sans recharger

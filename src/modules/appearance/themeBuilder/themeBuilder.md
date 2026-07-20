@@ -69,7 +69,7 @@ vraiment dans ce module (pas de code pour ça) :
   pour tout retirer). Les règles passent le contrôle de zones protégées.
 
 - ~~Empêcher que le CSS personnalisé n'abîme certaines zones importantes de la page, comme le texte de la fic — pour l'instant, la vérification ne repère que les erreurs d'écriture~~ ✅
-  Fait : `findProtectedViolations()` (`themeSafety.js`) — les règles qui
+  Fait : `findProtectedViolations()` (`_themeBuilder.js`) — les règles qui
   cacheraient une zone protégée (#workskin, .userstuff, #chapters, body,
   #main : display:none, visibility:hidden, opacity:0, tailles nulles…) sont
   bloquées à l'Apply avec un message ⛔, y compris à travers @media.

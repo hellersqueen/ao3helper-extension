@@ -18,7 +18,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
-import { isSearchOrigin } from './navHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -31,15 +30,20 @@ const SS_KEY = 'ao3h:nav:lastSearchUrl';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export class BackToSearch {
-  constructor (NS) {
+  /**
+   * @param {string} NS
+   * @param {{ isSearchOrigin?: (url: string) => boolean }} [opts]
+   */
+  constructor (NS, { isSearchOrigin } = {}) {
     this.NS = NS;
     this._el = null;
+    this._isSearchOrigin = isSearchOrigin || (() => false);
   }
 
   /** Record the current page as a search origin, or inject the link on works. */
   apply () {
     const current = location.pathname + location.search;
-    if (isSearchOrigin(current)) {
+    if (this._isSearchOrigin(current)) {
       try { sessionStorage.setItem(SS_KEY, current); } catch { /* storage off */ }
       return;
     }
@@ -47,7 +51,7 @@ export class BackToSearch {
 
     let saved = null;
     try { saved = sessionStorage.getItem(SS_KEY); } catch { /* storage off */ }
-    if (!saved || !isSearchOrigin(saved)) return;
+    if (!saved || !this._isSearchOrigin(saved)) return;
 
     const bar = document.createElement('div');
     bar.className = `${this.NS}-back-to-search`;

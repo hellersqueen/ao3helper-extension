@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { LengthDisplay } from './lengthDisplay.js';
+import { lengthMathHelpers } from './_workLength.js';
 
 function makeInstance(overrides = {}) {
   const cfg = (key) => (key in overrides ? overrides[key] : undefined);
-  return new LengthDisplay('ao3h', cfg);
+  return new LengthDisplay('ao3h', cfg, lengthMathHelpers);
 }
 
 describe('getDynamicCategory — 5 paliers avec les seuils par défaut', () => {

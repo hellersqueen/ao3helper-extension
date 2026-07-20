@@ -18,7 +18,6 @@ Notes
 
 import { buildKudosRatioBadge } from '../../../../lib/ui/badges.js';
 import { getBlurbStats, getWorkPageStats } from '../../../../lib/ao3/work-stats.js';
-import { commentRate, classifyLevel } from './ficEngagementHelpers.js';
 
 
 
@@ -36,9 +35,13 @@ const HELP_TEXT =
   'Comment rate (comments/kudos): high ≥15% · medium 5–15% · low <5%.';
 
 export class EngagementMetrics {
-  constructor ({ colorCode = false, hideLowEngagement = false } = {}) {
+  /**
+   * @param {{ colorCode?: boolean, hideLowEngagement?: boolean, helpers: typeof import('./_ficEngagement.js').ficEngagementHelpers }} opts
+   */
+  constructor ({ colorCode = false, hideLowEngagement = false, helpers }) {
     this.colorCode = colorCode;
     this.hideLowEngagement = hideLowEngagement;
+    this.helpers = helpers;
   }
 
 
@@ -54,21 +57,21 @@ export class EngagementMetrics {
   kudosRatio (s)  { return (s.kudos != null && s.hits) ? (s.kudos / s.hits) * 100 : null; }
   kudosDensity (s){ return (s.kudos != null && s.words) ? (s.kudos / s.words) * 1000 : null; }
   saveRate (s)    { return (s.bookmarks != null && s.kudos) ? (s.bookmarks / s.kudos) * 100 : null; }
-  commentRate (s) { return commentRate(s); }
+  commentRate (s) { return this.helpers.commentRate(s); }
 
   densityColour (v) {
     if (!this.colorCode || v == null) return '';
-    const level = classifyLevel(v, { high: 50, mid: 20 });
+    const level = this.helpers.classifyLevel(v, { high: 50, mid: 20 });
     return level ? `ao3h-metric-${level}` : '';
   }
   saveColour (v) {
     if (!this.colorCode || v == null) return '';
-    const level = classifyLevel(v, { high: 20, mid: 10 });
+    const level = this.helpers.classifyLevel(v, { high: 20, mid: 10 });
     return level ? `ao3h-metric-${level}` : '';
   }
   commentColour (v) {
     if (!this.colorCode || v == null) return '';
-    const level = classifyLevel(v, { high: 15, mid: 5 });
+    const level = this.helpers.classifyLevel(v, { high: 15, mid: 5 });
     return level ? `ao3h-metric-${level}` : '';
   }
 
@@ -133,7 +136,7 @@ export class EngagementMetrics {
     const s = this.getStats(blurb);
     if (!s) return;
 
-    if (this.hideLowEngagement && classifyLevel(this.kudosRatio(s), { high: 20, mid: 8 }) === 'low') {
+    if (this.hideLowEngagement && this.helpers.classifyLevel(this.kudosRatio(s), { high: 20, mid: 8 }) === 'low') {
       blurb.classList.add('ao3h-low-engagement-hidden');
       blurb.style.display = 'none';
       return;

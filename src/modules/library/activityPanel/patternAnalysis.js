@@ -20,10 +20,6 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import {
-  detectTagTrend, quarterlyBreakdown, groupByField, compareByPeriod,
-  detectRereads, detectIntensiveSessions, estimateAbandonPoint,
-} from './activityPanelHelpers.js';
 
 const W = getGlobalWindow();
 
@@ -54,6 +50,10 @@ const SEASON_MONTHS = {
 
 function detectPatterns (sessions) {
   if (!sessions.length) return null;
+  const {
+    detectTagTrend, quarterlyBreakdown, groupByField, compareByPeriod,
+    detectRereads, detectIntensiveSessions, estimateAbandonPoint,
+  } = W.AO3H_ActivityPanel;
 
   // Seasonal distribution
   const bySeason = { winter: 0, spring: 0, summer: 0, autumn: 0 };

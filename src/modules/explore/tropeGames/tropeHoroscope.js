@@ -22,7 +22,6 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
-import { horoscopeCameTrue } from './tropeGamesHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -68,7 +67,7 @@ function getRetrospective () {
   const entry = lsGet(`${NS}:tg:horoscope:${yKey}`);
   if (!entry?.trope) return null;
   const seen = lsGet(`${NS}:tg:stats:seen`) || [];
-  const cameTrue = horoscopeCameTrue(seen, entry.trope, yKey);
+  const cameTrue = getShared().horoscopeCameTrue(seen, entry.trope, yKey);
   if (cameTrue === null) return null;
   return { trope: entry.trope, cameTrue };
 }

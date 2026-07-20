@@ -45,8 +45,8 @@ favoris, le réordonnancement à la souris, et le masquage des tags en trop.
 
 ### 2. `autoHideNoiseTags.js` — cacher les tags inutiles
 
-- Repère et cache automatiquement les petits tags qui ne veulent rien dire (par exemple "idk", "first fic pls be nice", "unbetaed") — correspondance dans `noiseTagUtils.js`
-- Compare chaque tag à une liste d'environ 25 expressions connues, plus les mots ajoutés par l'utilisateur (`noiseTagUtils.js`)
+- Repère et cache automatiquement les petits tags qui ne veulent rien dire (par exemple "idk", "first fic pls be nice", "unbetaed") — détection commune dans `lib/utils/noise-tags.js`, interface intégrée à `_tagsDisplay.js`
+- Compare chaque tag à une liste d'environ 25 expressions connues, plus les mots ajoutés par l'utilisateur (`lib/utils/noise-tags.js`)
 - Deux styles de masquage (`noiseTagStyle`) : caché complètement, ou flouté et cliquable pour révéler
 - Chaque tag masqué peut être révélé individuellement via une puce "show hidden tag" (`autoHideNoiseTags.js`), avec un aperçu du texte caché au survol
 - Les auteurs ajoutés à la liste d'exceptions gardent tous leurs tags visibles, même s'ils matchent une expression "bruit" (`autoHideNoiseTags.js`)
@@ -62,7 +62,7 @@ favoris, le réordonnancement à la souris, et le masquage des tags en trop.
 - Surligne en couleur les tags que l'utilisateur a choisis comme favoris, y compris les tags de fandom
 - Un clic droit sur un tag ouvre un petit menu pour choisir une couleur parmi 6 et l'ajouter tout de suite
 - Reprend aussi, une seule fois au démarrage, les fandoms mis en valeur par l'ancien module fandomHighlighting (appearance/visualPreferences), fusionné ici
-- Les motifs supportent un joker `*` (ex. `"Alternate Universe -*"`) — la première règle qui correspond dans la liste gagne (`tagRules.js`)
+- Les motifs supportent un joker `*` (ex. `"Alternate Universe -*"`) — la première règle qui correspond dans la liste gagne (`_tagsDisplay.js`)
 - 4 palettes de couleurs prêtes à l'emploi et 5 styles visuels (fond plein/bordure/gras/italique/★) au lieu d'une seule couleur de fond (`tagHighlighting.js`)
 - Export/import des règles en JSON, et un bouton pour lancer une recherche AO3 avec tous les tags surlignés (panneau de configuration)
 
@@ -71,7 +71,7 @@ favoris, le réordonnancement à la souris, et le masquage des tags en trop.
 - Sur les pages d'œuvre, permet de glisser-déposer les tags pour changer leur ordre, catégorie par catégorie (fandom, personnages, relations, tags libres)
 - Se souvient de l'ordre choisi pour chaque fic
 - Un bouton "Reset order" apparaît pour remettre l'ordre d'origine si on a changé quelque chose
-- 3 boutons de tri automatique par catégorie : alphabétique, par longueur, ou "★ Important first" (tags surlignés en premier) — logique dans `tagRules.js`
+- 3 boutons de tri automatique par catégorie : alphabétique, par longueur, ou "★ Important first" (tags surlignés en premier) — logique dans `_tagsDisplay.js`
 - Export/import de l'ordre complet d'une œuvre (toutes catégories) dans un fichier JSON
 - Utilise `lib/ui/drag-reorder.js` (`makeListReorderable`), étendue avec `cleanup.resetToOriginal()` pour le bouton "Reset order"
 
@@ -80,7 +80,7 @@ favoris, le réordonnancement à la souris, et le masquage des tags en trop.
 - Sur les listes de fics, cache les tags en trop quand il y en a trop pour tenir sur une ligne
 - Cache en priorité les tags les moins importants (tags libres avant personnages, avant relations, avant avertissements)
 - Un bouton "+N more tags" permet de tout revoir, et "– Show less" de tout recacher
-- Des catégories entières peuvent être masquées en permanence (indépendamment de la limite ci-dessus) via les réglages `hideTags*` — logique dans `tagRules.js`
+- Des catégories entières peuvent être masquées en permanence (indépendamment de la limite ci-dessus) via les réglages `hideTags*` — logique dans `_tagsDisplay.js`
 
 ### 7. `externalTagLinks.js` — liens externes depuis un tag
 
@@ -94,7 +94,7 @@ favoris, le réordonnancement à la souris, et le masquage des tags en trop.
 
 ### 9. `tagImportancePromotion.js` — remonter les tags importants
 
-- Sur les listes de fics, remonte les tags surlignés en tête de leur catégorie (un tag relation surligné reste parmi les relations, mais en premier) — réutilise `tagRules.js` et les règles de `tagHighlighting.js`
+- Sur les listes de fics, remonte les tags surlignés en tête de leur catégorie (un tag relation surligné reste parmi les relations, mais en premier) — réutilise `_tagsDisplay.js` et les règles de `tagHighlighting.js`
 - L'ordre d'origine AO3 est mémorisé par liste de tags pour être restauré si la fonctionnalité est désactivée
 
 ## Specs non implémentés
@@ -107,7 +107,7 @@ technique de chaque ✅.
 - ~~Replier chaque catégorie de tags séparément~~ ✅ — `compactModeTags.js` (réglages `compactCat*`)
 - ~~Remonter automatiquement les tags les plus importants en premier~~ ✅ — `tagImportancePromotion.js`
 - ~~Flouter les tags "spoiler" au lieu de simplement les cacher~~ ✅ — `noiseTagStyle: 'blur'` dans `autoHideNoiseTags.js`
-- ~~Choisir soi-même ses propres mots à considérer comme du "bruit"~~ ✅ — `noiseTagUtils.js`.
+- ~~Choisir soi-même ses propres mots à considérer comme du "bruit"~~ ✅ — persistance commune dans `lib/utils/noise-tags.js`, gestion du filtre dans `_tagsDisplay.js`.
   **Pas fait** : les niveaux de gravité (jugé disproportionné pour ~25 mots-clés — voir plus bas)
 - ~~Avoir des règles de masquage différentes selon l'auteur~~ ✅ *(scope réduit)* — implémenté comme une
   liste d'exceptions (`autoHideNoiseTags.js`) : un auteur ajouté garde tous ses tags visibles.
@@ -134,7 +134,7 @@ technique de chaque ✅.
   comportement du style `icon` existant (icône seule + `title` = nom complet natif du navigateur)
 - ~~Exporter/importer sa liste de mots "bruit" personnalisés~~ ✅ — boutons Import/Export JSON
 - ~~Des jeux de couleurs prêts à l'emploi (pastel, néon, classique)~~ ✅ — réglage `highlightPalette`
-- ~~Utiliser des motifs (jokers) pour surligner plusieurs tags similaires~~ ✅ — joker `*` dans `tagRules.js`
+- ~~Utiliser des motifs (jokers) pour surligner plusieurs tags similaires~~ ✅ — joker `*` dans `_tagsDisplay.js`
 - ~~Exporter/importer ses règles de surlignage, choisir laquelle gagne~~ ✅ — export/import JSON ;
   priorité = ordre du tableau, la première règle qui correspond gagne
 - ~~Filtrer quels types de tags sont affichés~~ ✅ — réglages `hideTags*` dans `tagsVisibility.js`

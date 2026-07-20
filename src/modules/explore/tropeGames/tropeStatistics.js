@@ -24,9 +24,6 @@ import { downloadJSON, downloadFile } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
-import {
-  computeWeeklyChallenge, monthlyTrend, unexploredTropes, groupStatsByCategory,
-} from './tropeGamesHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -130,7 +127,7 @@ function renderBarRows (entries, max) {
 }
 
 function renderChallengeSection (seen) {
-  const { distinct, target, complete } = computeWeeklyChallenge(seen);
+  const { distinct, target, complete } = getShared().computeWeeklyChallenge(seen);
   return `
     <div class="${NS}-tg-stats-challenge${complete ? ' is-complete' : ''}">
       🗓️ Weekly Challenge: ${distinct}/${target} different tropes this week
@@ -140,7 +137,7 @@ function renderChallengeSection (seen) {
 }
 
 function renderRareSection (tropeList, stats) {
-  const unseen = unexploredTropes(tropeList, stats);
+  const unseen = getShared().unexploredTropes(tropeList, stats);
   if (!unseen.length) return `<div class="${NS}-tg-stats-rare">🔍 You've read every tracked trope at least once!</div>`;
   const shown = unseen.slice(0, 5).map(escapeHtml).join(', ');
   const more = unseen.length > 5 ? ` (+${unseen.length - 5} more)` : '';
@@ -148,7 +145,7 @@ function renderRareSection (tropeList, stats) {
 }
 
 function renderTrendSection (seen) {
-  const { current, previous, rising } = monthlyTrend(seen);
+  const { current, previous, rising } = getShared().monthlyTrend(seen);
   if (!current.length && !previous.length) return '';
   const currentHtml = current.length
     ? current.map(([t, c]) => `${escapeHtml(t)} (${c})${rising.includes(t) ? ' 📈' : ''}`).join(', ')
@@ -163,7 +160,7 @@ function renderTrendSection (seen) {
 }
 
 function renderCategorySection (stats) {
-  const groups = groupStatsByCategory(stats);
+  const groups = getShared().groupStatsByCategory(stats);
   const entries = Object.entries(groups).sort((a, b) => b[1] - a[1]);
   if (!entries.length) return '';
   const max = entries[0][1] || 1;

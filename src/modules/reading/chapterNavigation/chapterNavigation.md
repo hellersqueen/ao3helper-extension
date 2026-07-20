@@ -30,6 +30,7 @@ défilement automatique, et un compteur de mots par chapitre.
 ### 1. `_chapterNavigation.js` — le chef d'orchestre
 
 - Vérifie sur quel type de page on se trouve et met en route les bons fichiers de fonctionnalités
+- Centralise et injecte les calculs du panneau, du fil d'Ariane et du titre d'onglet
 
 ### 2. `navigationControls.js` — barre de navigation et raccourcis
 
@@ -65,12 +66,7 @@ défilement automatique, et un compteur de mots par chapitre.
 - Le temps de lecture estimé partage ce même badge, mais est calculé par `workLength`/`readingTime.js` (module séparé)
 - Réessaie plusieurs fois pour gérer les insertions tardives dans le DOM et certains skins personnalisés
 
-### 7. `chaptersPanelHelpers.js` — logique pure du panneau
-
-- Analyse du menu déroulant natif des chapitres, filtrage par recherche, calcul de l'état lu/actuel/non lu, premier chapitre non lu, liste des chapitres récents, textes du fil d'Ariane et du titre d'onglet
-- Fonctions exposées : `parseChapterOptions(options)` (extrait `{id, num, title}` depuis le `<select>` natif d'AO3, format `"N. Titre"`), `filterChapters(chapters, query)`, `buildChapterStates(chapters, { currentId, lastReadNum })` (ajoute un `state` `current`/`read`/`unread`), `firstUnreadChapter(chapters, lastReadNum)`, `addRecentEntry(list, entry, cap)`, `buildBreadcrumbText(workTitle, num, title)`, `prependChapterToTitle(originalTitle, num, total)` — aucune dépendance au DOM ni au stockage, utilisées par `chaptersPanel.js` et `navigationControls.js`
-
-### 8. `chapterNavigation.css`
+### 7. `chapterNavigation.css`
 
 - Les styles visuels de la barre, du texte, des boutons, du widget de défilement, du fil d'Ariane et du panneau de chapitres
 
@@ -119,4 +115,3 @@ vraiment dans ce module (pas de code pour ça) :
 raccourcis) et `autoScroll` (défilement automatique) comme des fichiers
 jamais créés. C'est faux aujourd'hui : les deux sont pleinement codés dans
 `navigationControls.js` et `autoScroll.js`.
-

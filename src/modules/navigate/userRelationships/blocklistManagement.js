@@ -18,9 +18,8 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
-import { describeIdentity } from './userRelationshipsHelpers.js';
-import { getHiddenStats } from './blockingStats.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -31,6 +30,9 @@ const NS   = 'ao3h';
 
 const STORAGE_KEY = 'userBlocker:list';
 const REASONS_KEY = 'userBlocker:reasons';
+const W = getGlobalWindow();
+const describeIdentity = (...args) => W.AO3H_UserRelationships.describeIdentity(...args);
+const getHiddenStats = (...args) => W.AO3H_UserRelationships.getHiddenStats(...args);
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — BLOCKLIST STORAGE AND MANAGEMENT PANEL

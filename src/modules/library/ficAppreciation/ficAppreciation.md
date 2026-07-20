@@ -66,23 +66,13 @@ périmètre de ce chantier)*.
 - Propose un bouton pour donner des kudos rapidement, sans ouvrir la fic (avec confirmation optionnelle)
 - Capture le titre, l'auteur·ice et les fandoms au moment du kudos (pour les statistiques et l'historique)
 - Affiche une bannière de rappel sur une fic terminée mais jamais kudosée
-
-### 4. `kudosDisplay.js` — afficher les infos de kudos
-
-- Affiche la date à laquelle on a donné des kudos
-- Affiche une petite bulle d'info au survol du badge, avec la date dans différents formats
-- Affiche un message pendant que le module vérifie si des kudos ont déjà été donnés
-
-### 5. `kudosTracking.js` — garder les kudos à jour entre onglets
-
-- Met à jour le badge de kudos si on a donné un kudos depuis un autre onglet
+- Met à jour l'état des kudos lorsqu'un kudos est enregistré depuis un autre onglet
 - Ajoute un bouton pour vérifier soi-même si des kudos ont été donnés
+- Affiche la date du kudos sur la page de la fic et dans une bulle d'information sur les listes
+- Applique le format de date et l'icône de kudos configurés
+- Affiche un message pendant la vérification de l'état des kudos
 
-### 6. `kudosManager.js` — chef d'orchestre des kudos
-
-- Fait fonctionner ensemble les trois fichiers précédents liés aux kudos (détection, affichage, synchronisation entre onglets)
-
-### 7. `kudosExtendedFeatures.js` — statistiques et historique de kudos
+### 4. `kudosExtendedFeatures.js` — statistiques et historique de kudos
 
 - Montre le nombre total de kudos donnés, réparti par mois, par fandom et par auteur·ice
 - Montre la plus longue série de jours consécutifs avec au moins un kudos donné
@@ -90,7 +80,7 @@ périmètre de ce chantier)*.
 - Donne un historique chronologique complet, filtrable par titre/auteur·ice/fandom
 - Permet d'exporter ses statistiques de kudos en JSON ou en CSV (avec titre/auteur/fandoms quand disponibles)
 
-### 8. `starRatings.js` — noter les fics par étoiles
+### 5. `starRatings.js` — noter les fics par étoiles
 
 - Ajoute une notation personnelle de 1 à 5 étoiles (ou demi-étoiles) sur la page d'une fic
 - Affiche aussi la note sur les listes de fics
@@ -101,7 +91,7 @@ périmètre de ce chantier)*.
 - Statistiques : moyenne, répartition, évolution mensuelle
 - Comparaison optionnelle avec les kudos/hits communautaires affichés sur la fic
 
-### 9. `multiStatusTracker.js` — statut de lecture
+### 6. `multiStatusTracker.js` — statut de lecture
 
 - Permet de choisir un statut parmi 7 : à lire, en cours, terminé, abandonné, pas aimé, en pause, relu
 - Affiche le statut avec un badge et un menu déroulant, sur la page de la fic et sur les listes
@@ -111,19 +101,19 @@ périmètre de ce chantier)*.
 - Permet de cacher certains statuts sur les listes
 - Montre des statistiques (par exemple le pourcentage de fics terminées) et permet de les exporter
 
-### 10. `kudosBookmarkFinder.js` — fics kudosées mais non favorites
+### 7. `kudosBookmarkFinder.js` — fics kudosées mais non favorites
 
 - Sur sa propre page Bookmarks, ajoute un bouton qui scanne les pages récentes de favoris (jusqu'à 5) et liste les fics kudosées localement qui n'y apparaissent pas
 - Requêtes en lecture seule, sur son propre compte uniquement
 
-### 11. `ficAppreciationHelpers.js` — logique pure partagée
+### 8. Logique pure partagée intégrée à `_ficAppreciation.js`
 
 - Regroupements et statistiques (kudos par fandom/auteur, notes moyennes/répartition/évolution mensuelle)
 - Historique des notes, score combiné de catégories, valeur de demi-étoile selon la position du clic
 - Habitudes horaires de kudos, paliers de complétion franchis, compteur de relecture
 - Filtrage/tri de l'historique de kudos, diff kudosé-non-favori
 
-### 12. `ficAppreciation.css`
+### 9. `ficAppreciation.css`
 
 - Les styles visuels de tous les boutons, badges et panneaux ci-dessus
 
@@ -203,9 +193,9 @@ API publique `AO3H.ficAppreciation` : `isFinished(workId)`, `hasGivenKudos(workI
 Notes techniques par fichier, en complément de la section "Fichiers" ci-dessus :
 - `_ficAppreciation.js` : le rappel de kudos appelle `kudosTracker.injectKudosReminderBanner(workId)` ; le nudge de notation post-complétion écoute `EV_WORK_FINISHED` (émis par `markAsFinished.js`) et met en valeur le widget d'étoiles via la classe `ao3h-fa-star-wrap-highlight`.
 - `markAsFinished.js` : `markFinished()` compare le total de fics terminées avant/après via `milestonesCrossed()`.
-- `kudosTracker.js` : `recordKudos(workId, meta?)` capture les métadonnées depuis `_extractWorkPageMeta()` (page d'œuvre) ou `getBlurbMeta()` (`lib/ao3/parsers.js`, depuis un blurb) ; `injectQuickKudosButton()` affiche "❓ Click again to confirm" pendant 4 secondes quand `confirmBeforeKudos` est actif ; la bannière de rappel réutilise `giveKudos()` de `lib/ao3/actions.js`.
+- `kudosTracker.js` : `recordKudos(workId, meta?)` capture les métadonnées depuis `_extractWorkPageMeta()` (page d'œuvre) ou `getBlurbMeta()` (`lib/ao3/parsers.js`, depuis un blurb) ; `injectQuickKudosButton()` affiche "❓ Click again to confirm" pendant 4 secondes quand `confirmBeforeKudos` est actif ; la bannière de rappel réutilise `giveKudos()` de `lib/ao3/actions.js` ; le fichier gère aussi la synchronisation entre onglets, la vérification manuelle et toute la présentation des kudos.
 - `starRatings.js` : la demi-étoile pose `stars = n - 0.5` (`halfStarValue()`, selon la moitié cliquée), rendue avec deux `<span>` superposés (`.ao3h-fa-star-back`/`.ao3h-fa-star-front`, `clip-path`) ; `showCommunityStats` lit `dl.stats dd.kudos`/`dd.hits` déjà présents sur la page (simple juxtaposition, aucun calcul ni requête).
 - `multiStatusTracker.js` : `rereadCount` survit aux changements de statut suivants (pas remis à zéro en repassant par "Reading").
 - `kudosBookmarkFinder.js` : utilise `fetchAO3PageText`/`parseBookmarksPageHTML` (même origine, lecture seule).
-- `kudosDisplay.js` / `kudosTracking.js` / `kudosManager.js` : rôle inchangé (affichage enrichi, synchronisation entre onglets, orchestration).
-- `ficAppreciationHelpers.js` : logique pure testée indépendamment (`ficAppreciationHelpers.test.js`) — `groupCounts`/`topEntries`, `computeRatingStats`/`ratingByMonth`/`appendRatingHistory`/`combinedCategoryScore`/`halfStarValue`, `hourOfDayHistogram`/`peakHours`, `milestonesCrossed`/`nextRereadCount`, `filterKudosHistory`/`sortKudosHistoryByDate`, `diffNotBookmarked`.
+- `kudosTracker.js` / `_ficAppreciation.js` : cycle complet des kudos et orchestration générale du module.
+- `_ficAppreciation.js` expose aussi la logique pure testée dans `ficAppreciation.logic.test.js` — `groupCounts`/`topEntries`, `computeRatingStats`/`ratingByMonth`/`appendRatingHistory`/`combinedCategoryScore`/`halfStarValue`, `hourOfDayHistogram`/`peakHours`, `milestonesCrossed`/`nextRereadCount`, `filterKudosHistory`/`sortKudosHistoryByDate`, `diffNotBookmarked`.

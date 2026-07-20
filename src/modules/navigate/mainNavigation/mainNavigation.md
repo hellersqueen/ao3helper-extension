@@ -60,7 +60,7 @@ Le panneau de réglages propose aussi une recherche Fandom/Pairing
 
 - Affiche un petit fil d'Ariane sous l'en-tête, construit depuis l'URL (aucune requête)
 
-### 7. `navHelpers.js` — calculs purs (ajouté au passage chantier 4)
+### Calculs de navigation — intégrés à `_mainNavigation.js`
 
 - Reconnaissance des pages "origine de recherche" (`isSearchOrigin`, s'appuie sur `lib/ao3/parsers.js`)
 - Décomposition d'un chemin AO3 en segments de fil d'Ariane (`buildBreadcrumbs`, avec décodage des tags `*s*`/`*a*`/`*d*`)
@@ -85,7 +85,7 @@ chantier 4 (2026-07-18) :
 - ~~Personnaliser les icônes des liens~~ ✅ Fait (déjà possible) — le libellé d'un quick link est du texte libre : commencer le libellé par un emoji donne une "icône" au lien ; le placeholder du panneau le suggère désormais. Les icônes des 3 liens intégrés restent fixes (cohérent avec la décision "un seul réglage pour le groupe")
 - ~~Cacher les éléments du menu qu'on ne veut pas voir~~ ❌ Écarté — extension directe de la décision déjà prise pour la recherche ("jugée risquée, elle pourrait casser la navigation") : masquer des entrées natives du menu porte le même risque
 - ~~Un historique de navigation "intelligent" qui ignore les redirections~~ ❌ Écarté — doublon de l'historique du navigateur ; un userscript ne voit pas les redirections de façon fiable
-- ~~Un fil d'Ariane (breadcrumb) pour se repérer~~ ✅ Fait — `breadcrumbs.js` : petit fil d'Ariane sous l'en-tête (Works › Work 123 › Chapter…), construit uniquement depuis l'URL (`navHelpers.js` → `buildBreadcrumbs`), aucune requête. Réglage `breadcrumbs` (désactivé par défaut)
+- ~~Un fil d'Ariane (breadcrumb) pour se repérer~~ ✅ Fait — `breadcrumbs.js` : petit fil d'Ariane sous l'en-tête (Works › Work 123 › Chapter…), construit uniquement depuis l'URL (`_mainNavigation.js` → `buildBreadcrumbs`), aucune requête. Réglage `breadcrumbs` (désactivé par défaut)
 - ~~Un lien rapide vers l'historique des kudos donnés~~ ❌ Écarté — AO3 n'a pas de page native listant les kudos donnés, et la route virtuelle `/kudos-history` de l'extension est un vestige que plus rien ne rend (seul un garde-fou la détecte encore) : le lien pointerait vers une page vide. Le suivi local des kudos existe dans `ficAppreciation` (badges 🧡 sur les listings) mais sans page dédiée
 - ~~Un petit chiffre sur les liens Historique et Mark for Later pour indiquer combien de nouveautés il y a~~ ❌ Écarté — demanderait de récupérer et parser ces pages à chaque chargement (coût réseau permanent) ; `notificationCenter` fournit déjà des notifications de mise à jour des œuvres suivies
 - ~~Quand on ajoute un lien personnalisé, pouvoir chercher un fandom ou un pairing dans une liste plutôt que de devoir taper l'adresse à la main~~ ✅ Fait — le panneau de réglages a maintenant une recherche Fandom/Pairing branchée sur l'autocomplete natif d'AO3 (`/autocomplete/fandom`, `/autocomplete/relationship`) ; choisir un résultat remplit le premier emplacement de lien vide (libellé + URL de la page de works du tag)
@@ -111,8 +111,7 @@ d'accord.
 
 - `backToSearch.js` mémorise la dernière page de listing/recherche visitée
   dans la clé `sessionStorage` `ao3h:nav:lastSearchUrl`.
-- `navHelpers.js` expose `isSearchOrigin()` (reconnaissance des pages
+- `_mainNavigation.js` expose `isSearchOrigin()` (reconnaissance des pages
   "origine de recherche", via `lib/ao3/parsers.js`) et `buildBreadcrumbs()`
   (décomposition d'un chemin AO3 en segments, avec décodage des tags
   `*s*`/`*a*`/`*d*`).
-

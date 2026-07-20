@@ -66,7 +66,7 @@ bookmarkNavigation.js
 noteDisplay.js
 noteManagement.js
 sortingAndFiltering.js
-vaultTools.js            (Chantier 4)
+outils purs dans `_bookmarkVault.js` (Chantier 4)
 personalRatings.js       (Chantier 4)
 blockedBookmarks.js      (Chantier 4)
 bookmarkStatus/
@@ -103,7 +103,7 @@ ao3h:bookmarkVault:pinned      -- [workId, ...]
 
 ### 1bis. Nouveaux fichiers (Chantier 4)
 
-- `vaultTools.js` — logique pure : exports CSV/HTML, détection des favoris anciens, recherche `&&`/`||`, convention "note importante" (`!`)
+- `_bookmarkVault.js` — contient aussi la logique pure : exports CSV/HTML, détection des favoris anciens, recherche `&&`/`||`, convention "note importante" (`!`)
 - `personalRatings.js` — les étoiles personnelles locales (stockage + widget ★)
 - `richTextNotes.js` — l'édition enrichie et l'historique des versions des notes personnelles (5 max par fic)
 - `blockedBookmarks.js` — masque les bookmarks publics des utilisateurs de la liste de blocage
@@ -243,7 +243,7 @@ les raisons pour les items écartés.
 
 ~~Permettre l'export des favoris en CSV et HTML.~~
 
-> Le bouton Export propose désormais JSON / CSV / HTML (`vaultTools.js`) —
+> Le bouton Export propose désormais JSON / CSV / HTML (`_bookmarkVault.js`) —
 > le HTML est une page autonome avec liens vers AO3, le CSV inclut les
 > notes de bookmark et les notes personnelles.
 
@@ -367,7 +367,7 @@ les raisons pour les items écartés.
 ~~Ajouter des opérateurs ET / OU pour des recherches complexes dans les notes.~~
 
 > La recherche de notes accepte désormais `a && b` (tous les termes) et
-> `a || b` (au moins un) — `noteQueryMatch` dans `vaultTools.js`.
+> `a || b` (au moins un) — `noteQueryMatch` dans `_bookmarkVault.js`.
 
 ### ~~Mise en évidence des tags~~ ❌ Écarté
 

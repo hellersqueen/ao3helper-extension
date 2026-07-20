@@ -18,7 +18,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { progressMilestonesCrossed, donutDashArray, computeReadingSpeed } from './readingTrackerHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -29,14 +28,15 @@ const SK_SPEED = 'ao3h:rt:readingSpeed'; // { wordsTotal, msTotal } rolling accu
 const DONUT_CIRCUMFERENCE = 100.5; // 2*pi*16, matches the SVG r=16 below
 
 export class ReadingProgress {
-  /** @param {{ NS, cfg, saveProgress, getProgress, relativeTime, sanitizeHref }} opts */
-  constructor ({ NS, cfg, saveProgress, getProgress, relativeTime, sanitizeHref }) {
+  /** @param {{ NS, cfg, saveProgress, getProgress, relativeTime, sanitizeHref, helpers: typeof import('./_readingTracker.js').readingTrackerHelpers }} opts */
+  constructor ({ NS, cfg, saveProgress, getProgress, relativeTime, sanitizeHref, helpers }) {
     this.NS             = NS;
     this.cfg            = cfg;
     this.saveProgress   = saveProgress;
     this.getProgress    = getProgress;
     this.relativeTime   = relativeTime;
     this.sanitizeHref   = sanitizeHref;
+    this.helpers        = helpers;
     this._BANNER_ID     = `${NS}-resume-banner`;
     this._PROG_BADGE_ID = `${NS}-progress-badge`;
     this._MARKER_CLS    = `${NS}-pos-marker`;
@@ -62,7 +62,7 @@ export class ReadingProgress {
     const href = progress.chapterHref
       || (progress.chapterId ? `/works/${workId}/chapters/${progress.chapterId}` : `/works/${workId}`);
     const ago  = cfg('lastReadTime') ? relativeTime(progress.lastReadAt) : null;
-    const speed = cfg('readingSpeedTracking') ? ReadingProgress.getReadingSpeed() : null;
+    const speed = cfg('readingSpeedTracking') ? ReadingProgress.getReadingSpeed(this.helpers) : null;
     const banner = document.createElement('div');
     banner.id        = _BANNER_ID;
     banner.className = `${NS}-resume-banner`;
@@ -115,7 +115,7 @@ export class ReadingProgress {
     if (!badge) return;
     const rounded = Math.round(pct);
     if (badge.classList.contains(`${this.NS}-progress-badge--donut`)) {
-      const { dash, gap } = donutDashArray(rounded, DONUT_CIRCUMFERENCE);
+      const { dash, gap } = this.helpers.donutDashArray(rounded, DONUT_CIRCUMFERENCE);
       const fill = badge.querySelector(`.${this.NS}-progress-donut-fill`);
       if (fill) fill.setAttribute('stroke-dasharray', `${dash} ${gap}`);
       const label = badge.querySelector(`.${this.NS}-progress-donut-label`);
@@ -173,7 +173,7 @@ export class ReadingProgress {
   /** Shows a small toast the first time a milestone (25/50/75%) is crossed this session. */
   _maybeShowMilestoneToast (prevPct, newPct) {
     if (!this.cfg('progressMilestones')) return;
-    const crossed = progressMilestonesCrossed(prevPct, newPct).filter(m => !this._milestonesSeen.has(m));
+    const crossed = this.helpers.progressMilestonesCrossed(prevPct, newPct).filter(m => !this._milestonesSeen.has(m));
     if (!crossed.length) return;
     crossed.forEach(m => this._milestonesSeen.add(m));
     const toast = document.createElement('div');
@@ -210,11 +210,11 @@ export class ReadingProgress {
   }
 
   /** @returns {number|null} average words-per-minute from all tracked sessions */
-  static getReadingSpeed () {
+  static getReadingSpeed (helpers) {
     try {
       const acc = JSON.parse(localStorage.getItem(SK_SPEED) || 'null');
       if (!acc) return null;
-      return computeReadingSpeed([{ words: acc.wordsTotal, ms: acc.msTotal }]);
+      return helpers.computeReadingSpeed([{ words: acc.wordsTotal, ms: acc.msTotal }]);
     } catch { return null; }
   }
 

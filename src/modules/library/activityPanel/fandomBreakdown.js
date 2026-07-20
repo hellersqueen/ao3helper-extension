@@ -20,7 +20,6 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { fandomPercentages } from './activityPanelHelpers.js';
 
 const W = getGlobalWindow();
 
@@ -77,7 +76,7 @@ function esc (s) {
 const PIE_COLORS = ['#2c5f8a', '#5b8fb9', '#8ab4d6', '#b0c4de', '#d0722a', '#e8a05c', '#7a9e7e', '#a8c9ab'];
 
 function buildPieChart (stats, totalWorks) {
-  const top = fandomPercentages(stats.slice(0, 8), totalWorks);
+  const top = W.AO3H_ActivityPanel.fandomPercentages(stats.slice(0, 8), totalWorks);
   if (!top.length) return '';
   let acc = 0;
   const stops = top.map((f, i) => {

@@ -36,6 +36,9 @@ séries dans les résultats.
 ### 1. `_searchEnhancer.js` — le chef d'orchestre
 
 - Met en route les quatre autres fichiers de fonctionnalités et partage des outils communs entre eux
+- Contient aussi le calcul propre au tri des groupes de séries selon l'historique de lecture
+- Calcule les scores de récence et d'engagement utilisés pour trier les résultats
+- Centralise la recherche tolérante aux fautes, les statistiques d'historique et les modèles de recherche rapide
 
 ### 2. `relatedSearches.js` — suggestions de tags liés
 
@@ -64,11 +67,7 @@ séries dans les résultats.
 - Regroupe visuellement les fics d'une même série (si au moins 2 apparaissent sur la page) sous un en-tête commun
 - Les groupes peuvent être triés par ordre alphabétique, par popularité, ou par un vrai historique de lecture (via `readingTracker`)
 
-### 6. `resultsSortingHelpers.js` / `seriesGroupingHelpers.js` / `searchHistoryHelpers.js` — logique pure
-
-- Calcul des scores de tri, tri des groupes de séries par historique de lecture, et toute la logique dérivée de l'historique de recherche (recherche tolérante aux fautes, statistiques, modèles, astuces) — testés indépendamment du DOM
-
-### 7. `searchEnhancer.css`
+### 6. `searchEnhancer.css`
 
 - Les styles visuels des panneaux, suggestions, menu déroulant, barre de tri, modèles, statistiques et barres de fandoms
 

@@ -20,9 +20,6 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import {
-  isLongParagraph, splitWallText, cleanPasteArtifacts, isEmptyParagraphText,
-} from './readingFormatterHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -75,7 +72,7 @@ function hideEmbeddedImages (container) {
 
 /** Collapse nbsp runs left by word-processor pastes (same restore map). */
 function fixPasteArtifacts (textNode) {
-  const cleaned = cleanPasteArtifacts(textNode.textContent);
+  const cleaned = W.AO3H_RF.cleanPasteArtifacts(textNode.textContent);
   if (cleaned !== textNode.textContent) {
     if (!originalText.has(textNode)) originalText.set(textNode, textNode.textContent);
     textNode.textContent = cleaned;
@@ -85,7 +82,7 @@ function fixPasteArtifacts (textNode) {
 /** Hide paragraphs that contain nothing but whitespace/nbsp filler. */
 function hideEmptyParagraphs (container, NS) {
   container.querySelectorAll('p').forEach(p => {
-    if (p.children.length === 0 && isEmptyParagraphText(p.textContent)) {
+    if (p.children.length === 0 && W.AO3H_RF.isEmptyParagraphText(p.textContent)) {
       p.classList.add(`${NS}-rf-empty-p`);
     }
   });
@@ -97,7 +94,7 @@ function splitTextWalls (container) {
   container.querySelectorAll('p').forEach(p => {
     // Only plain-text paragraphs — inline markup makes splitting unsafe
     if (p.children.length > 0) return;
-    const chunks = splitWallText(p.textContent);
+    const chunks = W.AO3H_RF.splitWallText(p.textContent);
     if (chunks.length < 2) return;
     const replacement = /** @type {HTMLParagraphElement} */ (p.cloneNode(false));
     replacement.textContent = chunks[0];
@@ -178,7 +175,7 @@ const READING_VIEW_OPTIMIZATION_LOG = `[AO3H][readingFormatter/${READING_VIEW_OP
 /** Breathe mode: tag long paragraphs so CSS can widen their line spacing. */
 function applyBreatheMode (container, NS) {
   container.querySelectorAll('p').forEach(p => {
-    if (isLongParagraph(p.textContent)) p.classList.add(`${NS}-rf-breathe`);
+    if (W.AO3H_RF.isLongParagraph(p.textContent)) p.classList.add(`${NS}-rf-breathe`);
   });
 }
 

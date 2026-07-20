@@ -32,6 +32,7 @@ import { register } from '../../../core/lifecycle.js';
 import { css } from '../../../../lib/utils/index.js';
 import { Settings, Flags } from '../../../../lib/utils/config.js';
 import { detectUser } from '../../../../lib/utils/user-detector.js';
+import { isListingPage } from '../../../../lib/ao3/parsers.js';
 import styles from './mainNavigation.css?inline';
 
 import { AddNavLinks } from './addNavLinks.js';
@@ -39,6 +40,77 @@ import { MenuActivation } from './menuActivation.js';
 import { QuickLinks } from './quickLinks.js';
 import { BackToSearch } from './backToSearch.js';
 import { Breadcrumbs } from './breadcrumbs.js';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE-SPECIFIC HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+
+export function isSearchOrigin (url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url, 'https://archiveofourown.org');
+    return isListingPage(parsed.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function decodeBreadcrumbSegment (segment) {
+  try {
+    return decodeURIComponent(segment)
+      .replace(/\*s\*/g, '/')
+      .replace(/\*a\*/g, '&')
+      .replace(/\*d\*/g, '.');
+  } catch {
+    return segment;
+  }
+}
+
+export function buildBreadcrumbs (pathname) {
+  if (!pathname || pathname === '/') return [];
+  const parts = pathname.replace(/\/+$/, '').split('/').filter(Boolean);
+  if (parts.length < 2) return [];
+  const crumbs = [];
+  const push = (label, href) => crumbs.push({ label, href });
+
+  switch (parts[0]) {
+    case 'works':
+      push('Works', '/works');
+      if (/^\d+$/.test(parts[1])) {
+        push(`Work ${parts[1]}`, `/works/${parts[1]}`);
+        if (parts[2] === 'chapters' && /^\d+$/.test(parts[3] || '')) push('Chapter', null);
+      } else if (parts[1] === 'search') {
+        push('Search', null);
+      }
+      break;
+    case 'tags':
+      push('Tags', '/tags');
+      push(decodeBreadcrumbSegment(parts[1]), `/tags/${parts[1]}`);
+      if (parts[2] === 'works') push('Works', null);
+      break;
+    case 'users':
+      push('Users', null);
+      push(decodeBreadcrumbSegment(parts[1]), `/users/${parts[1]}`);
+      if (parts[2]) push(parts[2][0].toUpperCase() + parts[2].slice(1), null);
+      break;
+    case 'series':
+      push('Series', null);
+      if (/^\d+$/.test(parts[1])) push(`Series ${parts[1]}`, null);
+      break;
+    case 'collections':
+      push('Collections', '/collections');
+      push(decodeBreadcrumbSegment(parts[1]), `/collections/${parts[1]}`);
+      if (parts[2] === 'works') push('Works', null);
+      break;
+    default:
+      return [];
+  }
+
+  if (crumbs.length) {
+    crumbs[crumbs.length - 1] = { ...crumbs[crumbs.length - 1], href: null };
+  }
+  return crumbs;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP
@@ -104,8 +176,8 @@ register(MOD, { title: 'Main Navigation', enabledByDefault: false }, async funct
   const dashboardOn = !!Flags.get('mod:readingDashboard:enabled', false);
   const addNavLinksInst = new AddNavLinks(NS, { historyToDashboard: dashboardOn });
   const quickLinksInst = new QuickLinks(NS, cfg);
-  const backToSearchInst = new BackToSearch(NS);
-  const breadcrumbsInst = new Breadcrumbs(NS);
+  const backToSearchInst = new BackToSearch(NS, { isSearchOrigin });
+  const breadcrumbsInst = new Breadcrumbs(NS, { buildBreadcrumbs });
 
   if (headerUL) {
     if (cfg.addNavLinks) {

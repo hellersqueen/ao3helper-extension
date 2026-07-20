@@ -18,9 +18,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { observe } from '../../../../lib/utils/index.js';
-import {
-  DEFAULT_GEM_THRESHOLDS, isGem, gemMedal, averageRatio, isGemRelativeToPageAverage,
-} from './ficEngagementHelpers.js';
 
 
 
@@ -37,10 +34,11 @@ const RELATIVE_MULTIPLIER = 1.5; // how far above the page's own average ratio c
 
 export class HiddenGems {
   /**
-   * @param {{thresholds?: Partial<typeof DEFAULT_GEM_THRESHOLDS>, compareToPageAverage?: boolean}} [opts]
+   * @param {{thresholds?: object, compareToPageAverage?: boolean, helpers: typeof import('./_ficEngagement.js').ficEngagementHelpers}} opts
    */
-  constructor ({ thresholds = {}, compareToPageAverage = false } = {}) {
-    this.thresholds = { ...DEFAULT_GEM_THRESHOLDS, ...thresholds };
+  constructor ({ thresholds = {}, compareToPageAverage = false, helpers }) {
+    this.helpers = helpers;
+    this.thresholds = { ...helpers.DEFAULT_GEM_THRESHOLDS, ...thresholds };
     this.compareToPageAverage = compareToPageAverage;
   }
 
@@ -81,13 +79,13 @@ export class HiddenGems {
   ═════════════════════════════════════════════════════════════════════════ */
 
   _isGem (stats) {
-    if (isGem(stats, this.thresholds)) return true;
+    if (this.helpers.isGem(stats, this.thresholds)) return true;
     if (!this.compareToPageAverage) return false;
-    return isGemRelativeToPageAverage(stats, this._pageAverageRatio, RELATIVE_MULTIPLIER, this.thresholds);
+    return this.helpers.isGemRelativeToPageAverage(stats, this._pageAverageRatio, RELATIVE_MULTIPLIER, this.thresholds);
   }
 
   _medal (stats) {
-    const medal = gemMedal(stats, this.thresholds);
+    const medal = this.helpers.gemMedal(stats, this.thresholds);
     if (medal) return medal;
     // Relative-only gems (didn't clear the fixed threshold, only the page-average one) get the base tier.
     return this._isGem(stats) ? 'silver' : null;
@@ -152,7 +150,7 @@ export class HiddenGems {
   _scan () {
     const blurbs = document.querySelectorAll('li.work.blurb.group, li.bookmark.blurb.group');
     if (this.compareToPageAverage) {
-      this._pageAverageRatio = averageRatio(Array.from(blurbs).map(b => this._getStatsFromBlurb(b)));
+      this._pageAverageRatio = this.helpers.averageRatio(Array.from(blurbs).map(b => this._getStatsFromBlurb(b)));
     }
     blurbs.forEach(b => this._processBlurb(b));
   }

@@ -20,7 +20,6 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { matchesSearch, buildPageJumpUrl } from './commentKitHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -138,7 +137,7 @@ function highlightMatches (query) {
   if (!query.trim()) return [];
   const found = [];
   commentTextNodes().forEach(node => {
-    if (!matchesSearch(node.textContent, query)) return;
+    if (!W.AO3H_CommentKit.matchesSearch(node.textContent, query)) return;
     const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
     node.innerHTML = node.textContent.replace(re, m => `<mark class="${MATCH_CLASS}">${m}</mark>`);
     found.push(...node.querySelectorAll(`.${MATCH_CLASS}`));
@@ -258,7 +257,7 @@ function injectNavPanel () {
     pageInput.placeholder = `1–${maxPage}`;
     const goBtn = mk('Go', 'Jump to comment page', () => {
       const n = parseInt(pageInput.value, 10);
-      if (Number.isFinite(n) && n >= 1 && n <= maxPage) W.location.href = buildPageJumpUrl(W.location.href, n);
+      if (Number.isFinite(n) && n >= 1 && n <= maxPage) W.location.href = W.AO3H_CommentKit.buildPageJumpUrl(W.location.href, n);
     });
     navPanel.appendChild(pageInput);
     navPanel.appendChild(goBtn);

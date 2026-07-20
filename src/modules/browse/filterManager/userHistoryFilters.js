@@ -23,7 +23,6 @@ Notes
 
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { fetchAO3PageText } from '../../../../lib/ao3/requests.js';
-import { isSeriesFullyRead } from './filterManagerHelpers.js';
 
 
 
@@ -43,13 +42,14 @@ const REASON_LABELS = {
 };
 
 export class UserHistoryFilters {
-  /** @param {{ NS, cfg, W, AO3H, onAsyncUpdate?: () => void }} opts */
-  constructor ({ NS, cfg, W, AO3H, onAsyncUpdate }) {
+  /** @param {{ NS, cfg, W, AO3H, onAsyncUpdate?: () => void, helpers: typeof import('./_filterManager.js').filterManagerHelpers }} opts */
+  constructor ({ NS, cfg, W, AO3H, onAsyncUpdate, helpers }) {
     this.NS   = NS;
     this.cfg  = cfg;
     this._W   = W;
     this._AO3H = AO3H;
     this.onAsyncUpdate = onAsyncUpdate;
+    this.helpers = helpers;
     this._controller = new AbortController();
     this._pendingSeriesFetches = new Set();
     this._hiddenCountEl = null;
@@ -107,7 +107,7 @@ export class UserHistoryFilters {
         .map(el => extractWorkIdFromBlurb(el))
         .filter(Boolean);
       const readIds = (this._W.AO3H_ReadingTracker?.getHistory?.() || []).map(e => e.id);
-      const allRead = isSeriesFullyRead(workIds, readIds);
+      const allRead = this.helpers.isSeriesFullyRead(workIds, readIds);
 
       const cache = this._loadSeriesCache();
       cache[seriesId] = { allRead, checkedAt: Date.now() };

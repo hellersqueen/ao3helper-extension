@@ -22,69 +22,61 @@ commentaires et ses notes de bookmark.
 ### 1. `_userRelationships.js` — le chef d'orchestre
 
 - Met en route les sept fichiers de fonctionnalités de ce module et partage les réglages communs
-- Coordinateur "pur" : s'enregistre comme parent (`parent: "userRelationships"`) pour que la cascade de démarrage de `core/lifecycle.js` s'applique aux enfants, découverts automatiquement par `import.meta.glob(...)` dans `src/modules.js` ; toute la logique vit dans les sous-modules
+- Centralise la logique commune d'identification, de blocage, de priorité, de tags et de tri par kudos
 
-### 2. `userRelationshipsSettings.js` — réglages partagés
+### 2. Réglages partagés intégrés à `_userRelationships.js`
 
 - Garde en un seul endroit les valeurs par défaut utilisées par tous les autres fichiers de ce module
 
-### 3. `userRelationshipsHelpers.js` — logique extraite (partagée)
-
-- Analyse un lien `/users/...` en `{ username, pseud }`
-- Construit et vérifie les clés de la liste de blocage (compte entier ou pseudonyme précis)
-- Fait tourner le niveau de priorité de lecture (normal → high → low)
-- Découpe une liste de tags séparés par des virgules
-- Construit l'URL de tri par kudos d'une page d'auteur (tri natif AO3, sans requête supplémentaire)
-
-### 4. `blockingStats.js` — compteurs de blocage
+### 3. Compteurs de blocage intégrés à `_userRelationships.js`
 
 - Garde un compteur global (toutes sessions confondues) du nombre d'œuvres et de commentaires masqués parce que leur auteur est bloqué
 
-### 5. `authorTracking.js` — suivre un auteur
+### 4. `authorTracking.js` — suivre un auteur
 
 - Permet d'écrire une note personnelle sur un auteur, visible en survolant un petit badge 📝
 - Permet de suivre un auteur, avec un badge ★
 - Affiche une bannière quand un auteur suivi a publié de nouvelles œuvres depuis la dernière visite
 - Sur la page des œuvres d'un auteur, ajoute un lien "🏆 Sort by kudos" (tri natif AO3, pour voir ses œuvres les plus populaires)
 
-### 6. `authorBlocking.js` — cacher les fics des auteurs bloqués
+### 5. `authorBlocking.js` — cacher les fics des auteurs bloqués
 
 - Cache les fics des auteurs bloqués sur les listes, y compris quand seul un pseudonyme précis est bloqué
 - Remplace la fic cachée par un message "[Hidden — Author blocked: nom]", avec un bouton pour la révéler temporairement
 - Compte chaque œuvre masquée dans les statistiques de blocage globales
 
-### 7. `authorPreference.js` — préférences par auteur
+### 6. `authorPreference.js` — préférences par auteur
 
 - Permet de cacher ou de mettre en favori un auteur, un par un
 - Permet de donner un niveau de priorité de lecture (🔥 high / 💤 low / normal, sans icône) à un auteur
 - Permet de ranger un auteur par tags personnalisés (séparés par des virgules), affichés en petites étiquettes
 - Affiche combien de fics de cet auteur ont déjà été lues, si ce nombre est connu
 
-### 8. `authorCard.js` — fiche auteur au survol
+### 7. `authorCard.js` — fiche auteur au survol
 
 - Affiche une petite fiche en survolant le nom d'un auteur : suivi, favori, priorité, tags, note, nombre lu
 - Purement en lecture : n'écrit jamais rien, se contente d'agréger ce que les autres sous-modules savent déjà
 
-### 9. `blockingInterface.js` — menu pour bloquer quelqu'un
+### 8. `blockingInterface.js` — menu pour bloquer quelqu'un
 
 - Ajoute un menu (clic droit) sur le nom d'un auteur pour le bloquer ou le débloquer
 - Quand l'auteur a plusieurs pseudonymes, propose de bloquer soit tout le compte, soit seulement le pseudonyme affiché
 - Demande (optionnellement) une raison au moment du blocage
 - Garde la liste officielle des personnes bloquées, utilisée par les autres fichiers de ce module
 
-### 10. `blocklistManagement.js` — gérer sa liste de blocage
+### 9. `blocklistManagement.js` — gérer sa liste de blocage
 
 - Affiche sur la page de profil la liste complète des personnes bloquées, avec leur raison de blocage si renseignée
 - Affiche des statistiques globales : nombre de personnes bloquées, œuvres et commentaires masqués au total
 - Permet d'ajouter (avec une raison optionnelle), de retirer, d'exporter, d'importer, ou de tout effacer d'un coup
 
-### 11. `commentHiding.js` — cacher les commentaires des personnes bloquées
+### 10. `commentHiding.js` — cacher les commentaires des personnes bloquées
 
 - Cache les commentaires écrits par une personne bloquée, y compris quand seul un pseudonyme précis est bloqué
 - Cache aussi les notes laissées par une personne bloquée sur ses bookmarks
 - Compte chaque commentaire masqué dans les statistiques de blocage globales
 
-### 12. `userRelationships.css`
+### 11. `userRelationships.css`
 
 - Les styles visuels de tous les fichiers ci-dessus
 
@@ -126,7 +118,7 @@ Ce sont des idées dont on parle dans d'autres docs, avec leur statut :
 - ~~Voir des statistiques sur son blocage : combien d'auteurs bloqués, combien de fics ou de commentaires cachés au total~~ ✅ Fait
   Ligne de statistiques dans le panneau de gestion : nombre de personnes
   bloquées, œuvres masquées, commentaires masqués (compteurs cumulés,
-  `blockingStats.js`).
+  `_userRelationships.js`).
 - ~~Afficher une photo de profil (avatar) à côté du nom d'un auteur~~ ❌ Écarté
   Nécessiterait une requête réseau par auteur distinct affiché dans une
   liste (AO3 n'inclut pas l'avatar dans le HTML d'un blurb) — ne passe pas

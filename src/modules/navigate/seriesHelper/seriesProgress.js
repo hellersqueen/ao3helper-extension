@@ -23,7 +23,6 @@ import { Storage } from '../../../../lib/storage/index.js';
 import { wrapStorageForUser } from '../../../../lib/storage/user.js';
 import { isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
-import { remainingParts } from './seriesHelperMath.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -197,7 +196,7 @@ function injectBanner(api) {
       const pct = Math.round((e.part / e.total) * 100);
       info.appendChild(document.createTextNode(` (${pct}%)`));
       // End-of-series nudge when only a couple of parts remain
-      const left = remainingParts(e.part, e.total);
+      const left = getAPI().remainingParts(e.part, e.total);
       if (left !== null && left > 0 && left <= 2) {
         const nudge = document.createElement('span');
         nudge.className = `${NS}-sh-banner-nudge`;

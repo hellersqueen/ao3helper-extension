@@ -26,10 +26,6 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Storage } from '../../../../lib/storage/index.js';
 import { wrapStorageForUser } from '../../../../lib/storage/user.js';
 import { onReady } from '../../../../lib/utils/index.js';
-import {
-  parseCount, sumWords, formatReadingTime, unavailableParts,
-  firstUnreadIndex, guessSeriesType,
-} from './seriesHelperMath.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -63,7 +59,7 @@ function getStatedWorksTotal () {
   for (const dt of dts) {
     if (/^\s*Works\s*:?\s*$/i.test(dt.textContent || '')) {
       const dd = dt.nextElementSibling;
-      if (dd) return parseCount(dd.textContent);
+      if (dd) return getAPI().parseCount(dd.textContent);
     }
   }
   return null;
@@ -74,7 +70,7 @@ function getListedWorks () {
     .map(blurb => {
       const m = /^work_(\d+)$/.exec(blurb.id || '');
       const titleA = blurb.querySelector('h4.heading a[href*="/works/"]');
-      const words = parseCount(blurb.querySelector('dd.words')?.textContent);
+      const words = getAPI().parseCount(blurb.querySelector('dd.words')?.textContent);
       return {
         id: m ? m[1] : null,
         title: titleA?.textContent.trim() || '',
@@ -102,6 +98,7 @@ function injectSummary (works, statedTotal) {
   box.id = `${NS}-sh-series-summary`;
   box.className = `${NS}-sh-series-summary`;
 
+  const { sumWords, formatReadingTime, unavailableParts, firstUnreadIndex } = getAPI();
   const totalWords = sumWords(works.map(w => w.words));
   const time = formatReadingTime(totalWords);
   const parts = [];
@@ -150,7 +147,7 @@ function recordSubscription (api, seriesId) {
 }
 
 function recordSeriesType (api, seriesId, works) {
-  const type = guessSeriesType(works.map(w => w.title));
+  const type = api.guessSeriesType(works.map(w => w.title));
   if (type) api.lsSet(`type:${seriesId}`, type);
 }
 
@@ -163,7 +160,7 @@ function hideEmptySeriesBlurbs () {
     const dts = blurb.querySelectorAll('dl.stats dt');
     for (const dt of dts) {
       if (/^\s*Works\s*:?\s*$/i.test(dt.textContent || '')) {
-        const count = parseCount(dt.nextElementSibling?.textContent);
+        const count = getAPI().parseCount(dt.nextElementSibling?.textContent);
         if (count === 0) blurb.classList.add(`${NS}-sh-empty-hidden`);
         return;
       }

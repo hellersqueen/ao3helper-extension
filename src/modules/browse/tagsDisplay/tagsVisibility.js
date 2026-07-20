@@ -21,7 +21,7 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { observe } from '../../../../lib/utils/index.js';
-import { isExcludedCategory, TAG_CATEGORIES } from './tagRules.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -30,6 +30,8 @@ import { isExcludedCategory, TAG_CATEGORIES } from './tagRules.js';
 
 const MOD  = 'tagsVisibility';
 const NS   = 'ao3h';
+const W    = getGlobalWindow();
+const isExcludedCategory = (...args) => W.AO3H_TagsDisplay.isExcludedCategory(...args);
 
 const DEFAULT_DENSITY = 5;
 const PRIORITY_CLASSES = ['warnings', 'relationships', 'characters', 'freeforms'];
@@ -52,7 +54,7 @@ const CATEGORY_HIDE_SETTINGS = {
 };
 
 function getExcludedCategories () {
-  return TAG_CATEGORIES.filter(cat => cfg(CATEGORY_HIDE_SETTINGS[cat], false));
+  return W.AO3H_TagsDisplay.TAG_CATEGORIES.filter(cat => cfg(CATEGORY_HIDE_SETTINGS[cat], false));
 }
 
 

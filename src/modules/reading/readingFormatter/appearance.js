@@ -19,7 +19,6 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { findDialogueSpans } from './readingFormatterHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -71,7 +70,7 @@ function applySlashItalic (textNode) {
 const dialogueSpans = new Set();
 function applyDialogueHighlight (textNode) {
   const src = textNode.textContent;
-  const found = findDialogueSpans(src);
+  const found = W.AO3H_RF.findDialogueSpans(src);
   if (!found.length) return;
 
   const frag = document.createDocumentFragment();

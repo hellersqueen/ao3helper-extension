@@ -57,6 +57,86 @@ const DEFAULTS = {
 function loadSettings() { return loadModuleSettings(MOD); }
 
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE-SPECIFIC HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * @param {{ comments?: number, kudos?: number }} [stats]
+ */
+export function commentRate ({ comments, kudos } = {}) {
+  return (comments != null && kudos) ? (comments / kudos) * 100 : null;
+}
+
+export function classifyLevel (value, { high, mid }) {
+  if (value == null) return null;
+  if (value >= high) return 'high';
+  if (value >= mid) return 'mid';
+  return 'low';
+}
+
+export const DEFAULT_GEM_THRESHOLDS = {
+  minRatio: 0.05,
+  maxKudos: 100,
+  maxBookmarks: 10,
+  minHits: 50,
+  minKudos: 5,
+};
+
+export function isGem (stats, thresholds = DEFAULT_GEM_THRESHOLDS) {
+  if (!stats) return false;
+  const { kudos, hits, bookmarks } = stats;
+  if (!kudos || !hits) return false;
+  if (hits < thresholds.minHits || kudos < thresholds.minKudos) return false;
+  const ratio = kudos / hits;
+  const lowPopularity = kudos <= thresholds.maxKudos ||
+    (bookmarks != null && bookmarks <= thresholds.maxBookmarks);
+  return ratio >= thresholds.minRatio && lowPopularity;
+}
+
+export function gemMedal (stats, thresholds = DEFAULT_GEM_THRESHOLDS) {
+  if (!isGem(stats, thresholds)) return null;
+  const ratio = stats.kudos / stats.hits;
+  if (ratio >= thresholds.minRatio * 3) return 'diamond';
+  if (ratio >= thresholds.minRatio * 2) return 'gold';
+  return 'silver';
+}
+
+export function averageRatio (statsList) {
+  const ratios = (statsList || [])
+    .filter(stats => stats && stats.kudos && stats.hits)
+    .map(stats => stats.kudos / stats.hits);
+  if (!ratios.length) return null;
+  return ratios.reduce((a, b) => a + b, 0) / ratios.length;
+}
+
+export function isGemRelativeToPageAverage (
+  stats,
+  pageAverageRatio,
+  multiplier,
+  thresholds = DEFAULT_GEM_THRESHOLDS
+) {
+  if (!stats || pageAverageRatio == null) return false;
+  const { kudos, hits, bookmarks } = stats;
+  if (!kudos || !hits) return false;
+  if (hits < thresholds.minHits || kudos < thresholds.minKudos) return false;
+  const ratio = kudos / hits;
+  const lowPopularity = kudos <= thresholds.maxKudos ||
+    (bookmarks != null && bookmarks <= thresholds.maxBookmarks);
+  return ratio >= pageAverageRatio * multiplier && lowPopularity;
+}
+
+export const ficEngagementHelpers = {
+  commentRate,
+  classifyLevel,
+  DEFAULT_GEM_THRESHOLDS,
+  isGem,
+  gemMedal,
+  averageRatio,
+  isGemRelativeToPageAverage,
+};
+
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURES
@@ -82,6 +162,7 @@ register(MOD, {
   const metrics = new EngagementMetrics({
     colorCode: cfg('colorCodeMetrics'),
     hideLowEngagement: cfg('hideLowEngagement'),
+    helpers: ficEngagementHelpers,
   });
   const hiddenGems = new HiddenGems({
     thresholds: {
@@ -91,6 +172,7 @@ register(MOD, {
       minHits: parseInt(cfg('gemMinHits'), 10) || 50,
     },
     compareToPageAverage: cfg('gemCompareToPageAverage'),
+    helpers: ficEngagementHelpers,
   });
 
   // document.querySelector('#main')/document.body peuvent ne pas encore

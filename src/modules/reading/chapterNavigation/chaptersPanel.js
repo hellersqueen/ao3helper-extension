@@ -21,10 +21,6 @@ Notes
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { lsGet, lsSet, sessionGet, sessionSet } from '../../../../lib/utils/index.js';
-import {
-  parseChapterOptions, filterChapters, buildChapterStates,
-  firstUnreadChapter, addRecentEntry,
-} from './chaptersPanelHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -36,11 +32,12 @@ const PANEL_ID = 'ao3h-chapters-panel';
 const RECENT_CAP = 8;
 
 export class ChaptersPanel {
-  /** @param {{ NS, cfg, workId }} opts */
-  constructor ({ NS, cfg, workId }) {
+  /** @param {{ NS, cfg, workId, helpers: typeof import('./_chapterNavigation.js').chapterNavigationHelpers }} opts */
+  constructor ({ NS, cfg, workId, helpers }) {
     this.NS     = NS;
     this.cfg    = cfg;
     this.workId = workId;
+    this.helpers = helpers;
     this._open  = false;
     this._onDocClick  = (e) => this._handleDocClick(e);
     this._onKeydown   = (e) => this._handleKeydown(e);
@@ -77,9 +74,9 @@ export class ChaptersPanel {
     const options = Array.from(select.options).map(o => ({
       value: o.value, text: o.textContent, selected: o.selected,
     }));
-    const parsed = parseChapterOptions(options);
+    const parsed = this.helpers.parseChapterOptions(options);
     const currentId = parsed.find(c => c.selected)?.id ?? null;
-    return buildChapterStates(parsed, { currentId, lastReadNum: this._rtLastReadNum() });
+    return this.helpers.buildChapterStates(parsed, { currentId, lastReadNum: this._rtLastReadNum() });
   }
 
   _chapterHref (id) {
@@ -106,7 +103,7 @@ export class ChaptersPanel {
     // Record this chapter as "recently visited" as soon as the panel boots.
     const current = this._readChapters().find(c => c.state === 'current');
     if (current) {
-      this._setRecent(addRecentEntry(this._getRecent(), { id: current.id, num: current.num, title: current.title }, RECENT_CAP));
+      this._setRecent(this.helpers.addRecentEntry(this._getRecent(), { id: current.id, num: current.num, title: current.title }, RECENT_CAP));
     }
   }
 
@@ -166,7 +163,7 @@ export class ChaptersPanel {
     // Quick jumps
     const quick = document.createElement('div');
     quick.className = `${NS}-cp-quick`;
-    const unread = firstUnreadChapter(chapters, this._rtLastReadNum());
+    const unread = this.helpers.firstUnreadChapter(chapters, this._rtLastReadNum());
     if (unread) quick.appendChild(this._linkBtn('▶ First unread', this._chapterHref(unread.id)));
     if (chapters.length) quick.appendChild(this._linkBtn('⏭ Last chapter', this._chapterHref(chapters[chapters.length - 1].id)));
     panel.appendChild(quick);
@@ -188,7 +185,7 @@ export class ChaptersPanel {
     // Chapter list
     const list = document.createElement('ul');
     list.className = `${NS}-cp-list`;
-    filterChapters(chapters, query).forEach(ch => {
+    this.helpers.filterChapters(chapters, query).forEach(ch => {
       list.appendChild(this._renderRow(ch, marks[ch.id]));
     });
     panel.appendChild(list);

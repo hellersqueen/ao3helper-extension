@@ -43,14 +43,14 @@ et une archive consultable des fics retirées.
 - Affiche une petite célébration ("🎉 N fics sauvegardées !") quand la liste
   franchit un cap (10, 25, 50, 100…)
 
-### 3. `laterShelfHelpers.js` — logique pure
+### 3. Logique pure intégrée à `_laterShelf.js`
 
 - Tri (date/titre/mots/mise à jour/priorité/manuel/pépites/"smart"),
   glisser-déposer (maths pures), pioche aléatoire, temps de lecture estimé,
   suggestion selon un budget de temps, seuils de caps franchis, détection de
   fics qui traînent ou mises à jour depuis l'ajout, report de rappel,
   récurrence, heure de pointe de lecture, statistiques de conversion, export
-  CSV/liens de liens — testé sans DOM (`laterShelfHelpers.test.js`)
+  CSV/liens de liens — testé sans DOM (`laterShelf.logic.test.js`)
 
 ### 4. `quickMarkForLaterButton.js` — bouton de sauvegarde rapide
 
@@ -145,7 +145,7 @@ et une archive consultable des fics retirées.
 - ~~Un rappel spécial pour les fics qui traînent depuis longtemps dans la liste sans être lues~~ ✅ Fait — nudge automatique après `staleDays` jours (réglable, 45 par défaut), même mécanique que le nudge "dropped".
 - ~~Pouvoir écrire son propre message personnalisé pour les rappels~~ ✅ Fait — champ message optionnel à la création d'un rappel, utilisé dans le corps de la notification.
 - ~~Une alerte pour ne pas casser sa série de jours de lecture consécutifs~~ ❌ Écarté — même décision que `readingDashboard` ("Badges et séries de lecture") : les séries de jours consécutifs (streaks) ont été explicitement retirées de l'extension pour ne pas transformer la lecture en jeu ; une alerte anti-streak est justement un mécanisme de streak.
-- ~~Faire remonter automatiquement en haut de la liste les "pépites cachées" repérées par un autre module~~ ✅ Fait — mode de tri "Hidden gems first", détection locale à `laterShelfHelpers.js` (mêmes seuils que `ficEngagement/hiddenGems.js`, dupliqués localement plutôt qu'importés — les modules de cette extension ne se partagent des données que via `lib/storage/keys.js` et les globals `window`, jamais en important les fichiers d'un autre module).
+- ~~Faire remonter automatiquement en haut de la liste les "pépites cachées" repérées par un autre module~~ ✅ Fait — mode de tri "Hidden gems first", détection locale à `_laterShelf.js` (mêmes seuils que `ficEngagement/hiddenGems.js`, dupliqués localement plutôt qu'importés — les modules de cette extension ne se partagent des données que via `lib/storage/keys.js` et les globals `window`, jamais en important les fichiers d'un autre module).
 - ~~Exporter la liste "à lire plus tard" dans un fichier (par exemple en CSV ou juste la liste des liens)~~ ✅ Fait — boutons "⬇ CSV" et "⬇ Links" dans la barre de tri de la page MFL.
 - ~~Garder un historique des rappels passés (envoyés ou annulés), pas seulement les rappels en cours~~ ✅ Fait — section "Reminder History" du panneau de réglages.
 - ~~Mettre une fic en favori et l'ajouter à la liste "à lire plus tard" en un seul clic, au lieu de faire les deux actions séparément~~ ❌ Écarté — même décision que `similarFics` : créer un bookmark AO3 par script nécessite un `pseud_id` non prévisible par work, ce qui rend l'automatisation de la création de bookmark peu fiable.

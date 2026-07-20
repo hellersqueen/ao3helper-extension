@@ -32,6 +32,7 @@ AO3 Helper — Comment Kit Coordinator
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import styles from './commentKit.css?inline';
 
@@ -47,12 +48,54 @@ import './commentConfiguration.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 css(styles, 'ao3h-commentKit');
+const W = getGlobalWindow();
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURES
 ═══════════════════════════════════════════════════════════════════════════ */
 
-// Feature behavior is implemented by the registered child modules.
+export function fillTemplateVariables (text, vars = {}) {
+  return String(text ?? '').replace(/\{(title|author)\}/g, (_, key) => vars[key] ?? '');
+}
+export function filterTemplates (templates, query) {
+  const normalized = String(query ?? '').trim().toLowerCase();
+  if (!normalized) return templates;
+  return templates.filter(template => template.toLowerCase().includes(normalized));
+}
+export function draftKeyFor (workId, scope = 'top') {
+  return scope === 'top' ? `ao3h:draft:${workId}` : `ao3h:draft:${workId}:${scope}`;
+}
+export function draftScopeForForm (parentCommentId) { return parentCommentId || 'top'; }
+export function shouldAutoCollapse (replyCount, threshold, manualOverride) {
+  if (manualOverride !== undefined) return manualOverride;
+  return threshold > 0 && replyCount >= threshold;
+}
+export function parseHighlightRules (raw) {
+  return String(raw ?? '').split(',').map(rule => rule.trim().toLowerCase()).filter(Boolean);
+}
+export function matchesCustomHighlight (comment, rules) {
+  if (!rules.length) return false;
+  const author = (comment.author || '').toLowerCase();
+  const text = (comment.text || '').toLowerCase();
+  return rules.some(rule => author === rule || text.includes(rule));
+}
+export function matchesSearch (text, query) {
+  const normalized = String(query ?? '').trim().toLowerCase();
+  return !normalized || String(text ?? '').toLowerCase().includes(normalized);
+}
+export function buildPageJumpUrl (currentUrl, pageNum) {
+  const url = new URL(currentUrl);
+  if (pageNum <= 1) url.searchParams.delete('page');
+  else url.searchParams.set('page', String(pageNum));
+  url.hash = 'comments';
+  return url.toString();
+}
+
+const commentKitHelpers = {
+  fillTemplateVariables, filterTemplates, draftKeyFor, draftScopeForForm,
+  shouldAutoCollapse, parseHighlightRules, matchesCustomHighlight,
+  matchesSearch, buildPageJumpUrl,
+};
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE LIFECYCLE
@@ -62,6 +105,6 @@ register('commentKit', {
   title:            'Comment Kit',
   enabledByDefault: false,
 }, async function init () {
-  // Pure coordinator — submodules handle all logic via parent-child lifecycle.
-  return () => {};
+  W.AO3H_CommentKit = commentKitHelpers;
+  return () => { delete W.AO3H_CommentKit; };
 });

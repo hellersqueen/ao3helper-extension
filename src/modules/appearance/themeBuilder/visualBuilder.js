@@ -21,13 +21,6 @@ import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
-import {
-  contrastRatio,
-  contrastVerdict,
-  COLORBLIND_PALETTES,
-  buildElementRule,
-  findProtectedViolations,
-} from './themeSafety.js';
 
 
 
@@ -36,6 +29,11 @@ import {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const W    = getGlobalWindow();
+const contrastRatio = (...args) => W.AO3H_ThemeBuilder.contrastRatio(...args);
+const contrastVerdict = (...args) => W.AO3H_ThemeBuilder.contrastVerdict(...args);
+const buildElementRule = (...args) => W.AO3H_ThemeBuilder.buildElementRule(...args);
+const findProtectedViolations = (...args) => W.AO3H_ThemeBuilder.findProtectedViolations(...args);
+const colorblindPalettes = () => W.AO3H_ThemeBuilder.COLORBLIND_PALETTES;
 const NS   = AO3H.env?.NS || 'ao3h';
 const MOD  = 'visualBuilder';
 const LOG  = `[AO3H][${MOD}]`;
@@ -201,7 +199,7 @@ function openPanel () {
     ${colorRow('Header bg', 'headerBg', saved.headerBg)}
     <div id="${NS}-vb-contrast" class="${NS}-vb-contrast" aria-live="polite"></div>
     <div class="${NS}-tb-row">
-      ${COLORBLIND_PALETTES.map(p => `<button class="${NS}-tb-btn" data-palette="${p.id}">${p.label}</button>`).join('')}
+      ${colorblindPalettes().map(p => `<button class="${NS}-tb-btn" data-palette="${p.id}">${p.label}</button>`).join('')}
     </div>
 
     <div class="${NS}-tb-section">
@@ -275,7 +273,7 @@ function openPanel () {
   // ── Colorblind-safe palettes ──────────────────────────────────────────
   panelEl.querySelectorAll('[data-palette]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const palette = COLORBLIND_PALETTES.find(p => p.id === btn.dataset.palette);
+      const palette = colorblindPalettes().find(p => p.id === btn.dataset.palette);
       if (!palette) return;
       Object.entries(palette.colors).forEach(([field, value]) => {
         const inp = panelEl.querySelector(`[data-field="${field}"]`);

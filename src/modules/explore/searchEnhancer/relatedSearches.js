@@ -23,20 +23,18 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { createPersistedCache } from '../../../../lib/storage/cache.js';
-import {
-  topSearches, trendingSearches, fandomBarData, buildRefinementTip,
-  QUICK_TEMPLATES, buildTemplateUrl,
-} from './searchHistoryHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
+const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'relatedSearches';
 const LOG  = `[AO3H][${MOD}]`;
@@ -154,6 +152,7 @@ function buildSectionHtml (title, bodyHtml, spaced) {
 }
 
 function buildTemplatesHtml () {
+  const { QUICK_TEMPLATES, buildTemplateUrl } = W.AO3H_SearchEnhancer;
   const links = QUICK_TEMPLATES
     .map(t => `<a class="${NS}-se-tag-pill ${NS}-se-template-pill" href="${escapeHtml(buildTemplateUrl(location.href, t.params))}">${escapeHtml(t.label)}</a>`)
     .join('');
@@ -161,6 +160,7 @@ function buildTemplatesHtml () {
 }
 
 function buildInsightsHtml (history) {
+  const { topSearches, trendingSearches, fandomBarData } = W.AO3H_SearchEnhancer;
   const top = topSearches(history);
   const trending = trendingSearches(history);
   const fandoms = fandomBarData(history);
@@ -189,7 +189,9 @@ function renderPanel (suggestions, cfg, historyQueries, { fullHistory = [], resu
   const hasHistory     = cfg.historyBasedSuggestions && historyQueries.length > 0;
   const hasTemplates    = cfg.searchTemplates;
   const insightsHtml    = cfg.searchInsights && fullHistory.length >= 3 ? buildInsightsHtml(fullHistory) : '';
-  const tip              = cfg.refinementTips && resultCount != null ? buildRefinementTip(resultCount) : null;
+  const tip = cfg.refinementTips && resultCount != null
+    ? W.AO3H_SearchEnhancer.buildRefinementTip(resultCount)
+    : null;
 
   if (!hasSuggestions && !hasHistory && !hasTemplates && !insightsHtml && !tip) return;
 

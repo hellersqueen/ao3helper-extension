@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { HiddenGems } from './hiddenGems.js';
+import { ficEngagementHelpers } from './_ficEngagement.js';
 
 function buildListing (works) {
   document.body.innerHTML = `<div id="main"><ol class="work index group">${
@@ -22,7 +23,7 @@ describe('HiddenGems', () => {
 
   it('détecte une pépite avec les seuils par défaut et affiche un badge médaille', () => {
     buildListing([{ id: 1, kudos: 16, hits: 100, bookmarks: 2 }]); // ratio 16% → diamond (3x 5%)
-    const gems = new HiddenGems();
+    const gems = new HiddenGems({ helpers: ficEngagementHelpers });
     gems.init();
     const badge = document.querySelector('.ao3h-gem-badge');
     expect(badge).not.toBeNull();
@@ -33,7 +34,7 @@ describe('HiddenGems', () => {
 
   it('respecte des seuils personnalisés', () => {
     buildListing([{ id: 1, kudos: 3, hits: 40, bookmarks: 1 }]); // ne passerait pas les seuils par défaut (minHits 50)
-    const gems = new HiddenGems({ thresholds: { minHits: 20, minKudos: 2 } });
+    const gems = new HiddenGems({ thresholds: { minHits: 20, minKudos: 2 }, helpers: ficEngagementHelpers });
     gems.init();
     expect(document.querySelector('.ao3h-gem-badge')).not.toBeNull();
     gems.cleanup();
@@ -44,7 +45,7 @@ describe('HiddenGems', () => {
       { id: 1, kudos: 6, hits: 200, bookmarks: 1 }, // ratio 3% — sous le seuil fixe (5%), mais relativement élevé
       { id: 2, kudos: 4, hits: 200, bookmarks: 1 }, // ratio 2% — tire la moyenne de page vers le bas, pas assez de kudos pour être éligible
     ]);
-    const gems = new HiddenGems();
+    const gems = new HiddenGems({ helpers: ficEngagementHelpers });
     gems.init();
     expect(document.querySelectorAll('.ao3h-gem-badge').length).toBe(0);
     gems.cleanup();
@@ -55,7 +56,7 @@ describe('HiddenGems', () => {
       { id: 1, kudos: 40, hits: 1000, bookmarks: 5 },  // ratio 4% — sous le seuil fixe (5%) donc pas gem par défaut
       { id: 2, kudos: 10, hits: 1000, bookmarks: 2 },  // ratio 1% — tire la moyenne de page vers le bas
     ]);
-    const gems = new HiddenGems({ compareToPageAverage: true });
+    const gems = new HiddenGems({ compareToPageAverage: true, helpers: ficEngagementHelpers });
     gems.init();
     const badge = document.querySelector('#work_1 .ao3h-gem-badge');
     expect(badge).not.toBeNull();
@@ -65,7 +66,7 @@ describe('HiddenGems', () => {
 
   it('cleanup retire les badges et classes injectés', () => {
     buildListing([{ id: 1, kudos: 16, hits: 100, bookmarks: 2 }]);
-    const gems = new HiddenGems();
+    const gems = new HiddenGems({ helpers: ficEngagementHelpers });
     gems.init();
     expect(document.querySelector('.ao3h-gem-badge')).not.toBeNull();
     gems.cleanup();

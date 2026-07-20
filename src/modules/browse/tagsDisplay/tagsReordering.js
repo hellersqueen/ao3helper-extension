@@ -23,7 +23,7 @@ import { register } from '../../../core/lifecycle.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import { makeListReorderable, applySavedOrder } from '../../../../lib/ui/drag-reorder.js';
 import { downloadJSON, pickJSONFile } from '../../../../lib/utils/json-file.js';
-import { findMatchingRule, sortAlphabetical, sortByImportance, sortByLength } from './tagRules.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -32,6 +32,11 @@ import { findMatchingRule, sortAlphabetical, sortByImportance, sortByLength } fr
 
 const MOD  = 'tagsReordering';
 const NS   = 'ao3h';
+const W    = getGlobalWindow();
+const findMatchingRule = (...args) => W.AO3H_TagsDisplay.findMatchingRule(...args);
+const sortAlphabetical = (...args) => W.AO3H_TagsDisplay.sortAlphabetical(...args);
+const sortByImportance = (...args) => W.AO3H_TagsDisplay.sortByImportance(...args);
+const sortByLength = (...args) => W.AO3H_TagsDisplay.sortByLength(...args);
 
 const TAG_TYPES = ['fandom', 'character', 'relationship', 'freeform'];
 

@@ -21,7 +21,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { parseUserHref, priorityIcon } from './userRelationshipsHelpers.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -29,6 +29,9 @@ import { parseUserHref, priorityIcon } from './userRelationshipsHelpers.js';
 
 const MOD = 'authorCard';
 const NS  = 'ao3h';
+const W = getGlobalWindow();
+const parseUserHref = (...args) => W.AO3H_UserRelationships.parseUserHref(...args);
+const priorityIcon = (...args) => W.AO3H_UserRelationships.priorityIcon(...args);
 const CARD_CLASS = `${NS}-author-card`;
 const HOVER_DELAY_MS = 350;
 

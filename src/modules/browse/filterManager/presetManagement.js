@@ -20,7 +20,6 @@ Notes
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { mergePresetFilters, addSearchHistoryEntry, incrementUsage, topUsage } from './filterManagerHelpers.js';
 
 
 
@@ -85,7 +84,7 @@ const MULTI_TAG_FIELDS = new Set([
 ]);
 
 export class PresetManagement {
-  constructor ({ NS, storeGet, storeSet, cfg, detectCurrentFandom, getBundleFor, loadBundles, saveBundles, KEY_PRESETS, KEY_BUNDLES, KEY_LAST, KEY_HISTORY, KEY_USAGE }) {
+  constructor ({ NS, storeGet, storeSet, cfg, detectCurrentFandom, getBundleFor, loadBundles, saveBundles, KEY_PRESETS, KEY_BUNDLES, KEY_LAST, KEY_HISTORY, KEY_USAGE, helpers }) {
     this.NS                  = NS;
     this.storeGet            = storeGet;
     this.storeSet            = storeSet;
@@ -99,6 +98,7 @@ export class PresetManagement {
     this.KEY_LAST            = KEY_LAST;
     this.KEY_HISTORY         = KEY_HISTORY;
     this.KEY_USAGE           = KEY_USAGE;
+    this.helpers             = helpers;
     this.toolbar             = null;
     this.toolbarHeading      = null;
     this.listenerController  = null;
@@ -145,7 +145,7 @@ export class PresetManagement {
     const a = presets.find(p => p.id === idA);
     const b = presets.find(p => p.id === idB);
     if (!a || !b) return null;
-    const filters = mergePresetFilters(a, b, MULTI_TAG_FIELDS);
+    const filters = this.helpers.mergePresetFilters(a, b, MULTI_TAG_FIELDS);
     const merged = this.createPreset(`${a.name} + ${b.name}`, filters, a.fandom || b.fandom);
     presets.push(merged);
     this.savePresets(presets);
@@ -172,7 +172,7 @@ export class PresetManagement {
     );
     if (!Object.keys(nonEmpty).length) return;
     const entry = { ts: Date.now(), filters: nonEmpty };
-    this.saveSearchHistory(addSearchHistoryEntry(this.loadSearchHistory(), entry, 20));
+    this.saveSearchHistory(this.helpers.addSearchHistoryEntry(this.loadSearchHistory(), entry, 20));
   }
 
   /** Wires the filter form's submit event to auto-capture the search into history. */
@@ -194,10 +194,10 @@ export class PresetManagement {
 
   recordPresetUsage (name) {
     if (!this.KEY_USAGE) return;
-    this.saveUsage(incrementUsage(this.loadUsage(), name));
+    this.saveUsage(this.helpers.incrementUsage(this.loadUsage(), name));
   }
 
-  topUsedPresets (limit = 5) { return topUsage(this.loadUsage(), limit); }
+  topUsedPresets (limit = 5) { return this.helpers.topUsage(this.loadUsage(), limit); }
 
   _usageStatsHTML () {
     const top = this.topUsedPresets(3);

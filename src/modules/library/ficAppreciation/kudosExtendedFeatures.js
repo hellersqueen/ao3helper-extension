@@ -19,10 +19,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { downloadFile } from '../../../../lib/utils/json-file.js';
-import {
-  groupCounts, topEntries, hourOfDayHistogram, peakHours,
-  filterKudosHistory, sortKudosHistoryByDate,
-} from './ficAppreciationHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -30,9 +26,10 @@ import {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export class KudosExtendedFeatures {
-  /** @param {{ storeGet: function }} opts */
-  constructor ({ storeGet }) {
+  /** @param {{ storeGet: function, helpers: typeof import('./_ficAppreciation.js').ficAppreciationHelpers }} opts */
+  constructor ({ storeGet, helpers }) {
     this.storeGet = storeGet;
+    this.helpers = helpers;
     this.SK       = 'ficAppreciation:kudosed';
   }
 
@@ -82,8 +79,8 @@ export class KudosExtendedFeatures {
       prev = d;
     }
 
-    const byFandom = topEntries(groupCounts(entries, e => e.fandoms || []), 10);
-    const byAuthor = topEntries(groupCounts(entries, e => e.author ? [e.author] : []), 10);
+    const byFandom = this.helpers.topEntries(this.helpers.groupCounts(entries, e => e.fandoms || []), 10);
+    const byAuthor = this.helpers.topEntries(this.helpers.groupCounts(entries, e => e.author ? [e.author] : []), 10);
 
     return { total, byMonth: byMonthSorted, streak: maxStreak, byFandom, byAuthor };
   }
@@ -96,7 +93,7 @@ export class KudosExtendedFeatures {
   getHistory ({ query = '', order = 'desc' } = {}) {
     const map     = this._load();
     const entries = Object.entries(map).map(([workId, v]) => ({ workId, ...v }));
-    return sortKudosHistoryByDate(filterKudosHistory(entries, query), order);
+    return this.helpers.sortKudosHistoryByDate(this.helpers.filterKudosHistory(entries, query), order);
   }
 
   /**
@@ -106,9 +103,9 @@ export class KudosExtendedFeatures {
    */
   getTimeHabits () {
     const entries = Object.values(this._load());
-    const { hist, counted } = hourOfDayHistogram(entries);
+    const { hist, counted } = this.helpers.hourOfDayHistogram(entries);
     if (!counted) return null;
-    return { hist, counted, peak: peakHours(hist, 3) };
+    return { hist, counted, peak: this.helpers.peakHours(hist, 3) };
   }
 
   /* ═══════════════════════════════════════════════════════════════════════

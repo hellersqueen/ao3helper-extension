@@ -15,7 +15,7 @@ AO3 Helper — Visual Preferences Coordinator
         datesTimestamps.js     — Controls date visibility and relative dates.
         minimalHeader.js       — Applies the compact header presentation.
         statsDisplayFormat.js  — Formats statistics as icons or text.
-        hoverReveal.js         — Reveals hidden information on hover.
+        visualPreferences.css  — Reveals hidden information on hover.
         visibilityPresets.js   — Provides reusable preference combinations.
         statsOnChaptersList.js — Controls statistics on chapter listings.
 
@@ -40,7 +40,6 @@ import { StatsVisibility } from './statsVisibility.js';
 import { DatesTimestamps } from './datesTimestamps.js';
 import { MinimalHeader } from './minimalHeader.js';
 import { StatsDisplayFormat } from './statsDisplayFormat.js';
-import { HoverReveal } from './hoverReveal.js';
 import { VisibilityPresets } from './visibilityPresets.js';
 import { StatsOnChaptersList } from './statsOnChaptersList.js';
 import { LayoutDensity } from './layoutDensity.js';
@@ -146,7 +145,6 @@ class VisualPreferences {
       datesTimestamps:      new DatesTimestamps(),
       minimalHeader:        new MinimalHeader(),
       statsDisplayFormat:   new StatsDisplayFormat({ dateAgeBucket }),
-      hoverReveal:          new HoverReveal(),
       visibilityPresets:    new VisibilityPresets(),
       statsOnChaptersList:  new StatsOnChaptersList(),
       layoutDensity:        new LayoutDensity(),
@@ -239,7 +237,6 @@ class VisualPreferences {
     this.components.datesTimestamps.applyAll(state);
     this.components.minimalHeader.apply(state.minimalHeader);
     this.components.statsDisplayFormat.apply(state);
-    this.components.hoverReveal.apply(state);
     this.components.statsOnChaptersList.apply(state.hideStatsOnChaptersList);
     this.components.layoutDensity.apply(state.layoutDensity);
     this.components.blurbSectionOrder.apply(

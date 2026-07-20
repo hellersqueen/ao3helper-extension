@@ -61,6 +61,7 @@ périmètre de ce chantier)*.
 - Met en route les cinq autres fichiers de fonctionnalités et partage une liste de "groupes" de tags
 - Reconnaît désormais aussi la page Historique (`/users/*/readings`), en plus des favoris, tags et recherche
 - Détermine si la page actuelle est une page de listing via `isListingPage()` (recherche, tags, favoris, œuvres d'un·e utilisateur·ice, historique, collections)
+- Centralise et injecte les calculs de dates, ratios, préréglages, historiques et filtres rapides
 
 ### 2. `presetManagement.js` — presets de filtres
 
@@ -98,11 +99,7 @@ périmètre de ce chantier)*.
 - Bouton "✕" et raccourci clavier `X` pour cacher une fic individuellement (sur l'œuvre survolée), persistant dans `filterManager:manualHidden`, avec un lien "↺ Unhide all"
 - Badge "1️⃣" optionnel sur les one-shots, indépendant du bouton de filtre
 
-### 7. `filterManagerHelpers.js` — logique pure partagée
-
-- Analyse de date AO3 (`parseAO3Date`/`isWithinDateRange`/`looksAbandoned`), cycle à trois états (`nextThreeState`/`shouldHideForThreeState`), ratio kudos/vues (`kudosRatio`/`belowRatioThreshold`), seuils de tags/résumé (`belowTagThreshold`/`summaryTooShort`), comparaison d'ensembles pour les séries lues (`isSeriesFullyRead`), fusion de presets (`mergePresetFilters`), historique de recherche plafonné (`addSearchHistoryEntry`), statistiques d'usage (`incrementUsage`/`topUsage`). Testé indépendamment dans `filterManagerHelpers.test.js`.
-
-### 8. `filterManager.css`
+### 7. `filterManager.css`
 
 - Les styles visuels de la barre de presets, des badges, de la bannière, des filtres rapides, du masquage individuel et de l'aperçu par catégorie, plus les classes de filtrage à trois états et le dropdown de recherches récentes
 

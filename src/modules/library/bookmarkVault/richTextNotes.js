@@ -21,7 +21,7 @@ Notes
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { buildStarsEl } from './personalRatings.js';
-import { isImportantNote } from './vaultTools.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -29,6 +29,8 @@ import { isImportantNote } from './vaultTools.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const D = document;
+const W = getGlobalWindow();
+const isImportantNote = (...args) => W.AO3H_BookmarkVault.isImportantNote(...args);
 const SK_NOTES = 'ao3h:bookmarkVault:inlineNotes';
 const SK_DATA  = 'ao3h:bookmarkVault:data';
 export const NOTE_HISTORY_KEY = 'ao3h:bookmarkVault:noteHistory';

@@ -19,13 +19,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { onReady, observe } from '../../../../lib/utils/index.js';
-import {
-  parseChapterProgress,
-  avgChapterWords,
-  gradientColor,
-  parseCustomBooks,
-  formatPages,
-} from './lengthMath.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -33,9 +26,10 @@ import {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export class LengthDisplay {
-  constructor(NS, cfg) {
+  constructor(NS, cfg, helpers) {
     this.NS  = NS;
     this.cfg = cfg;
+    this.helpers = helpers;
 
     this.BOOK_COMPARISONS = [
       { title: 'The Great Gatsby',                          words:  47094 },
@@ -66,7 +60,7 @@ export class LengthDisplay {
 
   /** Built-in references plus the user's own comparison books. */
   getBooks() {
-    const custom = parseCustomBooks(this.cfg('customBooks'));
+    const custom = this.helpers.parseCustomBooks(this.cfg('customBooks'));
     return custom.length ? this.BOOK_COMPARISONS.concat(custom) : this.BOOK_COMPARISONS;
   }
 
@@ -112,7 +106,7 @@ export class LengthDisplay {
     if (cfg('showPageEquiv')) {
       const wpp   = parseInt(String(cfg('wordsPerPage') ?? 275), 10) || 275;
       const pages = Math.ceil(words / wpp);
-      const label = formatPages(pages, cfg('pageFormat') || 'compact');
+      const label = this.helpers.formatPages(pages, cfg('pageFormat') || 'compact');
       html += `<span class="${NS}-wl-pages" title="~${pages} pages (@ ${wpp} wpp)">📄 ${label}</span>`;
     }
 
@@ -148,7 +142,7 @@ export class LengthDisplay {
       const words = this.parseWordCount(el);
       if (words > 0) {
         el.classList.add(`${this.NS}-wl-gradient`);
-        el.style.backgroundColor = gradientColor(words, min, max);
+        el.style.backgroundColor = this.helpers.gradientColor(words, min, max);
       }
     });
   }
@@ -159,9 +153,9 @@ export class LengthDisplay {
     const wordsEl    = document.querySelector('dl.stats dd.words');
     const chaptersEl = document.querySelector('dl.stats dd.chapters');
     if (!wordsEl || !chaptersEl || wordsEl.querySelector(`.${this.NS}-wl-avgch`)) return;
-    const progress = parseChapterProgress(chaptersEl.textContent);
+    const progress = this.helpers.parseChapterProgress(chaptersEl.textContent);
     if (!progress || progress.published < 2) return;
-    const avg = avgChapterWords(this.parseWordCount(wordsEl), progress.published);
+    const avg = this.helpers.avgChapterWords(this.parseWordCount(wordsEl), progress.published);
     if (!avg) return;
     wordsEl.insertAdjacentHTML('beforeend',
       `<span class="${this.NS}-wl-avgch" title="Average chapter length (${progress.published} chapters)">📊 ~${avg.toLocaleString()} w/ch</span>`);
@@ -181,7 +175,7 @@ export class LengthDisplay {
     let text = `Σ ${total.toLocaleString()} words across ${ddEls.length} works`;
     if (this.cfg('showPageEquiv')) {
       const wpp = parseInt(String(this.cfg('wordsPerPage') ?? 275), 10) || 275;
-      text += ` (📄 ${formatPages(Math.ceil(total / wpp), this.cfg('pageFormat') || 'compact')})`;
+      text += ` (📄 ${this.helpers.formatPages(Math.ceil(total / wpp), this.cfg('pageFormat') || 'compact')})`;
     }
     banner.textContent = text;
     const anchor = document.querySelector('#main h2.heading');

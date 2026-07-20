@@ -22,7 +22,6 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { showToast } from '../../../../lib/ui/toast.js';
-import { milestonesCrossed } from './ficAppreciationHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -32,12 +31,13 @@ import { milestonesCrossed } from './ficAppreciationHelpers.js';
 const W = getGlobalWindow();
 
 export class MarkAsFinished {
-  /** @param {{ NS, storeGet, storeSet, cfg }} opts */
-  constructor ({ NS, storeGet, storeSet, cfg }) {
+  /** @param {{ NS, storeGet, storeSet, cfg, helpers: typeof import('./_ficAppreciation.js').ficAppreciationHelpers }} opts */
+  constructor ({ NS, storeGet, storeSet, cfg, helpers }) {
     this.NS       = NS;
     this.storeGet = storeGet;
     this.storeSet = storeSet;
     this.cfg      = cfg;
+    this.helpers  = helpers;
     this.SK       = 'ficAppreciation:finished';
   }
 
@@ -58,7 +58,7 @@ export class MarkAsFinished {
     W.dispatchEvent?.(new CustomEvent(EV_WORK_FINISHED, { detail: { workId } }));
 
     if (this.cfg('completionMilestones') !== false) {
-      const crossed = milestonesCrossed(prevCount, Object.keys(map).length);
+      const crossed = this.helpers.milestonesCrossed(prevCount, Object.keys(map).length);
       if (crossed.length) {
         const milestone = crossed[crossed.length - 1];
         showToast(`🎉 ${milestone} works finished!`, { type: 'success', duration: 4000 });

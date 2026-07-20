@@ -89,6 +89,55 @@ function walkTextNodes (el, fn) {
   while ((node = walker.nextNode())) fn(node);
 }
 
+export const LONG_PARAGRAPH_CHARS = 600;
+export const WALL_OF_TEXT_CHARS   = 1500;
+export const WALL_TARGET_CHARS    = 500;
+
+export function isLongParagraph (text, threshold = LONG_PARAGRAPH_CHARS) {
+  return typeof text === 'string' && text.length >= threshold;
+}
+
+export function splitWallText (text, {
+  wallThreshold = WALL_OF_TEXT_CHARS,
+  targetLen = WALL_TARGET_CHARS,
+} = {}) {
+  if (typeof text !== 'string' || text.length < wallThreshold) return [text];
+  const sentences = text.match(/[^.!?]+[.!?]+["'”’)\]]*\s*/g);
+  if (!sentences || sentences.length < 2) return [text];
+  const chunks = [];
+  let current = '';
+  for (const sentence of sentences) {
+    if (current && (current.length + sentence.length) > targetLen) {
+      chunks.push(current.trim());
+      current = sentence;
+    } else {
+      current += sentence;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks.length > 1 ? chunks : [text];
+}
+
+export function cleanPasteArtifacts (text) {
+  if (typeof text !== 'string') return text;
+  return text.replace(/[   ]+/g, ' ');
+}
+
+export function isEmptyParagraphText (text) {
+  return typeof text === 'string' && text.replace(/[\s   ]/g, '') === '';
+}
+
+export function findDialogueSpans (text) {
+  if (typeof text !== 'string' || !text) return [];
+  const spans = [];
+  const re = /“[^”]{1,500}”|"[^"]{1,500}"/g;
+  let match;
+  while ((match = re.exec(text)) !== null) {
+    spans.push({ start: match.index, end: match.index + match[0].length });
+  }
+  return spans;
+}
+
 const ROOT_CLS      = `${NS}-rf-active`;
 const SANSSERIF_CLS = `${NS}-rf-sansserif`;
 const CLEAN_CLS      = `${NS}-rf-clean`;
@@ -106,6 +155,8 @@ register(MOD, {
   W.AO3H_RF = {
     NS, SANSSERIF_CLS, CLEAN_CLS, ROOT_CLS, NOINDENT_CLS,
     cfg, isWorkPage, prefGet, prefSet, walkTextNodes,
+    isLongParagraph, splitWallText, cleanPasteArtifacts,
+    isEmptyParagraphText, findDialogueSpans,
   };
 
   return () => {

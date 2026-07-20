@@ -34,7 +34,7 @@ export default defineConfig({
       userscript: {
         name: 'AO3 Helper',
         namespace: 'http://tampermonkey.net/',
-        version: '1.1.0',
+        version: '1.2.0',
         description: 'Enhanced AO3 experience with modern UI and features',
         author: 'You',
         match: ['https://archiveofourown.org/*'],
@@ -61,5 +61,9 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     include: ['lib/**/*.test.js', 'src/**/*.test.js'],
+    setupFiles: [r('./tests/setup.js')],
+    // DOM-heavy integration tests contend for the same CPU when Vitest uses
+    // every available core, which caused unrelated 5-second timeouts.
+    maxWorkers: 4,
   },
 });

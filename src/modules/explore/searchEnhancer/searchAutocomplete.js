@@ -20,16 +20,17 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet, onReady, observe } from '../../../../lib/utils/index.js';
-import { fuzzyFilterHistory, extractFandomFromContext } from './searchHistoryHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
+const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'searchAutocomplete';
 const LOG  = `[AO3H][${MOD}]`;
@@ -191,7 +192,7 @@ async function fetchTagAutocomplete (term) {
 
 /** @param {string} query @param {HistoryItem[]} list @param {boolean} typoTolerant */
 function filterHistory (query, list, typoTolerant = true) {
-  if (typoTolerant) return fuzzyFilterHistory(list, query);
+  if (typoTolerant) return W.AO3H_SearchEnhancer.fuzzyFilterHistory(list, query);
   const q = query.toLowerCase();
   return q.length >= 2
     ? list.filter(e => e.query.toLowerCase().includes(q))
@@ -266,7 +267,7 @@ function attachToInput (input, cfg, cleanup_fns) {
     const fandomField = input.form?.querySelector(
       'input[name="work_search[fandom_names]"], input[name*="fandom_names"]'
     );
-    const fandom = extractFandomFromContext({
+    const fandom = W.AO3H_SearchEnhancer.extractFandomFromContext({
       pathname: location.pathname,
       fandomFieldValue: fandomField?.value,
     });

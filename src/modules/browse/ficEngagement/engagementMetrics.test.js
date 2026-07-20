@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { EngagementMetrics } from './engagementMetrics.js';
+import { ficEngagementHelpers } from './_ficEngagement.js';
 
 function buildBlurb ({ kudos, hits, bookmarks, comments, words }) {
   document.body.innerHTML = `
@@ -23,14 +24,14 @@ describe('EngagementMetrics', () => {
 
   it('affiche un badge de taux de commentaires quand assez de données existent', () => {
     const blurb = buildBlurb({ kudos: 100, hits: 1000, bookmarks: 20, comments: 15, words: 5000 });
-    new EngagementMetrics({}).processBlurb(blurb);
+    new EngagementMetrics({ helpers: ficEngagementHelpers }).processBlurb(blurb);
     const badges = [...blurb.querySelectorAll('.ao3h-engagement-badge')].map(b => b.textContent);
     expect(badges.some(t => t.includes('💬'))).toBe(true);
   });
 
   it('ajoute un badge d’aide expliquant les seuils', () => {
     const blurb = buildBlurb({ kudos: 100, hits: 1000, bookmarks: 20, comments: 15, words: 5000 });
-    new EngagementMetrics({}).processBlurb(blurb);
+    new EngagementMetrics({ helpers: ficEngagementHelpers }).processBlurb(blurb);
     const help = blurb.querySelector('.ao3h-engagement-help');
     expect(help).not.toBeNull();
     expect(help.title).toContain('Kudos ratio');
@@ -38,20 +39,20 @@ describe('EngagementMetrics', () => {
 
   it('masque un blurb à faible engagement quand hideLowEngagement est activé', () => {
     const blurb = buildBlurb({ kudos: 5, hits: 1000, bookmarks: 0, comments: 0, words: 5000 }); // ratio 0.5% → low
-    new EngagementMetrics({ hideLowEngagement: true }).processBlurb(blurb);
+    new EngagementMetrics({ hideLowEngagement: true, helpers: ficEngagementHelpers }).processBlurb(blurb);
     expect(blurb.style.display).toBe('none');
     expect(blurb.querySelector('.ao3h-engagement-metrics')).toBeNull();
   });
 
   it('ne masque pas un blurb à fort engagement même avec hideLowEngagement activé', () => {
     const blurb = buildBlurb({ kudos: 300, hits: 1000, bookmarks: 20, comments: 15, words: 5000 }); // ratio 30% → high
-    new EngagementMetrics({ hideLowEngagement: true }).processBlurb(blurb);
+    new EngagementMetrics({ hideLowEngagement: true, helpers: ficEngagementHelpers }).processBlurb(blurb);
     expect(blurb.style.display).not.toBe('none');
   });
 
   it('cleanup restaure les blurbs masqués par le filtre', () => {
     const blurb = buildBlurb({ kudos: 5, hits: 1000, bookmarks: 0, comments: 0, words: 5000 });
-    const metrics = new EngagementMetrics({ hideLowEngagement: true });
+    const metrics = new EngagementMetrics({ hideLowEngagement: true, helpers: ficEngagementHelpers });
     metrics.processBlurb(blurb);
     expect(blurb.style.display).toBe('none');
     metrics.cleanup();

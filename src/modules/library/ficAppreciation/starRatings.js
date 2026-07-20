@@ -23,9 +23,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import {
-  computeRatingStats, ratingByMonth, appendRatingHistory, combinedCategoryScore, halfStarValue,
-} from './ficAppreciationHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -36,12 +33,13 @@ const W = getGlobalWindow();
 const CATEGORIES = { plot: 'Plot', characters: 'Characters', writing: 'Writing' };
 
 export class StarRatings {
-  /** @param {{ NS, storeGet, storeSet, cfg }} opts */
-  constructor ({ NS, storeGet, storeSet, cfg }) {
+  /** @param {{ NS, storeGet, storeSet, cfg, helpers: typeof import('./_ficAppreciation.js').ficAppreciationHelpers }} opts */
+  constructor ({ NS, storeGet, storeSet, cfg, helpers }) {
     this.NS       = NS;
     this.storeGet = storeGet;
     this.storeSet = storeSet;
     this.cfg      = cfg;
+    this.helpers  = helpers;
     this.SK       = 'ficAppreciation:ratings';
   }
 
@@ -64,7 +62,7 @@ export class StarRatings {
   setRating (workId, stars, note) {
     const map     = this._load();
     const prev    = map[workId];
-    const history = appendRatingHistory(prev, stars);
+    const history = this.helpers.appendRatingHistory(prev, stars);
     const entry   = { stars, date: new Date().toISOString().slice(0, 10) };
     const finalNote = note !== undefined && note !== null ? note : prev?.note;
     if (finalNote) entry.note = finalNote;
@@ -98,7 +96,7 @@ export class StarRatings {
   /** @returns {{total: number, average: number, distribution: Record<number, number>, byMonth: Record<string, number>}} */
   getRatingStats () {
     const map = this._load();
-    return { ...computeRatingStats(map), byMonth: ratingByMonth(map) };
+    return { ...this.helpers.computeRatingStats(map), byMonth: this.helpers.ratingByMonth(map) };
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -137,7 +135,7 @@ export class StarRatings {
       let stars = starIndex;
       if (allowHalf && e instanceof MouseEvent) {
         const rect = btn.getBoundingClientRect();
-        stars = halfStarValue(e.clientX - rect.left, rect.width, starIndex, true);
+        stars = this.helpers.halfStarValue(e.clientX - rect.left, rect.width, starIndex, true);
       }
       let note = null;
       if (this.cfg('ratingNotes') && !compact) {
@@ -225,7 +223,7 @@ export class StarRatings {
 
   _refreshCategoryScoreLine (scoreLine, workId) {
     if (!scoreLine) return;
-    const score = combinedCategoryScore(this.getCategoryRatings(workId));
+    const score = this.helpers.combinedCategoryScore(this.getCategoryRatings(workId));
     scoreLine.textContent = score !== null ? `Combined score: ${score} / 5` : '';
   }
 
@@ -323,7 +321,7 @@ export class StarRatings {
     heading.appendChild(stars);
 
     if (this.cfg('ratingCategories')) {
-      const score = combinedCategoryScore(this.getCategoryRatings(workId));
+      const score = this.helpers.combinedCategoryScore(this.getCategoryRatings(workId));
       if (score !== null) {
         const badge = document.createElement('span');
         badge.className = `${this.NS}-fa-badge ${this.NS}-fa-category-score-badge`;

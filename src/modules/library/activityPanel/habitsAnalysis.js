@@ -19,9 +19,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import {
-  dayHourHeatmap, bestReadingSlot, formatSlotLabel, isNightOwl, regularityScore,
-} from './activityPanelHelpers.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -30,6 +28,9 @@ import {
 
 const MOD = 'habitsAnalysis';
 const NS  = 'ao3h';
+const W   = getGlobalWindow();
+
+function helpers () { return W.AO3H_ActivityPanel; }
 
 const SESSIONS_KEY = 'ao3h:activityPanel:sessions';
 
@@ -62,6 +63,7 @@ function analyzeHabits (sessions) {
 }
 
 function buildWidget (habits, total, sessions) {
+  const { dayHourHeatmap, bestReadingSlot, formatSlotLabel, isNightOwl, regularityScore } = helpers();
   const wrap = document.createElement('div');
   wrap.id = `${NS}-habits-widget`;
 
@@ -111,6 +113,7 @@ function buildWidget (habits, total, sessions) {
 }
 
 function buildHeatmap (sessions) {
+  const { dayHourHeatmap } = helpers();
   const grid = dayHourHeatmap(sessions);
   const max  = Math.max(1, ...grid.flat());
   const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

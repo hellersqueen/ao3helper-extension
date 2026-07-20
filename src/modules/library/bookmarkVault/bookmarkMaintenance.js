@@ -20,7 +20,7 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { downloadJSON, downloadFile } from '../../../../lib/utils/json-file.js';
-import { vaultToCSV, vaultToHTML, findStaleBookmarks } from './vaultTools.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
@@ -33,6 +33,10 @@ import { relativeDate } from '../../../../lib/utils/format-date.js';
 
 const MOD = 'bookmarkMaintenance';
 const NS  = 'ao3h';
+const W   = getGlobalWindow();
+const vaultToCSV = (...args) => W.AO3H_BookmarkVault.vaultToCSV(...args);
+const vaultToHTML = (...args) => W.AO3H_BookmarkVault.vaultToHTML(...args);
+const findStaleBookmarks = (...args) => W.AO3H_BookmarkVault.findStaleBookmarks(...args);
 
 const EXPORT_KEY   = 'ao3h:bookmarkVault:lastExport';
 const BM_DATA_KEY  = 'ao3h:bookmarkVault:data';

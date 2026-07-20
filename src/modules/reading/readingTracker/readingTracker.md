@@ -52,6 +52,7 @@ voir "Corrections" plus bas pour pourquoi ce n'était pas le cas avant.
 - Garde en mémoire l'historique et la progression de lecture, partagés avec les autres fichiers de ce module
 - Donne accès à ces informations pour le reste de l'extension
 - Détecte la page d'accueil pour y injecter le bloc "Continue Reading"
+- Centralise et injecte les calculs de visites, progression, vitesse et historique
 
 ### 2. `seenTracking.js` — enregistrer les visites
 
@@ -84,11 +85,7 @@ voir "Corrections" plus bas pour pourquoi ce n'était pas le cas avant.
 - Peut importer l'historique officiel d'AO3 depuis sa propre page d'historique
 - Injecte le bloc "Continue Reading" sur la page d'accueil
 
-### 6. `readingTrackerHelpers.js` — logique pure partagée
-
-- Compteur de visites, groupement/tri/épinglage/nettoyage de l'historique, vitesse de lecture, paliers de progression, math du donut, format de date "Updated", liste "Continue Reading"
-
-### 7. `readingTracker.css`
+### 6. `readingTracker.css`
 
 - Les styles visuels des badges, bannières, messages, repères, marque-pages, et de la nouvelle liste d'historique navigable
 
@@ -181,5 +178,5 @@ Fonctions pures notables par fichier :
 - `visualMarkers.js` : `setupBulkMarking()`, `registerKeyboardShortcut()` (touche `V` via `W.AO3H_Keyboard`)
 - `readingProgress.js` : `injectFloatingBadge`/`updateFloatingBadge` (branchent sur `progressStyle`), `_seekToPercent()`, `_maybeShowMilestoneToast()`/`progressMilestonesCrossed()`, `_recordSpeedSample()`/`getReadingSpeed()` (ignore les trous d'inactivité >10 min et le défilement arrière), `addBookmark`/`removeBookmark`/`injectBookmarkControls`
 - `viewHistory.js` : `injectContinueReadingWidget()`/`buildContinueReadingList()`
-- `readingTrackerHelpers.js` : `nextVisitCount`, `groupHistoryByPeriod`, `sortHistory`/`pinnedFirst`, `entriesToCleanUp`, `computeReadingSpeed`, `progressMilestonesCrossed`, `donutDashArray`, `formatUpdatedLabel`, `buildContinueReadingList` — testées indépendamment dans `readingTrackerHelpers.test.js`
+- `_readingTracker.js` : `nextVisitCount`, `groupHistoryByPeriod`, `sortHistory`/`pinnedFirst`, `entriesToCleanUp`, `computeReadingSpeed`, `progressMilestonesCrossed`, `donutDashArray`, `formatUpdatedLabel`, `buildContinueReadingList` — testées indépendamment dans `readingTracker.logic.test.js`
 - `readingTracker-config.js` (panneau) : `wireConfigArea` lit/écrit `ao3h:rt:history` et `ao3h:rt:excludedWorks` directement (même pattern que `filterManager-config.js`), enregistré dans `lib/ui/panel/configs/index.js`'s `_initializers`

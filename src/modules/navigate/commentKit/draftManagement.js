@@ -22,7 +22,6 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import { observe } from '../../../../lib/utils/index.js';
-import { draftKeyFor, draftScopeForForm } from './commentKitHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -245,7 +244,10 @@ function enhanceForm (form, workId) {
   if (!textarea) return;
 
   const cleanups = [];
-  const draftKey = draftKeyFor(workId, draftScopeForForm(parentCommentIdFor(form)));
+  const draftKey = W.AO3H_CommentKit.draftKeyFor(
+    workId,
+    W.AO3H_CommentKit.draftScopeForForm(parentCommentIdFor(form))
+  );
 
   // ── Auto-save ────────────────────────────────────────────────────────
   if (cfg('enableAutoSave') && workId) {

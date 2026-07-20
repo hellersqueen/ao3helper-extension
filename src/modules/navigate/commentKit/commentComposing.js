@@ -23,7 +23,6 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { getWorkTitle, getWorkAuthor } from '../../../../lib/ao3/work-page.js';
-import { fillTemplateVariables, filterTemplates } from './commentKitHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -164,7 +163,7 @@ function buildTemplatesPanel (textarea) {
   function refreshButtons () {
     const all = loadTemplates();
     search.hidden = all.length <= 5;
-    const visible = filterTemplates(all, search.value);
+    const visible = W.AO3H_CommentKit.filterTemplates(all, search.value);
     row.innerHTML = '';
 
     visible.forEach(text => {
@@ -174,7 +173,7 @@ function buildTemplatesPanel (textarea) {
       btn.textContent = text.length > 30 ? text.slice(0, 28) + '…' : text;
       btn.title     = text;
       btn.addEventListener('click', () => {
-        const filled = fillTemplateVariables(text, {
+        const filled = W.AO3H_CommentKit.fillTemplateVariables(text, {
           title: getWorkTitle() || '',
           author: getWorkAuthor()?.name || '',
         });

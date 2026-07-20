@@ -22,7 +22,6 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { EV_STATUS_CHANGED } from '../../../../lib/utils/event-names.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
-import { nextRereadCount } from './ficAppreciationHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -43,12 +42,13 @@ const STATUSES = {
 const STATUS_KEYS = Object.keys(STATUSES);
 
 export class MultiStatusTracker {
-  /** @param {{ NS, storeGet, storeSet, cfg }} opts */
-  constructor ({ NS, storeGet, storeSet, cfg }) {
+  /** @param {{ NS, storeGet, storeSet, cfg, helpers: typeof import('./_ficAppreciation.js').ficAppreciationHelpers }} opts */
+  constructor ({ NS, storeGet, storeSet, cfg, helpers }) {
     this.NS       = NS;
     this.storeGet = storeGet;
     this.storeSet = storeSet;
     this.cfg      = cfg;
+    this.helpers  = helpers;
     this.SK       = 'ficAppreciation:status';
   }
 
@@ -67,7 +67,7 @@ export class MultiStatusTracker {
     const prev = map[workId];
     // Re-read count survives status changes: it's how many times this work
     // was explicitly marked "re-read", not tied to the currently-set status.
-    const rereadCount = status === 're-read' ? nextRereadCount(prev) : prev?.rereadCount;
+    const rereadCount = status === 're-read' ? this.helpers.nextRereadCount(prev) : prev?.rereadCount;
     map[workId] = {
       status,
       date: new Date().toISOString().slice(0, 10),

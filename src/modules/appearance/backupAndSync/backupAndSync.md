@@ -242,33 +242,35 @@ Le module travaille principalement avec `_backupAndSync.js`, `backupOperations.j
 #### Rôle
 Contient l'ensemble des styles utilisés par le module Backup and Sync : boutons d'export et d'import, contrôles de sauvegarde, messages d'état et notifications affichées par le module.
 
-## Specs non implémentés
 
-Ce sont des idées dont on parle dans d'autres docs, mais qui n'existaient pas dans le module au moment de la rédaction initiale — toutes ont depuis été faites :
 
-- ~~Voir la liste des sauvegardes automatiques et choisir laquelle restaurer, directement depuis le panneau~~ ✅
+
+
+## Specs faites :
+
+- Voir la liste des sauvegardes automatiques et choisir laquelle restaurer, directement depuis le panneau ✅
   Fait : section « Backups » du panneau — liste avec date, type, nombre de clés
   et taille de chaque sauvegarde, bouton Restore par sauvegarde, suppression
   individuelle.
 
-- ~~Un bouton « Sauvegarder maintenant » dans le panneau (la fonction existait déjà à l'intérieur du module, mais aucun bouton ne la déclenchait)~~ ✅
+- Un bouton « Sauvegarder maintenant » dans le panneau ✅
   Fait : le bouton « ☁️ Backup Now » existait déjà dans le HTML du panneau
   mais n'avait aucun gestionnaire de clic — corrigé. Il propose désormais un
   choix du mode (standard, compressé, chiffré, incrémental) et un filtre de
   catégories optionnel.
 
-- ~~Voir en un coup d'œil toutes les données sauvegardées, avec leur taille et leur état~~ ✅
+- Voir en un coup d'œil toutes les données sauvegardées, avec leur taille et leur état ✅
   Fait : chaque sauvegarde affiche son type, son nombre de clés, sa taille et
   une icône d'état (✓ valide / ⚠️ corrompue — vérification de structure, et
   décompression réelle pour les sauvegardes gzip). Voir aussi « Vérification
   d'intégrité » plus bas.
 
-- ~~Chercher directement dans ses données sauvegardées~~ ✅
+- Chercher directement dans ses données sauvegardées ✅
   Fait : le champ de recherche filtre par date affichée et par contenu (noms
   de clés à l'intérieur des sauvegardes, ou le delta des incrémentales,
   catégories des sauvegardes sélectives).
 
-- ~~Nettoyer ou mettre à jour automatiquement les données quand l'extension change de version~~ ✅
+- Nettoyer ou mettre à jour automatiquement les données quand l'extension change de version ✅
   Fait dans `_backupAndSync.js`. Au changement de version (mémorisée sous
   `ao3h:version`), les réglages stockés sous les anciens ids de modules
   (`downloadManager`, `bookmarkManager`, `paginationManager`, etc. — la liste
@@ -276,14 +278,14 @@ Ce sont des idées dont on parle dans d'autres docs, mais qui n'existaient pas d
   l'id actuel, fusionnés sans écraser l'existant, puis les clés legacy sont
   supprimées.
 
-- ~~Pouvoir choisir soi-même quelle version garder quand deux appareils ont des données différentes, plutôt que ce soit toujours la plus récente qui gagne automatiquement~~ ✅
+- Pouvoir choisir soi-même quelle version garder quand deux appareils ont des données différentes, plutôt que ce soit toujours la plus récente qui gagne automatiquement ✅
   Fait, dans `cloudSync.js` : le restore silencieux ne se produit plus que
   sur un appareil sans historique de sync ; sinon, une boîte de dialogue
   présente les deux dates et laisse choisir (OK = version distante, Annuler
   = garder le local, qui redevient prioritaire au prochain envoi). L'ancien
   Last-Write-Wins aveugle est abandonné.
 
-- ~~Choisir de protéger une sauvegarde avec un mot de passe, de la compresser, ou de ne garder que ce qui a changé, directement depuis le panneau (ces façons de sauvegarder existaient déjà à l'intérieur du module, mais rien ne permettait de les choisir dans l'interface)~~ ✅
+- Choisir de protéger une sauvegarde avec un mot de passe, de la compresser, ou de ne garder que ce qui a changé, directement depuis le panneau ✅
   Fait : sélecteur « Manual backup mode » dans le panneau (standard /
   compressé gzip / chiffré par mot de passe / incrémental). Chaque type se
   restaure correctement depuis la liste : mot de passe demandé pour le
@@ -291,15 +293,15 @@ Ce sont des idées dont on parle dans d'autres docs, mais qui n'existaient pas d
   application du delta (ajouts/modifications/suppressions) pour
   l'incrémental.
 
-- ~~Choisir précisément quelles données sauvegarder, plutôt que tout d'un coup, directement depuis le panneau~~ ✅
+- Choisir précisément quelles données sauvegarder, plutôt que tout d'un coup, directement depuis le panneau ✅
   Fait : champ « Only these categories » à côté du bouton Backup Now — des
   filtres de clés séparés par des virgules (ex. `readingList, filters`)
   transforment la sauvegarde en sauvegarde sélective.
 
-- ~~Un bouton pour tout effacer d'un coup~~ ✅
+- Un bouton pour tout effacer d'un coup ✅
   Fait : bouton « Clear All » ajouté dans la section Backups du panneau.
 
-- ~~Vérifier que les données sauvegardées ne sont pas abîmées ou corrompues~~ ✅
+- Vérifier que les données sauvegardées ne sont pas abîmées ou corrompues ✅
   Fait : chaque sauvegarde de la liste est validée selon son type (structure
   des données, des octets chiffrés/compressés, du delta) avec une icône
   ✓/⚠️ ; les sauvegardes gzip subissent en plus une décompression réelle en

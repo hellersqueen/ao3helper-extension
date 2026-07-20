@@ -27,7 +27,7 @@ implémentés" pour la raison.
 
 ### 1. `_seriesHelper.js` — le chef d'orchestre
 
-- Partage des outils communs (lecture/écriture de données) utilisés par les autres fichiers
+- Partage les outils communs de lecture/écriture et les calculs purs utilisés par les autres fichiers
 
 ### 2. `seriesProgress.js` — progression et infos de série
 
@@ -51,7 +51,7 @@ implémentés" pour la raison.
 - Calcule et mémorise le type de série (suite/anthologie) par heuristique sur les titres
 - Sur les listings de séries : masque les séries vides si `hideEmptySeries` est activé
 
-### 5. `seriesHelperMath.js` — calculs purs (ajouté au passage chantier 4)
+### 5. Calculs purs intégrés à `_seriesHelper.js` (ajoutés au passage chantier 4)
 
 - Totaux de mots et format du temps de lecture, parties indisponibles, première œuvre non lue, parties restantes, décision de repli automatique, heuristique suite/anthologie
 
@@ -100,7 +100,7 @@ ils sont résolus ici aussi, en fin de liste.
 API partagée `W.AO3H_SeriesHelper` (posée avant la cascade de démarrage des
 sous-modules, qui s'enregistrent avec `parent: 'seriesHelper'` et démarrent
 automatiquement via `core/lifecycle.js`'s `bootOne()`) : `lsGet(key)`,
-`lsSet(key, val)`, `NS`.
+`lsSet(key, val)`, `NS` et les calculs purs du module.
 
 Clés de stockage partagées (`ao3h:sh:*`) :
 - `sub` — `{ seriesId: 1 }`, la carte des abonnements, écrite par `seriesPage.js` lors des visites de page de série

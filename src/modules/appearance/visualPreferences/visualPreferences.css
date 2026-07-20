@@ -432,7 +432,7 @@ html.ao3h-minimal-header #workskin .work.meta .language {
     Révèle brièvement les stats/dates masquées quand l'utilisateur
     survole un blurb. Les règles sont toujours présentes mais n'ont
     d'effet que si la classe de masquage correspondante est sur <html>.
-    ⚠️ Ces règles remplacent l'ancienne injection dynamique de hoverReveal.js
+    Ce comportement est directement intégré à la feuille du module.
   ═══════════════════════════════════════════════════════════════════════
 */
 

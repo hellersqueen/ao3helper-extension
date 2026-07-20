@@ -21,7 +21,6 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Storage } from '../../../../lib/storage/index.js';
 import { wrapStorageForUser } from '../../../../lib/storage/user.js';
-import { shouldAutoCollapse } from './seriesHelperMath.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -73,7 +72,7 @@ function manualCollapseState(api, seriesId) {
 }
 
 function isCollapsed(api, seriesId, count = 0, threshold = 0) {
-  return shouldAutoCollapse(count, threshold, manualCollapseState(api, seriesId));
+  return api.shouldAutoCollapse(count, threshold, manualCollapseState(api, seriesId));
 }
 
 function setCollapsed(api, seriesId, val) {

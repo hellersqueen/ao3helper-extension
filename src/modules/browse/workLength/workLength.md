@@ -39,7 +39,8 @@ interpréter le nombre de mots brut.
 
 ### 1. `_workLength.js` — le chef d'orchestre
 
-- Charge les réglages une seule fois au démarrage et met en route les deux autres fichiers
+- Charge les réglages une seule fois au démarrage et met en route les deux sous-modules
+- Contient les calculs propres à `workLength` (progression, moyennes, temps restant, dégradé, livres personnalisés et format des pages), puis les injecte aux sous-modules qui en ont besoin
 
 ### 2. `lengthDisplay.js` — badges de longueur
 
@@ -59,11 +60,7 @@ interpréter le nombre de mots brut.
 - Sur une page de chapitre, estime le temps restant avant la fin de la fic ("⏳ ~2h left")
 - Peut dire si la fic est finissable avant une heure cible ("⏰ by 23:00" : ✅ / 🤏 / ⏰)
 
-### 4. `lengthMath.js` — calculs extraits
-
-- Les calculs purs derrière les badges : progression de chapitres, moyenne par chapitre, mots restants, verdict "finissable avant l'heure", teinte du dégradé, parsing des livres personnalisés, format des pages
-
-### 5. `workLength.css`
+### 4. `workLength.css`
 
 - Les styles visuels des badges et indicateurs de temps
 

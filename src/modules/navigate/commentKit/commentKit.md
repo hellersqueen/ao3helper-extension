@@ -42,7 +42,8 @@ discussion.
 ### 1. `_commentKit.js` — le chef d'orchestre
 
 - Met en route les six autres fichiers de fonctionnalités de ce module
-- Coordinateur pur : chaque sous-module s'enregistre lui-même avec `parent: 'commentKit'` et est démarré/arrêté automatiquement par la cascade du cycle de vie
+- Chaque sous-module s'enregistre avec `parent: 'commentKit'` et est démarré/arrêté automatiquement par la cascade du cycle de vie
+- Centralise la logique des modèles, brouillons, surlignages, recherches et sauts de page
 - Les réglages partagés vivent dans `navigate-interact/commentKit-config.js` ; `commentConfiguration.js` fait exception avec sa propre clé de stockage (voir Détails techniques)
 
 ### 2. `commentComposing.js` — outils de rédaction
@@ -86,11 +87,7 @@ discussion.
 - Coche automatiquement l'option "Allow guest comments" en créant une nouvelle fic
 - Applique la densité d'affichage choisie (compact/normal/spacieux) aux commentaires
 
-### 8. `commentKitHelpers.js` — logique pure
-
-- Substitution de variables dans les modèles, recherche de modèles, calcul de la clé de brouillon par formulaire, règle de repli automatique avec préférence manuelle, correspondance de surlignage personnalisé, recherche dans les commentaires, construction de l'URL de saut de page — testé indépendamment du DOM
-
-### 9. `commentKit.css`
+### 8. `commentKit.css`
 
 - Les styles visuels de tous les fichiers ci-dessus
 

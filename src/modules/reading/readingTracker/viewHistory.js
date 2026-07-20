@@ -19,7 +19,6 @@ Notes
 
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { fetchAO3PageText } from '../../../../lib/ao3/requests.js';
-import { buildContinueReadingList } from './readingTrackerHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -32,14 +31,15 @@ import { buildContinueReadingList } from './readingTrackerHelpers.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export class ViewHistory {
-  /** @param {{ NS, LOG, isHistoryPage, getHistory, saveHistory, clearProgress }} opts */
-  constructor ({ NS, LOG, isHistoryPage, getHistory, saveHistory, clearProgress }) {
+  /** @param {{ NS, LOG, isHistoryPage, getHistory, saveHistory, clearProgress, helpers: typeof import('./_readingTracker.js').readingTrackerHelpers }} opts */
+  constructor ({ NS, LOG, isHistoryPage, getHistory, saveHistory, clearProgress, helpers }) {
     this.NS             = NS;
     this.LOG            = LOG;
     this.isHistoryPage  = isHistoryPage;
     this.getHistory     = getHistory;
     this.saveHistory    = saveHistory;
     this.clearProgress  = clearProgress;
+    this.helpers        = helpers;
     this._onInput       = null;
     this._onClick       = null;
     this._abortController = null;
@@ -120,7 +120,7 @@ export class ViewHistory {
   injectContinueReadingWidget () {
     const { NS, getHistory } = this;
     if (document.getElementById(`${NS}-continue-reading`)) return;
-    const items = buildContinueReadingList(getHistory(), 5);
+    const items = this.helpers.buildContinueReadingList(getHistory(), 5);
     if (!items.length) return;
     const main = document.querySelector('#main');
     if (!main) return;

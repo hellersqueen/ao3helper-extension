@@ -17,7 +17,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { parseUserHref, accountKey, pseudKey, isBlockedIdentity } from './userRelationshipsHelpers.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -26,6 +26,11 @@ import { parseUserHref, accountKey, pseudKey, isBlockedIdentity } from './userRe
 const STORAGE_KEY = 'userBlocker:list';
 const REASONS_KEY = 'userBlocker:reasons';
 const MENU_CLASS  = 'ao3h-user-context-menu';
+const W = getGlobalWindow();
+const parseUserHref = (...args) => W.AO3H_UserRelationships.parseUserHref(...args);
+const accountKey = (...args) => W.AO3H_UserRelationships.accountKey(...args);
+const pseudKey = (...args) => W.AO3H_UserRelationships.pseudKey(...args);
+const isBlockedIdentity = (...args) => W.AO3H_UserRelationships.isBlockedIdentity(...args);
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — CONTEXTUAL BLOCKING

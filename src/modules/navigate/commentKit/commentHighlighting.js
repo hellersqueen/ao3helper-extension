@@ -21,7 +21,6 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { observe } from '../../../../lib/utils/index.js';
-import { parseHighlightRules, matchesCustomHighlight } from './commentKitHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -150,7 +149,7 @@ function processComment (comment, ctx) {
     comment.classList.toggle(`${NS}-filter-hidden`, shouldHide);
   }
 
-  if (highlightRules.length && matchesCustomHighlight({ author, text: getCommentText(comment) }, highlightRules)) {
+  if (highlightRules.length && W.AO3H_CommentKit.matchesCustomHighlight({ author, text: getCommentText(comment) }, highlightRules)) {
     comment.classList.add(`${NS}-custom-highlight-comment`);
     if (heading && !heading.querySelector(`.${NS}-custom-highlight-badge`)) {
       const badge = D.createElement('span');
@@ -179,7 +178,7 @@ register(MOD, {
   const doAuthors     = cfg('highlightAuthorReplies');
   const doReplies     = cfg('highlightRepliesToMe');
   const filterMode    = cfg('authorFilterMode');
-  const highlightRules = parseHighlightRules(cfg('customHighlights'));
+  const highlightRules = W.AO3H_CommentKit.parseHighlightRules(cfg('customHighlights'));
   if (!doAuthors && !doReplies && filterMode === 'off' && !highlightRules.length) return () => {};
 
   const ctx = {

@@ -7,7 +7,7 @@ matching the chosen mood.
 
 Notes
 
-- Mood → trope mapping lives in tropeGamesHelpers.js (pickTropeForMood).
+- Mood → trope mapping is owned by the tropeGames coordinator (pickTropeForMood).
 - The trigger button joins the coordinator's shared floating menu.
 
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -21,7 +21,6 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { onReady } from '../../../../lib/utils/index.js';
-import { MOOD_QUIZ, pickTropeForMood } from './tropeGamesHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -48,7 +47,7 @@ let modalEl = null;
 let triggerBtn = null;
 
 function renderQuestion () {
-  const q = MOOD_QUIZ[0];
+  const q = W.AO3H_TropeGames.MOOD_QUIZ[0];
   const options = q.options.map((opt, i) =>
     `<button class="${NS}-tg-btn ${NS}-tg-mood-opt" data-mood="${escapeHtml(opt.mood)}">${escapeHtml(opt.label)}</button>`
   ).join('');
@@ -93,7 +92,7 @@ function showQuestion () {
   modalEl.querySelector(`.${NS}-tg-modal-close`).addEventListener('click', closeModal);
   modalEl.querySelectorAll(`.${NS}-tg-mood-opt`).forEach(btn => {
     btn.addEventListener('click', () => {
-      const trope = pickTropeForMood(btn.dataset.mood, getTropeList());
+      const trope = W.AO3H_TropeGames.pickTropeForMood(btn.dataset.mood, getTropeList());
       if (trope) showResult(trope);
     });
   });

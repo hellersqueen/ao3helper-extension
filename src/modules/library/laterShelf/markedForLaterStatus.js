@@ -34,10 +34,6 @@ import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { saveModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
-import {
-  sortEntries, pickRandom, estimateTotalReadingMinutes,
-  suggestByTimeBudget, detectUpdates, toCSV, toLinksList,
-} from './laterShelfHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -60,6 +56,10 @@ register(MOD, {
   parent: 'laterShelf',
   enabledByDefault: true,
 }, function init () {
+  const {
+    sortEntries, pickRandom, estimateTotalReadingMinutes,
+    suggestByTimeBudget, detectUpdates, toCSV, toLinksList,
+  } = W.AO3H_LaterShelf;
   const originalMarkers = new Map();
   const hiddenStates = new Map();
 

@@ -19,7 +19,6 @@ Notes
 
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
-import { nextVisitCount, formatUpdatedLabel } from './readingTrackerHelpers.js';
 
 const SK_EXCLUDED = 'ao3h:rt:excludedWorks';
 
@@ -39,13 +38,14 @@ function loadExcluded () {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export class SeenTracking {
-  /** @param {{ NS, cfg, getHistory, saveHistory, relativeTime }} opts */
-  constructor ({ NS, cfg, getHistory, saveHistory, relativeTime }) {
+  /** @param {{ NS, cfg, getHistory, saveHistory, relativeTime, helpers: typeof import('./_readingTracker.js').readingTrackerHelpers }} opts */
+  constructor ({ NS, cfg, getHistory, saveHistory, relativeTime, helpers }) {
     this.NS           = NS;
     this.cfg          = cfg;
     this.getHistory   = getHistory;
     this.saveHistory  = saveHistory;
     this.relativeTime = relativeTime;
+    this.helpers      = helpers;
     this._BADGE_CLS   = `${NS}-updated-badge`;
     this._COUNTER_ID  = `${NS}-updated-counter`;
     this._originalDisplays = new Map();
@@ -112,7 +112,7 @@ export class SeenTracking {
       chapterId:     meta.chapterId     || null,
       chapterHref:   meta.chapterHref   || null,
       totalChapters: meta.totalChapters || null,
-      visitCount:    nextVisitCount(prev),
+      visitCount:    this.helpers.nextVisitCount(prev),
       // Carried forward from the history browser (pin/note) — recordVisit
       // must never silently wipe them out on the next page load.
       ...(prev?.pinned ? { pinned: prev.pinned } : {}),
@@ -195,7 +195,7 @@ export class SeenTracking {
 
       updatedCount++;
       const recency = this._recencyClass(updatedAt);
-      const label   = formatUpdatedLabel(updatedAt, this.cfg('updatedDateFormat') || 'relative', relativeTime);
+      const label   = this.helpers.formatUpdatedLabel(updatedAt, this.cfg('updatedDateFormat') || 'relative', relativeTime);
       appendHeadingBadge(blurb, {
         className: `${_BADGE_CLS} ${_BADGE_CLS}--${recency}`,
         guardSelector: `.${_BADGE_CLS}`,

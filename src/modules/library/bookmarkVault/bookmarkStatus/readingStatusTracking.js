@@ -20,7 +20,7 @@ Notes
 
 import { extractWorkIdFromBlurb, extractWorkIdFromHref, isListingPage } from '../../../../../lib/ao3/parsers.js';
 import { observe } from '../../../../../lib/utils/index.js';
-import { noteQueryMatch } from '../vaultTools.js';
+import { getGlobalWindow } from '../../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -28,6 +28,8 @@ import { noteQueryMatch } from '../vaultTools.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const D = document;
+const W = getGlobalWindow();
+const noteQueryMatch = (...args) => W.AO3H_BookmarkVault.noteQueryMatch(...args);
 const SK_LAST = 'ao3h:bookmarkVault:lastRead';
 
 export class ReadingStatusTracking {

@@ -19,10 +19,6 @@ Notes
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { getWorkTitle } from '../../../../lib/ao3/work-page.js';
-import {
-  parseChapterOptions, firstUnreadChapter,
-  buildBreadcrumbText, prependChapterToTitle,
-} from './chaptersPanelHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -31,14 +27,15 @@ import {
 const W = getGlobalWindow();
 
 export class NavigationControls {
-  /** @param {{ NS, cfg, lsGet, lsSet, SK_LASTCHAP, workId }} opts */
-  constructor ({ NS, cfg, lsGet, lsSet, SK_LASTCHAP, workId }) {
+  /** @param {{ NS, cfg, lsGet, lsSet, SK_LASTCHAP, workId, helpers: typeof import('./_chapterNavigation.js').chapterNavigationHelpers }} opts */
+  constructor ({ NS, cfg, lsGet, lsSet, SK_LASTCHAP, workId, helpers }) {
     this.NS         = NS;
     this.cfg        = cfg;
     this.lsGet      = lsGet;
     this.lsSet      = lsSet;
     this.SK_LASTCHAP = SK_LASTCHAP;
     this.workId      = workId;
+    this.helpers     = helpers;
     this._stickyCls  = `${NS}-sticky-nav-active`;
     this._labelId    = `${NS}-chapidx-label`;
     this._breadcrumbId = `${NS}-chapter-breadcrumb`;
@@ -112,7 +109,7 @@ export class NavigationControls {
     const el = document.createElement('div');
     el.id = this._breadcrumbId;
     el.className = `${this.NS}-chapter-breadcrumb`;
-    el.textContent = buildBreadcrumbText(getWorkTitle(), info.current, title);
+    el.textContent = this.helpers.buildBreadcrumbText(getWorkTitle(), info.current, title);
     const anchor = document.getElementById('workskin');
     anchor?.insertAdjacentElement('afterbegin', el);
   }
@@ -130,7 +127,7 @@ export class NavigationControls {
     const info = this._getChapterInfo();
     if (!info) return;
     this._originalTitle = document.title;
-    document.title = prependChapterToTitle(document.title, info.current, info.total);
+    document.title = this.helpers.prependChapterToTitle(document.title, info.current, info.total);
   }
 
   teardownTabTitle () {
@@ -182,7 +179,7 @@ export class NavigationControls {
   _readChapters () {
     const select = document.querySelector('select#selected_id');
     if (!select) return [];
-    return parseChapterOptions(Array.from(select.options).map(o => ({
+    return this.helpers.parseChapterOptions(Array.from(select.options).map(o => ({
       value: o.value, text: o.textContent, selected: o.selected,
     })));
   }
@@ -197,7 +194,7 @@ export class NavigationControls {
 
   jumpToFirstUnread () {
     const chapters = this._readChapters();
-    const target = firstUnreadChapter(chapters, this._lastReadNum());
+    const target = this.helpers.firstUnreadChapter(chapters, this._lastReadNum());
     if (target && this.workId) location.href = `/works/${this.workId}/chapters/${target.id}`;
   }
 

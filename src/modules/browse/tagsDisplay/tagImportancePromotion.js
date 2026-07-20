@@ -24,7 +24,7 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { observe } from '../../../../lib/utils/index.js';
-import { findMatchingRule, sortByImportance, TAG_CATEGORIES } from './tagRules.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -33,6 +33,9 @@ import { findMatchingRule, sortByImportance, TAG_CATEGORIES } from './tagRules.j
 
 const MOD  = 'tagImportancePromotion';
 const NS   = 'ao3h';
+const W    = getGlobalWindow();
+const findMatchingRule = (...args) => W.AO3H_TagsDisplay.findMatchingRule(...args);
+const sortByImportance = (...args) => W.AO3H_TagsDisplay.sortByImportance(...args);
 const PROCESSED_ATTR = 'data-ao3h-promoted';
 
 function cfg (key, fallback) {
@@ -55,7 +58,7 @@ function getItemKey (li) {
 }
 
 function categoryOf (li) {
-  return TAG_CATEGORIES.find(c => li.classList.contains(c)) || '_other';
+  return W.AO3H_TagsDisplay.TAG_CATEGORIES.find(c => li.classList.contains(c)) || '_other';
 }
 
 

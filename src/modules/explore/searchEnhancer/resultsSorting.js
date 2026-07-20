@@ -25,7 +25,6 @@ import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { getBlurbStats } from '../../../../lib/ao3/work-stats.js';
 import { parseChapterCount } from '../../../../lib/ao3/parsers.js';
 import { buildKudosRatioBadge, RATIO_BADGE_CLASS } from '../../../../lib/ui/badges.js';
-import { scoreForMode } from './resultsSortingHelpers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -90,7 +89,7 @@ function scoreBlurb (blurb, mode) {
   const { kudos, hits, bookmarks } = getBlurbStats(blurb);
   const { published: chapters } = parseChapterCount(blurb.querySelector('dd.chapters'));
   const updatedAt = getBlurbUpdatedAt(blurb);
-  return scoreForMode(mode, { kudos, hits, bookmarks, chapters, updatedAt });
+  return getShared()?.scoreForMode(mode, { kudos, hits, bookmarks, chapters, updatedAt }) ?? 0;
 }
 
 // Badge partagé avec ficEngagement (browse) — voir lib/ui/badges.js

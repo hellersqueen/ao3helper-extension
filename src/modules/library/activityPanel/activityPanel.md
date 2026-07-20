@@ -41,17 +41,17 @@ restent affichées ensemble, par choix de conception) :
 
 - Met en route tous les autres fichiers de ce module
 
-### 2. `activityPanelShared.js` — outils partagés
+### 2. Outils partagés intégrés à `_activityPanel.js`
 
 - Garde en un seul endroit les réglages et le stockage utilisés par tous les autres fichiers
 
-### 3. `dataCollection.js` — collecte des données
+### 3. Collecte des données intégrée à `_activityPanel.js`
 
 - Rassemble les données venant de l'historique, des kudos, des favoris et des sessions de lecture
 - Calcule des totaux (fics, mots, heures, kudos, favoris), les fandoms/tags/auteurs les plus lus, et la note préférée
 - Complète désormais les fandoms/tags/note à partir des sessions quand l'historique de lecture ne les fournit pas (voir "Corrections" plus bas)
 
-### 4. `readingStats.js` — statistiques et séries
+### 4. Statistiques et séries intégrées à `_activityPanel.js`
 
 - Calcule combien de jours consécutifs tu as lu (streak)
 - Calcule les paliers/accomplissements débloqués (par exemple un certain nombre de mots ou de fics lues)
@@ -87,7 +87,7 @@ restent affichées ensemble, par choix de conception) :
 - Enregistre chaque visite d'une page de fic comme une "session" (fandom, tags, note, catégorie, mots, heure, nombre de pages vues), avec un maximum de 500 sessions gardées
 - C'est cette source de données qui alimente tous les autres blocs d'analyse
 
-### 10. `activityPanelHelpers.js` — logique pure partagée
+### 10. Logique pure partagée intégrée à `_activityPanel.js`
 
 - Filtrage par période, nuage de tags, carte de chaleur jour×heure, détection de relecture/sessions intensives, estimation du point d'abandon, comparaison de périodes, détection de tendances de tags, regroupement par catégorie/trimestre, profil lecteur, pourcentages de fandoms, texte de récapitulatif
 
@@ -130,7 +130,7 @@ restent affichées ensemble, par choix de conception) :
 ## Corrections apportées à des réglages/fonctions déjà existants (hors liste ci-dessus)
 
 En résolvant les items ci-dessus, un vrai bug a été trouvé dans
-`dataCollection.js` : les statistiques "fandoms les plus lus", "tags les
+`_activityPanel.js` : les statistiques "fandoms les plus lus", "tags les
 plus lus" et "note préférée" du bloc **Your Reading Insights** lisaient ces
 champs sur les entrées de `readingTracker`'s historique — mais ces entrées
 (voir `seenTracking.js`) ne contiennent jamais de `fandoms`, `tags` ni
@@ -138,7 +138,7 @@ champs sur les entrées de `readingTracker`'s historique — mais ces entrées
 statistiques étaient systématiquement vides ("Unknown" / "Not Rated"),
 alors que le tableau séparé **Fandom Breakdown** affichait les bons noms de
 fandoms, car il lit une source différente (`activityPanel:sessions`, qui
-elle capture bien les fandoms). Corrigé en faisant lire à `dataCollection.js`
+elle capture bien les fandoms). Corrigé en faisant lire à `_activityPanel.js`
 les mêmes métadonnées de session en complément (`sessionMetaByWork`), avec
 repli sur les champs de l'historique s'ils existent — et `sessionHistory.js`
 capture maintenant aussi les tags libres, la note et la catégorie, pas
@@ -171,16 +171,16 @@ seulement les fandoms.
   rating, category, ... }`, max 500 gardées) et
   `ao3h:activityPanel:preferences` (propriété de `readingInsights.js`,
   `{ timePeriod }`).
-- API publique : `activityPanelShared.js` exporte `(store, cfg, NS)` pour
+- API publique : `_activityPanel.js` exporte `(store, cfg, NS)` pour
   import direct par `readingInsights.js` ; le module est aussi exposé
   comme `W.AO3H_ActivityPanel` tant qu'il est activé, pour rester
   compatible avec l'ancien pont (bridge) legacy.
 - Le filtrage par période de `readingInsights.js` re-dérive les cartes de
   statistiques directement depuis `activityPanel:sessions`
-  (`computePeriodStats`) plutôt que depuis l'agrégation `dataCollection.js`
+  (`computePeriodStats`) plutôt que depuis l'agrégation de `_activityPanel.js`
   qui reste, elle, sur tout l'historique.
 - `sessionHistory.js`'s `getWorkMeta()` lit `dd.rating.tags a`,
   `dd.category.tags a` et `dd.freeform.tags a` sur la page de l'œuvre pour
   capturer note, catégorie et tags libres.
-- `activityPanelHelpers.js` est testé indépendamment dans
-  `activityPanelHelpers.test.js`.
+- La logique pure de `_activityPanel.js` est testée dans
+  `activityPanel.logic.test.js`.

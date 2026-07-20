@@ -23,8 +23,6 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 import { showToast, clearAllToasts } from '../../../../lib/ui/toast.js';
-import { SPEED_PRESETS, clampVolume, clampPitch, computeFadeFactor, nextSleepEnd, clampSentenceIndex } from './playbackHelpers.js';
-import { getVoiceLanguages, filterVoicesByLang, formatVoiceLabel } from './voiceHelpers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -64,8 +62,8 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
   let isPlaying   = false;
   let isPaused    = false;
   let currentRate   = parseFloat(lsGet(LS_RATE))   || cfg('playbackSpeed') || 1;
-  let currentVolume = clampVolume(parseFloat(lsGet(LS_VOLUME)) || cfg('volume') || 1);
-  let currentPitch  = clampPitch(parseFloat(lsGet(LS_PITCH))   || cfg('pitch')  || 1);
+  let currentVolume = shared().clampVolume(parseFloat(lsGet(LS_VOLUME)) || cfg('volume') || 1);
+  let currentPitch  = shared().clampPitch(parseFloat(lsGet(LS_PITCH))   || cfg('pitch')  || 1);
   let isMuted     = false;
   let langFilter  = lsGet(LS_LANG) || '';
   let sleepTimer  = null;
@@ -194,7 +192,7 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
     if (!engine) return;
     const allVoices = engine.getVoices();
 
-    const languages = getVoiceLanguages(allVoices);
+    const languages = shared().getVoiceLanguages(allVoices);
     langSelect.innerHTML = '<option value="">All languages</option>';
     languages.forEach(lang => {
       const opt = document.createElement('option');
@@ -204,12 +202,12 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
     });
     langSelect.value = languages.includes(langFilter) ? langFilter : '';
 
-    const voices = filterVoicesByLang(allVoices, langFilter);
+    const voices = shared().filterVoicesByLang(allVoices, langFilter);
     voiceSelect.innerHTML = '<option value="">System default</option>';
     voices.forEach(v => {
       const opt = document.createElement('option');
       opt.value = v.voiceURI;
-      opt.textContent = formatVoiceLabel(v);
+      opt.textContent = shared().formatVoiceLabel(v);
       voiceSelect.appendChild(opt);
     });
     const sel = engine.getSelectedVoice();
@@ -245,7 +243,7 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
 
   presetBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      const preset = SPEED_PRESETS[btn.dataset.preset];
+      const preset = shared().SPEED_PRESETS[btn.dataset.preset];
       if (preset !== undefined) setRate(preset);
     });
   });
@@ -255,7 +253,7 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
   }
 
   volumeSlider.addEventListener('input', () => {
-    currentVolume = clampVolume(parseFloat(volumeSlider.value));
+    currentVolume = shared().clampVolume(parseFloat(volumeSlider.value));
     setVolumeLabel();
     lsSet(LS_VOLUME, currentVolume);
     const engine = W.AO3H_TTS_Engine;
@@ -270,7 +268,7 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
   });
 
   pitchSlider.addEventListener('input', () => {
-    currentPitch = clampPitch(parseFloat(pitchSlider.value));
+    currentPitch = shared().clampPitch(parseFloat(pitchSlider.value));
     pitchVal.textContent = String(currentPitch);
     lsSet(LS_PITCH, currentPitch);
     const engine = W.AO3H_TTS_Engine;
@@ -296,8 +294,8 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
   function effectiveVolume () {
     if (isMuted) return 0;
     const remaining = sleepEnd ? sleepEnd - Date.now() : null;
-    const fade = sleepEnd ? computeFadeFactor(remaining, SLEEP_FADE_MS) : 1;
-    return clampVolume(currentVolume * fade);
+    const fade = sleepEnd ? shared().computeFadeFactor(remaining, SLEEP_FADE_MS) : 1;
+    return shared().clampVolume(currentVolume * fade);
   }
 
   function speakSentence (idx, session) {
@@ -380,7 +378,7 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
 
   function skipSentence (delta) {
     if (!sentences.length) return;
-    const newIdx = clampSentenceIndex(currentIdx + delta, sentences.length);
+    const newIdx = shared().clampSentenceIndex(currentIdx + delta, sentences.length);
     if (newIdx === currentIdx) return;
     if (isPlaying) {
       if (currentUtterance) {
@@ -490,7 +488,7 @@ register(MOD, { title: 'Playback Controls', parent: 'textToSpeech', enabledByDef
 
   sleepExtendBtn.addEventListener('click', () => {
     if (!sleepEnd) return;
-    sleepEnd = nextSleepEnd(sleepEnd, SLEEP_EXTEND_MIN);
+    sleepEnd = shared().nextSleepEnd(sleepEnd, SLEEP_EXTEND_MIN);
   });
 
   /* ═════════════════════════════════════════════════════════════════════════

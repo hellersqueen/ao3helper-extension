@@ -41,6 +41,11 @@ import { register } from '../../../core/lifecycle.js';
 import { Storage } from '../../../../lib/storage/index.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { css } from '../../../../lib/utils/index.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import {
+  NOISE_PATTERNS, CUSTOM_NOISE_WORDS_KEY, normalizeNoiseText, isNoiseTag,
+  mergeNoisePatterns, getCustomNoiseWords, saveCustomNoiseWords,
+} from '../../../../lib/utils/noise-tags.js';
 import styles from './tagsDisplay.css?inline';
 import { DEFAULT_SEPARATOR } from './tagSeparatorStyle.js';
 
@@ -62,6 +67,7 @@ import './tagImportancePromotion.js';
 css(styles, 'ao3h-tagsDisplay');
 
 const MOD  = 'tagsDisplay';
+const W    = getGlobalWindow();
 
 const DEFAULTS = {
   autoHideNoiseTags       : false,
@@ -93,6 +99,111 @@ const DEFAULTS = {
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURES
 ═══════════════════════════════════════════════════════════════════════════ */
+
+export {
+  NOISE_PATTERNS, CUSTOM_NOISE_WORDS_KEY, normalizeNoiseText, isNoiseTag,
+  mergeNoisePatterns, getCustomNoiseWords, saveCustomNoiseWords,
+} from '../../../../lib/utils/noise-tags.js';
+
+export const AUTHOR_EXCEPTIONS_KEY = 'ao3h:tagsDisplay:noiseAuthorExceptions';
+export const REVEAL_CHIP_CLASS = 'ao3h-noise-tag-reveal';
+export const REVEALED_CLASS = 'ao3h-noise-tag-revealed';
+
+export function createRevealChip (doc, {
+  className = REVEAL_CHIP_CLASS, label = 'show hidden tag', preview = '',
+} = {}) {
+  const chip = doc.createElement('button');
+  chip.type = 'button';
+  chip.className = className;
+  chip.textContent = label;
+  chip.setAttribute('aria-label', 'Show this tag hidden by the noise filter');
+  if (preview) chip.title = preview;
+  return chip;
+}
+
+export function revealNoiseTag (element, revealedClass = REVEALED_CLASS) {
+  if (!element || typeof element.classList?.add !== 'function') return false;
+  element.classList.add(revealedClass);
+  return true;
+}
+
+export function normalizeAuthorName (name) {
+  return String(name || '').trim().toLowerCase();
+}
+
+export function getAuthorExceptions () {
+  try {
+    const raw = localStorage.getItem(AUTHOR_EXCEPTIONS_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list.filter(name => typeof name === 'string') : [];
+  } catch { return []; }
+}
+
+export function saveAuthorExceptions (list) {
+  const cleaned = Array.from(new Set((list || []).map(normalizeAuthorName).filter(Boolean)));
+  try { localStorage.setItem(AUTHOR_EXCEPTIONS_KEY, JSON.stringify(cleaned)); } catch { /* quota */ }
+  return cleaned;
+}
+
+export function isExceptedAuthor (author, exceptions) {
+  const normalized = normalizeAuthorName(author);
+  return !!normalized && (exceptions || []).includes(normalized);
+}
+
+export function extractBlurbAuthor (blurbEl) {
+  if (!blurbEl || typeof blurbEl.querySelector !== 'function') return '';
+  const author = blurbEl.querySelector('a[rel="author"]');
+  return author ? author.textContent.trim() : '';
+}
+
+const noiseTagTools = {
+  NOISE_PATTERNS, CUSTOM_NOISE_WORDS_KEY, AUTHOR_EXCEPTIONS_KEY,
+  REVEAL_CHIP_CLASS, REVEALED_CLASS, normalizeNoiseText, isNoiseTag,
+  mergeNoisePatterns, getCustomNoiseWords, saveCustomNoiseWords,
+  createRevealChip, revealNoiseTag, normalizeAuthorName, getAuthorExceptions,
+  saveAuthorExceptions, isExceptedAuthor, extractBlurbAuthor,
+};
+
+export const TAG_CATEGORIES = ['warnings', 'relationships', 'characters', 'freeforms'];
+
+export function isExcludedCategory (li, excludedCategories) {
+  if (!li || typeof li.classList?.contains !== 'function' || !excludedCategories?.length) return false;
+  return excludedCategories.some(category => li.classList.contains(category));
+}
+
+export function sortAlphabetical (items, getKey) {
+  return [...items].sort((a, b) => getKey(a).localeCompare(getKey(b), undefined, { sensitivity: 'base' }));
+}
+
+export function sortByLength (items, getKey, { longestFirst = false } = {}) {
+  return [...items].sort((a, b) => (getKey(a).length - getKey(b).length) * (longestFirst ? -1 : 1));
+}
+
+export function sortByImportance (items, getKey, isImportant) {
+  const important = [];
+  const rest = [];
+  for (const item of items) (isImportant(getKey(item)) ? important : rest).push(item);
+  return [...important, ...rest];
+}
+
+function escapeRegExp (value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+export function matchesPattern (text, pattern) {
+  if (typeof text !== 'string' || typeof pattern !== 'string' || !pattern) return false;
+  if (!pattern.includes('*')) return text.toLowerCase() === pattern.toLowerCase();
+  const source = pattern.split('*').map(escapeRegExp).join('.*');
+  return new RegExp(`^${source}$`, 'i').test(text);
+}
+
+export function findMatchingRule (text, rules) {
+  if (!Array.isArray(rules)) return null;
+  return rules.find(rule => rule && matchesPattern(text, rule.pattern)) || null;
+}
+
+Object.assign(noiseTagTools, {
+  TAG_CATEGORIES, isExcludedCategory, sortAlphabetical, sortByLength,
+  sortByImportance, matchesPattern, findMatchingRule,
+});
 
 async function syncFlags () {
   let saved = null;
@@ -146,6 +257,8 @@ register(MOD, {
   enabledByDefault : false,
 }, async function init () {
 
+  W.AO3H_TagsDisplay = noiseTagTools;
+
   // Sync before cascade so all children read correct flag values
   await syncFlags();
 
@@ -157,5 +270,6 @@ register(MOD, {
 
   return () => {
     // Children handle their own cleanup via their registered teardown functions
+    delete W.AO3H_TagsDisplay;
   };
 });

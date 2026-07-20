@@ -14,7 +14,7 @@ AO3 Helper — Fic Appreciation Coordinator
     Submodules
 
     - MarkAsFinished: completion tracking
-    - KudosTracker, KudosDisplay, KudosTracking, and KudosManager: kudos workflow
+    - KudosTracker: complete kudos workflow
     - KudosExtendedFeatures: kudos analytics and export
     - StarRatings and MultiStatusTracker: personal rating and reading status
 
@@ -41,9 +41,6 @@ import styles from './ficAppreciation.css?inline';
 
 import { MarkAsFinished } from './markAsFinished.js';
 import { KudosTracker } from './kudosTracker.js';
-import { KudosDisplay } from './kudosDisplay.js';
-import { KudosTracking } from './kudosTracking.js';
-import { KudosManager } from './kudosManager.js';
 import { KudosExtendedFeatures } from './kudosExtendedFeatures.js';
 import { StarRatings } from './starRatings.js';
 import { MultiStatusTracker } from './multiStatusTracker.js';
@@ -119,6 +116,103 @@ function getWorkIdFromBlurb (blurb) {
   return parseWorkIdFromBlurb(blurb);
 }
 
+export function groupCounts (records, keyFn) {
+  const counts = {};
+  records.forEach(record => (keyFn(record) || []).forEach(key => {
+    if (key) counts[key] = (counts[key] || 0) + 1;
+  }));
+  return counts;
+}
+export function topEntries (counts, limit = 10) {
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, limit)
+    .map(([key, count]) => ({ key, count }));
+}
+export function computeRatingStats (map) {
+  const entries = Object.values(map);
+  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  let sum = 0;
+  entries.forEach(({ stars }) => {
+    const bucket = Math.round(stars);
+    if (distribution[bucket] !== undefined) distribution[bucket]++;
+    sum += stars;
+  });
+  return {
+    total: entries.length,
+    average: entries.length ? Math.round((sum / entries.length) * 100) / 100 : 0,
+    distribution,
+  };
+}
+export function ratingByMonth (map) {
+  const buckets = {};
+  Object.values(map).forEach(({ stars, date }) => {
+    if (!date) return;
+    const month = date.slice(0, 7);
+    if (!buckets[month]) buckets[month] = { sum: 0, count: 0 };
+    buckets[month].sum += stars;
+    buckets[month].count++;
+  });
+  const result = {};
+  Object.keys(buckets).sort().forEach(month => {
+    result[month] = Math.round((buckets[month].sum / buckets[month].count) * 100) / 100;
+  });
+  return result;
+}
+export function appendRatingHistory (previous, newStars, cap = 10) {
+  if (!previous || previous.stars === newStars) return previous?.history || [];
+  return [...(previous.history || []), { stars: previous.stars, date: previous.date }].slice(-cap);
+}
+export function combinedCategoryScore (categories) {
+  if (!categories) return null;
+  const values = Object.values(categories).filter(value => typeof value === 'number');
+  return values.length
+    ? Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 100) / 100
+    : null;
+}
+export function halfStarValue (clickX, buttonWidth, starIndex, allowHalf) {
+  return allowHalf && buttonWidth && clickX < buttonWidth / 2 ? starIndex - 0.5 : starIndex;
+}
+export function hourOfDayHistogram (entries) {
+  const hist = Array(24).fill(0);
+  let counted = 0;
+  entries.forEach(({ ts }) => {
+    if (!ts) return;
+    hist[new Date(ts).getHours()]++;
+    counted++;
+  });
+  return { hist, counted };
+}
+export function peakHours (hist, topN = 3) {
+  return hist.map((count, hour) => ({ hour, count })).filter(item => item.count > 0)
+    .sort((a, b) => b.count - a.count).slice(0, topN);
+}
+export function milestonesCrossed (previous, next, thresholds = [10, 25, 50, 100, 250, 500, 1000]) {
+  return thresholds.filter(threshold => previous < threshold && next >= threshold);
+}
+export function nextRereadCount (entry) { return (entry?.rereadCount || 0) + 1; }
+export function filterKudosHistory (entries, query) {
+  const normalized = String(query || '').trim().toLowerCase();
+  if (!normalized) return entries;
+  return entries.filter(entry =>
+    (entry.title || '').toLowerCase().includes(normalized) ||
+    (entry.author || '').toLowerCase().includes(normalized) ||
+    (entry.fandoms || []).some(fandom => fandom.toLowerCase().includes(normalized))
+  );
+}
+export function sortKudosHistoryByDate (entries, order = 'desc') {
+  const sorted = [...entries].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  return order === 'desc' ? sorted.reverse() : sorted;
+}
+export function diffNotBookmarked (kudosedIds, bookmarkedIds) {
+  const bookmarked = new Set(bookmarkedIds);
+  return kudosedIds.filter(id => !bookmarked.has(id));
+}
+
+export const ficAppreciationHelpers = {
+  groupCounts, topEntries, computeRatingStats, ratingByMonth, appendRatingHistory,
+  combinedCategoryScore, halfStarValue, hourOfDayHistogram, peakHours,
+  milestonesCrossed, nextRereadCount, filterKudosHistory,
+  sortKudosHistoryByDate, diffNotBookmarked,
+};
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE LIFECYCLE
@@ -130,17 +224,14 @@ register(MOD, {
 }, async function init () {
 
   // Instantiate submodules
-  const diOpts = { NS, storeGet, storeSet, cfg };
+  const diOpts = { NS, storeGet, storeSet, cfg, helpers: ficAppreciationHelpers };
 
   const maf  = new MarkAsFinished(diOpts);
   const kt   = new KudosTracker(diOpts);
-  const kd   = new KudosDisplay(diOpts);
-  const ktr  = new KudosTracking(diOpts);
-  const km   = new KudosManager({ ...diOpts, kudosTracker: kt, kudosDisplay: kd, kudosTracking: ktr });
-  const kef  = new KudosExtendedFeatures({ storeGet });
+  const kef  = new KudosExtendedFeatures({ storeGet, helpers: ficAppreciationHelpers });
   const sr   = new StarRatings(diOpts);
   const mst  = new MultiStatusTracker(diOpts);
-  const kbf  = new KudosBookmarkFinder({ NS, storeGet });
+  const kbf  = new KudosBookmarkFinder({ NS, storeGet, helpers: ficAppreciationHelpers });
   const hiddenBlurbs = new Map();
 
   function hideBlurb (blurb) {
@@ -202,7 +293,7 @@ register(MOD, {
       }
       restoreBlurb(blurb);
       maf.applyFinishedBadge(blurb, workId);
-      km.wireBlurb(blurb, workId);
+      kt.wireBlurb(blurb, workId);
       sr.applyRatingBadge(blurb, workId);
       mst.applyStatusBadge(blurb, workId);
       mst.injectStatusToggle(blurb, workId);
@@ -213,7 +304,7 @@ register(MOD, {
 
   if (isWorkPage() && workId) {
     maf.injectFinishButton(workId);
-    km.wireWorkPage(workId);
+    kt.wireWorkPage(workId);
     sr.injectStarWidgetOnWorkPage(workId);
     mst.injectWorkPageStatusToggle(workId);
 
@@ -222,8 +313,8 @@ register(MOD, {
     }
 
     // Cross-tab kudos sync: refresh badge if another tab gives kudos
-    km.startTabSync((changedId) => {
-      if (changedId === workId) km.wireWorkPage(workId);
+    kt.startTabSync((changedId) => {
+      if (changedId === workId) kt.wireWorkPage(workId);
     });
 
     // Nudge toward rating right after finishing, if not already rated.
@@ -245,7 +336,7 @@ register(MOD, {
       document.getElementById(`${NS}-fa-kudos-reminder`)?.remove();
       W.removeEventListener(EV_WORK_FINISHED, onFinished);
       clearAllToasts();
-      km.cleanup();
+      kt.cleanup();
       delete AO3H.ficAppreciation;
     };
 
@@ -270,14 +361,14 @@ register(MOD, {
         delete el.dataset.mstToggle;
       });
       kbf.cleanup();
-      km.cleanup();
+      kt.cleanup();
       delete AO3H.ficAppreciation;
     };
   }
 
   return () => {
     restoreHiddenBlurbs();
-    km.cleanup();
+    kt.cleanup();
     delete AO3H.ficAppreciation;
   };
 });
