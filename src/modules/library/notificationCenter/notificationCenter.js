@@ -32,11 +32,12 @@ AO3 Helper — Notification Center
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { getHistoryWorkIdSet, getBookmarkVaultWorkIds, getLaterShelfWorkIds } from '../../../../lib/storage/keys.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { sendNotification, requestNotifyPermission } from '../../../../lib/utils/notifications.js';
-import { extractWorkIdFromHref, findAllBlurbs, extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, findAllBlurbs, extractWorkIdFromBlurb, parseChapterCount } from '../../../../lib/ao3/parsers.js';
+import { getWorkTitle } from '../../../../lib/ao3/work-page.js';
 import { detectUser } from '../../../../lib/utils/user-detector.js';
 import styles from './notificationCenter.css?inline';
 
@@ -179,10 +180,10 @@ register(MOD, {
   /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — FEED STORAGE
   ═════════════════════════════════════════════════════════════════════════ */
-  function loadFeed ()       { try { return JSON.parse(localStorage.getItem(SK_FEED)     || '[]'); } catch (_) { return []; } }
-  function saveFeed (feed)   { try { localStorage.setItem(SK_FEED, JSON.stringify(feed)); } catch (_) {} }
-  function loadChapters ()   { try { return JSON.parse(localStorage.getItem(SK_CHAPTERS) || '{}'); } catch (_) { return {}; } }
-  function saveChapters (ch) { try { localStorage.setItem(SK_CHAPTERS, JSON.stringify(ch)); } catch (_) {} }
+  function loadFeed ()       { return lsGet(SK_FEED, []); }
+  function saveFeed (feed)   { lsSet(SK_FEED, feed); }
+  function loadChapters ()   { return lsGet(SK_CHAPTERS, {}); }
+  function saveChapters (ch) { lsSet(SK_CHAPTERS, ch); }
 
   function purgeFeed (feed) {
     var cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
@@ -247,21 +248,14 @@ register(MOD, {
      FEATURE — WORK-PAGE PARSING
   ═════════════════════════════════════════════════════════════════════════ */
   function parseWorkHTML (html) {
-    var parser  = new DOMParser();
-    var doc     = parser.parseFromString(html, 'text/html');
-    var titleEl = doc.querySelector('h2.title.heading');
-    var title   = titleEl ? titleEl.textContent.trim() : '';
-    var chapEl  = doc.querySelector('dd.chapters');
-    var currentChaps = 0, totalChaps = null, isComplete = false;
-    if (chapEl) {
-      var parts = chapEl.textContent.trim().split('/');
-      currentChaps = parseInt(parts[0], 10) || 0;
-      if (parts[1] && parts[1] !== '?') totalChaps = parseInt(parts[1], 10);
-      if (totalChaps !== null && currentChaps === totalChaps) isComplete = true;
-    }
+    var parser = new DOMParser();
+    var doc    = parser.parseFromString(html, 'text/html');
+    var title  = getWorkTitle(doc) || '';
+    var parsed = parseChapterCount(doc.querySelector('dd.chapters'));
+    var isComplete = parsed.isComplete;
     var statusEl = doc.querySelector('dd.status');
     if (statusEl && statusEl.textContent.toLowerCase().includes('complete')) isComplete = true;
-    return { title: title, currentChaps: currentChaps, totalChaps: totalChaps, isComplete: isComplete };
+    return { title: title, currentChaps: parsed.published || 0, totalChaps: parsed.total, isComplete: isComplete };
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -271,13 +265,12 @@ register(MOD, {
     var wid = extractWorkIdFromHref(location.pathname);
     if (wid === null) return;
     var chapEl  = D.querySelector('dd.chapters');
-    var titleEl = D.querySelector('h2.title.heading');
     if (chapEl === null) return;
-    var parts        = chapEl.textContent.trim().split('/');
-    var currentChaps = parseInt(parts[0], 10) || 0;
-    var totalChaps   = (parts[1] && parts[1] !== '?') ? parseInt(parts[1], 10) : null;
-    var isComplete   = totalChaps !== null && currentChaps === totalChaps;
-    var title = titleEl ? titleEl.textContent.trim() : 'Work #' + wid;
+    var parsed       = parseChapterCount(chapEl);
+    var currentChaps = parsed.published || 0;
+    var totalChaps   = parsed.total;
+    var isComplete   = parsed.isComplete;
+    var title = getWorkTitle(D) || 'Work #' + wid;
     var href  = '/works/' + wid;
     var known = loadChapters();
     var prev  = known[wid];
