@@ -19,8 +19,8 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { Storage } from '../../../../lib/storage/index.js';
-import { wrapStorageForUser } from '../../../../lib/storage/user.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { isListingPage } from '../../../../lib/ao3/parsers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -30,19 +30,11 @@ const W = getGlobalWindow();
 const MOD = 'seriesOrganization';
 const NS = 'ao3h';
 
-// AO3H.store resolves to wrapStorageForUser(Storage) (src/core/lifecycle.js) —
-// reproduced directly via imports rather than going through window.AO3H.store.
-const wrappedStorage = wrapStorageForUser(Storage);
-
 const DEFAULTS = { groupSeriesInSearch: false, autoCollapseThreshold: 0 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — SERIES IDENTIFICATION AND GROUP STATE
 ═══════════════════════════════════════════════════════════════════════════ */
-
-function isListingPage() {
-  return /^\/(works|tags|bookmarks|users|search)/.test(location.pathname);
-}
 
 function getAPI() { return W.AO3H_SeriesHelper || null; }
 
@@ -214,9 +206,7 @@ register(MOD, {
   parent: 'seriesHelper',
   enabledByDefault: true
 }, async function init() {
-  const _raw = wrappedStorage.lsGet?.(`mod:seriesHelper:settings`, null);
-  const parentCfg = (_raw && typeof _raw === 'object') ? _raw : {};
-  const cfg = Object.assign({}, DEFAULTS, parentCfg);
+  const cfg = loadModuleSettings('seriesHelper', DEFAULTS);
   const api = getAPI();
 
   if (!cfg.groupSeriesInSearch) return function cleanup() {};

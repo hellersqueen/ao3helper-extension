@@ -23,9 +23,8 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { Storage } from '../../../../lib/storage/index.js';
-import { wrapStorageForUser } from '../../../../lib/storage/user.js';
-import { onReady } from '../../../../lib/utils/index.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { onReady, lsGet } from '../../../../lib/utils/index.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -34,8 +33,6 @@ import { onReady } from '../../../../lib/utils/index.js';
 const W = getGlobalWindow();
 const MOD = 'seriesPage';
 const NS = 'ao3h';
-
-const wrappedStorage = wrapStorageForUser(Storage);
 
 const DEFAULTS = { seriesSummary: true, hideEmptySeries: false };
 
@@ -82,11 +79,8 @@ function getListedWorks () {
 }
 
 function getReadWorkIds () {
-  try {
-    const raw = localStorage.getItem(SK_RT_HIST);
-    const history = raw ? JSON.parse(raw) : [];
-    return Array.isArray(history) ? history.map(e => String(e.id)) : [];
-  } catch { return []; }
+  const history = lsGet(SK_RT_HIST, []);
+  return Array.isArray(history) ? history.map(e => String(e.id)) : [];
 }
 
 function injectSummary (works, statedTotal) {
@@ -177,9 +171,7 @@ register(MOD, {
   parent: 'seriesHelper',
   enabledByDefault: true,
 }, async function init () {
-  const _raw = wrappedStorage.lsGet?.(`mod:seriesHelper:settings`, null);
-  const parentCfg = (_raw && typeof _raw === 'object') ? _raw : {};
-  const cfg = Object.assign({}, DEFAULTS, parentCfg);
+  const cfg = loadModuleSettings('seriesHelper', DEFAULTS);
 
   let active = true;
   onReady(() => {

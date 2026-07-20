@@ -19,8 +19,7 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { Storage } from '../../../../lib/storage/index.js';
-import { wrapStorageForUser } from '../../../../lib/storage/user.js';
+import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
 
@@ -31,10 +30,6 @@ import { observe, onReady } from '../../../../lib/utils/index.js';
 const W = getGlobalWindow();
 const MOD = 'seriesProgress';
 const NS = 'ao3h';
-
-// AO3H.store resolves to wrapStorageForUser(Storage) (src/core/lifecycle.js) —
-// reproduced directly via imports rather than going through window.AO3H.store.
-const wrappedStorage = wrapStorageForUser(Storage);
 
 const DEFAULTS = { epicSeriesWarning: false };
 
@@ -279,9 +274,7 @@ register(MOD, {
   parent: 'seriesHelper',
   enabledByDefault: true
 }, async function init() {
-  const _raw = wrappedStorage.lsGet?.(`mod:seriesHelper:settings`, null);
-  const parentCfg = (_raw && typeof _raw === 'object') ? _raw : {};
-  const cfg = Object.assign({}, DEFAULTS, parentCfg);
+  const cfg = loadModuleSettings('seriesHelper', DEFAULTS);
   const api = getAPI();
 
   // Le DOM (dd.series, .title.heading…) peut ne pas encore être parsé quand

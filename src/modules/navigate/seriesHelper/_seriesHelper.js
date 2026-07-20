@@ -30,7 +30,7 @@ AO3 Helper — Series Helper Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet as sharedLsGet, lsSet as sharedLsSet } from '../../../../lib/utils/index.js';
 import styles from './seriesHelper.css?inline';
 
 import './seriesOrganization.js';
@@ -53,12 +53,10 @@ const WORDS_PER_MINUTE = 250;
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function lsGet(key) {
-  try { const v = localStorage.getItem(`${NS}:sh:${key}`); return v ? JSON.parse(v) : null; }
-  catch { return null; }
+  return sharedLsGet(`${NS}:sh:${key}`, null);
 }
 function lsSet(key, val) {
-  try { localStorage.setItem(`${NS}:sh:${key}`, JSON.stringify(val)); }
-  catch { /* quota */ }
+  sharedLsSet(`${NS}:sh:${key}`, val);
 }
 
 export function parseCount (text) {
