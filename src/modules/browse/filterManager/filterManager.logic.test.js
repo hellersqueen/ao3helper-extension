@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   parseAO3Date, isWithinDateRange, looksAbandoned,
-  nextThreeState, shouldHideForThreeState,
+  nextThreeState,
   kudosRatio, belowRatioThreshold,
   belowTagThreshold, summaryTooShort,
   isSeriesFullyRead, mergePresetFilters,
@@ -61,19 +61,11 @@ describe('filterManagerHelpers', () => {
     });
   });
 
-  describe('nextThreeState / shouldHideForThreeState', () => {
+  describe('nextThreeState', () => {
     it('boucle all → only → hide → all', () => {
       expect(nextThreeState('all')).toBe('only');
       expect(nextThreeState('only')).toBe('hide');
       expect(nextThreeState('hide')).toBe('all');
-    });
-
-    it('cache les non-correspondances en mode "only", et les correspondances en mode "hide"', () => {
-      expect(shouldHideForThreeState('only', true)).toBe(false);
-      expect(shouldHideForThreeState('only', false)).toBe(true);
-      expect(shouldHideForThreeState('hide', true)).toBe(true);
-      expect(shouldHideForThreeState('hide', false)).toBe(false);
-      expect(shouldHideForThreeState('all', true)).toBe(false);
     });
   });
 

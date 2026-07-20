@@ -21,6 +21,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { extractWorkIdFromBlurb, parseChapterCount } from '../../../../lib/ao3/parsers.js';
+import { getBlurbStats } from '../../../../lib/ao3/work-stats.js';
 
 
 
@@ -72,15 +73,6 @@ export class WorksFilterManager {
     return blurb.querySelector('.summary blockquote, blockquote.userstuff')?.textContent || '';
   }
 
-  _kudosAndHits (blurb) {
-    const kudosText = blurb.querySelector('dd.kudos')?.textContent.replace(/,/g, '').trim();
-    const hitsText  = blurb.querySelector('dd.hits')?.textContent.replace(/,/g, '').trim();
-    return {
-      kudos: kudosText ? parseInt(kudosText, 10) : null,
-      hits:  hitsText ? parseInt(hitsText, 10) : null,
-    };
-  }
-
   _lastUpdated (blurb) {
     return this.helpers.parseAO3Date(blurb.querySelector('p.datetime')?.textContent);
   }
@@ -104,7 +96,7 @@ export class WorksFilterManager {
         blurb.dataset.fmNosummary = '1';
       }
       if (cfg('quickFilterRatio')) {
-        const { kudos, hits } = this._kudosAndHits(blurb);
+        const { kudos, hits } = getBlurbStats(blurb);
         if (this.helpers.belowRatioThreshold(this.helpers.kudosRatio(kudos, hits), cfg('minKudosRatio') || 0)) {
           blurb.dataset.fmLowratio = '1';
         }

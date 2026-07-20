@@ -180,11 +180,6 @@ export function looksAbandoned (lastUpdated, isComplete, months = 12) {
 export function nextThreeState (current) {
   return THREE_STATE_CYCLE[(THREE_STATE_CYCLE.indexOf(current) + 1) % THREE_STATE_CYCLE.length];
 }
-export function shouldHideForThreeState (state, matches) {
-  if (state === 'only') return !matches;
-  if (state === 'hide') return matches;
-  return false;
-}
 export function kudosRatio (kudos, hits) {
   return !hits || kudos == null ? null : Math.round((kudos / hits) * 1000) / 10;
 }
@@ -233,7 +228,7 @@ export function topUsage (stats, limit = 5) {
 
 export const filterManagerHelpers = {
   parseAO3Date, isWithinDateRange, looksAbandoned, nextThreeState,
-  shouldHideForThreeState, kudosRatio, belowRatioThreshold, belowTagThreshold,
+  kudosRatio, belowRatioThreshold, belowTagThreshold,
   summaryTooShort, isSeriesFullyRead, mergePresetFilters,
   addSearchHistoryEntry, incrementUsage, topUsage,
 };
