@@ -19,6 +19,7 @@ Notes
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
+import { lsGet } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -56,10 +57,7 @@ export class HistoryAnalytics {
     let history = rtAPI?.getHistory?.() || [];
 
     if (!history.length) {
-      try {
-        const raw = localStorage.getItem('ao3h:readingHistory:data');
-        if (raw) history = JSON.parse(raw) || [];
-      } catch { /* */ }
+      history = lsGet('ao3h:readingHistory:data', []) || [];
     }
 
     this.heatmapData = {};

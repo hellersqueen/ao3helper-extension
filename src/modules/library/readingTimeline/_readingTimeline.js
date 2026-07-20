@@ -28,7 +28,8 @@ AO3 Helper — Reading Timeline Coordinator
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { isListingPage } from '../../../../lib/ao3/parsers.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './readingTimeline.css?inline';
 
@@ -89,16 +90,12 @@ const FILTER_PRESETS_KEY = 'ao3h:readingTimeline:filterPresets';
 const MAX_PRESETS = 20;
 
 export function loadPresets () {
-  try {
-    const presets = JSON.parse(localStorage.getItem(FILTER_PRESETS_KEY) || '[]');
-    return Array.isArray(presets) ? presets : [];
-  } catch {
-    return [];
-  }
+  const presets = lsGet(FILTER_PRESETS_KEY, []);
+  return Array.isArray(presets) ? presets : [];
 }
 
 function savePresets (presets) {
-  try { localStorage.setItem(FILTER_PRESETS_KEY, JSON.stringify(presets)); } catch { /* unavailable */ }
+  lsSet(FILTER_PRESETS_KEY, presets);
 }
 
 export function savePreset (name, criteria) {
@@ -122,18 +119,14 @@ const DATE_ANNOTATIONS_KEY = 'ao3h:readingTimeline:annotations';
 const MAX_ANNOTATION_LENGTH = 140;
 
 export function loadAnnotations () {
-  try {
-    const annotations = JSON.parse(localStorage.getItem(DATE_ANNOTATIONS_KEY) || '{}');
-    return annotations && typeof annotations === 'object' && !Array.isArray(annotations)
-      ? annotations
-      : {};
-  } catch {
-    return {};
-  }
+  const annotations = lsGet(DATE_ANNOTATIONS_KEY, {});
+  return annotations && typeof annotations === 'object' && !Array.isArray(annotations)
+    ? annotations
+    : {};
 }
 
 function saveAnnotations (annotations) {
-  try { localStorage.setItem(DATE_ANNOTATIONS_KEY, JSON.stringify(annotations)); } catch { /* unavailable */ }
+  lsSet(DATE_ANNOTATIONS_KEY, annotations);
 }
 
 export function getAnnotation (dateKey) {
@@ -190,11 +183,7 @@ register(MOD, {
 
   const path = location.pathname;
 
-  const isListing = /^\/works(?:$|\?)/.test(path) ||
-                    /^\/tags\/[^/]+\/works/.test(path) ||
-                    /^\/users\/[^/]+\/bookmarks/.test(path) ||
-                    /^\/pseuds\/[^/]+\/works$/.test(path);
-  if (isListing) {
+  if (isListingPage(path)) {
     const hide = !!cfg('hideReadWorks');
     analytics.highlightReadWorksOnPage({ highlight: !hide, hide });
   }

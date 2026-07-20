@@ -24,8 +24,8 @@ que tu as déjà lu.
 
 ### 1. `_readingTimeline.js` — le chef d'orchestre
 
-- Regarde sur quelle page on se trouve et active la bonne fonctionnalité (surlignage/masquage sur les listes, ou séparateurs sur la page d'historique)
-- Importe directement `historyAnalytics.js` et `timelineVisualization.js` comme modules ES et leur transmet les données d'analyse ; dépend des données enregistrées par **Reading Tracker** sous la clé `ao3h:readingHistory:data`
+- Regarde sur quelle page on se trouve (détection de listing centralisée via `lib/ao3/parsers.js`'s `isListingPage()`) et active la bonne fonctionnalité (surlignage/masquage sur les listes, ou séparateurs sur la page d'historique)
+- Importe directement `historyAnalytics.js` et `timelineVisualization.js` comme modules ES et leur transmet les données d'analyse ; dépend en priorité de l'API `W.AO3H_ReadingTracker.getHistory()` de **Reading Tracker** — `ao3h:readingHistory:data` n'est qu'un ancien nom de clé de repli, jamais écrit nulle part dans le code actuel
 
 ### 2. `historyAnalytics.js` — analyser l'historique de lecture
 
