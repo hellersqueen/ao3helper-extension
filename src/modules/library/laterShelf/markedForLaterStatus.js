@@ -27,7 +27,7 @@ import { register } from '../../../core/lifecycle.js';
 import { loadItems, saveItems, updateItem, removeItem, reorderItems, getGroups, cfg } from './laterShelfStore.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { observe } from '../../../../lib/utils/index.js';
-import { extractWorkIdFromBlurb, parseChapterCount } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromBlurb, getBlurbMeta, parseChapterCount } from '../../../../lib/ao3/parsers.js';
 import { createBulkSelect } from '../../../../lib/ui/bulk-select.js';
 import { showToast } from '../../../../lib/ui/toast.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
@@ -78,10 +78,6 @@ register(MOD, {
       });
   }
 
-  function widFromBlurb (blurb) {
-    return extractWorkIdFromBlurb(blurb);
-  }
-
   function numFromBlurb (blurb, cls) {
     var stats = blurb.querySelector('dl.stats');
     var el = stats && stats.querySelector('dd.' + cls);
@@ -103,7 +99,7 @@ register(MOD, {
   function injectMFLBadges () {
     const wids = new Set(loadItems().map(function (i) { return String(i.wid || i); }));
     D.querySelectorAll('li.work.blurb, li.bookmark.blurb').forEach(function (blurb) {
-      const wid = widFromBlurb(blurb);
+      const wid = extractWorkIdFromBlurb(blurb);
       if (!wid || !wids.has(wid)) return;
       appendHeadingBadge(blurb, { className: 'ao3h-ls-badge', text: '📌', title: 'In your Later Shelf' });
     });
@@ -113,7 +109,7 @@ register(MOD, {
   function injectUpdateBadges () {
     const map = itemsMap();
     D.querySelectorAll('li.work.blurb, li.bookmark.blurb').forEach(function (blurb) {
-      const wid = widFromBlurb(blurb);
+      const wid = extractWorkIdFromBlurb(blurb);
       const item = map[wid];
       if (!item || item.chaptersAtAdd == null || blurb.querySelector('.ao3h-ls-update-badge')) return;
       const parsed = parseChapterCount(blurb.querySelector('dd.chapters'));
@@ -164,7 +160,7 @@ register(MOD, {
     var dateMap = {};
     loadItems().forEach(function (i) { if (i.wid && i.addedAt) dateMap[String(i.wid)] = i.addedAt; });
     D.querySelectorAll('.bookmark.blurb').forEach(function (blurb) {
-      const wid = widFromBlurb(blurb);
+      const wid = extractWorkIdFromBlurb(blurb);
       if (!wid || !dateMap[wid]) return;
       if (blurb.querySelector('.ao3h-ls-date')) return;
       var el = D.createElement('span');
@@ -195,7 +191,7 @@ register(MOD, {
   function injectItemControls () {
     const map = itemsMap();
     D.querySelectorAll('.bookmark.blurb').forEach(function (blurb) {
-      const wid = widFromBlurb(blurb);
+      const wid = extractWorkIdFromBlurb(blurb);
       const item = map[wid];
       if (!wid || !item || blurb.querySelector('.ao3h-ls-controls')) return;
 
@@ -364,12 +360,12 @@ register(MOD, {
   }
 
   function buildEntry (blurb, map) {
-    var wid = widFromBlurb(blurb);
+    var wid = extractWorkIdFromBlurb(blurb);
     var item = map[wid] || {};
     return {
       wid: wid,
       blurbEl: blurb,
-      title: (blurb.querySelector('h4.heading a') || {}).textContent || '',
+      title: getBlurbMeta(blurb)?.title || '',
       words: parseInt(((blurb.querySelector('.words') || {}).textContent || '0').replace(/\D/g, ''), 10) || 0,
       updated: (function () {
         var t = (blurb.querySelector('.datetime') || {}).textContent || '';
@@ -421,7 +417,7 @@ register(MOD, {
     if (!draggedEl) return;
     e.preventDefault();
     var ol = draggedEl.parentNode;
-    var order = Array.from(ol.querySelectorAll(':scope > li')).map(widFromBlurb).filter(Boolean);
+    var order = Array.from(ol.querySelectorAll(':scope > li')).map(extractWorkIdFromBlurb).filter(Boolean);
     reorderItems(order);
     draggedEl = null;
   }
@@ -489,7 +485,7 @@ register(MOD, {
         if (fandoms.indexOf(fandom) === -1) show = false;
       }
       if (show && group) {
-        var wid = widFromBlurb(blurb);
+        var wid = extractWorkIdFromBlurb(blurb);
         var item = map[wid];
         if (!item || (item.group || '') !== group) show = false;
       }
@@ -520,7 +516,7 @@ register(MOD, {
       var toRemove = [];
       var anyFormSubmitted = false;
       selected.forEach(function (blurb) {
-        var wid = widFromBlurb(blurb);
+        var wid = extractWorkIdFromBlurb(blurb);
         if (wid) toRemove.push(wid);
         var form = blurb.querySelector('form[data-method="delete"], form[action*="mark_for_later"]');
         if (form) { anyFormSubmitted = true; form.submit(); } else { blurb.remove(); }

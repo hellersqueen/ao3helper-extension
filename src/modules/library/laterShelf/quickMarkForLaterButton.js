@@ -29,7 +29,7 @@ import { register } from '../../../core/lifecycle.js';
 import { loadItems, addItem, removeItem, restoreItem, cfg } from './laterShelfStore.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
-import { extractWorkIdFromBlurb, parseChapterCount } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromBlurb, getBlurbMeta, parseChapterCount } from '../../../../lib/ao3/parsers.js';
 import { showToast } from '../../../../lib/ui/toast.js';
 import { createBulkSelect } from '../../../../lib/ui/bulk-select.js';
 
@@ -56,13 +56,8 @@ register(MOD, {
      FEATURE — SHELF HELPERS
   ═════════════════════════════════════════════════════════════════════════ */
 
-  function widFromBlurb (blurb) {
-    return extractWorkIdFromBlurb(blurb);
-  }
-
   function titleFromBlurb (blurb) {
-    const a = blurb.querySelector('h4.heading a[href*="/works/"]');
-    return a ? a.textContent.trim() : '';
+    return getBlurbMeta(blurb)?.title || '';
   }
 
   function chapterSnapshotFromBlurb (blurb) {
@@ -158,7 +153,7 @@ register(MOD, {
   function injectButtons () {
     D.querySelectorAll('li.work.blurb, li.bookmark.blurb').forEach(function (blurb) {
       if (blurb.querySelector('.ao3h-ls-btn')) return;
-      var wid = widFromBlurb(blurb);
+      var wid = extractWorkIdFromBlurb(blurb);
       if (!wid) return;
       var title = titleFromBlurb(blurb);
       var active = isInShelf(wid);
@@ -187,7 +182,7 @@ register(MOD, {
     btn.addEventListener('click', function () {
       var added = 0;
       main.querySelectorAll('li.work.blurb').forEach(function (blurb) {
-        var wid = widFromBlurb(blurb);
+        var wid = extractWorkIdFromBlurb(blurb);
         if (!wid || isInShelf(wid)) return;
         addItem(wid, titleFromBlurb(blurb), chapterSnapshotFromBlurb(blurb));
         added++;
@@ -213,7 +208,7 @@ register(MOD, {
       onRemove: function (blurbs) {
         var added = 0;
         blurbs.forEach(function (blurb) {
-          var wid = widFromBlurb(blurb);
+          var wid = extractWorkIdFromBlurb(blurb);
           if (!wid || isInShelf(wid)) return;
           addItem(wid, titleFromBlurb(blurb), chapterSnapshotFromBlurb(blurb));
           added++;

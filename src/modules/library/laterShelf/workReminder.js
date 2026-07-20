@@ -32,10 +32,11 @@ import { register } from '../../../core/lifecycle.js';
 import { cfg, loadItems } from './laterShelfStore.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { sendNotification, requestNotifyPermission } from '../../../../lib/utils/notifications.js';
-import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromBlurb, getBlurbMeta } from '../../../../lib/ao3/parsers.js';
 import { showToast } from '../../../../lib/ui/toast.js';
 import { KEY_ACTIVITY_PANEL_SESSIONS, getWorkIdsByStatus } from '../../../../lib/storage/keys.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -68,21 +69,21 @@ register(MOD, {
   ═════════════════════════════════════════════════════════════════════════ */
 
   function loadReminders () {
-    try { return JSON.parse(localStorage.getItem(SK_REMINDERS) || '{}'); } catch (_) { return {}; }
+    return lsGet(SK_REMINDERS, {});
   }
 
   function saveReminders (obj) {
-    try { localStorage.setItem(SK_REMINDERS, JSON.stringify(obj)); } catch (_) {}
+    lsSet(SK_REMINDERS, obj);
   }
 
   function loadHistory () {
-    try { return JSON.parse(localStorage.getItem(SK_HISTORY) || '[]'); } catch (_) { return []; }
+    return lsGet(SK_HISTORY, []);
   }
 
   function recordHistory (entry) {
     var history = loadHistory();
     history.unshift(Object.assign({}, entry, { at: Date.now() }));
-    try { localStorage.setItem(SK_HISTORY, JSON.stringify(history.slice(0, 200))); } catch (_) {}
+    lsSet(SK_HISTORY, history.slice(0, 200));
   }
 
   function setReminder (wid, title, remindAt, extra) {
@@ -116,10 +117,7 @@ register(MOD, {
 
   /** Peak reading hour from activityPanel's session history (soft cross-module read, may be empty). */
   function peakHour () {
-    try {
-      var sessions = JSON.parse(localStorage.getItem(KEY_ACTIVITY_PANEL_SESSIONS) || '[]');
-      return peakHourFromSessions(sessions);
-    } catch (_) { return null; }
+    return peakHourFromSessions(lsGet(KEY_ACTIVITY_PANEL_SESSIONS, []));
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -213,8 +211,7 @@ register(MOD, {
       if (blurb.querySelector('.ao3h-ls-remind-btn')) return;
       var wid = extractWorkIdFromBlurb(blurb);
       if (!wid) return;
-      var titleLink = blurb.querySelector('h4.heading a[href*="/works/"]');
-      var title = titleLink ? titleLink.textContent.trim() : '';
+      var title = getBlurbMeta(blurb)?.title || '';
       var btn = D.createElement('button');
       btn.type = 'button';
       btn.className = 'ao3h-ls-remind-btn';

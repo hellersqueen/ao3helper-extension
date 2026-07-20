@@ -26,6 +26,7 @@ import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
 import { extractWorkIdFromHref, parseChapterCount } from '../../../../lib/ao3/parsers.js';
 import { showToast } from '../../../../lib/ui/toast.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -66,11 +67,11 @@ export const cfg = makeCfg(MOD, DEFAULTS);
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export function loadItems () {
-  try { return JSON.parse(localStorage.getItem(SK_ITEMS) || '[]'); } catch { return []; }
+  return lsGet(SK_ITEMS, []);
 }
 
 export function saveItems (items) {
-  try { localStorage.setItem(SK_ITEMS, JSON.stringify(items)); } catch { /* unavailable */ }
+  lsSet(SK_ITEMS, items);
 }
 
 /**
@@ -161,11 +162,11 @@ export function getGroups () {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export function loadArchive () {
-  try { return JSON.parse(localStorage.getItem(SK_ARCHIVE) || '[]'); } catch { return []; }
+  return lsGet(SK_ARCHIVE, []);
 }
 
 function saveArchive (entries) {
-  try { localStorage.setItem(SK_ARCHIVE, JSON.stringify(entries)); } catch { /* unavailable */ }
+  lsSet(SK_ARCHIVE, entries);
 }
 
 function archiveItem (item) {
