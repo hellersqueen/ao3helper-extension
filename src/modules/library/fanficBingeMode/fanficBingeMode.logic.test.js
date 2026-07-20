@@ -7,7 +7,7 @@ import {
   pickNextQueueEntry,
   isResumable,
   resumableEntries,
-} from './_fanficBingeMode.js';
+} from './fanficBingeMode.js';
 
 describe('nextPriority', () => {
   it('cycle low → medium → high → low', () => {

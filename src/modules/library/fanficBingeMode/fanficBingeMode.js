@@ -34,9 +34,10 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet, observe, onReady } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
 import { relativeDate } from '../../../../lib/utils/format-date.js';
 import { showToast, clearAllToasts } from '../../../../lib/ui/toast.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 import styles from './fanficBingeMode.css?inline';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -111,12 +112,6 @@ const SK_RT_PROGRESS_PREFIX = 'ao3h:rt:progress:';  // readingTracker — soft d
 const cfg = makeCfg(MOD, DEFAULTS);
 
 function isHomePage ()  { return location.pathname === '/' || location.pathname === '/home'; }
-function isListPage ()  {
-  return /^\/works$/.test(location.pathname) ||
-         /^\/tags\/[^/]+\/works/.test(location.pathname) ||
-         /^\/users\/[^/]+\/(bookmarks|works|history)/.test(location.pathname) ||
-         /^\/collections\/[^/]+\/works/.test(location.pathname);
-}
 function getWorkId () {
   return extractWorkIdFromHref(location.pathname);
 }
@@ -173,7 +168,7 @@ function showContinueModal () {
     <div id="${MODAL_ID}">
       <button id="${MODAL_ID}-close" title="Close">&times;</button>
       <h3>You've reached the end!</h3>
-      <p>Finished reading <em>${workTitle.replace(/</g, '&lt;')}</em>. What next?</p>
+      <p>Finished reading <em>${escapeHtml(workTitle)}</em>. What next?</p>
       <div class="${NS}-fbm-actions">
         <button class="primary ${NS}-fbm-btn-read">Mark as Read</button>
         <button class="${NS}-fbm-btn-bookmark">Bookmark</button>
@@ -257,7 +252,7 @@ function getResumableEntries () {
 }
 
 function buildResumeItemHTML (entry) {
-  const title = entry.title ? entry.title.replace(/</g, '&lt;') : `Work ${entry.id}`;
+  const title = entry.title ? escapeHtml(entry.title) : `Work ${entry.id}`;
   const href  = entry.chapterHref || entry.href || `/works/${entry.id}`;
   const ch    = entry.chapter ? `<span class="${NS}-fbm-meta">Ch ${entry.chapter}</span>` : '';
   const ago   = entry.lastReadAt ? relativeDate(entry.lastReadAt) : null;
@@ -299,7 +294,7 @@ function injectResumeWidget () {
   const [entry] = getResumableEntries();
   if (!entry) return;
 
-  const title = entry.title ? entry.title.replace(/</g, '&lt;') : `Work ${entry.id}`;
+  const title = entry.title ? escapeHtml(entry.title) : `Work ${entry.id}`;
   const href  = entry.chapterHref || entry.href || `/works/${entry.id}`;
   const widget = document.createElement('a');
   widget.id        = RESUME_WIDGET_ID;
@@ -315,7 +310,7 @@ function maybeInjectReminders () {
 
   if (scope === 'home') return;
   if (isHomePage()) return; // homepage already has the full panel above
-  if (scope === 'home+search' && !isListPage()) return;
+  if (scope === 'home+search' && !isListingPage()) return;
   injectResumeWidget();
 }
 
@@ -357,7 +352,7 @@ function injectPostReadingSuggestions () {
   const panel  = document.createElement('div');
   panel.id     = SUGG_ID;
   const items  = links.map(l =>
-    `<a class="${NS}-fbm-sugg-link" href="${l.href}">${l.label.replace(/</g, '&lt;')}</a>`
+    `<a class="${NS}-fbm-sugg-link" href="${l.href}">${escapeHtml(l.label)}</a>`
   ).join('');
   panel.innerHTML = `<h3>What to read next</h3><div class="${NS}-fbm-sugg-list">${items}</div>`;
 
@@ -411,8 +406,8 @@ function buildQueueItem (e) {
   li.dataset.id = e.id;
   li.draggable  = true;
 
-  const safeTitle = e.title?.replace(/</g, '&lt;') ?? `Work ${e.id}`;
-  const safeAttr  = e.title?.replace(/"/g, '&quot;') ?? '';
+  const safeTitle = e.title ? escapeHtml(e.title) : `Work ${e.id}`;
+  const safeAttr  = e.title ? escapeHtml(e.title) : '';
   const icon      = priorityIcon(e.priority);
   const pct       = getReadProgress(e.id);
   const progressEl = pct !== null
@@ -614,7 +609,7 @@ register(MOD, {
     // Reading queue (listing pages + work pages)
     if (cfg('queueEnabled')) {
       injectQueuePanel();
-      if (isListPage()) addQueueButtonsToBlurbs();
+      if (isListingPage()) addQueueButtonsToBlurbs();
       startObserver();
     }
 

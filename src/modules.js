@@ -146,7 +146,7 @@ const FEATURES = {
   activityPanel:       { load: loadActivityPanel, routes: ['work', 'dashboard'] },
   readingTimeline:     { load: () => import('./modules/library/readingTimeline/_readingTimeline.js'), routes: ['dashboard', 'readings'] },
   notificationCenter:  { load: () => import('./modules/library/notificationCenter/notificationCenter.js'), routes: ['all'] },
-  fanficBingeMode:     { load: () => import('./modules/library/fanficBingeMode/_fanficBingeMode.js'), routes: ['home', 'work', 'listing'] },
+  fanficBingeMode:     { load: () => import('./modules/library/fanficBingeMode/fanficBingeMode.js'), routes: ['home', 'work', 'listing'] },
   mainNavigation:      { load: () => import('./modules/navigate/mainNavigation/_mainNavigation.js'), routes: ['all'] },
   keyboardShortcuts:   { load: () => import('./modules/navigate/keyboardShortcuts/keyboardShortcuts.js'), routes: ['all'] },
   userRelationships:   { load: loadUserRelationships, routes: ['work', 'listing', 'dashboard'] },

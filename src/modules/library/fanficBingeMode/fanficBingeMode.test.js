@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 async function boot (settings = {}) {
   localStorage.setItem('ao3h:mod:fanficBingeMode:settings', JSON.stringify(settings));
   const { setEnabled } = await import('../../../core/lifecycle.js');
-  await import('./_fanficBingeMode.js');
+  await import('./fanficBingeMode.js');
   await setEnabled('fanficBingeMode', true);
   return { setEnabled };
 }
