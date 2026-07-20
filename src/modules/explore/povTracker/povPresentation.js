@@ -20,6 +20,7 @@ Notes
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { observe } from '../../../../lib/utils/index.js';
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -40,11 +41,6 @@ const POV_META = {
   multi   : { label: 'Multi POV',  cfgKey: 'badgeMulti',   color: '#8b4513' },
   unknown : { label: 'POV ?',      cfgKey: 'badgeUnknown', color: '#888888' },
 };
-
-function workIdFromBlurb (blurb) {
-  const m = (blurb.id || '').match(/^work_(\d+)$/);
-  return m ? m[1] : null;
-}
 
 export class PovPresentation {
   /** @param {{ cfg: Function, NS: string, parsePreferredPovs: Function }} opts */
@@ -70,7 +66,7 @@ export class PovPresentation {
     if (!this.cfg('showBadgesOnBlurbs')) return;
     if (blurb.querySelector('.ao3h-pov-badge')) return; // already done
 
-    const workId = workIdFromBlurb(blurb);
+    const workId = extractWorkIdFromBlurb(blurb);
     if (!workId) return;
 
     const api      = W.AO3H_PovTracker;
