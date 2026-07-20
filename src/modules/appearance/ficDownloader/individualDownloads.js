@@ -18,7 +18,7 @@ Notes
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
-import { extractWorkIdFromBlurb, isListingPage as libIsListingPage } from '../../../../lib/ao3/parsers.js';
+import { isListingPage as libIsListingPage } from '../../../../lib/ao3/parsers.js';
 import { onReady, observe } from '../../../../lib/utils/index.js';
 
 
@@ -29,6 +29,7 @@ import { onReady, observe } from '../../../../lib/utils/index.js';
 
 const W = getGlobalWindow();
 const buildWorkHTML = (...args) => W.AO3H.ficDownloader.buildWorkHTML(...args);
+const getBlurbInfo  = (...args) => W.AO3H.ficDownloader.getBlurbInfo(...args);
 
 export class BlurbDownloadButton {
   constructor(config = {}) {
@@ -107,21 +108,6 @@ export class BlurbDownloadButton {
     }
   }
 
-  getWorkIdFromBlurb(blurb) {
-    return extractWorkIdFromBlurb(blurb);
-  }
-
-  getWorkTitle(blurb) {
-    const titleLink = blurb.querySelector('h4.heading > a');
-    return titleLink?.textContent.trim() || 'Untitled';
-  }
-
-  getWorkAuthor(blurb) {
-    const authorLink = blurb.querySelector('a[rel="author"]');
-    return authorLink?.textContent.trim() || 'Anonymous';
-  }
-
-
   /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — BLURB CONTROLS
   ═════════════════════════════════════════════════════════════════════════ */
@@ -132,11 +118,8 @@ export class BlurbDownloadButton {
       return;
     }
 
-    const workId = this.getWorkIdFromBlurb(blurb);
+    const { workId, title, author } = getBlurbInfo(blurb);
     if (!workId) return;
-
-    const title = this.getWorkTitle(blurb);
-    const author = this.getWorkAuthor(blurb);
 
     const icon = this.createDownloadIcon();
     icon.addEventListener('click', async (e) => {

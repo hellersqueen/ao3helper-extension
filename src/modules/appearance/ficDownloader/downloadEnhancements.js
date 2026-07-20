@@ -28,6 +28,7 @@ import { onReady, observe } from '../../../../lib/utils/index.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const W = getGlobalWindow();
+const getBlurbInfo = (...args) => W.AO3H.ficDownloader.getBlurbInfo(...args);
 
 const FORMATS     = ['epub', 'mobi', 'azw3', 'pdf', 'html'];
 const FORMAT_KEY  = 'ao3h:ficDownloader:format';
@@ -141,20 +142,6 @@ export class DownloadEnhancements {
   _swapDownloadFormat (fmt) {
     const link = this._getDownloadLinkEl();
     if (link) link.href = link.href.replace(/\.\w+(\?|$)/, `.${fmt}$1`);
-  }
-
-  _getBlurbInfo (blurb) {
-    const titleLink  = blurb.querySelector('h4.heading > a');
-    const authorLink = blurb.querySelector('a[rel="author"]');
-    const fandomLink = blurb.querySelector('.fandoms a');
-    const ratingEl   = blurb.querySelector('.rating .text');
-    return {
-      workId: extractWorkIdFromHref(titleLink?.href),
-      title:  titleLink?.textContent.trim()  || 'Untitled',
-      author: authorLink?.textContent.trim() || 'Anonymous',
-      fandom: fandomLink?.textContent.trim() || '',
-      rating: ratingEl?.textContent.trim()   || '',
-    };
   }
 
   _safeFilename (str, maxLen = 60) {
@@ -620,7 +607,7 @@ export class DownloadEnhancements {
 
   _addBlurbButton (blurb) {
     if (blurb.querySelector('.ao3h-dl-btn-wrap')) return;
-    const { workId, title, author, fandom, rating } = this._getBlurbInfo(blurb);
+    const { workId, title, author, fandom, rating } = getBlurbInfo(blurb);
     if (!workId) return;
     const actionsList = blurb.querySelector('ul.actions');
     if (!actionsList) return;
@@ -803,7 +790,7 @@ export class DownloadEnhancements {
       const format = this.getFormat();
       let idx      = 1;
       for (const blurb of blurbs) {
-        const { workId, title, author } = this._getBlurbInfo(blurb);
+        const { workId, title, author } = getBlurbInfo(blurb);
         if (workId) {
           this._addToQueue(workId, `${String(idx).padStart(2, '0')}_${title}`, author, format);
           idx++;

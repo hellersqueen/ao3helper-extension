@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { BlurbDownloadButton } from './individualDownloads.js';
+import { getBlurbInfo } from './_ficDownloader.js';
 
 function setListingPage() {
   history.pushState(null, '', '/works');
@@ -10,10 +11,13 @@ beforeEach(() => {
   document.body.innerHTML = `
     <li class="blurb work" id="work_1"><h4 class="heading"><a href="/works/1">Title</a></h4></li>
   `;
+  window.AO3H = window.AO3H || {};
+  window.AO3H.ficDownloader = { getBlurbInfo };
 });
 afterEach(() => {
   document.body.innerHTML = '';
   history.pushState(null, '', '/');
+  delete window.AO3H.ficDownloader;
 });
 
 describe('BlurbDownloadButton — réglage showQuickDownloadButtons (enabled)', () => {

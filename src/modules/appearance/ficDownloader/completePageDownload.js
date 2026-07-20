@@ -18,7 +18,6 @@ Notes
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
-import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 
 
 
@@ -27,6 +26,7 @@ import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const W = getGlobalWindow();
+const getBlurbInfo = (...args) => W.AO3H.ficDownloader.getBlurbInfo(...args);
 
 const DEFAULTS = { maxWorks: 100, delayMs: 2000, format: 'html' };
 const FORMATS  = ['html', 'epub', 'mobi', 'azw3', 'pdf'];
@@ -64,16 +64,6 @@ export class CompletePageDownload {
 
   _getWorkBlurbs () {
     return Array.from(document.querySelectorAll('li.blurb[id^="work_"]'));
-  }
-
-  _getWorkInfo (blurb) {
-    const titleLink  = blurb.querySelector('h4.heading > a');
-    const authorLink = blurb.querySelector('a[rel="author"]');
-    return {
-      workId: extractWorkIdFromHref(titleLink?.href),
-      title:  titleLink?.textContent.trim()  || 'Untitled',
-      author: authorLink?.textContent.trim() || 'Anonymous',
-    };
   }
 
   _getTagName () {
@@ -395,7 +385,7 @@ export class CompletePageDownload {
       if (this._isRunning) return;
       const format = formatSelect.value;
       const works  = this._getWorkBlurbs()
-        .map(b => this._getWorkInfo(b))
+        .map(b => getBlurbInfo(b))
         .filter(w => !!w.workId);
       if (!works.length) return;
       if (works.length > this.maxWorks) {

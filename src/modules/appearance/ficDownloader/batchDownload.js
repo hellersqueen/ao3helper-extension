@@ -18,7 +18,6 @@ Notes
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
-import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { onReady, observe } from '../../../../lib/utils/index.js';
 
 
@@ -29,6 +28,7 @@ import { onReady, observe } from '../../../../lib/utils/index.js';
 
 const W = getGlobalWindow();
 const buildWorkHTML = (...args) => W.AO3H.ficDownloader.buildWorkHTML(...args);
+const getBlurbInfo  = (...args) => W.AO3H.ficDownloader.getBlurbInfo(...args);
 
 export class BatchDownload {
   constructor(config = {}) {
@@ -146,27 +146,13 @@ export class BatchDownload {
     return checkbox;
   }
 
-  getWorkIdFromBlurb(blurb) {
-    return extractWorkIdFromBlurb(blurb);
-  }
-
-  getWorkTitle(blurb) {
-    const titleLink = blurb.querySelector('h4.heading > a');
-    return titleLink?.textContent.trim() || 'Untitled';
-  }
-
-  getWorkAuthor(blurb) {
-    const authorLink = blurb.querySelector('a[rel="author"]');
-    return authorLink?.textContent.trim() || 'Anonymous';
-  }
-
   addCheckboxToBlurb(blurb) {
     // Check if checkbox already added
     if (blurb.querySelector('.ao3h-batch-checkbox')) {
       return;
     }
 
-    const workId = this.getWorkIdFromBlurb(blurb);
+    const workId = getBlurbInfo(blurb).workId;
     if (!workId) return;
 
     const checkbox = this.createCheckbox(workId);
@@ -265,8 +251,9 @@ export class BatchDownload {
 
       const checkbox = this.checkboxes.get(workId);
       const blurb = checkbox?.closest('li.blurb');
-      const title = blurb ? this.getWorkTitle(blurb) : 'Unknown';
-      const author = blurb ? this.getWorkAuthor(blurb) : 'Unknown';
+      const info = blurb ? getBlurbInfo(blurb) : null;
+      const title = info?.title || 'Unknown';
+      const author = info?.author || 'Unknown';
 
       progressText.textContent = `Downloading "${title}" (${completed + 1}/${total})...`;
 

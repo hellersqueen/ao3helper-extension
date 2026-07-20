@@ -34,6 +34,7 @@ import { register, AO3H } from '../../../core/lifecycle.js';
 import { css } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import styles from './ficDownloader.css?inline';
 
 import { BlurbDownloadButton } from './individualDownloads.js';
@@ -89,6 +90,20 @@ function initAutoCacheMFL (offlineInst) {
   return () => document.removeEventListener(EV_MARKED_FOR_LATER, handler);
 }
 
+export function getBlurbInfo (blurb) {
+  const titleLink  = blurb.querySelector('h4.heading > a');
+  const authorLink = blurb.querySelector('a[rel="author"]');
+  const fandomLink = blurb.querySelector('.fandoms a');
+  const ratingEl   = blurb.querySelector('.rating .text');
+  return {
+    workId: extractWorkIdFromBlurb(blurb),
+    title:  titleLink?.textContent.trim()  || 'Untitled',
+    author: authorLink?.textContent.trim() || 'Anonymous',
+    fandom: fandomLink?.textContent.trim() || '',
+    rating: ratingEl?.textContent.trim()   || '',
+  };
+}
+
 export function buildWorkHTML ({ title, author, summary = '', notes = '', chaptersHTML = '' }) {
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -114,7 +129,7 @@ register(
     dependencies: ['laterShelf'],
   },
   async function init () {
-    AO3H.ficDownloader = { buildWorkHTML };
+    AO3H.ficDownloader = { buildWorkHTML, getBlurbInfo };
     const logger    = AO3H.logger || null;
     const instances = [];
     const cleanups  = [];
@@ -166,6 +181,7 @@ register(
     // ── Public API ────────────────────────────────────────────────────────
     AO3H.ficDownloader = {
       buildWorkHTML,
+      getBlurbInfo,
       getFormat:       () => enhInst?.getFormat?.()          ?? 'epub',
       setFormat:       (fmt) => enhInst?.setFormat?.(fmt),
       getOfflineWorks: () => offlineInst?.getAllWorks?.()     ?? {},
