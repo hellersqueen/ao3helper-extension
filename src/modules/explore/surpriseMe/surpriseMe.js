@@ -40,7 +40,8 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { getHistoryWorkIdSet, addLaterShelfItem } from '../../../../lib/storage/keys.js';
-import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromBlurb, getBlurbMeta, isListingPage } from '../../../../lib/ao3/parsers.js';
+import { getBlurbStats } from '../../../../lib/ao3/work-stats.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './surpriseMe.css?inline';
 
@@ -149,20 +150,6 @@ const cfg = makeCfg(MOD, DEFAULTS);
    FEATURE — ELIGIBLE WORK SELECTION
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function isListingPage () {
-  const p = location.pathname;
-  return /^\/works(\?|$)/.test(p) ||
-         /^\/tags\/[^/]+\/works/.test(p) ||
-         /^\/users\/[^/]+\/(bookmarks|works|readings)/.test(p) ||
-         /^\/collections\/[^/]+\/works/.test(p) ||
-         /^\/bookmarks(\?|$)/.test(p) ||
-         /^\/search/.test(p);
-}
-
-function getWorkId (blurb) {
-  return extractWorkIdFromBlurb(blurb);
-}
-
 function isVisible (el) {
   return el.offsetParent !== null &&
          getComputedStyle(el).display !== 'none' &&
@@ -188,7 +175,7 @@ function getLocalEligibleBlurbs ({ seenIds, excludeIds }) {
 
   all = all.filter(isVisible);
   all = all.filter(b => {
-    const id = getWorkId(b);
+    const id = extractWorkIdFromBlurb(b);
     return !id || (!seenIds.has(id) && !excludeIds.has(id));
   });
 
@@ -246,7 +233,7 @@ async function buildCandidatePool () {
   const extra = await fetchExtraPageBlurbs();
   const eligibleExtra = filterEligible(extra, { completedOnly: cfg('completedOnly'), minWords: getMinWords() })
     .filter(b => {
-      const id = getWorkId(b);
+      const id = extractWorkIdFromBlurb(b);
       return !id || (!seenIds.has(id) && !excludeIds.has(id));
     });
 
@@ -259,16 +246,19 @@ function getWorkUrl (blurb) {
 }
 
 function getWorkMeta (blurb) {
-  const title   = blurb.querySelector('.heading a[href*="/works/"]')?.textContent.trim() || '(untitled)';
-  const author  = blurb.querySelector('[rel="author"]')?.textContent.trim() || '?';
-  const summary = blurb.querySelector('.summary blockquote, blockquote.userstuff')?.textContent.trim() || '';
-  const words   = blurb.querySelector('dd.words')?.textContent.trim() || '';
-  const kudos   = blurb.querySelector('dd.kudos a')?.textContent.trim() || '0';
-  return { title, author, summary: summary.slice(0, 200), words, kudos };
+  const meta  = getBlurbMeta(blurb);
+  const stats = getBlurbStats(blurb);
+  return {
+    title:   meta.title || '(untitled)',
+    author:  meta.author || '?',
+    summary: (meta.summary || '').slice(0, 200),
+    words:   stats.words != null ? stats.words.toLocaleString() : '',
+    kudos:   stats.kudos != null ? stats.kudos.toLocaleString() : '0',
+  };
 }
 
 function rememberDraw (blurb) {
-  const id = getWorkId(blurb);
+  const id = extractWorkIdFromBlurb(blurb);
   if (!id) return;
   recordDraw({ id, title: getWorkMeta(blurb).title, href: getWorkUrl(blurb) });
 }
@@ -302,7 +292,7 @@ function showPreview (blurb, container) {
 
   previewEl.querySelector('[data-go]').addEventListener('click', () => { location.href = url; });
   previewEl.querySelector('[data-add-later]').addEventListener('click', (e) => {
-    const id = getWorkId(blurb);
+    const id = extractWorkIdFromBlurb(blurb);
     if (addLaterShelfItem(id, meta.title)) {
       e.target.textContent = '📌 Added';
       e.target.disabled = true;
@@ -335,7 +325,7 @@ let multiPreviewEl = null;
 function showMultiPreview (blurbs, container) {
   removeMultiPreview();
 
-  const items = blurbs.map(b => ({ id: getWorkId(b), url: getWorkUrl(b), meta: getWorkMeta(b) }))
+  const items = blurbs.map(b => ({ id: extractWorkIdFromBlurb(b), url: getWorkUrl(b), meta: getWorkMeta(b) }))
     .filter(item => item.id && item.url);
   if (!items.length) { showNoResults(); return; }
 
