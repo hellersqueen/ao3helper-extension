@@ -19,6 +19,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { onReady, observe } from '../../../../lib/utils/index.js';
+import { parseStatNumber } from '../../../../lib/ao3/work-stats.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -70,11 +71,6 @@ export class LengthDisplay {
     );
   }
 
-  parseWordCount(el) {
-    const text = el.textContent.trim().replace(/,/g, '');
-    return parseInt(text, 10) || 0;
-  }
-
   getDynamicCategory(words) {
     const tFlash   = this.cfg('thresholdFlash')   ?? 1000;
     const tShort   = this.cfg('thresholdShort')   ?? 17500;
@@ -120,7 +116,7 @@ export class LengthDisplay {
 
   inject(ddEl) {
     if (ddEl.querySelector(`.${this.NS}-wl-badge`)) return;
-    const words = this.parseWordCount(ddEl);
+    const words = parseStatNumber(ddEl);
     const html  = this.buildBadgeHTML(words);
     if (html) ddEl.insertAdjacentHTML('beforeend', html);
   }
@@ -135,11 +131,11 @@ export class LengthDisplay {
   applyGradient() {
     if (!this.cfg('lengthGradient')) return;
     const ddEls = [...document.querySelectorAll('.blurb .stats dd.words, .index .stats dd.words')];
-    const counts = ddEls.map(el => this.parseWordCount(el)).filter(w => w > 0);
+    const counts = ddEls.map(el => parseStatNumber(el)).filter(w => w > 0);
     if (counts.length < 2) return;
     const min = Math.min(...counts), max = Math.max(...counts);
     ddEls.forEach(el => {
-      const words = this.parseWordCount(el);
+      const words = parseStatNumber(el);
       if (words > 0) {
         el.classList.add(`${this.NS}-wl-gradient`);
         el.style.backgroundColor = this.helpers.gradientColor(words, min, max);
@@ -155,7 +151,7 @@ export class LengthDisplay {
     if (!wordsEl || !chaptersEl || wordsEl.querySelector(`.${this.NS}-wl-avgch`)) return;
     const progress = this.helpers.parseChapterProgress(chaptersEl.textContent);
     if (!progress || progress.published < 2) return;
-    const avg = this.helpers.avgChapterWords(this.parseWordCount(wordsEl), progress.published);
+    const avg = this.helpers.avgChapterWords(parseStatNumber(wordsEl), progress.published);
     if (!avg) return;
     wordsEl.insertAdjacentHTML('beforeend',
       `<span class="${this.NS}-wl-avgch" title="Average chapter length (${progress.published} chapters)">📊 ~${avg.toLocaleString()} w/ch</span>`);
@@ -167,7 +163,7 @@ export class LengthDisplay {
     if (document.querySelector(`.${this.NS}-wl-series-total`)) return;
     const ddEls = [...document.querySelectorAll('li.blurb .stats dd.words')];
     if (ddEls.length < 2) return;
-    const total = ddEls.reduce((sum, el) => sum + this.parseWordCount(el), 0);
+    const total = ddEls.reduce((sum, el) => sum + parseStatNumber(el), 0);
     if (total < 100) return;
 
     const banner = document.createElement('div');

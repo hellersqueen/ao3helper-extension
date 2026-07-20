@@ -21,6 +21,7 @@ Notes
 import { upsertChapterBadgePart, removeChapterBadgePartsByKey } from '../../../../lib/ui/badges.js';
 import { onReady, observe, countWords } from '../../../../lib/utils/index.js';
 import { getChapterProse } from '../../../../lib/ao3/work-page.js';
+import { parseStatNumber } from '../../../../lib/ao3/work-stats.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -52,11 +53,6 @@ export class ReadingTime {
     const h = Math.floor(minutes / 60);
     const m = Math.round(minutes % 60);
     return m > 0 ? `${h}h${String(m).padStart(2, '0')}min` : `${h}h`;
-  }
-
-  parseWordCount(el) {
-    const text = el.textContent.trim().replace(/,/g, '');
-    return parseInt(text, 10) || 0;
   }
 
 
@@ -100,7 +96,7 @@ export class ReadingTime {
     const current    = this.getCurrentChapterNumber();
     if (!progress || !current || progress.published < 2) return;
 
-    const left = this.helpers.remainingWordsAfterChapter(this.parseWordCount(statEl), current, progress.published);
+    const left = this.helpers.remainingWordsAfterChapter(parseStatNumber(statEl), current, progress.published);
     if (left === null || left < 100) return;
     const min = left / this.getWPM();
     statEl.insertAdjacentHTML('beforeend',
@@ -117,7 +113,7 @@ export class ReadingTime {
     const chaptersEl = document.querySelector('dl.stats dd.chapters');
     const progress   = chaptersEl ? this.helpers.parseChapterProgress(chaptersEl.textContent) : null;
     const current    = this.getCurrentChapterNumber();
-    const words      = this.parseWordCount(statEl);
+    const words      = parseStatNumber(statEl);
     const effective  = (progress && current)
       ? this.helpers.remainingWordsAfterChapter(words, current, progress.published) ?? words
       : words;
@@ -135,7 +131,7 @@ export class ReadingTime {
 
   injectTimeBadge(ddEl, onWorkPage = false) {
     if (ddEl.querySelector(`.${this.NS}-wl-time`)) return;
-    const words = this.parseWordCount(ddEl);
+    const words = parseStatNumber(ddEl);
     const html  = this.buildTimeBadge(words, onWorkPage);
     if (html) ddEl.insertAdjacentHTML('beforeend', html);
   }
