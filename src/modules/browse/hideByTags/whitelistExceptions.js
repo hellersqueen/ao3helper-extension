@@ -108,10 +108,7 @@ export class WhitelistExceptions {
       importItems: async (incoming) => {
         if (!Array.isArray(incoming)) throw new Error('not a valid tags array');
         const current = await self.getWhitelistTags();
-        const merged  = Array.from(new Set(
-          current.concat(incoming.map(s => String(s).trim().toLowerCase()))
-        )).filter(Boolean);
-        await self.setWhitelistTags(merged);
+        await self.setWhitelistTags(current.concat(incoming));
         try { toast(`Imported ${incoming.length} tags`); } catch {}
       },
       toast: (msg) => { try { toast(msg); } catch {} },

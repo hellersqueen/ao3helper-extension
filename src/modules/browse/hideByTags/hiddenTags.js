@@ -152,11 +152,16 @@ export class HiddenTags {
    * - entries with " + " are AND-combos: every part must match a blurb tag
    *   (e.g. "harry potter + time travel" hides only works carrying both).
    */
-  reasonsFor (scope, hiddenSet, { matchMode = 'exact' } = {}) {
-    if (!(hiddenSet instanceof Set)) return [];
-    const blurbTags = Array.from(scope.querySelectorAll('a.tag'))
+  /** Canonical tag texts found in `scope` — shared by reasonsFor() and the coordinator's whitelist check. */
+  getCanonicalTags (scope) {
+    return Array.from(scope.querySelectorAll('a.tag'))
       .map(a => this.canonicalFromAnchor(a))
       .filter(Boolean);
+  }
+
+  reasonsFor (scope, hiddenSet, { matchMode = 'exact' } = {}) {
+    if (!(hiddenSet instanceof Set)) return [];
+    const blurbTags = this.getCanonicalTags(scope);
     if (!blurbTags.length) return [];
     const tagSet = new Set(blurbTags);
 
@@ -294,10 +299,7 @@ export class HiddenTags {
       importItems: async (incoming) => {
         if (!Array.isArray(incoming)) throw new Error('not a valid tags array');
         const current = await self.getHidden();
-        const merged  = Array.from(new Set(
-          current.concat(incoming.map(s => String(s).trim().toLowerCase()))
-        )).filter(Boolean);
-        await self.setHidden(merged);
+        await self.setHidden(current.concat(incoming));
         await processList();
         try { toast(`Imported ${incoming.length} tags`); } catch {}
       },

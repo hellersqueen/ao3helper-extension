@@ -167,10 +167,7 @@ export class NopeWords {
       importItems: async (incoming) => {
         if (!Array.isArray(incoming)) throw new Error('not a valid words array');
         const current = await self.getNopeWords();
-        const merged  = Array.from(new Set(
-          current.concat(incoming.map(s => String(s).trim().toLowerCase()))
-        )).filter(Boolean);
-        await self.setNopeWords(merged);
+        await self.setNopeWords(current.concat(incoming));
         await processList();
         try { toast(`Imported ${incoming.length} words`); } catch {}
       },

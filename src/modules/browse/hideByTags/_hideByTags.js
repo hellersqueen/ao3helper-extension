@@ -362,8 +362,7 @@ async function processList () {
 
     // Whitelist check
     if (wlEnabled && wlSet.size > 0) {
-      const blurbTags   = Array.from(scopeForTags.querySelectorAll('a.tag'))
-        .map(a => hiddenTagsInst.canonicalFromAnchor(a)).filter(Boolean);
+      const blurbTags   = hiddenTagsInst.getCanonicalTags(scopeForTags);
       const savedByTags = whitelistInst.savedBy(blurbTags, wlSet);
 
       if (savedByTags.length > 0) {
