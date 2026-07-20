@@ -23,8 +23,11 @@ import { downloadJSON, downloadFile } from '../../../../lib/utils/json-file.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { observe, onReady } from '../../../../lib/utils/index.js';
+import { observe, onReady, lsGet } from '../../../../lib/utils/index.js';
 import { relativeDate } from '../../../../lib/utils/format-date.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
+import { SK_DATA, SK_LAST } from './bookmarkStatus/statusIndicators.js';
+import { SK_NOTES } from './richTextNotes.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -39,7 +42,6 @@ const vaultToHTML = (...args) => W.AO3H_BookmarkVault.vaultToHTML(...args);
 const findStaleBookmarks = (...args) => W.AO3H_BookmarkVault.findStaleBookmarks(...args);
 
 const EXPORT_KEY   = 'ao3h:bookmarkVault:lastExport';
-const BM_DATA_KEY  = 'ao3h:bookmarkVault:data';
 
 const DEFAULTS = {
   privateByDefault:        false,
@@ -69,13 +71,11 @@ function applyPrivateDefault () {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function _loadVault () {
-  try { return JSON.parse(localStorage.getItem(BM_DATA_KEY) || '{}'); }
-  catch (_) { return {}; }
+  return lsGet(SK_DATA, {});
 }
 
 function _loadInlineNotes () {
-  try { return JSON.parse(localStorage.getItem('ao3h:bookmarkVault:inlineNotes') || '{}'); }
-  catch (_) { return {}; }
+  return lsGet(SK_NOTES, {});
 }
 
 function doExport (format = 'json') {
@@ -158,10 +158,7 @@ function injectAnalyticsDashboard () {
   if (topFandoms.length) {
     const fDiv = document.createElement('div');
     fDiv.innerHTML = '<strong>Top fandoms:</strong><br>' +
-      topFandoms.map(([f, n]) => {
-        const safe = f.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return `${safe} (${n})`;
-      }).join('<br>');
+      topFandoms.map(([f, n]) => `${escapeHtml(f)} (${n})`).join('<br>');
     inner.appendChild(fDiv);
   }
 
@@ -181,10 +178,7 @@ function injectStaleReminder () {
   if (!/\/users\/[^/]+\/bookmarks/.test(location.pathname)) return;
   if (document.getElementById(`${NS}-bm-stale`)) return;
 
-  const lastRead = (() => {
-    try { return JSON.parse(localStorage.getItem('ao3h:bookmarkVault:lastRead') || '{}'); }
-    catch (_) { return {}; }
-  })();
+  const lastRead = lsGet(SK_LAST, {});
   const stale = new Set(findStaleBookmarks(_loadVault(), lastRead, months));
   if (!stale.size) return;
 

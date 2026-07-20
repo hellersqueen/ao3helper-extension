@@ -32,6 +32,7 @@ AO3 Helper — Bookmark Vault Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { css } from '../../../../lib/utils/index.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 import styles from './bookmarkVault.css?inline';
 
 import { StatusIndicators } from './bookmarkStatus/statusIndicators.js';
@@ -96,7 +97,6 @@ const cfg = makeCfg(MOD, DEFAULTS);
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const csvCell = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
-const escapeHTML = value => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 export function vaultToCSV (data, notes = {}) {
   const rows = [['workId', 'title', 'visibility', 'bookmarkNote', 'personalNote']];
@@ -107,7 +107,7 @@ export function vaultToCSV (data, notes = {}) {
 }
 
 export function vaultToHTML (data, notes = {}) {
-  const rows = Object.entries(data || {}).map(([wid, bookmark]) => `<tr><td><a href="https://archiveofourown.org/works/${escapeHTML(wid)}">${escapeHTML(bookmark?.title || `Work ${wid}`)}</a></td><td>${bookmark?.pub ? 'public' : 'private'}</td><td>${escapeHTML(bookmark?.notes || '')}</td><td>${escapeHTML(notes[wid] || '')}</td></tr>`).join('');
+  const rows = Object.entries(data || {}).map(([wid, bookmark]) => `<tr><td><a href="https://archiveofourown.org/works/${escapeHtml(wid)}">${escapeHtml(bookmark?.title || `Work ${wid}`)}</a></td><td>${bookmark?.pub ? 'public' : 'private'}</td><td>${escapeHtml(bookmark?.notes || '')}</td><td>${escapeHtml(notes[wid] || '')}</td></tr>`).join('');
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>AO3 Bookmarks export</title><style>body{font-family:Georgia,serif;max-width:900px;margin:30px auto;padding:0 16px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:6px 10px;text-align:left}th{background:#f5f5f5}</style></head><body><h1>AO3 Bookmarks (${Object.keys(data || {}).length})</h1><p>Exported ${new Date().toISOString().slice(0, 10)} by AO3 Helper</p><table><tr><th>Work</th><th>Visibility</th><th>Bookmark note</th><th>Personal note</th></tr>${rows}</table></body></html>`;
 }
 

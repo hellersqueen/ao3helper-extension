@@ -19,9 +19,11 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { buildStarsEl } from './personalRatings.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { SK_DATA } from './bookmarkStatus/statusIndicators.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -31,8 +33,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 const D = document;
 const W = getGlobalWindow();
 const isImportantNote = (...args) => W.AO3H_BookmarkVault.isImportantNote(...args);
-const SK_NOTES = 'ao3h:bookmarkVault:inlineNotes';
-const SK_DATA  = 'ao3h:bookmarkVault:data';
+export const SK_NOTES = 'ao3h:bookmarkVault:inlineNotes';
 export const NOTE_HISTORY_KEY = 'ao3h:bookmarkVault:noteHistory';
 export const MAX_VERSIONS = 5;
 
@@ -74,15 +75,8 @@ export class RichTextNotes {
      FEATURE — NOTE STORAGE AND MARKDOWN PREVIEWS
   ═══════════════════════════════════════════════════════════════════════ */
 
-  _loadNotes () {
-    try { return JSON.parse(localStorage.getItem(SK_NOTES) || '{}'); }
-    catch (_) { return {}; }
-  }
-  _saveNotes (n) { try { localStorage.setItem(SK_NOTES, JSON.stringify(n)); } catch (_) {} }
-
   _mdToHtml (text) {
-    return text
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    return escapeHtml(text)
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
       .replace(/`(.+?)`/g, '<code>$1</code>')
@@ -91,9 +85,6 @@ export class RichTextNotes {
 
   _isWorkOrSeries  () { return /^\/(works|series)\/\d+/.test(location.pathname); }
   _isBookmarksPage () { return /\/bookmarks/.test(location.pathname); }
-  _getWorkId (blurb) {
-    return extractWorkIdFromBlurb(blurb);
-  }
   _getKindAndId () {
     const m = location.pathname.match(/\/(works|series)\/(\d+)/);
     return m ? { kind: m[1], id: m[2] } : null;
@@ -165,14 +156,11 @@ export class RichTextNotes {
     if (ids === null) return;
     const isSeries = ids.kind === 'series';
     const meta     = isSeries ? this._extractSeries() : this._extractWork();
-    const esc = s => String(s || '')
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    const summary   = isSeries ? meta.summary : esc(meta.summary);
+    const summary   = isSeries ? meta.summary : escapeHtml(meta.summary);
     const kindLabel = isSeries ? 'Series' : 'Fic';
     const idLabel   = isSeries ? 'SeriesID' : 'WorkID';
     const infoBlock = '<details><summary>' + kindLabel + ' Info</summary>' +
-      '<b>' + esc(meta.title) + ' by ' + esc(meta.author) + '</b> (' + idLabel + ': ' + ids.id + ')' +
+      '<b>' + escapeHtml(meta.title) + ' by ' + escapeHtml(meta.author) + '</b> (' + idLabel + ': ' + ids.id + ')' +
       '<blockquote>Summary: ' + summary + '</blockquote></details>';
     const old = String(notesEl.innerHTML || '');
     if (old.indexOf(ids.id) === -1) {
@@ -212,11 +200,11 @@ export class RichTextNotes {
   ═══════════════════════════════════════════════════════════════════════ */
 
   _processBlurbsForNotes (blurbs) {
-    const notes = this._loadNotes();
+    const notes = lsGet(SK_NOTES, {});
     Array.from(blurbs).forEach(blurb => {
       if (blurb.dataset.bvRtnDone) return;
       blurb.dataset.bvRtnDone = '1';
-      const wid = this._getWorkId(blurb);
+      const wid = extractWorkIdFromBlurb(blurb);
       if (wid === null) return;
       const note = notes[wid] || '';
       const wrap = D.createElement('div');
@@ -247,7 +235,7 @@ export class RichTextNotes {
 
   _openEditor (blurb, wid, wrap, btn) {
     if (wrap.querySelector('.ao3h-bv-editor')) return;
-    const notes  = this._loadNotes();
+    const notes  = lsGet(SK_NOTES, {});
     const editor = D.createElement('div');
     editor.className = 'ao3h-bv-editor';
     const ta = D.createElement('textarea');
@@ -342,15 +330,13 @@ export class RichTextNotes {
   }
 
   _persistNote (wid, val) {
-    const n = this._loadNotes();
+    const n = lsGet(SK_NOTES, {});
     // Keep the overwritten version so it can be restored from the editor
     if ((n[wid] || '') !== val) pushNoteVersion(wid, n[wid] || '');
     if (val) n[wid] = val; else delete n[wid];
-    this._saveNotes(n);
-    try {
-      const d = JSON.parse(localStorage.getItem(SK_DATA) || '{}');
-      if (d[wid]) { d[wid].notes = val.slice(0, 200); localStorage.setItem(SK_DATA, JSON.stringify(d)); }
-    } catch (_) {}
+    lsSet(SK_NOTES, n);
+    const d = lsGet(SK_DATA, {});
+    if (d[wid]) { d[wid].notes = val.slice(0, 200); lsSet(SK_DATA, d); }
   }
 
   _refreshPreview (wrap, btn, wid, val) {
@@ -390,7 +376,7 @@ export class RichTextNotes {
 
     const wrap = D.createElement('div');
     wrap.className = 'ao3h-bv-note-wrap ao3h-bv-quicknote';
-    const note = this._loadNotes()[wid] || '';
+    const note = lsGet(SK_NOTES, {})[wid] || '';
     if (note) {
       const prev = D.createElement('span');
       prev.className = 'ao3h-bv-note-preview';

@@ -20,7 +20,7 @@ Notes
 
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { createBulkSelect } from '../../../../lib/ui/bulk-select.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -56,15 +56,12 @@ export class OrganizationTools {
     });
   }
 
-  _loadCats   () { try { return JSON.parse(localStorage.getItem(SK_CATS)   || '[]');  } catch (_) { return []; } }
-  _saveCats   (c) { try { localStorage.setItem(SK_CATS,   JSON.stringify(c)); } catch (_) {} }
-  _loadPinned () { try { return new Set(JSON.parse(localStorage.getItem(SK_PINNED) || '[]')); } catch (_) { return new Set(); } }
-  _savePinned (s) { try { localStorage.setItem(SK_PINNED, JSON.stringify([...s])); } catch (_) {} }
+  _loadCats   () { return lsGet(SK_CATS, []); }
+  _saveCats   (c) { lsSet(SK_CATS, c); }
+  _loadPinned () { return new Set(lsGet(SK_PINNED, [])); }
+  _savePinned (s) { lsSet(SK_PINNED, [...s]); }
 
   _isBookmarksPage () { return /\/users\/[^/]+\/bookmarks/.test(location.pathname); }
-  _getWorkId (blurb) {
-    return extractWorkIdFromBlurb(blurb);
-  }
 
   /* ═══════════════════════════════════════════════════════════════════════
      FEATURE — CATEGORIES AND CATEGORY FILTERING
@@ -78,7 +75,7 @@ export class OrganizationTools {
       (byWork[wid] = byWork[wid] || []).push(c);
     }));
     Array.from(blurbs).forEach(blurb => {
-      const wid = this._getWorkId(blurb);
+      const wid = extractWorkIdFromBlurb(blurb);
       if (!wid || !byWork[wid]) return;
       const h4 = blurb.querySelector('h4.heading');
       if (!h4) return;
@@ -124,7 +121,7 @@ export class OrganizationTools {
       const wids = new Set(c.workIds || []);
       wrap.appendChild(mkBtn(c.name, c.color || '#900', false, () => {
         D.querySelectorAll('li.work.blurb, li.bookmark.blurb').forEach(b => {
-          const hide = !wids.has(this._getWorkId(b));
+          const hide = !wids.has(extractWorkIdFromBlurb(b));
           b.style.display = hide ? 'none' : '';
           if (hide) b.dataset.bvOrgCfHidden = '1';
           else delete b.dataset.bvOrgCfHidden;
@@ -233,7 +230,7 @@ export class OrganizationTools {
       if (!cat) { cat = { id: `cat_${Date.now()}`, name, color: '#c00040', workIds: [] }; cats.push(cat); }
       let added = 0;
       selected.forEach(blurb => {
-        const wid = this._getWorkId(blurb);
+        const wid = extractWorkIdFromBlurb(blurb);
         if (wid && !cat.workIds.includes(wid)) { cat.workIds.push(wid); added++; }
       });
       this._saveCats(cats);
@@ -249,7 +246,7 @@ export class OrganizationTools {
       if (!selected.length) { feedback(pinBtn, 'Select works first', '📌 Pin'); return; }
       const pinned = this._loadPinned();
       selected.forEach(blurb => {
-        const wid = this._getWorkId(blurb);
+        const wid = extractWorkIdFromBlurb(blurb);
         if (wid) pinned.add(wid);
       });
       this._savePinned(pinned);
@@ -263,7 +260,7 @@ export class OrganizationTools {
     const pinned = this._loadPinned();
     Array.from(blurbs).forEach(blurb => {
       if (blurb.querySelector('.ao3h-bv-pin-btn')) return;
-      const wid = this._getWorkId(blurb);
+      const wid = extractWorkIdFromBlurb(blurb);
       if (!wid) return;
       const isPinned = pinned.has(wid);
       const btn = D.createElement('button');
@@ -288,7 +285,7 @@ export class OrganizationTools {
     const ol = D.querySelector('ol.work.index, ul.work.index, ol.bookmark.index, ul.bookmark.index');
     if (!ol) return;
     Array.from(ol.querySelectorAll(':scope > li')).forEach(li => {
-      if (pinned.has(this._getWorkId(li))) ol.insertBefore(li, ol.firstChild);
+      if (pinned.has(extractWorkIdFromBlurb(li))) ol.insertBefore(li, ol.firstChild);
     });
   }
 

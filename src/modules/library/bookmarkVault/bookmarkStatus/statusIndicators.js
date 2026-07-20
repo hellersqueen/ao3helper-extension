@@ -19,7 +19,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { extractWorkIdFromBlurb, isListingPage } from '../../../../../lib/ao3/parsers.js';
-import { observe } from '../../../../../lib/utils/index.js';
+import { observe, lsGet, lsSet } from '../../../../../lib/utils/index.js';
 import { relativeDate } from '../../../../../lib/utils/format-date.js';
 
 
@@ -28,8 +28,8 @@ import { relativeDate } from '../../../../../lib/utils/format-date.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const D = document;
-const SK_DATA = 'ao3h:bookmarkVault:data';
-const SK_LAST = 'ao3h:bookmarkVault:lastRead';
+export const SK_DATA = 'ao3h:bookmarkVault:data';
+export const SK_LAST = 'ao3h:bookmarkVault:lastRead';
 
 export class StatusIndicators {
   constructor (cfgFn) {
@@ -37,41 +37,28 @@ export class StatusIndicators {
     this._obs = [];
   }
 
-  _load (key, fb) {
-    try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fb)); }
-    catch (_) { return fb; }
-  }
-  _save (key, val) {
-    try { localStorage.setItem(key, JSON.stringify(val)); } catch (_) {}
-  }
-
   _isBookmarksPage () { return /\/bookmarks/.test(location.pathname); }
-  _isListingPage   () { return isListingPage(); }
-
-  _getWorkId (blurb) {
-    return extractWorkIdFromBlurb(blurb);
-  }
 
   /* ═══════════════════════════════════════════════════════════════════════
      FEATURE — BOOKMARK CACHE AND STATUS BADGES
   ═══════════════════════════════════════════════════════════════════════ */
 
   _scanAndCache () {
-    const data = this._load(SK_DATA, {});
+    const data = lsGet(SK_DATA, {});
     D.querySelectorAll('li.bookmark.blurb').forEach(blurb => {
-      const wid = this._getWorkId(blurb);
+      const wid = extractWorkIdFromBlurb(blurb);
       if (!wid) return;
       const isPublic = !!blurb.querySelector('.status span.public');
       const notesEl  = blurb.querySelector('.user.module.group blockquote.userstuff');
       const notes    = (notesEl?.textContent || '').trim().slice(0, 200);
       data[wid] = { pub: isPublic, notes };
     });
-    this._save(SK_DATA, data);
+    lsSet(SK_DATA, data);
   }
 
   _processBlurbs (blurbs) {
-    const data      = this._load(SK_DATA, {});
-    const lastRead  = this.cfg('showLastReadDate') ? this._load(SK_LAST, {}) : {};
+    const data      = lsGet(SK_DATA, {});
+    const lastRead  = this.cfg('showLastReadDate') ? lsGet(SK_LAST, {}) : {};
     const showBadge = this.cfg('showPublicPrivateBadge');
     const showNote  = this.cfg('showNoteIcon');
     const showDate  = this.cfg('showLastReadDate');
@@ -81,7 +68,7 @@ export class StatusIndicators {
     Array.from(blurbs).forEach(blurb => {
       if (blurb.dataset.bvSiDone) return;
       blurb.dataset.bvSiDone = '1';
-      const wid = this._getWorkId(blurb);
+      const wid = extractWorkIdFromBlurb(blurb);
       if (!wid || !data[wid]) return;
       const bm = data[wid];
       const h4 = blurb.querySelector('h4.heading');
@@ -175,7 +162,7 @@ export class StatusIndicators {
 
   _injectStatusFilter () {
     if (D.getElementById('ao3h-bv-sf')) return;
-    const data       = this._load(SK_DATA, {});
+    const data       = lsGet(SK_DATA, {});
     const bookmarked = new Set(Object.keys(data));
     const def        = this.cfg('bookmarkStatusFilterDefault') || 'all';
     const showCount  = this.cfg('showStatusFilterCount');
@@ -221,7 +208,7 @@ export class StatusIndicators {
   _applyFilter (mode, bookmarked, countEl) {
     let shown = 0;
     D.querySelectorAll('li.work.blurb, li.bookmark.blurb').forEach(b => {
-      const wid     = this._getWorkId(b);
+      const wid     = extractWorkIdFromBlurb(b);
       const visible = mode === 'all'        ? true
                     : mode === 'bookmarked' ? bookmarked.has(wid)
                     :                         !bookmarked.has(wid);
@@ -238,7 +225,7 @@ export class StatusIndicators {
 
   boot () {
     if (this._isBookmarksPage()) this._scanAndCache();
-    if (this._isListingPage()) {
+    if (isListingPage()) {
       this._processBlurbs(D.querySelectorAll('li.work.blurb, li.bookmark.blurb'));
       const obs = observe(D.getElementById('main') || D.body, { childList: true, subtree: true }, () => {
         this._processBlurbs(D.querySelectorAll(

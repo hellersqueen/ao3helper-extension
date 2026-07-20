@@ -19,6 +19,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -66,13 +67,11 @@ function applyFilter (hide) {
 const PREF_KEY = 'ao3h:bookmarkVault:sortPreference';
 
 function loadSortPref () {
-  try { return JSON.parse(localStorage.getItem(PREF_KEY)) || {}; }
-  catch (_) { return {}; }
+  return lsGet(PREF_KEY, {});
 }
 
 function saveSortPref (key, dir) {
-  try { localStorage.setItem(PREF_KEY, JSON.stringify({ key, dir })); }
-  catch (_) {}
+  lsSet(PREF_KEY, { key, dir });
 }
 
 function getBookmarkList () {

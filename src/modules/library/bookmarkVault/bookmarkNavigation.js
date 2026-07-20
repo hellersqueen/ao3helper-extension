@@ -20,6 +20,9 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { lsGet } from '../../../../lib/utils/index.js';
+import { SK_DATA } from './bookmarkStatus/statusIndicators.js';
+import { SK_NOTES } from './richTextNotes.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -85,10 +88,7 @@ function injectViewBookmarkLink () {
   const workId = (location.pathname.match(/\/works\/([0-9]+)/) || [])[1];
   if (!workId) return;
 
-  const bookmarkData = (() => {
-    try { return JSON.parse(localStorage.getItem('ao3h:bookmarkVault:data') || '{}'); }
-    catch (_) { return {}; }
-  })();
+  const bookmarkData = lsGet(SK_DATA, {});
 
   if (!bookmarkData[workId]) return;
 
@@ -103,10 +103,7 @@ function injectViewBookmarkLink () {
 
   // Quick preview on hover: bookmark visibility, note excerpt, personal note
   const bm = bookmarkData[workId];
-  const inlineNote = (() => {
-    try { return (JSON.parse(localStorage.getItem('ao3h:bookmarkVault:inlineNotes') || '{}'))[workId] || ''; }
-    catch (_) { return ''; }
-  })();
+  const inlineNote = lsGet(SK_NOTES, {})[workId] || '';
   const parts = [`${bm.pub ? 'Public' : 'Private'} bookmark`];
   if (bm.notes)    parts.push(`Note: ${String(bm.notes).slice(0, 120)}`);
   if (inlineNote)  parts.push(`Personal: ${inlineNote.slice(0, 120)}`);

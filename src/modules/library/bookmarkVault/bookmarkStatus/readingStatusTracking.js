@@ -18,9 +18,10 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { extractWorkIdFromBlurb, extractWorkIdFromHref, isListingPage } from '../../../../../lib/ao3/parsers.js';
-import { observe } from '../../../../../lib/utils/index.js';
+import { extractWorkIdFromHref, isListingPage } from '../../../../../lib/ao3/parsers.js';
+import { observe, lsGet, lsSet } from '../../../../../lib/utils/index.js';
 import { getGlobalWindow } from '../../../../../lib/utils/globals.js';
+import { SK_LAST } from './statusIndicators.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -30,7 +31,6 @@ import { getGlobalWindow } from '../../../../../lib/utils/globals.js';
 const D = document;
 const W = getGlobalWindow();
 const noteQueryMatch = (...args) => W.AO3H_BookmarkVault.noteQueryMatch(...args);
-const SK_LAST = 'ao3h:bookmarkVault:lastRead';
 
 export class ReadingStatusTracking {
   constructor (cfgFn) {
@@ -39,18 +39,10 @@ export class ReadingStatusTracking {
     this._collapsedNotes = new Map();
   }
 
-  _load (key, fb) { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fb)); } catch (_) { return fb; } }
-  _save (key, v)  { try { localStorage.setItem(key, JSON.stringify(v)); } catch (_) {} }
-
   _isWorkPage      () { return /^\/works\/\d+/.test(location.pathname); }
   // Sur les bookmarks d'un user précisément (pas /works/:id/bookmarks) —
   // même garde que l'ex-noteManagement.injectNotesSearch, fusionnée ici.
   _isBookmarksPage () { return /\/users\/[^/]+\/bookmarks/.test(location.pathname); }
-  _isListingPage   () { return isListingPage(); }
-
-  _getWorkId (blurb) {
-    return extractWorkIdFromBlurb(blurb);
-  }
 
   /* ═══════════════════════════════════════════════════════════════════════
      FEATURE — LAST-READ TRACKING
@@ -59,9 +51,9 @@ export class ReadingStatusTracking {
   _trackLastRead () {
     const workId = extractWorkIdFromHref(location.pathname);
     if (!workId) return;
-    const data = this._load(SK_LAST, {});
+    const data = lsGet(SK_LAST, {});
     data[workId] = Date.now();
-    this._save(SK_LAST, data);
+    lsSet(SK_LAST, data);
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -164,7 +156,7 @@ export class ReadingStatusTracking {
 
   boot () {
     if (this._isWorkPage()) this._trackLastRead();
-    if (this._isListingPage()) {
+    if (isListingPage()) {
       this._collapseNotes(D.querySelectorAll('li.bookmark.blurb'));
       const obs = observe(D.getElementById('main') || D.body, { childList: true, subtree: true }, () => {
         this._collapseNotes(D.querySelectorAll('li.bookmark.blurb:not([data-bv-rst-done])'));
