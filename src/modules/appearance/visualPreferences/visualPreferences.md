@@ -46,19 +46,15 @@ console du navigateur.
 - Propose des commandes dans la console du navigateur (`ao3hVisualPrefs`) pour changer un réglage ou appliquer un préréglage
 - Récupère automatiquement les anciens réglages des modules qui ont été fusionnés dans celui-ci
 
-### 2. `statsVisibility.js` — cacher les statistiques
+### 2. `visibilityToggles.js` — cacher statistiques, dates, en-tête, chapitres
 
 - Peut cacher séparément le nombre de mots, de kudos, de commentaires, de favoris et de vues
-
-### 3. `datesTimestamps.js` — cacher les dates
-
 - Peut cacher séparément la date de publication, de mise à jour, de fin, et les dates par chapitre
-
-### 4. `minimalHeader.js` — en-tête minimaliste
-
 - Réduit la bannière du site en haut de la page
+- Peut cacher les statistiques affichées dans le menu déroulant des chapitres
+- Un seul mécanisme (une classe CSS par réglage sur `<html>`) pour ces quatre aspects, qui n'ont chacun aucun état ni cycle de vie propre au-delà de ce toggle
 
-### 5. `statsDisplayFormat.js` — format d'affichage
+### 3. `statsDisplayFormat.js` — format d'affichage
 
 - Peut afficher les statistiques sous forme d'icônes plutôt que de texte, avec ou sans légende
 - Peut afficher les dates de façon relative ("il y a 4 ans") plutôt qu'une date précise
@@ -68,28 +64,24 @@ console du navigateur.
 
 - Permet de voir une statistique ou une date cachée en passant la souris dessus — ça fonctionne automatiquement dès qu'un élément est caché, il n'y a pas de réglage séparé à activer
 
-### 6. `visibilityPresets.js` — préréglages rapides
+### 4. `visibilityPresets.js` — préréglages rapides
 
 - Propose 5 préréglages tout prêts : Tout afficher, Cacher toutes les stats, Cacher toutes les dates, Mode sans influence, Lecture épurée
 
-### 7. `statsOnChaptersList.js` — statistiques dans la liste des chapitres
-
-- Peut cacher les statistiques affichées dans le menu déroulant des chapitres d'une fic
-
-### 8. `layoutDensity.js` — densité de l'espacement
+### 5. `layoutDensity.js` — densité de l'espacement
 
 - Une seule case à trois positions (compact / confortable / spacieux) qui s'applique aux listes de fics et couvre à la fois "un mode compact pour les listings" et "un réglage de densité pour tout le site" — les deux idées se recoupaient, une seule implémentation suffit
 
-### 9. `blurbSectionOrder.js` — ordre des sections d'une fic dans les listes
+### 6. `blurbSectionOrder.js` — ordre des sections d'une fic dans les listes
 
 - Réorganise visuellement (via `order` CSS) le titre/en-tête, les tags, le résumé et les statistiques d'une fic dans les listes, selon l'ordre choisi
 - Garde toujours ensemble chaque titre de section (invisible, pour les lecteurs d'écran) et son contenu, pour ne pas casser la navigation par landmarks
 
-### 10. `gridView.js` — affichage en grille de cartes
+### 7. `gridView.js` — affichage en grille de cartes
 
 - Transforme les listes de fics en grille de cartes qui s'adapte à la largeur de l'écran, sans toucher au contenu ni à l'ordre à l'intérieur de chaque fic
 
-### 11. `wordOccurrenceCounter.js` — compteur d'occurrences
+### 8. `wordOccurrenceCounter.js` — compteur d'occurrences
 
 - Sur la page d'une fic, ajoute un champ pour taper un nom de personnage (ou n'importe quel mot ou expression) et voir combien de fois il apparaît dans le texte des chapitres déjà chargés
 - Compte en mot entier, insensible à la casse ; se souvient du dernier mot cherché
@@ -98,7 +90,7 @@ console du navigateur.
 
 - Calcule si une date correspond à "aujourd'hui", "cette semaine", "ce mois-ci" ou "plus vieux", utilisé par `statsDisplayFormat.js` pour la coloration des dates
 
-### 12. `visualPreferences.css`
+### 9. `visualPreferences.css`
 
 - Les styles visuels de tous les fichiers ci-dessus
 

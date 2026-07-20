@@ -59,7 +59,7 @@
   ───────────────────────────────────────────────────────────────────────
     Masque les compteurs d'engagement (mots, kudos, commentaires,
     bookmarks, hits, résumés) sur les listings et pages d'œuvres.
-    ⚠️ Les classes sont ajoutées/retirées par statsVisibility.js
+    ⚠️ Les classes sont ajoutées/retirées par visibilityToggles.js
        via document.documentElement.classList.
   ═══════════════════════════════════════════════════════════════════════
 */
@@ -68,7 +68,7 @@
 /*+ ───────────────────────────────────────────────────────────
     NOMBRE DE MOTS
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-wc gérée par statsVisibility.js
+      └─ ⚠️ Classe .ao3h-hide-wc gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-wc dl.stats dd.words,
@@ -83,7 +83,7 @@ html.ao3h-hide-wc dt.words + dd {
 /*+ ───────────────────────────────────────────────────────────
     KUDOS
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-kudos gérée par statsVisibility.js
+      └─ ⚠️ Classe .ao3h-hide-kudos gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-kudos dl.stats dd.kudos,
@@ -98,7 +98,7 @@ html.ao3h-hide-kudos dt.kudos + dd {
 /*+ ───────────────────────────────────────────────────────────
     COMMENTAIRES
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-comments gérée par statsVisibility.js
+      └─ ⚠️ Classe .ao3h-hide-comments gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-comments dl.stats dd.comments,
@@ -114,7 +114,7 @@ html.ao3h-hide-comments .comments a {
 /*+ ───────────────────────────────────────────────────────────
     BOOKMARKS
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-bookmarks gérée par statsVisibility.js
+      └─ ⚠️ Classe .ao3h-hide-bookmarks gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-bookmarks dl.stats dd.bookmarks,
@@ -130,7 +130,7 @@ html.ao3h-hide-bookmarks .bookmarks a {
 /*+ ───────────────────────────────────────────────────────────
     HITS / VISITES
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-hits gérée par statsVisibility.js
+      └─ ⚠️ Classe .ao3h-hide-hits gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-hits dl.stats dd.hits,
@@ -145,7 +145,7 @@ html.ao3h-hide-hits dt.hits + dd {
 /*+ ───────────────────────────────────────────────────────────
     RÉSUMÉS
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-summaries gérée par statsVisibility.js
+      └─ ⚠️ Classe .ao3h-hide-summaries gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-summaries .blurb .summary,
@@ -163,7 +163,7 @@ html.ao3h-hide-summaries ol.work .summary {
   ───────────────────────────────────────────────────────────────────────
     Masque les dates de publication, mise à jour et complétion
     sur les blurbs et pages d'œuvres.
-    ⚠️ Les classes sont ajoutées/retirées par datesTimestamps.js
+    ⚠️ Les classes sont ajoutées/retirées par visibilityToggles.js
        via document.documentElement.classList.
   ═══════════════════════════════════════════════════════════════════════
 */
@@ -172,7 +172,7 @@ html.ao3h-hide-summaries ol.work .summary {
 /*+ ───────────────────────────────────────────────────────────
     DATE DE PUBLICATION
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-pub-date gérée par datesTimestamps.js
+      └─ ⚠️ Classe .ao3h-hide-pub-date gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-pub-date dt.published,
@@ -186,7 +186,7 @@ html.ao3h-hide-pub-date dt.published + dd {
 /*+ ───────────────────────────────────────────────────────────
     DATE DE MISE À JOUR
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-upd-date gérée par datesTimestamps.js
+      └─ ⚠️ Classe .ao3h-hide-upd-date gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-upd-date p.datetime,
@@ -201,7 +201,7 @@ html.ao3h-hide-upd-date dt.status + dd {
 /*+ ───────────────────────────────────────────────────────────
     DATE DE COMPLÉTION
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-comp-date gérée par datesTimestamps.js
+      └─ ⚠️ Classe .ao3h-hide-comp-date gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-comp-date dt.completed,
@@ -215,7 +215,7 @@ html.ao3h-hide-comp-date dt.completed + dd {
 /*+ ───────────────────────────────────────────────────────────
     DATES DANS LA LISTE DES CHAPITRES
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-chap-dates gérée par datesTimestamps.js
+      └─ ⚠️ Classe .ao3h-hide-chap-dates gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-chap-dates #chapters dt.published,
@@ -232,7 +232,7 @@ html.ao3h-hide-chap-dates #chapters .published {
   ───────────────────────────────────────────────────────────────────────
     Masque les statistiques (mots, commentaires, dates) dans
     la liste des chapitres d'une œuvre.
-    ⚠️ La classe est ajoutée/retirée par statsOnChaptersList.js
+    ⚠️ La classe est ajoutée/retirée par visibilityToggles.js
        via document.documentElement.classList.
   ═══════════════════════════════════════════════════════════════════════
 */
@@ -241,7 +241,7 @@ html.ao3h-hide-chap-dates #chapters .published {
 /*+ ───────────────────────────────────────────────────────────
     MOTS DANS LA LISTE DES CHAPITRES
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-hide-chap-stats gérée par statsOnChaptersList.js
+      └─ ⚠️ Classe .ao3h-hide-chap-stats gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-hide-chap-stats #chapters .words,
@@ -280,7 +280,7 @@ html.ao3h-hide-chap-stats #chapters li .datetime {
   ───────────────────────────────────────────────────────────────────────
     Masque les méta-données secondaires dans l'en-tête d'une œuvre
     (dates, mots, chapitres, langue) pour un affichage épuré.
-    ⚠️ La classe est ajoutée/retirée par minimalHeader.js
+    ⚠️ La classe est ajoutée/retirée par visibilityToggles.js
        via document.documentElement.classList.
   ═══════════════════════════════════════════════════════════════════════
 */
@@ -289,7 +289,7 @@ html.ao3h-hide-chap-stats #chapters li .datetime {
 /*+ ───────────────────────────────────────────────────────────
     DATES PUBLISHED / STATUS DANS L'EN-TÊTE DE L'ŒUVRE
   ─────────────────────────────────────────────────────────────
-      └─ ⚠️ Classe .ao3h-minimal-header gérée par minimalHeader.js
+      └─ ⚠️ Classe .ao3h-minimal-header gérée par visibilityToggles.js
   ───────────────────────────────────────────────────────────── */
 
 html.ao3h-minimal-header .work .preface .meta .published,

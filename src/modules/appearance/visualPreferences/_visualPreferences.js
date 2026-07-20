@@ -11,13 +11,11 @@ AO3 Helper — Visual Preferences Coordinator
         chapter-list preferences through one persisted state and public API.
 
     Submodules
-        statsVisibility.js     — Shows or hides individual work statistics.
-        datesTimestamps.js     — Controls date visibility and relative dates.
-        minimalHeader.js       — Applies the compact header presentation.
+        visibilityToggles.js   — Shows or hides stats, dates, header, and
+                                  chapter-list statistics via root CSS classes.
         statsDisplayFormat.js  — Formats statistics as icons or text.
         visualPreferences.css  — Reveals hidden information on hover.
         visibilityPresets.js   — Provides reusable preference combinations.
-        statsOnChaptersList.js — Controls statistics on chapter listings.
 
     Notes
         Settings use ao3h:mod:visualPreferences:settings with a legacy fallback
@@ -36,12 +34,9 @@ import { css } from '../../../../lib/utils/index.js';
 
 import styles from './visualPreferences.css?inline';
 
-import { StatsVisibility } from './statsVisibility.js';
-import { DatesTimestamps } from './datesTimestamps.js';
-import { MinimalHeader } from './minimalHeader.js';
+import { VisibilityToggles } from './visibilityToggles.js';
 import { StatsDisplayFormat } from './statsDisplayFormat.js';
 import { VisibilityPresets } from './visibilityPresets.js';
-import { StatsOnChaptersList } from './statsOnChaptersList.js';
 import { LayoutDensity } from './layoutDensity.js';
 import { BlurbSectionOrder, DEFAULT_ORDER as DEFAULT_BLURB_ORDER } from './blurbSectionOrder.js';
 import { GridView } from './gridView.js';
@@ -141,15 +136,12 @@ class VisualPreferences {
     console.log(`[${MOD}] ✅ Initializing components`);
 
     this.components = {
-      statsVisibility:      new StatsVisibility(),
-      datesTimestamps:      new DatesTimestamps(),
-      minimalHeader:        new MinimalHeader(),
-      statsDisplayFormat:   new StatsDisplayFormat({ dateAgeBucket }),
-      visibilityPresets:    new VisibilityPresets(),
-      statsOnChaptersList:  new StatsOnChaptersList(),
-      layoutDensity:        new LayoutDensity(),
-      blurbSectionOrder:    new BlurbSectionOrder(),
-      gridView:             new GridView(),
+      visibilityToggles:     new VisibilityToggles(),
+      statsDisplayFormat:    new StatsDisplayFormat({ dateAgeBucket }),
+      visibilityPresets:     new VisibilityPresets(),
+      layoutDensity:         new LayoutDensity(),
+      blurbSectionOrder:     new BlurbSectionOrder(),
+      gridView:              new GridView(),
       wordOccurrenceCounter: new WordOccurrenceCounter({ countOccurrences }),
     };
   }
@@ -233,11 +225,8 @@ class VisualPreferences {
   }
 
   applyAll(state) {
-    this.components.statsVisibility.applyAll(state);
-    this.components.datesTimestamps.applyAll(state);
-    this.components.minimalHeader.apply(state.minimalHeader);
+    this.components.visibilityToggles.applyAll(state);
     this.components.statsDisplayFormat.apply(state);
-    this.components.statsOnChaptersList.apply(state.hideStatsOnChaptersList);
     this.components.layoutDensity.apply(state.layoutDensity);
     this.components.blurbSectionOrder.apply(
       String(state.blurbSectionOrder || DEFAULT_BLURB_ORDER.join(',')).split(',').map(s => s.trim()).filter(Boolean)

@@ -1,14 +1,16 @@
 /* ═══════════════════════════════════════════════════════════════════════════
 
-AO3 Helper - Visual Preferences › Dates & Timestamps
+AO3 Helper - Visual Preferences › Visibility Toggles
 
 Purpose
-    Controls the visibility of publication, update, completion, and chapter
-    dates independently.
+    Shows or hides individual work statistics (words, kudos, comments,
+    bookmarks, hits), dates (published, updated, completed, per-chapter),
+    the site header, and chapter-list statistics.
 
 Notes
-    Each preference toggles a CSS class on the document root. Relative date
-    formatting is handled elsewhere and is outside this feature's scope.
+    Each preference maps to an independent CSS class on the document root, so
+    any combination can be hidden or restored together with no shared state
+    between preferences.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -24,19 +26,26 @@ Notes
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
-export class DatesTimestamps {
+export class VisibilityToggles {
   constructor() {
     this.classMap = {
-      hidePublishedDate: 'ao3h-hide-pub-date',
-      hideUpdatedDate:   'ao3h-hide-upd-date',
-      hideCompletedDate: 'ao3h-hide-comp-date',
-      hideChapterDates:  'ao3h-hide-chap-dates',
+      hideWordCount:           'ao3h-hide-wc',
+      hideKudosCount:          'ao3h-hide-kudos',
+      hideCommentsCount:       'ao3h-hide-comments',
+      hideBookmarksCount:      'ao3h-hide-bookmarks',
+      hideHits:                'ao3h-hide-hits',
+      hidePublishedDate:       'ao3h-hide-pub-date',
+      hideUpdatedDate:         'ao3h-hide-upd-date',
+      hideCompletedDate:       'ao3h-hide-comp-date',
+      hideChapterDates:        'ao3h-hide-chap-dates',
+      minimalHeader:           'ao3h-minimal-header',
+      hideStatsOnChaptersList: 'ao3h-hide-chap-stats',
     };
   }
 
 
   /* ═════════════════════════════════════════════════════════════════════════
-     FEATURE — DATE VISIBILITY
+     FEATURE — VISIBILITY TOGGLES
   ═════════════════════════════════════════════════════════════════════════ */
 
   apply(key, enabled) {
