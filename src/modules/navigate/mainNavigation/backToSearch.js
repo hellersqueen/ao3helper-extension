@@ -18,6 +18,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { sessionGet, sessionSet } from '../../../../lib/utils/index.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -44,13 +45,12 @@ export class BackToSearch {
   apply () {
     const current = location.pathname + location.search;
     if (this._isSearchOrigin(current)) {
-      try { sessionStorage.setItem(SS_KEY, current); } catch { /* storage off */ }
+      sessionSet(SS_KEY, current);
       return;
     }
     if (!isWorkPage()) return;
 
-    let saved = null;
-    try { saved = sessionStorage.getItem(SS_KEY); } catch { /* storage off */ }
+    const saved = sessionGet(SS_KEY);
     if (!saved || !this._isSearchOrigin(saved)) return;
 
     const bar = document.createElement('div');

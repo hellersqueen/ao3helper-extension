@@ -16,7 +16,7 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-// No imports required.
+import { lsGet } from '../../../../lib/utils/index.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -48,7 +48,7 @@ export class QuickLinks {
     if (settings.quickLink1Label || settings.quickLink1Url) return null;
     try {
       const sourceKey = localStorage.getItem(STORAGE_KEY) ? STORAGE_KEY : STORAGE_KEY_LEGACY;
-      const links = JSON.parse(localStorage.getItem(sourceKey) || '[]');
+      const links = lsGet(sourceKey, []);
       if (!Array.isArray(links) || !links.length) return null;
       const patch = {};
       links.slice(0, MAX_LINKS).forEach((link, index) => {
