@@ -62,8 +62,6 @@ function matchesCurrentPage (pages) {
   return PAGE_TARGETS.filter(t => pages.includes(t.id)).some(t => t.test());
 }
 
-function getShared () { return W.AO3H_ThemeBuilder || null; }
-
 // Injects code as a <style>/<div>/<script> and re-orders by priority.
 // Priority 1 = injected early (AO3 styles can override).
 // Priority 10 = injected last in <head> (wins over everything).
@@ -451,11 +449,7 @@ function renderPanel () {
     if (!css) return;
     const name = prompt('Theme name:', 'My Custom Theme');
     if (!name) return;
-    // Delegate to themeManagement via shared storage
-    const SK = `${NS}:tb:themes`;
-    const themes = lsGet(SK) || [];
-    themes.push({ id: `t${Date.now()}`, name, css, createdAt: new Date().toISOString() });
-    lsSet(SK, themes);
+    W.AO3H_ThemeBuilder?.saveNewTheme(name, css);
     console.log(LOG, 'Theme saved:', name);
     alert(`Theme "${name}" saved!`);
   });
@@ -681,7 +675,7 @@ register(
         if (panelEl) { closePanel(); } else { renderPanel(); }
       });
       document.body.appendChild(triggerBtn);
-      if (getShared()?.cfg?.('mode') === 'visual') triggerBtn.style.display = 'none';
+      if (W.AO3H_ThemeBuilder?.cfg?.('mode') === 'visual') triggerBtn.style.display = 'none';
     });
 
     return function cleanup () {

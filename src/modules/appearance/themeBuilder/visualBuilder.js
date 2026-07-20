@@ -42,8 +42,7 @@ const PREVIEW_ID = `${NS}-tb-visual-preview`;
 const ELEMENT_RULES_SK = `${NS}:tb:elementRules`;
 const ELEMENT_STYLE_ID = `${NS}-tb-element-rules`;
 
-function getShared () { return W.AO3H_ThemeBuilder || null; }
-function applyCSS (css) { getShared()?.applyCSS(css, 'visual'); }
+function applyCSS (css) { W.AO3H_ThemeBuilder?.applyCSS(css, 'visual'); }
 
 const VISUAL_DEFAULTS = {
   accentColor:  '#900',
@@ -310,7 +309,7 @@ function openPanel () {
 
   panelEl.querySelector('[data-action="reset"]').addEventListener('click', () => {
     removePreview();
-    getShared()?.removeCSS();
+    W.AO3H_ThemeBuilder?.removeCSS();
     lsSet(VISUAL_SK, null);
     panelEl?.remove(); panelEl = null;
   });
@@ -389,7 +388,7 @@ register(
       triggerBtn.setAttribute('aria-label', 'Open visual builder');
       triggerBtn.addEventListener('click', openPanel);
       document.body.appendChild(triggerBtn);
-      if (getShared()?.cfg?.('mode') === 'css') triggerBtn.style.display = 'none';
+      if (W.AO3H_ThemeBuilder?.cfg?.('mode') === 'css') triggerBtn.style.display = 'none';
     });
 
     return function cleanup () {

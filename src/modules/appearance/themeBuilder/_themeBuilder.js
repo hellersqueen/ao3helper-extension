@@ -53,6 +53,7 @@ const MOD  = 'themeBuilder';
 const LOG  = `[AO3H][${MOD}]`;
 const ACTIVE_SK = `${NS}:tb:active`;
 const APPLIED_ID = `${NS}-tb-active-theme`;
+const THEMES_SK = `${NS}:tb:themes`;
 
 export { lsGet, lsSet };
 
@@ -83,6 +84,17 @@ export function applyCSS (cssText, source) {
 export function removeCSS () {
   document.getElementById(APPLIED_ID)?.remove();
   lsSet(ACTIVE_SK, null);
+}
+
+// Propriétaire du format des thèmes utilisateur (clé THEMES_SK) — customStyling
+// et themeManagement passent tous deux par ici pour créer un thème, plutôt que
+// de réimplémenter chacun leur propre sérialisation.
+export function saveNewTheme (name, css, { author = '', description = '' } = {}) {
+  const themes = lsGet(THEMES_SK) || [];
+  const theme = { id: `t${Date.now()}`, name, author, description, css, createdAt: new Date().toISOString() };
+  themes.push(theme);
+  lsSet(THEMES_SK, themes);
+  return theme;
 }
 
 export const PROTECTED_ZONES = ['#workskin', '.userstuff', '#chapters', 'body', 'html', '#main'];
@@ -166,7 +178,7 @@ register(
   async function init () {
     console.log(LOG, 'coordinator init');
     // ── Public API ──────────────────────────────────────────────────────
-    W.AO3H_ThemeBuilder = { lsGet, lsSet, applyCSS, removeCSS, NS, APPLIED_ID, cfg: tbCfg, ...themeSafety };
+    W.AO3H_ThemeBuilder = { lsGet, lsSet, applyCSS, removeCSS, saveNewTheme, NS, APPLIED_ID, cfg: tbCfg, ...themeSafety };
 
     // Re-apply any previously saved active theme
     const active = lsGet(ACTIVE_SK);

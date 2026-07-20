@@ -50,9 +50,8 @@ const ACTIVE_SK = `${NS}:tb:active-theme`;
    FEATURE — THEME CATALOG AND STORAGE
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function getShared () { return W.AO3H_ThemeBuilder || null; }
-function applyCSS (css, src) { getShared()?.applyCSS(css, src || 'theme'); }
-function removeCSS () { getShared()?.removeCSS(); }
+function applyCSS (css, src) { W.AO3H_ThemeBuilder?.applyCSS(css, src || 'theme'); }
+function removeCSS () { W.AO3H_ThemeBuilder?.removeCSS(); }
 
 function loadThemes () { return lsGet(THEMES_SK) || []; }
 function saveThemes (list) { lsSet(THEMES_SK, list); }
@@ -194,7 +193,7 @@ function openPanel () {
   document.body.appendChild(panelEl);
   attachPanelEvents();
 
-  if (getShared()?.cfg?.('importEnabled') === false) {
+  if (W.AO3H_ThemeBuilder?.cfg?.('importEnabled') === false) {
     panelEl.querySelector('[data-action="import"]')?.remove();
     panelEl.querySelector(`#${NS}-tb-import-file`)?.remove();
   }
@@ -353,16 +352,10 @@ function attachPanelEvents () {
     const css  = panelEl.querySelector(`#${NS}-tb-nt-css`).value.trim();
     if (!css)  { alert('CSS is required.'); return; }
     if (!isSafeCSS(css)) { alert('This CSS contains unsafe content and was not saved.'); return; }
-    const all  = loadThemes();
-    all.push({
-      id:          `t${Date.now()}`,
-      name,
+    W.AO3H_ThemeBuilder?.saveNewTheme(name, css, {
       author:      panelEl.querySelector(`#${NS}-tb-nt-author`).value.trim(),
       description: panelEl.querySelector(`#${NS}-tb-nt-desc`).value.trim(),
-      css,
-      createdAt:   new Date().toISOString(),
     });
-    saveThemes(all);
     const form = panelEl.querySelector(`#${NS}-tb-new-theme-form`);
     form.style.display = 'none';
     form.querySelectorAll('input, textarea').forEach(el => { el.value = ''; });
