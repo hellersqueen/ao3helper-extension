@@ -34,11 +34,15 @@ const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'tropeStatistics';
 const LOG  = `[AO3H][${MOD}]`;
-const SK   = `${NS}:tg:stats`;
+// Exported so sibling modules (tropeAchievements, tropeHoroscope) reference
+// this module's key constants instead of duplicating the string literals.
+export const STATS_KEY = `${NS}:tg:stats`;
+const SK   = STATS_KEY;
 
 function getShared () { return W.AO3H_TropeGames || null; }
 
-const SK_SEEN = `${NS}:tg:stats:seen`;
+export const STATS_SEEN_KEY = `${NS}:tg:stats:seen`;
+const SK_SEEN = STATS_SEEN_KEY;
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -51,19 +55,13 @@ function saveStats (stats) { lsSet(SK, stats); }
 function loadSeen () { return lsGet(SK_SEEN) || []; }
 function saveSeen (seen) { lsSet(SK_SEEN, seen); }
 
-function todayKey () {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
 function calcStreak (seen) {
   const dates = new Set(seen.map(e => (typeof e === 'object' ? e.date : null)).filter(Boolean));
   if (!dates.size) return 0;
   let streak = 0;
   const d = new Date();
   while (true) {
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    if (!dates.has(key)) break;
+    if (!dates.has(getShared().dateKey(d))) break;
     streak++;
     d.setDate(d.getDate() - 1);
   }
@@ -73,8 +71,7 @@ function calcStreak (seen) {
 function recordTropes (stats) {
   const workId = extractWorkIdFromHref(location.pathname);
   const TROPE_LIST = getShared()?.TROPE_LIST || [];
-  const tagEls = document.querySelectorAll('dd.freeform.tags li a.tag');
-  const pageTags = Array.from(tagEls).map(el => el.textContent.trim().toLowerCase());
+  const pageTags = getShared()?.getPageFreeformTagsLower() || [];
   const matched = TROPE_LIST.filter(trope =>
     pageTags.some(t => t.includes(trope.toLowerCase()) || trope.toLowerCase().includes(t))
   );
@@ -88,7 +85,7 @@ function recordTropes (stats) {
     // `tropes` (chantier 4) backs the weekly challenge, monthly trend, and
     // horoscope retrospective — earlier entries predating this field simply
     // contribute nothing to those computations.
-    seen.push({ id: workId, date: todayKey(), tropes: matched });
+    seen.push({ id: workId, date: getShared().dateKey(), tropes: matched });
     if (seen.length > 1000) seen.splice(0, seen.length - 1000);
     saveSeen(seen);
   }

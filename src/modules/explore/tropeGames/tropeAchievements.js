@@ -22,6 +22,8 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
+import { STATS_KEY } from './tropeStatistics.js';
+import { BINGO_KEY } from './tropeBingoPatterns.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -33,8 +35,8 @@ const NS   = 'ao3h';
 const MOD  = 'tropeAchievements';
 const LOG  = `[AO3H][${MOD}]`;
 const SK   = `${NS}:tg:achievements`;
-const BINGO_SK = `${NS}:tg:bingo`;
-const STATS_SK = `${NS}:tg:stats`;
+const BINGO_SK = BINGO_KEY;
+const STATS_SK = STATS_KEY;
 const activeToasts = new Set();
 const activeTimers = new Set();
 

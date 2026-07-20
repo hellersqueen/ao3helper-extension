@@ -22,6 +22,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
+import { STATS_SEEN_KEY } from './tropeStatistics.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -44,29 +45,20 @@ function isHomePage () {
    FEATURE — DAILY TROPE SELECTION AND DISMISSAL
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function todayKey () {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
 function dayOfYear () {
   const n = new Date();
   const start = new Date(n.getFullYear(), 0, 0);
   return Math.floor((n.getTime() - start.getTime()) / 86400000);
 }
 
-function yesterdayKey () {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
 /** Did yesterday's predicted trope actually get read? null = no verdict yet. */
 function getRetrospective () {
-  const yKey = yesterdayKey();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yKey = getShared().dateKey(yesterday);
   const entry = lsGet(`${NS}:tg:horoscope:${yKey}`);
   if (!entry?.trope) return null;
-  const seen = lsGet(`${NS}:tg:stats:seen`) || [];
+  const seen = lsGet(STATS_SEEN_KEY) || [];
   const cameTrue = getShared().horoscopeCameTrue(seen, entry.trope, yKey);
   if (cameTrue === null) return null;
   return { trope: entry.trope, cameTrue };
@@ -88,14 +80,16 @@ const TAGLINES = [
 ];
 
 function getOrCreateTodayEntry () {
-  const TROPE_LIST = getShared()?.TROPE_LIST;
+  const shared = getShared();
+  const TROPE_LIST = shared?.TROPE_LIST;
   if (!TROPE_LIST) return null;
-  const key    = `${NS}:tg:horoscope:${todayKey()}`;
+  const today  = shared.dateKey();
+  const key    = `${NS}:tg:horoscope:${today}`;
   const cached = lsGet(key);
   if (cached?.trope) return cached;
   const idx   = dayOfYear() % TROPE_LIST.length;
   const trope = TROPE_LIST[idx];
-  const entry = { trope, tagline: TAGLINES[idx % TAGLINES.length], dismissed: false, date: todayKey() };
+  const entry = { trope, tagline: TAGLINES[idx % TAGLINES.length], dismissed: false, date: today };
   lsSet(key, entry);
   return entry;
 }
@@ -108,7 +102,7 @@ function getTrope () {
 }
 
 function dismissToday () {
-  const key = `${NS}:tg:horoscope:${todayKey()}`;
+  const key = `${NS}:tg:horoscope:${getShared().dateKey()}`;
   const entry = lsGet(key) || {};
   lsSet(key, { ...entry, dismissed: true });
 }

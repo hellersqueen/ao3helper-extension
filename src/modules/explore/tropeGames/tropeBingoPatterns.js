@@ -37,7 +37,10 @@ const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'tropeBingoPatterns';
 const LOG  = `[AO3H][${MOD}]`;
-const SK   = `${NS}:tg:bingo`;
+// Exported so tropeAchievements references this module's key constant
+// instead of duplicating the string literal.
+export const BINGO_KEY = `${NS}:tg:bingo`;
+const SK   = BINGO_KEY;
 
 function getShared () { return W.AO3H_TropeGames || null; }
 
@@ -102,9 +105,8 @@ function detectPatterns (checked, patterns) {
 }
 
 function autoCheckFromTags (state, patterns) {
-  const tagEls = document.querySelectorAll('dd.freeform.tags li a.tag');
-  if (!tagEls.length) return state;
-  const pageTags = Array.from(tagEls).map(el => el.textContent.trim().toLowerCase());
+  const pageTags = getShared()?.getPageFreeformTagsLower() || [];
+  if (!pageTags.length) return state;
   const previouslyCompleted = new Set(state.completed);
   let changed = false;
   state.card.forEach((trope, idx) => {

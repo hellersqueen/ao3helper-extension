@@ -223,12 +223,19 @@ export function horoscopeCameTrue (entries, trope, date) {
   return sameDay.some(entry => (entry.tropes || []).includes(trope));
 }
 
+// Shared by tropeBingoPatterns (auto-check) and tropeStatistics (record) —
+// both used to reimplement this same DOM read independently.
+export function getPageFreeformTagsLower () {
+  return Array.from(document.querySelectorAll('dd.freeform.tags li a.tag'))
+    .map(el => el.textContent.trim().toLowerCase());
+}
+
 const tropeGamesHelpers = {
   TROPE_CATEGORIES, categoryOf, getCategories, filterTropesByCategory,
   groupStatsByCategory, dateKey, monthKey, computeWeeklyChallenge,
   bucketTropesByMonth, monthlyTrend, unexploredTropes, bingoProgressPercent,
   freeCenterIndex, buildBingoPatterns, getSeasonalTheme, MOOD_QUIZ,
-  pickTropeForMood, medalIcon, horoscopeCameTrue,
+  pickTropeForMood, medalIcon, horoscopeCameTrue, getPageFreeformTagsLower,
 };
 
 
