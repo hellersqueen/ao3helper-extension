@@ -19,7 +19,6 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { showToast as libShowToast } from '../../../../lib/ui/toast.js';
@@ -38,6 +37,9 @@ export class ImportExportLists {
     this.onExport     = config.onExport     || null;
     this.onImport     = config.onImport     || null;
     this.htmlTemplate = config.htmlTemplate || null; // (work) => html string
+    // Injected by the coordinator — same AO3 Helper data scan used by
+    // BackupOperations/CloudSync, kept in one place (see _backupAndSync.js).
+    this.getAllData   = config.getAllData   || (() => ({}));
     this._active      = true;
     this._activeReader = null;
   }
@@ -191,16 +193,7 @@ export class ImportExportLists {
   ═════════════════════════════════════════════════════════════════════════ */
 
   exportSettings() {
-    const NS = AO3H.env?.NS || 'ao3h';
-    const data = {};
-
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && (key.includes(NS) || key.includes('AO3H')) && !key.includes(':backupAndSync:backups')) {
-        data[key] = localStorage.getItem(key);
-      }
-    }
-
+    const data = this.getAllData();
     const count = Object.keys(data).length;
     if (count === 0) {
       this.showToast('No AO3Helper data found to export.', 'info');

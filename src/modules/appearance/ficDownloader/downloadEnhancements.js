@@ -157,12 +157,6 @@ export class DownloadEnhancements {
     };
   }
 
-  _esc (str) {
-    const d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
-  }
-
   _safeFilename (str, maxLen = 60) {
     return str.replace(/[^a-z0-9]/gi, '_').slice(0, maxLen);
   }
@@ -193,34 +187,16 @@ export class DownloadEnhancements {
     return dlRes.arrayBuffer();
   }
 
+  // Delegates the actual page template to the coordinator's buildWorkHTML —
+  // shared with individualDownloads.js/batchDownload.js so the HTML/CSS
+  // wrapper exists in one place (see _ficDownloader.js).
   _buildWorkHtml (title, author, rawHtml) {
     const doc      = new DOMParser().parseFromString(rawHtml, 'text/html');
     const summary  = doc.querySelector('.summary .userstuff')?.innerHTML || '';
     const chapters = doc.querySelector('#chapters')?.innerHTML
                   || doc.querySelector('.userstuff')?.innerHTML || '';
     const notes    = doc.querySelector('.notes .userstuff')?.innerHTML || '';
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>${this._esc(title)} — ${this._esc(author)}</title>
-<style>
-  body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.8; color: #333; }
-  h1   { color: #2c5f8a; }
-  .summary { background: #f9f9f9; padding: 16px; border-left: 4px solid #2c5f8a; margin: 20px 0; }
-  .notes   { background: #fff8dc; padding: 12px; margin: 16px 0; border: 1px solid #ddd; border-radius: 4px; }
-  hr { border: none; border-top: 2px solid #ddd; margin: 32px 0; }
-</style>
-</head>
-<body>
-<h1>${this._esc(title)}</h1>
-<p><em>by ${this._esc(author)}</em></p>
-${summary  ? `<div class="summary"><strong>Summary:</strong><br>${summary}</div>` : ''}
-${notes    ? `<div class="notes">${notes}</div>` : ''}
-<hr>
-<div id="content">${chapters}</div>
-</body>
-</html>`;
+    return W.AO3H.ficDownloader.buildWorkHTML({ title, author, summary, notes, chaptersHTML: chapters });
   }
 
   _triggerDownload (filename, content, type = 'text/html;charset=utf-8') {

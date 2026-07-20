@@ -31,6 +31,9 @@ rester vertes avant tout commit.
 
 ## Documentation
 
+Les règles de découpage, de placement et de cycle de vie des modules sont
+décrites dans [`architecture.md`](architecture.md).
+
 Chaque module a son propre fichier `.md` à côté de son code, dans
 `src/modules/<catégorie>/<module>/`. Le dossier [`docs/`](docs/) contient
 la documentation transversale du projet :

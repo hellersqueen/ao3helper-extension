@@ -107,6 +107,30 @@ export function runVersionMigrations (currentVersion, storage = localStorage) {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   SHARED DATA COLLECTION
+═══════════════════════════════════════════════════════════════════════════ */
+
+// Scans localStorage for every AO3 Helper key. Shared by BackupOperations
+// (backups), ImportExportLists (settings export), and CloudSync (sync push)
+// so the scan logic exists in exactly one place instead of being copied into
+// each submodule that needs "all of AO3 Helper's data".
+/** @param {Storage} storage @param {{ exclude?: string }} [options] */
+export function collectAO3HelperData (storage = localStorage, { exclude } = {}) {
+  const NS = AO3H.env?.NS || 'ao3h';
+  const data = {};
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
+    if (!key) continue;
+    if (!key.includes(NS) && !key.includes('AO3H')) continue;
+    if (exclude && key.includes(exclude)) continue;
+    data[key] = storage.getItem(key);
+  }
+  return data;
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -169,12 +193,14 @@ register(
     const onBackupCreated = (backups) => {
       localStorage.setItem(BACKUPS_KEY, JSON.stringify(backups));
     };
+    const getAllData = () => collectAO3HelperData(localStorage, { exclude: `:${MOD}:backups` });
 
     // ── Manual backup operations (instantiated first — AutoBackup delegates to it) ──
     const backupOpsInst = new BackupOperations({
       maxBackups:      cfg('maxBackups'),
       backups:         sharedBackups,
       onBackupCreated,
+      getAllData,
     });
     instances.push(backupOpsInst);
 
@@ -190,7 +216,7 @@ register(
     // ── Cloud sync ──────────────────────────────────────────────────────────
     const cloudSyncInst = new CloudSync({
       syncEnabled: cfg('syncEnabled'),
-      getAllData:  () => backupOpsInst?.getAllAO3HelperData() ?? {},
+      getAllData,
     });
     cloudSyncInst.init().catch(err => {
       console.warn(`${LOG} CloudSync init failed:`, err);
@@ -198,7 +224,7 @@ register(
     instances.push(cloudSyncInst);
 
     // ── Import/export work lists ────────────────────────────────────────────
-    const importExportInst = new ImportExportLists();
+    const importExportInst = new ImportExportLists({ getAllData });
     instances.push(importExportInst);
 
     // ── Public API ──────────────────────────────────────────────────────────

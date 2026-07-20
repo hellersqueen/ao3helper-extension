@@ -42,14 +42,6 @@ export class AutoBackup {
     return this.backupOps.createBackup();
   }
 
-  restoreBackup(index = 0) {
-    return this.backupOps.restoreBackup(index);
-  }
-
-  getBackups() {
-    return this.backupOps.getBackups();
-  }
-
 
   /* ═════════════════════════════════════════════════════════════════════════
      FEATURE LIFECYCLE

@@ -18,7 +18,6 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
@@ -35,6 +34,9 @@ export class BackupOperations {
     this.backups = config.backups || [];
     this.onBackupCreated = config.onBackupCreated || null;
     this.maxBackups = config.maxBackups || 10;
+    // Injected by the coordinator — scans localStorage for AO3 Helper data.
+    // Shared with ImportExportLists/CloudSync so the scan exists once.
+    this.getAllData = config.getAllData || (() => ({}));
   }
 
 
@@ -91,17 +93,7 @@ export class BackupOperations {
   }
 
   getAllAO3HelperData() {
-    const NS = AO3H.env?.NS || 'ao3h';
-    const data = {};
-
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && (key.includes(NS) || key.includes('AO3H')) && !key.includes(':backupAndSync:backups')) {
-        data[key] = localStorage.getItem(key);
-      }
-    }
-
-    return data;
+    return this.getAllData();
   }
 
   getBackups() {
@@ -115,22 +107,12 @@ export class BackupOperations {
 
   // categories: array of key substring patterns, e.g. ['readingList', 'filters']
   createSelectiveBackup(categories = []) {
-    const NS = AO3H.env?.NS || 'ao3h';
-    const data = {};
-
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (!key) continue;
-      const isAO3H = key.includes(NS) || key.includes('AO3H');
-      if (!isAO3H || key.includes(':backupAndSync:backups')) continue;
-
-      const matchesCategory = categories.length === 0 ||
-        categories.some(cat => key.toLowerCase().includes(cat.toLowerCase()));
-
-      if (matchesCategory) {
-        data[key] = localStorage.getItem(key);
-      }
-    }
+    const all = this.getAllData();
+    const data = categories.length === 0
+      ? all
+      : Object.fromEntries(Object.entries(all).filter(([key]) =>
+          categories.some(cat => key.toLowerCase().includes(cat.toLowerCase()))
+        ));
 
     const backup = {
       timestamp: new Date().toISOString(),
