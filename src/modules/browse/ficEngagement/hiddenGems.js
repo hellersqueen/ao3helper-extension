@@ -18,6 +18,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { observe } from '../../../../lib/utils/index.js';
+import { getBlurbStats, getWorkPageStats } from '../../../../lib/ao3/work-stats.js';
 
 
 
@@ -40,37 +41,6 @@ export class HiddenGems {
     this.helpers = helpers;
     this.thresholds = { ...helpers.DEFAULT_GEM_THRESHOLDS, ...thresholds };
     this.compareToPageAverage = compareToPageAverage;
-  }
-
-
-  /* ═════════════════════════════════════════════════════════════════════════
-     FEATURE — STATISTICS EXTRACTION
-  ═════════════════════════════════════════════════════════════════════════ */
-
-  _parseNum (node) {
-    if (!node) return null;
-    const n = parseInt((node.textContent || '').replace(/,/g, '').trim(), 10);
-    return isNaN(n) ? null : n;
-  }
-
-  _getStatsFromBlurb (blurb) {
-    const dl = blurb.querySelector('dl.stats');
-    if (!dl) return null;
-    const kudos     = this._parseNum(dl.querySelector('dd.kudos'));
-    const hits      = this._parseNum(dl.querySelector('dd.hits'));
-    const bookmarks = this._parseNum(dl.querySelector('dd.bookmarks'));
-    if (kudos == null && hits == null) return null;
-    return { kudos, hits, bookmarks };
-  }
-
-  _getStatsFromWorkPage () {
-    const dl = document.querySelector('dl.work.meta.group dl.stats, #main dl.stats');
-    if (!dl) return null;
-    const kudos     = this._parseNum(dl.querySelector('dd.kudos'));
-    const hits      = this._parseNum(dl.querySelector('dd.hits'));
-    const bookmarks = this._parseNum(dl.querySelector('dd.bookmarks'));
-    if (kudos == null && hits == null) return null;
-    return { kudos, hits, bookmarks };
   }
 
 
@@ -143,14 +113,14 @@ export class HiddenGems {
   _processBlurb (blurb) {
     if (blurb.dataset[DATA_ATTR]) return;
     blurb.dataset[DATA_ATTR] = '1';
-    const stats = this._getStatsFromBlurb(blurb);
+    const stats = getBlurbStats(blurb);
     if (this._isGem(stats)) this._attachToBlurb(blurb, stats);
   }
 
   _scan () {
     const blurbs = document.querySelectorAll('li.work.blurb.group, li.bookmark.blurb.group');
     if (this.compareToPageAverage) {
-      this._pageAverageRatio = this.helpers.averageRatio(Array.from(blurbs).map(b => this._getStatsFromBlurb(b)));
+      this._pageAverageRatio = this.helpers.averageRatio(Array.from(blurbs).map(b => getBlurbStats(b)));
     }
     blurbs.forEach(b => this._processBlurb(b));
   }
@@ -164,7 +134,7 @@ export class HiddenGems {
     this._scan();
 
     if (/^\/works\/\d+/.test(location.pathname)) {
-      const stats = this._getStatsFromWorkPage();
+      const stats = getWorkPageStats();
       if (this._isGem(stats)) this._attachToWorkPage(stats);
     }
 
