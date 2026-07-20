@@ -27,9 +27,9 @@ des fics cachées, se gèrent depuis le panneau de configuration.
 
 - Ajoute un bouton "Hide" (texte et position personnalisables) sur chaque fic d'une liste, ainsi qu'un petit bouton "📝" pour ajouter une note privée sans cacher la fic
 - Un clic ouvre une petite fenêtre avec des raisons rapides déjà prêtes (personnalisables), plus un champ de texte libre
-- Une fic cachée s'affiche selon l'un des 5 styles (`_skipWorks.js`), avec des boutons "Show" (révéler temporairement), "Edit" (changer la note) et "Unhide" (démasquer pour de bon) — sauf le style "note", qui n'a pas de "Show" puisque rien n'est réellement caché
+- Une fic cachée s'affiche selon l'un des 5 styles (`skipWorks.js`), avec des boutons "Show" (révéler temporairement), "Edit" (changer la note) et "Unhide" (démasquer pour de bon) — sauf le style "note", qui n'a pas de "Show" puisque rien n'est réellement caché
 - Garde en mémoire la liste des fics cachées, séparément pour chaque compte utilisateur
-- Permet d'exporter ou d'importer cette liste dans un fichier, et synchronise automatiquement entre appareils via un miroir `localStorage` que le module `backupAndSync` récupère tout seul (`_skipWorks.js`)
+- Permet d'exporter ou d'importer cette liste dans un fichier, et synchronise automatiquement entre appareils via un miroir `localStorage` que le module `backupAndSync` récupère tout seul (`skipWorks.js`)
 
 ### `skipWorks.css`
 
@@ -45,7 +45,7 @@ vraiment dans ce module (pas de code pour ça) :
   Elle filtre par titre, auteur, note ou identifiant/numéro d'œuvre (`filterHiddenWorks` dans
   `lib/ui/panel/configs/browse/skipWorks-config.js`, avec ses tests dans le fichier voisin).
   Comme le titre et l'auteur n'étaient pas enregistrés avant, `skipWorks.js` les capture
-  maintenant depuis le blurb au moment du masquage (`_skipWorks.js` → `extractWorkMeta`) et les
+  maintenant depuis le blurb au moment du masquage (`skipWorks.js` → `extractWorkMeta`) et les
   stocke dans IndexedDB à côté de la note ; les entrées masquées avant cette mise à jour restent
   cherchables par note/id (repli sur "Work #12345" à l'affichage). L'import JSON préserve aussi
   ces champs s'ils sont présents dans le fichier importé.
@@ -56,13 +56,13 @@ vraiment dans ce module (pas de code pour ça) :
   IndexedDB — vérifié dans son code). Plutôt que de faire dépendre `skipWorks` de
   `backupAndSync` (les modules de ce projet restent indépendants les uns des autres),
   `skipWorks` recopie sa liste dans une clé `localStorage` miroir à chaque changement
-  (`_skipWorks.js`) ; `backupAndSync` la récupère automatiquement dans ses sauvegardes
+  (`skipWorks.js`) ; `backupAndSync` la récupère automatiquement dans ses sauvegardes
   et sa synchro cloud, sans aucune modification de son côté. Au chargement de la page, le miroir
   est fusionné avec IndexedDB (le plus récent gagne, par `updatedAt`) — voir `reconcileWithMirror()`.
 - ~~Pouvoir double-cliquer sur une fic cachée pour la remontrer tout de suite~~ ✅
   Un double-clic n'importe où sur la barre grise "Hidden: ..." (sauf sur les boutons Edit/Show/
   Unhide, qui gardent leur propre comportement au simple clic) révèle la fic temporairement,
-  exactement comme le bouton Show. Le hit-test est dans `_skipWorks.js`
+  exactement comme le bouton Show. Le hit-test est dans `skipWorks.js`
   (`isHideBarRevealTarget`, avec ses tests) ; un `title="Double-click to reveal"` + curseur
   pointer sur la zone signalent la fonctionnalité.
 - Cacher automatiquement des fics selon des mots-clés — *déplacé vers "Explicitement écarté" : voir plus bas.*
@@ -70,13 +70,13 @@ vraiment dans ce module (pas de code pour ça) :
   5 styles au lieu de 2 : `block` (bloc gris, inchangé), `banner` (même chose en compact, une
   ligne), `dim` (la fic reste visible mais atténuée, la barre apparaît en dessous), `note` (la
   fic reste intacte, juste annotée — pas de bouton Show puisque rien n'est masqué), et `remove`
-  (inchangé). Logique de résolution dans `_skipWorks.js`, avec ses tests.
+  (inchangé). Logique de résolution dans `skipWorks.js`, avec ses tests.
   `reapplyDisplayMode()` a aussi été généralisé pour gérer tous les changements de style à la
   volée (avant : seulement `block ↔ remove`).
 - ~~Choisir où placer le bouton "Hide" ou changer son texte~~ ✅
   Réglages `hideButtonText` (texte libre) et `hideButtonPosition` (`title` près du titre, ou
   `bottom` après les statistiques, ancré sur `dl.stats` — le même point d'ancrage que
-  `laterShelf` utilise déjà pour ses propres ajouts). Logique dans `_skipWorks.js`.
+  `laterShelf` utilise déjà pour ses propres ajouts). Logique dans `skipWorks.js`.
   **Pas fait** : "près des actions Bookmark/Mark for Later" et "dans un menu d'actions" — voir
   "Explicitement écarté".
 - ~~Demander une confirmation avant de cacher une fic~~ ✅
@@ -86,7 +86,7 @@ vraiment dans ce module (pas de code pour ça) :
 - Des règles automatiques qui cachent une fic toute seule — *déplacé vers "Explicitement écarté" : voir plus bas (fait double emploi avec `hideByTags`).*
 - ~~Écrire une note privée sur une fic sans la cacher~~ ✅
   Petit bouton "📝" à côté de "Hide" sur chaque fic : ouvre le même picker, mais enregistre
-  `isHidden:false` avec un marqueur `isStandaloneNote:true` dédié (`_skipWorks.js`).
+  `isHidden:false` avec un marqueur `isStandaloneNote:true` dédié (`skipWorks.js`).
   Ce marqueur explicite était nécessaire : Unhide garde volontairement la note d'un ancien
   masquage (pour un re-masquage rapide via le raccourci clavier), donc "isHidden:false + une
   note" seul aurait fait apparaître le badge 📝 sur toutes les fics démasquées par le passé, pas
@@ -117,7 +117,7 @@ Champs enregistrés par œuvre : `workId`, `isHidden`, `reason` (la note),
 l'affichage dans le panneau), `isStandaloneNote` (distingue une note
 volontaire via le bouton 📝 d'un reliquat de note gardé après un Unhide),
 et `updatedAt` (utilisé pour résoudre les conflits lors de la fusion avec
-le miroir `localStorage` de `_skipWorks.js`). Les raisons rapides
+le miroir `localStorage` de `skipWorks.js`). Les raisons rapides
 prédéfinies sont enregistrées séparément, en `localStorage` simple.
 
 APIs utilisées : `IndexedDB`, `localStorage` (migration + miroir de sync),

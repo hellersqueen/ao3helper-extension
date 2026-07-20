@@ -121,7 +121,7 @@ async function loadBookmarkVault() {
 const FEATURES = {
   hideByTags:          { load: () => import('./modules/browse/hideByTags/_hideByTags.js'), routes: ['listing'] },
   filterManager:       { load: () => import('./modules/browse/filterManager/_filterManager.js'), routes: ['listing'] },
-  skipWorks:           { load: () => import('./modules/browse/skipWorks/_skipWorks.js'), routes: ['listing'] },
+  skipWorks:           { load: () => import('./modules/browse/skipWorks/skipWorks.js'), routes: ['listing'] },
   pageControls:        { load: () => import('./modules/browse/pageControls/_pageControls.js'), routes: ['listing'] },
   ficEngagement:       { load: () => import('./modules/browse/ficEngagement/_ficEngagement.js'), routes: ['work', 'listing'] },
   workLength:          { load: () => import('./modules/browse/workLength/_workLength.js'), routes: ['work', 'listing'] },

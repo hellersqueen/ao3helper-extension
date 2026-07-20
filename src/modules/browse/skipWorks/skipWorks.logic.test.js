@@ -7,7 +7,7 @@ import {
   hasStandaloneNote,
   isHideBarRevealTarget,
   resolveDisplayStyle,
-} from './_skipWorks.js';
+} from './skipWorks.js';
 
 const NS = 'ao3h';
 
