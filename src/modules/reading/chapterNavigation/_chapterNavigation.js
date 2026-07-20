@@ -35,7 +35,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
 import styles from './chapterNavigation.css?inline';
 
 import { NavigationControls } from './navigationControls.js';
@@ -77,15 +77,6 @@ const SK_LASTCHAP = (id) => `ao3h:cn:lastchap:${id}`;
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function isMultiChapter () { return !!document.querySelector('select#selected_id'); }
-function isListingPage () {
-  return (
-    /^\/works($|\?)/.test(location.pathname)               ||
-    /^\/tags\/[^/]+\/works/.test(location.pathname)       ||
-    /^\/users\/[^/]+\/bookmarks/.test(location.pathname)  ||
-    /^\/users\/[^/]+\/works/.test(location.pathname)      ||
-    /^\/bookmarks(\/|$|\?)/.test(location.pathname)
-  );
-}
 
 export function parseChapterOptions (options) {
   if (!Array.isArray(options)) return [];
@@ -139,10 +130,27 @@ export function prependChapterToTitle (originalTitle, num, total) {
   const position = total ? `Ch. ${num}/${total}` : `Ch. ${num}`;
   return originalTitle ? `${position} · ${originalTitle}` : position;
 }
+/** Parses AO3's "X/Y" chapter-count text (e.g. `dd.chapters`'s textContent)
+ *  into `{ current, total }`, or null for single-chapter works or unparseable text. */
+export function parseChapterInfo (text) {
+  const m = String(text ?? '').trim().match(/^(\d+)\/(\d+)$/);
+  if (!m) return null;
+  const current = parseInt(m[1], 10);
+  const total   = parseInt(m[2], 10);
+  return total <= 1 ? null : { current, total };
+}
+/** Reading progress for a work: prefers readingTracker's live API (if that
+ *  soft dependency is active), falling back to its own last-known cache. */
+export function getReadingProgress (workId) {
+  try {
+    return W.AO3H_ReadingTracker?.getProgress?.(workId) || lsGet(`ao3h:rt:progress:${workId}`);
+  } catch { return null; }
+}
 
 export const chapterNavigationHelpers = {
   parseChapterOptions, filterChapters, buildChapterStates, firstUnreadChapter,
   addRecentEntry, buildBreadcrumbText, prependChapterToTitle,
+  parseChapterInfo, getReadingProgress,
 };
 
 let navCtrl   = null;
@@ -190,7 +198,7 @@ register(
 
     let blurbNav = null;
     if (isListingPage()) {
-      blurbNav = new BlurbNavigation({ NS, cfg, lsGet, SK_LASTCHAP });
+      blurbNav = new BlurbNavigation({ NS, cfg, lsGet, SK_LASTCHAP, helpers: chapterNavigationHelpers });
       blurbNav.setup();
     }
 

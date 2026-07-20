@@ -19,14 +19,12 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { lsGet, lsSet, sessionGet, sessionSet } from '../../../../lib/utils/index.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
-const W = getGlobalWindow();
 const FAB_ID   = 'ao3h-chapters-fab';
 const PANEL_ID = 'ao3h-chapters-panel';
 const RECENT_CAP = 8;
@@ -57,11 +55,7 @@ export class ChaptersPanel {
   _setRecent (r) { sessionSet(this._recentKey(), JSON.stringify(r)); }
 
   _rtLastReadNum () {
-    try {
-      const progress = W.AO3H_ReadingTracker?.getProgress?.(this.workId)
-        || lsGet(`ao3h:rt:progress:${this.workId}`);
-      return progress?.chapter ?? null;
-    } catch { return null; }
+    return this.helpers.getReadingProgress(this.workId)?.chapter ?? null;
   }
 
   /* ═════════════════════════════════════════════════════════════════════════

@@ -59,12 +59,7 @@ export class NavigationControls {
 
   _getChapterInfo () {
     const dd = document.querySelector('dd.chapters');
-    if (!dd) return null;
-    const m = (dd.textContent || '').trim().match(/^(\d+)\/(\d+)$/);
-    if (!m) return null;
-    const current = parseInt(m[1], 10);
-    const total   = parseInt(m[2], 10);
-    return total <= 1 ? null : { current, total };
+    return dd ? this.helpers.parseChapterInfo(dd.textContent) : null;
   }
 
   setupChapterIndexLabel () {
@@ -185,11 +180,7 @@ export class NavigationControls {
   }
 
   _lastReadNum () {
-    try {
-      const progress = W.AO3H_ReadingTracker?.getProgress?.(this.workId)
-        || this.lsGet?.(`ao3h:rt:progress:${this.workId}`);
-      return progress?.chapter ?? null;
-    } catch { return null; }
+    return this.helpers.getReadingProgress(this.workId)?.chapter ?? null;
   }
 
   jumpToFirstUnread () {

@@ -29,8 +29,8 @@ défilement automatique, et un compteur de mots par chapitre.
 
 ### 1. `_chapterNavigation.js` — le chef d'orchestre
 
-- Vérifie sur quel type de page on se trouve et met en route les bons fichiers de fonctionnalités
-- Centralise et injecte les calculs du panneau, du fil d'Ariane et du titre d'onglet
+- Vérifie sur quel type de page on se trouve (détection de listing centralisée via `lib/ao3/parsers.js`'s `isListingPage()`) et met en route les bons fichiers de fonctionnalités
+- Centralise et injecte les calculs du panneau, du fil d'Ariane et du titre d'onglet, ainsi que le parsing "Chapter X/Y" (`parseChapterInfo`) et la lecture de progression via `readingTracker` (`getReadingProgress`), partagés par `navigationControls.js`, `blurbNavigation.js` et `chaptersPanel.js`
 
 ### 2. `navigationControls.js` — barre de navigation et raccourcis
 

@@ -14,44 +14,30 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   IMPORTS
-═══════════════════════════════════════════════════════════════════════════ */
-
-import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-
-/* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
-
-const W = getGlobalWindow();
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — LISTING READING LINKS
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export class BlurbNavigation {
-  /** @param {{ NS, cfg, lsGet, SK_LASTCHAP }} opts */
-  constructor ({ NS, cfg, lsGet, SK_LASTCHAP }) {
+  /** @param {{ NS, cfg, lsGet, SK_LASTCHAP, helpers: typeof import('./_chapterNavigation.js').chapterNavigationHelpers }} opts */
+  constructor ({ NS, cfg, lsGet, SK_LASTCHAP, helpers }) {
     this.NS          = NS;
     this.cfg         = cfg;
     this.lsGet       = lsGet;
     this.SK_LASTCHAP = SK_LASTCHAP;
+    this.helpers     = helpers;
     this._wrapCls    = `${NS}-qnav-wrap`;
   }
 
   _parseChapters (text) {
-    const m = (text || '').trim().match(/^(\d+)\/(\d+)$/);
-    if (!m) return null;
-    const current = parseInt(m[1], 10);
-    const total   = parseInt(m[2], 10);
-    return total <= 1 ? null : { current, total };
+    return this.helpers.parseChapterInfo(text);
   }
 
   _rtGetProgress (workId) {
-    if (W.AO3H_ReadingTracker?.getProgress) {
-      try { return W.AO3H_ReadingTracker.getProgress(workId) || null; } catch {}
-    }
-    return this.lsGet(`ao3h:rt:progress:${workId}`);
+    return this.helpers.getReadingProgress(workId);
   }
 
   _resolveResumeState (workId, blurb) {
