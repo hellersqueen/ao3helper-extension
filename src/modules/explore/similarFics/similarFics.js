@@ -42,7 +42,9 @@ import { getHistoryWorkIdSet } from '../../../../lib/storage/keys.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { createPersistedCache } from '../../../../lib/storage/cache.js';
 import { markWorkForLater } from '../../../../lib/ao3/actions.js';
-import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, findAllBlurbs, getBlurbMeta } from '../../../../lib/ao3/parsers.js';
+import { getWorkFandoms } from '../../../../lib/ao3/work-page.js';
+import { getBlurbStats, getWorkPageStats } from '../../../../lib/ao3/work-stats.js';
 import styles from './similarFics.css?inline';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -250,29 +252,6 @@ function mapRatingToParam(ratingText) {
   return null;
 }
 
-/**
- * Extract total word count from stats, as a number.
- */
-function getWordCount() {
-  const dd = document.querySelector('dl.stats dd.words');
-  if (!dd) return null;
-
-  const raw = (dd.textContent || '').replace(/,/g, '').trim();
-  const n = parseInt(raw, 10);
-  if (isNaN(n)) return null;
-  return n;
-}
-
-/**
- * Extract fandom (first fandom tag) from the work.
- */
-function getFandomTag() {
-  // AO3 usually: dd.fandom.tags li a
-  const el = document.querySelector('dd.fandom.tags li a, dd.fandom a.tag');
-  if (!el) return null;
-  return (el.textContent || '').trim();
-}
-
 function uniqueTags(elements, cap) {
   const out = [];
   const seen = new Set();
@@ -344,8 +323,8 @@ function buildSimilarWorksUrl(info) {
 
 function collectSimilarityInfo() {
   const rating    = getRating();
-  const words     = getWordCount();
-  const fandomTag = getFandomTag();
+  const words     = getWorkPageStats(document).words;
+  const fandomTag = getWorkFandoms(document)[0] || null;
   const relationshipTags = getRelationshipTags();
   const otherTags = getOtherTags();
   const { from, to } = getWordRangeForMode(words || 0, cfg('lengthMode'));
@@ -445,32 +424,25 @@ async function fetchSimilarWorks(url) {
 
 // Parse AO3 work blurbs from a search-results (or series) HTML string.
 function parseWorkBlurbs(html) {
-  const doc     = new DOMParser().parseFromString(html, 'text/html');
-  const results = [];
-  doc.querySelectorAll('li.work.blurb').forEach((blurb) => {
-    const idMatch = (blurb.id || '').match(/work_(\d+)/);
-    if (!idMatch) return;
-    const workId    = idMatch[1];
-    const titleEl   = blurb.querySelector('h4.heading a:first-child');
-    const authorEl  = blurb.querySelector('a[rel="author"]');
-    const kudosEl   = blurb.querySelector('dd.kudos');
-    const wordsEl   = blurb.querySelector('dd.words');
-    const summaryEl = blurb.querySelector('.summary blockquote, blockquote.userstuff');
-    const fandoms       = Array.from(blurb.querySelectorAll('.fandoms a.tag')).map(e => e.textContent.trim());
-    const relationships = Array.from(blurb.querySelectorAll('.relationships a.tag')).map(e => e.textContent.trim());
-    const freeforms     = Array.from(blurb.querySelectorAll('.freeforms a.tag')).map(e => e.textContent.trim());
-    results.push({
-      workId,
-      title:     titleEl  ? titleEl.textContent.trim()                                       : '',
-      href:      titleEl  ? titleEl.getAttribute('href')                                     : `/works/${workId}`,
-      author:    authorEl ? authorEl.textContent.trim()                                      : 'Anonymous',
-      kudos:     kudosEl  ? parseInt((kudosEl.textContent || '').replace(/,/g, ''), 10) || 0 : 0,
-      wordCount: wordsEl  ? parseInt((wordsEl.textContent  || '').replace(/,/g, ''), 10) || 0 : 0,
-      summary:   summaryEl ? summaryEl.textContent.trim() : '',
-      fandoms, relationships, freeforms,
-    });
-  });
-  return results;
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return findAllBlurbs(doc).map((blurb) => {
+    const meta = getBlurbMeta(blurb);
+    if (!meta?.workId) return null;
+    const stats   = getBlurbStats(blurb);
+    const titleEl = blurb.querySelector('h4.heading a[href*="/works/"], .heading a[href*="/works/"]');
+    return {
+      workId:    meta.workId,
+      title:     meta.title,
+      href:      titleEl ? titleEl.getAttribute('href') : `/works/${meta.workId}`,
+      author:    meta.author || 'Anonymous',
+      kudos:     stats.kudos ?? 0,
+      wordCount: stats.words ?? 0,
+      summary:   meta.summary,
+      fandoms:       meta.fandoms,
+      relationships: meta.relationships,
+      freeforms:     meta.freeforms,
+    };
+  }).filter(Boolean);
 }
 
 
