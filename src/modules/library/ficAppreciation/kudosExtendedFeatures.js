@@ -19,6 +19,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { downloadFile } from '../../../../lib/utils/json-file.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -158,10 +159,10 @@ export class KudosExtendedFeatures {
       .join('');
 
     const fandomRows = byFandom.slice(0, 5)
-      .map(({ key, count }) => `<li><span>${key}</span><span>${count}</span></li>`)
+      .map(({ key, count }) => `<li><span>${escapeHtml(key)}</span><span>${count}</span></li>`)
       .join('');
     const authorRows = byAuthor.slice(0, 5)
-      .map(({ key, count }) => `<li><span>${key}</span><span>${count}</span></li>`)
+      .map(({ key, count }) => `<li><span>${escapeHtml(key)}</span><span>${count}</span></li>`)
       .join('');
 
     const HOURS_12 = ['12am','1am','2am','3am','4am','5am','6am','7am','8am','9am','10am','11am',

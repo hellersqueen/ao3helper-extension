@@ -24,6 +24,7 @@ import { formatDate } from '../../../../lib/utils/format-date.js';
 import { EV_KUDOS_GIVEN } from '../../../../lib/utils/event-names.js';
 import { giveKudos } from '../../../../lib/ao3/actions.js';
 import { getBlurbMeta } from '../../../../lib/ao3/parsers.js';
+import { getWorkTitle, getWorkAuthor, getWorkFandoms } from '../../../../lib/ao3/work-page.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 
 
@@ -73,9 +74,9 @@ export class KudosTracker {
 
   /** Extract title/author/fandoms from the current work page, for kudos records. */
   _extractWorkPageMeta () {
-    const title    = document.querySelector('h2.title.heading')?.textContent.trim();
-    const author   = document.querySelector('h3.byline.heading a[rel="author"]')?.textContent.trim();
-    const fandoms  = Array.from(document.querySelectorAll('dd.fandom.tags a.tag')).map(a => a.textContent.trim());
+    const title   = getWorkTitle(document);
+    const author  = getWorkAuthor(document).name;
+    const fandoms = getWorkFandoms(document);
     const meta = {};
     if (title) meta.title = title;
     if (author) meta.author = author;

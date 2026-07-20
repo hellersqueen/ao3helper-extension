@@ -34,7 +34,7 @@ AO3 Helper — Fic Appreciation Coordinator
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, observe } from '../../../../lib/utils/index.js';
-import { extractWorkIdFromHref, extractWorkIdFromBlurb as parseWorkIdFromBlurb, isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, extractWorkIdFromBlurb, isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
 import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
 import { clearAllToasts } from '../../../../lib/ui/toast.js';
 import styles from './ficAppreciation.css?inline';
@@ -103,17 +103,8 @@ function storeSet (key, val) {
    FEATURES
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function isListingPage () {
-  return /^\/works$/.test(location.pathname) ||
-         /^\/tags\/[^/]+\/works/.test(location.pathname) ||
-         /^\/users\/[^/]+\/(bookmarks|works)/.test(location.pathname) ||
-         /^\/collections\/[^/]+\/works/.test(location.pathname);
-}
 function getWorkIdFromPath () {
   return extractWorkIdFromHref(location.pathname);
-}
-function getWorkIdFromBlurb (blurb) {
-  return parseWorkIdFromBlurb(blurb);
 }
 
 export function groupCounts (records, keyFn) {
@@ -279,7 +270,7 @@ register(MOD, {
   function processBlurbs () {
     const hideStatuses = cfg('hideStatusFilter') || [];
     document.querySelectorAll('li.work.blurb, li.bookmark.blurb, li.blurb').forEach(blurb => {
-      const workId = getWorkIdFromBlurb(blurb);
+      const workId = extractWorkIdFromBlurb(blurb);
       if (!workId) return;
       // Listing filters
       if (cfg('filterCompletedWorks') && maf.isFinished(workId)) {
