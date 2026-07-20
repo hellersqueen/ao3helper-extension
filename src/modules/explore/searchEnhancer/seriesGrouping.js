@@ -22,7 +22,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet } from '../../../../lib/utils/index.js';
-import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromBlurb, isListingPage } from '../../../../lib/ao3/parsers.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -42,11 +42,6 @@ const DEFAULTS = {
 };
 function readCfg () {
   return loadModuleSettings('searchEnhancer', DEFAULTS);
-}
-
-function isListingPage () {
-  const p = location.pathname;
-  return /^\/works($|\?)/.test(p) || /^\/works\/search/.test(p) || /\/tags\/[^/]+\/works/.test(p);
 }
 
 

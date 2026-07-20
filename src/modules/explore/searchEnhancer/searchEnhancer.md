@@ -127,5 +127,7 @@ Stockage :
 **Bug corrigé (chantier 4) :** `seriesGrouping.js`'s propre `isListingPage()`
 ne reconnaissait que `/works` ou `/tags/*/works`, jamais `/works/search` —
 l'URL de résultats la plus courante. Le regroupement de séries (et donc le
-tri par historique réel) ne s'exécutait donc jamais sur cette page. Corrigé
-en ajoutant `/^\/works\/search/` au même regex.
+tri par historique réel) ne s'exécutait donc jamais sur cette page. D'abord
+corrigé en ajoutant `/^\/works\/search/` au regex local, puis `seriesGrouping.js`
+et `resultsSorting.js` sont tous deux passés à l'`isListingPage()` canonique
+de `lib/ao3/parsers.js`, qui couvre aussi bookmarks/collections/pages user.

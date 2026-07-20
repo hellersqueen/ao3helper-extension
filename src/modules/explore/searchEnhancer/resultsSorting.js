@@ -23,7 +23,7 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { getBlurbStats } from '../../../../lib/ao3/work-stats.js';
-import { parseChapterCount } from '../../../../lib/ao3/parsers.js';
+import { parseChapterCount, isListingPage } from '../../../../lib/ao3/parsers.js';
 import { buildKudosRatioBadge, RATIO_BADGE_CLASS } from '../../../../lib/ui/badges.js';
 
 
@@ -52,11 +52,6 @@ function readCfg () {
 }
 
 function getShared () { return W.AO3H_SearchEnhancer || null; }
-
-function isListingPage () {
-  return /^\/works(\/search)?$|^\/tags\/.*\/works|^\/users\/.*\/bookmarks|^\/collections\/.*\/works/.test(location.pathname) ||
-         location.search.includes('work_search');
-}
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
