@@ -33,8 +33,8 @@ AO3 Helper — Reading Dashboard
 import { register } from '../../../core/lifecycle.js';
 import { detectUser } from '../../../../lib/utils/user-detector.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
-import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { extractWorkIdFromHref, isWorkPage as isWorkPageRoute } from '../../../../lib/ao3/parsers.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { makeListReorderable, applySavedOrder } from '../../../../lib/ui/drag-reorder.js';
 import styles from './readingDashboard.css?inline';
@@ -166,44 +166,19 @@ function log(...args) {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function loadData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return {
-        works: [],
-        fandomCounts: {},
-        tagCounts: {},
-      };
-    }
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') {
-      return {
-        works: [],
-        fandomCounts: {},
-        tagCounts: {},
-      };
-    }
-    // Ensure basic structure
-    parsed.works = Array.isArray(parsed.works) ? parsed.works : [];
-    parsed.fandomCounts = parsed.fandomCounts || {};
-    parsed.tagCounts = parsed.tagCounts || {};
-    return parsed;
-  } catch (err) {
-    console.warn(`${LOG_PREFIX} Failed to load dashboard data`, err);
-    return {
-      works: [],
-      fandomCounts: {},
-      tagCounts: {},
-    };
+  const parsed = lsGet(STORAGE_KEY, null);
+  if (!parsed || typeof parsed !== 'object') {
+    return { works: [], fandomCounts: {}, tagCounts: {} };
   }
+  // Ensure basic structure
+  parsed.works = Array.isArray(parsed.works) ? parsed.works : [];
+  parsed.fandomCounts = parsed.fandomCounts || {};
+  parsed.tagCounts = parsed.tagCounts || {};
+  return parsed;
 }
 
 function saveData(data) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data || {}));
-  } catch (err) {
-    console.warn(`${LOG_PREFIX} Failed to save dashboard data`, err);
-  }
+  lsSet(STORAGE_KEY, data || {});
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -211,8 +186,7 @@ function saveData(data) {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function isWorkPage() {
-  const path = W.location.pathname || '';
-  return /\/works\/\d+/.test(path) || !!document.querySelector('#workskin');
+  return isWorkPageRoute(W.location.pathname || '') || !!document.querySelector('#workskin');
 }
 
 function isHomePage() {
@@ -646,35 +620,27 @@ function buildQuickLinksSection() {
    FEATURE — CONTINUE READING
 ═══════════════════════════════════════════════════════════════════════════ */
 
+function getWorkProgress(workId) {
+  return W.AO3H_ReadingTracker?.getProgress?.(workId) || lsGet(`ao3h:rt:progress:${workId}`);
+}
+
 function buildContinueReadingSection(data) {
-  let progress;
-  try {
-    const raw = localStorage.getItem('ao3h:readingTracker:progress');
-    if (!raw) return null;
-    progress = JSON.parse(raw);
-  } catch (_) { return null; }
-
-  if (!progress || typeof progress !== 'object') return null;
-
   const works = (data && data.works) || [];
-  const workMap = {};
-  works.forEach(w => { if (w.id) workMap[String(w.id)] = w; });
 
-  // Filter in-progress works (0 < percent < 100) and sort by updatedAt desc
-  const inProgress = Object.entries(progress)
-    .filter(([, p]) => p && p.percent > 0 && p.percent < 100 && p.chapterHref)
-    .sort(([, a], [, b]) => (b.updatedAt || 0) - (a.updatedAt || 0))
+  // Filter in-progress works (0 < progress < 100) and sort by lastReadAt desc
+  const inProgress = works
+    .filter((w) => w?.id)
+    .map((w) => ({ work: w, progress: getWorkProgress(w.id) }))
+    .filter(({ progress }) => progress && progress.progress > 0 && progress.progress < 100 && progress.chapterHref)
+    .sort((a, b) => (b.progress.lastReadAt || 0) - (a.progress.lastReadAt || 0))
     .slice(0, 3)
-    .map(([workId, p]) => {
-      const match = workMap[workId];
-      return {
-        title:   match?.title || `Work #${workId}`,
-        fandom:  match?.fandoms?.[0] || '',
-        href:    p.chapterHref,
-        percent: Math.round(p.percent),
-        updatedAt: p.updatedAt || 0,
-      };
-    });
+    .map(({ work, progress }) => ({
+      title:   work?.title || `Work #${work.id}`,
+      fandom:  work?.fandoms?.[0] || '',
+      href:    progress.chapterHref,
+      percent: Math.round(progress.progress),
+      updatedAt: progress.lastReadAt || 0,
+    }));
 
   const section = document.createElement('div');
   section.className = 'ao3h-dashboard-section';
@@ -748,9 +714,7 @@ function renderDashboardPanel(data) {
   // persisted (see data.blockOrder) and restored across sessions/reloads.
   const blocks = [];
 
-  const continueSection = buildContinueReadingSection(data);
-  if (continueSection) blocks.push(['continueReading', continueSection]);
-
+  blocks.push(['continueReading', buildContinueReadingSection(data)]);
   blocks.push(['insights', buildInsightsSection(data)]);
   blocks.push(['yearRecap', buildYearRecapSection(data)]);
 

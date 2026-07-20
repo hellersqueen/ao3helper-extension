@@ -84,6 +84,17 @@ readingTracker. Tous les autres blocs (fics récentes, fics en cours,
 fandoms les plus consultés, nuage de tags, insights, bilan annuel), eux,
 utilisent toujours leur propre mémoire indépendante.
 
+## Corrections apportées à des fonctionnalités déjà existantes
+
+Le bloc "Continue Reading" lisait une clé `ao3h:readingTracker:progress`
+qui n'a jamais existé — `readingTracker` stocke la progression sous une clé
+par œuvre (`ao3h:rt:progress:{workId}`, via `W.AO3H_ReadingTracker.getProgress`),
+pas sous un objet global unique. Les noms de champs supposés (`percent`,
+`updatedAt`) ne correspondaient pas non plus aux vrais champs (`progress`,
+`lastReadAt`). Ce bloc n'a donc jamais pu afficher la moindre fic en cours ;
+il affichait toujours son état vide. Corrigé pour interroger la progression
+œuvre par œuvre, comme le fait déjà `chapterNavigation`.
+
 ## Détails techniques
 
 Stockage principal : `ao3h_dashboard_data_v1` — particularité historique,
