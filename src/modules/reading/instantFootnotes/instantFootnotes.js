@@ -30,7 +30,7 @@ AO3 Helper — Instant Footnotes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { css, observe } from '../../../../lib/utils/index.js';
+import { css, observe, $, $$ } from '../../../../lib/utils/index.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './instantFootnotes.css?inline';
@@ -43,9 +43,6 @@ css(styles, 'ao3h-instantFootnotes');
 
 const MOD = 'instantFootnotes';
 const LOG = `[AO3H][${MOD}]`;
-
-function qs  (sel, root)  { return (root || document).querySelector(sel); }
-function qsa (sel, root)  { return Array.from((root || document).querySelectorAll(sel)); }
 
 function debounce (fn, ms) {
   let t = null;
@@ -87,7 +84,7 @@ register(MOD, {
      FEATURE — NOTE TARGET RESOLUTION
   ═════════════════════════════════════════════════════════════════════════ */
 
-  const workRoot = qs('#workskin') || document.body;
+  const workRoot = $('#workskin') || document.body;
 
     // Likely targets for endnotes/footnotes on AO3
     const NOTES_SELECTORS = [
@@ -295,7 +292,7 @@ register(MOD, {
   }
 
   function scanLinks () {
-    qsa(LINK_SELECTOR, workRoot).forEach(bindLink);
+    $$(LINK_SELECTOR, workRoot).forEach(bindLink);
   }
 
   scanLinks();
@@ -316,7 +313,7 @@ register(MOD, {
     }
     document.removeEventListener('mousemove', onMouseMove);
     if (activePop) destroyPopover(activePop, activePop._src);
-    qsa(LINK_SELECTOR, workRoot).forEach(a => {
+    $$(LINK_SELECTOR, workRoot).forEach(a => {
       a._ao3hGlossBound = false;
       a.classList.remove('ao3h-gloss-src');
       const original = originalAriaHaspopup.get(a);
