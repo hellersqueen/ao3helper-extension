@@ -30,8 +30,8 @@ AO3 Helper — Fic Actions
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { $, $$, observe, css } from '../../../../lib/utils/index.js';
-import { Routes } from '../../../../lib/ao3/routes.js';
+import { $, $$, observe, css, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { isWorkPage, extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { subscribeToWork } from '../../../../lib/ao3/actions.js';
 import { getCSRF } from '../../../../lib/ao3/requests.js';
@@ -87,12 +87,12 @@ const SK_SUBSCRIBED    = `ao3h:${MOD}:subscribedWorks`;
 const SK_BUTTON_ORDER  = `ao3h:${MOD}:buttonOrder`;
 const REORDER_TARGETS  = new Set(['bookmark', 'mark', 'share', 'subscribe', 'download', 'comments']);
 function getSubscribed () {
-  try { return new Set(JSON.parse(localStorage.getItem(SK_SUBSCRIBED) || '[]')); } catch { return new Set(); }
+  return new Set(lsGet(SK_SUBSCRIBED, []));
 }
 function markSubscribed (workId) {
   const set = getSubscribed();
   set.add(String(workId));
-  try { localStorage.setItem(SK_SUBSCRIBED, JSON.stringify([...set])); } catch { /* */ }
+  lsSet(SK_SUBSCRIBED, [...set]);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -138,12 +138,7 @@ register(MOD, {
   ═════════════════════════════════════════════════════════════════════════ */
 
   function isAllowedRoute() {
-    try {
-      if (Routes.isWork?.()) return true;
-      return /^\/works\/\d+/.test(location.pathname);
-    } catch(e) {
-      return /^\/works\/\d+/.test(location.pathname);
-    }
+    return isWorkPage(location.pathname);
   }
 
   function alreadyInjected() {
@@ -215,7 +210,8 @@ register(MOD, {
   function applySubscribeFromListings () {
     document.querySelectorAll('li.work.blurb.group[id^="work_"]').forEach(blurb => {
       if (blurb.querySelector('.ao3h-quick-subscribe')) return;
-      const workId = blurb.id.replace('work_', '');
+      const workId = extractWorkIdFromBlurb(blurb);
+      if (!workId) return;
       const btn = document.createElement('button');
       btn.className = 'ao3h-quick-subscribe';
       btn.title = 'Subscribe to this work';
@@ -248,8 +244,8 @@ register(MOD, {
     const subscribed = getSubscribed();
     if (!subscribed.size) return;
     document.querySelectorAll('li.work.blurb.group[id^="work_"]').forEach(blurb => {
-      const workId = blurb.id.replace('work_', '');
-      if (!subscribed.has(workId)) return;
+      const workId = extractWorkIdFromBlurb(blurb);
+      if (!workId || !subscribed.has(workId)) return;
       if (blurb.querySelector('.ao3h-sub-badge')) return;
       const badge = document.createElement('span');
       badge.className = 'ao3h-sub-badge';
@@ -299,11 +295,11 @@ register(MOD, {
   }
 
   function getButtonOrder () {
-    try { return JSON.parse(localStorage.getItem(SK_BUTTON_ORDER) || 'null'); } catch { return null; }
+    return lsGet(SK_BUTTON_ORDER, null);
   }
 
   function saveButtonOrder (order) {
-    try { localStorage.setItem(SK_BUTTON_ORDER, JSON.stringify(order)); } catch { /* */ }
+    lsSet(SK_BUTTON_ORDER, order);
   }
 
   function applyButtonReordering (enabled) {
