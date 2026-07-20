@@ -9,7 +9,9 @@ Notes
 
 - AO3 pagination is represented by the `page` query parameter.
 - The maximum page falls back to the listing result count when necessary.
-- Static helpers provide pagination data to Enhanced Navigation.
+- Pagination state and URL helpers (getCurrentPage/getMaxPage/buildPageURL)
+  live in the coordinator and are shared via pageHelpers, since Enhanced
+  Navigation and Infinite Scroll need them too.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -27,50 +29,12 @@ const JTP_CLASS = 'ao3h-jtp';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   FEATURE — PAGINATION STATE AND URLS
-═══════════════════════════════════════════════════════════════════════════ */
-
-// AO3 pagination uses ?page=N in query string
-function getCurrentPage () {
-  const m = location.search.match(/[?&]page=(\d+)/);
-  return m ? parseInt(m[1], 10) : 1;
-}
-
-function getMaxPage () {
-  // Try reading the last page link in .pagination
-  const lastLink = document.querySelector('.pagination a[href*="page="]:last-of-type, .pagination li:last-child a[href*="page="]');
-  if (lastLink) {
-    const m = lastLink.href.match(/[?&]page=(\d+)/);
-    if (m) return parseInt(m[1], 10);
-  }
-  // Fallback: read "N-M of X" text
-  const heading = document.querySelector('#main .heading');
-  if (heading) {
-    const m = heading.textContent.match(/of\s+([\d,]+)/);
-    if (m) {
-      const total   = parseInt(m[1].replace(/,/g, ''), 10);
-      const perPage = parseInt(new URL(location.href).searchParams.get('items_per_page') || '20', 10);
-      return Math.ceil(total / perPage) || 1;
-    }
-  }
-  return 1;
-}
-
-function buildPageURL (pageNum) {
-  const url    = new URL(location.href);
-  if (pageNum <= 1) url.searchParams.delete('page');
-  else              url.searchParams.set('page', pageNum);
-  return url.toString();
-}
-
-
-/* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — PAGE-JUMP WIDGET
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function buildWidget (current, max, cfg, pageHelpers) {
   const opt = (key, fallback) => (cfg ? cfg(key, fallback) : fallback);
-  const { randomPage, percentPage, listingKey, getRecentPages } = pageHelpers;
+  const { randomPage, percentPage, listingKey, getRecentPages, buildPageURL } = pageHelpers;
 
   const row   = document.createElement('div');
   row.className = ROW_CLASS;
@@ -186,8 +150,8 @@ export class CoreNavigation {
     const cfg     = this._opts.cfg || null;
     const pageHelpers = this._opts.pageHelpers;
     if (!pageHelpers) return;
-    const current = getCurrentPage();
-    const max     = getMaxPage();
+    const current = pageHelpers.getCurrentPage();
+    const max     = pageHelpers.getMaxPage();
     if (max <= 1) return; // no pagination needed
 
     // Remember this visit so the widget can offer "resume"/"recent" links
@@ -210,9 +174,4 @@ export class CoreNavigation {
     this._widgets.forEach(w => w.remove());
     this._widgets = [];
   }
-
-  // Expose helpers for EnhancedNavigation
-  static getCurrentPage () { return getCurrentPage(); }
-  static getMaxPage ()     { return getMaxPage(); }
-  static buildPageURL (n)  { return buildPageURL(n); }
 }

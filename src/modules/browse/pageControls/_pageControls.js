@@ -45,6 +45,42 @@ import { InfiniteScroll } from './infiniteScroll.js';
    MODULE-SPECIFIC HELPERS
 ═══════════════════════════════════════════════════════════════════════════ */
 
+// AO3 pagination uses ?page=N in query string. Shared by coreNavigation,
+// enhancedNavigation, and infiniteScroll — kept here instead of exposed
+// through a sibling import (see architecture.md's guidance on cross-file
+// dependencies within the same parent module).
+export function getCurrentPage () {
+  const m = location.search.match(/[?&]page=(\d+)/);
+  return m ? parseInt(m[1], 10) : 1;
+}
+
+export function getMaxPage () {
+  // Try reading the last page link in .pagination
+  const lastLink = document.querySelector('.pagination a[href*="page="]:last-of-type, .pagination li:last-child a[href*="page="]');
+  if (lastLink) {
+    const m = lastLink.href.match(/[?&]page=(\d+)/);
+    if (m) return parseInt(m[1], 10);
+  }
+  // Fallback: read "N-M of X" text
+  const heading = document.querySelector('#main .heading');
+  if (heading) {
+    const m = heading.textContent.match(/of\s+([\d,]+)/);
+    if (m) {
+      const total   = parseInt(m[1].replace(/,/g, ''), 10);
+      const perPage = parseInt(new URL(location.href).searchParams.get('items_per_page') || '20', 10);
+      return Math.ceil(total / perPage) || 1;
+    }
+  }
+  return 1;
+}
+
+export function buildPageURL (pageNum) {
+  const url    = new URL(location.href);
+  if (pageNum <= 1) url.searchParams.delete('page');
+  else              url.searchParams.set('page', pageNum);
+  return url.toString();
+}
+
 export function clampPage (page, max) {
   if (!Number.isFinite(page)) return 1;
   return Math.min(Math.max(Math.round(page), 1), Math.max(max, 1));
@@ -181,7 +217,7 @@ async function init() {
 
   const diOpts = {
     cfg,
-    pageHelpers: { randomPage, percentPage, listingKey, recordVisit, getRecentPages },
+    pageHelpers: { randomPage, percentPage, listingKey, recordVisit, getRecentPages, getCurrentPage, getMaxPage, buildPageURL },
     normalizeStep,
   };
 

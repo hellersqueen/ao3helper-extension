@@ -7,18 +7,12 @@ each AO3 pagination block.
 
 Notes
 
-- Pagination state and destination URLs come from Core Navigation.
+- Pagination state and destination URLs come from the coordinator's shared
+  pageHelpers (getCurrentPage/getMaxPage/buildPageURL).
 - Invalid, current-page, and out-of-range destinations render as disabled text.
 - Ten-page jumps follow the shared Page Controls configuration.
 
 ═══════════════════════════════════════════════════════════════════════════ */
-
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   IMPORTS
-═══════════════════════════════════════════════════════════════════════════ */
-
-import { CoreNavigation as Core } from './coreNavigation.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -39,6 +33,7 @@ export function buildEnhancedRow (current, max, opts = {}) {
     showBigStep = false,  // big quick-jump buttons
     bigStep     = 50,     // configurable big jump
     progressBar = true,   // thin position bar under the row
+    buildPageURL = (page) => `?page=${page}`, // overridden by pageHelpers in real use
   } = opts;
 
   const wrap  = document.createElement('div');
@@ -51,7 +46,7 @@ export function buildEnhancedRow (current, max, opts = {}) {
     el.textContent = label;
     el.title = title || label;
     if (!disabled) {
-      /** @type {HTMLAnchorElement} */ (el).href = Core.buildPageURL(page);
+      /** @type {HTMLAnchorElement} */ (el).href = buildPageURL(page);
     }
     return el;
   }
@@ -96,8 +91,10 @@ export class EnhancedNavigation {
   }
 
   setup () {
-    const current  = Core.getCurrentPage();
-    const max      = Core.getMaxPage();
+    const pageHelpers = this._opts.pageHelpers;
+    if (!pageHelpers) return;
+    const current  = pageHelpers.getCurrentPage();
+    const max      = pageHelpers.getMaxPage();
     if (max <= 1)  return;
 
     const cfg  = this._opts.cfg || null;
@@ -108,6 +105,7 @@ export class EnhancedNavigation {
       showBigStep: cfg ? cfg('showBigJumpButtons', false) : false,
       bigStep:     normalizeStep(cfg ? cfg('bigJumpStep', 50) : 50, 50),
       progressBar: cfg ? cfg('showPaginationProgressBar', true) : true,
+      buildPageURL: pageHelpers.buildPageURL,
     };
     const sticky = cfg ? cfg('stickyEnhancedNav', false) : false;
 

@@ -15,13 +15,6 @@ Notes
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   IMPORTS
-═══════════════════════════════════════════════════════════════════════════ */
-
-import { CoreNavigation as Core } from './coreNavigation.js';
-
-
-/* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -61,9 +54,11 @@ export class InfiniteScroll {
   }
 
   setup () {
+    const pageHelpers = this._opts.pageHelpers;
+    if (!pageHelpers) return;
     this._list = document.querySelector(LIST_SELECTOR);
-    this._maxPage  = Core.getMaxPage();
-    this._nextPage = Core.getCurrentPage() + 1;
+    this._maxPage  = pageHelpers.getMaxPage();
+    this._nextPage = pageHelpers.getCurrentPage() + 1;
     if (!this._list || this._maxPage <= 1 || this._nextPage > this._maxPage) return;
 
     // Hide pagination while infinite scroll drives the navigation
@@ -105,7 +100,7 @@ export class InfiniteScroll {
     const controller = new AbortController();
     this._controllers.add(controller);
     try {
-      const res = await fetch(Core.buildPageURL(this._nextPage), { signal: controller.signal });
+      const res = await fetch(this._opts.pageHelpers.buildPageURL(this._nextPage), { signal: controller.signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
       if (!this._active) return;
