@@ -20,6 +20,7 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -139,7 +140,7 @@ function highlightMatches (query) {
   commentTextNodes().forEach(node => {
     if (!W.AO3H_CommentKit.matchesSearch(node.textContent, query)) return;
     const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-    node.innerHTML = node.textContent.replace(re, m => `<mark class="${MATCH_CLASS}">${m}</mark>`);
+    node.innerHTML = escapeHtml(node.textContent).replace(re, m => `<mark class="${MATCH_CLASS}">${m}</mark>`);
     found.push(...node.querySelectorAll(`.${MATCH_CLASS}`));
   });
   return found;

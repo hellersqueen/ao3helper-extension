@@ -44,15 +44,6 @@ const cfg = makeCfg('commentKit', DEFAULTS);
    FEATURE — PARTICIPANT DETECTION
 ═══════════════════════════════════════════════════════════════════════════ */
 
-/** Returns the logged-in username from the AO3 header, or null. */
-function getMyUsername () {
-  // AO3: <li class="user"> <a href="/users/USERNAME/...">USERNAME</a>
-  const a = D.querySelector('#header .user a[href^="/users/"]');
-  if (!a) return null;
-  const m = a.href.match(/\/users\/([^/]+)/);
-  return m ? decodeURIComponent(m[1]) : null;
-}
-
 /** Returns an array of work author usernames from the work byline. */
 function getWorkAuthors () {
   // AO3: <a rel="author" href="/users/USERNAME/...">USERNAME</a>
@@ -183,7 +174,7 @@ register(MOD, {
 
   const ctx = {
     authorNames: getWorkAuthors(),
-    myName: getMyUsername(),
+    myName: W.AO3H_CommentKit.getCurrentUsername(),
     doAuthors, doReplies, filterMode, highlightRules,
   };
 

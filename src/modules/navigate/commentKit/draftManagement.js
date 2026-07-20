@@ -21,7 +21,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, lsGet, lsSet, lsDel } from '../../../../lib/utils/index.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -59,40 +59,32 @@ function parentCommentIdFor (form) {
 }
 
 function saveDraft (key, content) {
-  try {
-    if (content.trim()) {
-      localStorage.setItem(key, JSON.stringify({ content, ts: Date.now() }));
-    } else {
-      localStorage.removeItem(key);
-    }
-  } catch (_) {}
+  if (content.trim()) {
+    lsSet(key, { content, ts: Date.now() });
+  } else {
+    lsDel(key);
+  }
 }
 
 function loadDraft (key) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-    const { content, ts } = JSON.parse(raw);
-    if (Date.now() - ts > MAX_AGE_MS) { localStorage.removeItem(key); return null; }
-    return content || null;
-  } catch (_) { return null; }
+  const draft = lsGet(key, null);
+  if (!draft) return null;
+  if (Date.now() - draft.ts > MAX_AGE_MS) { lsDel(key); return null; }
+  return draft.content || null;
 }
 
 function clearDraft (key) {
-  try { localStorage.removeItem(key); } catch (_) {}
+  lsDel(key);
 }
 
 function pruneOldDrafts () {
-  try {
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i);
-      if (!key?.startsWith(DRAFT_PREFIX)) continue;
-      const raw = localStorage.getItem(key);
-      if (!raw) continue;
-      const { ts } = JSON.parse(raw);
-      if (Date.now() - (ts || 0) > MAX_AGE_MS) localStorage.removeItem(key);
-    }
-  } catch (_) {}
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (!key?.startsWith(DRAFT_PREFIX)) continue;
+    const draft = lsGet(key, null);
+    if (!draft) continue;
+    if (Date.now() - (draft.ts || 0) > MAX_AGE_MS) lsDel(key);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -102,10 +94,10 @@ function pruneOldDrafts () {
 const BOX_POS_KEY = `${NS}:commentKit:floatingBoxPos`;
 
 function loadBoxPos () {
-  try { return JSON.parse(localStorage.getItem(BOX_POS_KEY)); } catch { return null; }
+  return lsGet(BOX_POS_KEY, null);
 }
 function saveBoxPos (pos) {
-  try { localStorage.setItem(BOX_POS_KEY, JSON.stringify(pos)); } catch (_) {}
+  lsSet(BOX_POS_KEY, pos);
 }
 
 function buildFloatingBox (form, textarea) {

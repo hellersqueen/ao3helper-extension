@@ -21,7 +21,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -50,14 +50,6 @@ const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 function collapseKey (workId) { return `${NS}:threadCollapse:${workId}`; }
 function seenKey     (workId) { return `${NS}:threadSeen:${workId}`; }
 
-function loadJSON (key, fallback) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch (_) { return fallback; }
-}
-
-function saveJSON (key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch (_) {}
-}
-
 /**
  * Manual per-thread collapse overrides: { [commentId]: true|false }. A
  * present key always wins over the auto-collapse threshold (shouldAutoCollapse).
@@ -65,7 +57,7 @@ function saveJSON (key, val) {
  * collapsed, so it migrates 1:1 into manual[id] = true.
  */
 function loadCollapseState (workId) {
-  const data = loadJSON(collapseKey(workId), { ts: 0, manual: {} });
+  const data = lsGet(collapseKey(workId), { ts: 0, manual: {} });
   if (Date.now() - (data.ts || 0) > MAX_AGE_MS) return {};
   if (Array.isArray(data.collapsed)) {
     const manual = {};
@@ -76,17 +68,17 @@ function loadCollapseState (workId) {
 }
 
 function saveCollapseState (workId, manual) {
-  saveJSON(collapseKey(workId), { ts: Date.now(), manual });
+  lsSet(collapseKey(workId), { ts: Date.now(), manual });
 }
 
 function loadSeenIds (workId) {
-  const data = loadJSON(seenKey(workId), { ts: 0, ids: [] });
+  const data = lsGet(seenKey(workId), { ts: 0, ids: [] });
   if (Date.now() - (data.ts || 0) > MAX_AGE_MS) return new Set();
   return new Set(Array.isArray(data.ids) ? data.ids : []);
 }
 
 function saveSeenIds (workId, idSet) {
-  saveJSON(seenKey(workId), { ts: Date.now(), ids: [...idSet] });
+  lsSet(seenKey(workId), { ts: Date.now(), ids: [...idSet] });
 }
 
 const CSS = `

@@ -91,10 +91,20 @@ export function buildPageJumpUrl (currentUrl, pageNum) {
   return url.toString();
 }
 
+/** Logged-in username from the AO3 header nav, or null. Scoped to
+ *  `#header .user` (unlike the generic `detectUser()`) because work pages
+ *  are full of other `/users/...` links (author byline, commenters) that a
+ *  broader selector would risk picking up instead. */
+export function getCurrentUsername () {
+  const a = document.querySelector('#header .user a[href^="/users/"]');
+  const m = a?.href.match(/\/users\/([^/]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
 const commentKitHelpers = {
   fillTemplateVariables, filterTemplates, draftKeyFor, draftScopeForForm,
   shouldAutoCollapse, parseHighlightRules, matchesCustomHighlight,
-  matchesSearch, buildPageJumpUrl,
+  matchesSearch, buildPageJumpUrl, getCurrentUsername,
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════

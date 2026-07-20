@@ -21,7 +21,7 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { observe } from '../../../../lib/utils/index.js';
+import { observe, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { getWorkTitle, getWorkAuthor } from '../../../../lib/ao3/work-page.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -60,14 +60,12 @@ const DEFAULT_TEMPLATES = [
 ];
 
 function loadTemplates () {
-  try {
-    const stored = JSON.parse(localStorage.getItem(TEMPLATES_KEY));
-    return Array.isArray(stored) && stored.length ? stored : [...DEFAULT_TEMPLATES];
-  } catch (_) { return [...DEFAULT_TEMPLATES]; }
+  const stored = lsGet(TEMPLATES_KEY, null);
+  return Array.isArray(stored) && stored.length ? stored : [...DEFAULT_TEMPLATES];
 }
 
 function saveTemplates (list) {
-  try { localStorage.setItem(TEMPLATES_KEY, JSON.stringify(list)); } catch (_) {}
+  lsSet(TEMPLATES_KEY, list);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -276,16 +274,25 @@ function buildTemplatesPanel (textarea) {
 
 /** Allowed tags for the comment preview renderer (mirrors AO3's HTML subset). */
 const ALLOWED_TAGS = new Set(['b', 'i', 'em', 'strong', 'a', 'blockquote', 'p', 'br', 'u', 's']);
+/** Safe URI schemes (and relative/anchor links) for a previewed `<a href>`. */
+const SAFE_HREF = /^(https?:|mailto:|\/|#)/i;
 
 function sanitiseHTML (raw) {
   const tmpl = D.createElement('template');
   tmpl.innerHTML = raw;
   const frag = tmpl.content;
-  // Walk all elements and remove disallowed tags (keep their text content)
+  // Walk all elements: remove disallowed tags (keep their text content), and
+  // strip every attribute from allowed tags (only a validated `<a href>`
+  // survives) so an inline event handler or a `javascript:` link can't ride
+  // along inside an otherwise-allowed tag.
   frag.querySelectorAll('*').forEach(el => {
     if (!ALLOWED_TAGS.has(el.tagName.toLowerCase())) {
       el.replaceWith(D.createTextNode(el.textContent));
+      return;
     }
+    const href = el.tagName === 'A' ? el.getAttribute('href') : null;
+    while (el.attributes.length) el.removeAttribute(el.attributes[0].name);
+    if (href && SAFE_HREF.test(href.trim())) el.setAttribute('href', href);
   });
   const div = D.createElement('div');
   div.appendChild(frag);
@@ -300,9 +307,8 @@ function postingAsLabel (form) {
     const name = /** @type {HTMLInputElement} */ (nameField)?.value.trim();
     return `Posting as Guest${name ? `: ${name}` : ''}`;
   }
-  const me = D.querySelector('#header .user a[href^="/users/"]');
-  const m = me?.href.match(/\/users\/([^/]+)/);
-  return m ? `Posting as ${decodeURIComponent(m[1])}` : '';
+  const username = W.AO3H_CommentKit.getCurrentUsername();
+  return username ? `Posting as ${username}` : '';
 }
 
 function buildPreviewToggle (form, textarea, cleanups) {

@@ -43,8 +43,8 @@ discussion.
 
 - Met en route les six autres fichiers de fonctionnalités de ce module
 - Chaque sous-module s'enregistre avec `parent: 'commentKit'` et est démarré/arrêté automatiquement par la cascade du cycle de vie
-- Centralise la logique des modèles, brouillons, surlignages, recherches et sauts de page
-- Les réglages partagés vivent dans `navigate-interact/commentKit-config.js` ; `commentConfiguration.js` fait exception avec sa propre clé de stockage (voir Détails techniques)
+- Centralise la logique des modèles, brouillons, surlignages, recherches, sauts de page, et la détection du pseudo connecté (`getCurrentUsername()`, réutilisée par `commentComposing.js` et `commentHighlighting.js`)
+- Les réglages partagés vivent dans `navigate-interact/commentKit-config.js` ; tous les sous-modules, y compris `commentConfiguration.js`, lisent la même clé de stockage partagée `ao3h:mod:commentKit:settings` (voir Détails techniques)
 
 ### 2. `commentComposing.js` — outils de rédaction
 
@@ -138,17 +138,29 @@ vraiment dans ce module (pas de code pour ça) :
 désordonnée que la réalité actuelle (fonctionnalités rangées dans les
 mauvais fichiers, deux systèmes de réglages séparés). Le code actuel est
 propre : 6 fichiers correctement nommés, un seul jeu de réglages partagé
-(`commentConfiguration.js` conserve toutefois sa propre clé, voir plus bas).
+par tous, y compris `commentConfiguration.js`.
 
 ⚠️ Une autre doc historique affirme que le repli global des fils de
 discussion ("Collapse all" / "Expand all") n'a jamais été codé. C'est
 faux : ces boutons existent bel et bien dans `threadManagement.js`.
+
+## Corrections apportées à des fonctionnalités déjà existantes
+
+La recherche dans les commentaires (`commentNavigation.js`) avait une
+vraie faille XSS : `highlightMatches()` réinjectait le texte déjà décodé
+d'un commentaire (potentiellement écrit par n'importe qui) directement en
+HTML pour y dessiner le surlignage, sans échappement. N'importe quel
+commentaire contenant des caractères `<`/`>` littéraux (même un simple
+"<3") faisait planter le rendu une fois recherché ; un commentaire conçu
+avec du contenu type balise HTML aurait pu être réellement exécuté comme
+script chez qui que ce soit utilisant la recherche. Corrigé en échappant
+le texte avant d'y insérer le surlignage (`escapeHtml`, déjà utilisé
+ailleurs dans le projet pour ce même type de bug).
 
 ## Détails techniques
 
 - Brouillons (`draftManagement.js`) : `ao3h:draft:{workId}` pour le formulaire principal, `ao3h:draft:{workId}:{commentId}` pour une réponse imbriquée sous ce commentaire — chaque formulaire a sa propre clé depuis la correction du bug de partage mentionnée dans les Specs
 - Position de la boîte flottante : `ao3h:commentKit:floatingBoxPos`
 - Repli des fils (`threadManagement.js`) : `{ manual: { [id]: true|false } }` par œuvre, migré automatiquement depuis l'ancien format `{ collapsed: [ids] }`
-- `commentConfiguration.js` utilise sa propre clé de stockage, `ao3h:mod:commentConfiguration:settings`, séparée du reste du module
-- Liste blanche HTML de l'aperçu (`commentComposing.js`) : `b, i, em, strong, a, blockquote, p, br, u, s` — c'est cette liste qui justifie plusieurs décisions "Écarté" ci-dessus (pas de listes à puces/numérotées, par exemple)
+- Liste blanche HTML de l'aperçu (`commentComposing.js`) : `b, i, em, strong, a, blockquote, p, br, u, s` — c'est cette liste qui justifie plusieurs décisions "Écarté" ci-dessus (pas de listes à puces/numérotées, par exemple) ; tous les attributs sont retirés des balises autorisées (seul un `href` validé — `http(s):`, `mailto:`, relatif, ou ancre — survit sur un `<a>`), pour empêcher un gestionnaire d'événement ou un lien `javascript:` de passer inaperçu dans l'aperçu
 - Raccourcis clavier : `Ctrl+B`/`Ctrl+I`/`Ctrl+K` (gras/italique/lien) dans la barre d'outils, `Ctrl+J` pour sauter aux commentaires, `Alt+↓`/`Alt+↑` pour le fil suivant/précédent (choisis pour ne pas entrer en conflit avec `Ctrl+J`)
