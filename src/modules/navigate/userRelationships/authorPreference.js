@@ -33,26 +33,18 @@ const cyclePriority = (...args) => W.AO3H_UserRelationships.cyclePriority(...arg
 const priorityIcon = (...args) => W.AO3H_UserRelationships.priorityIcon(...args);
 const parseTags = (...args) => W.AO3H_UserRelationships.parseTags(...args);
 const getUserRelationshipsSettings = (...args) => W.AO3H_UserRelationships.getUserRelationshipsSettings(...args);
+// Optional-chained: a stray MutationObserver callback can still fire in the
+// brief window after this module's coordinator has already torn down.
+const getPrefs = (...args) => W.AO3H_UserRelationships?.getAuthorPrefsMap(...args) ?? {};
+const savePrefs = (...args) => W.AO3H_UserRelationships?.saveAuthorPrefsMap(...args);
+const getAuthorPrefs = (...args) => W.AO3H_UserRelationships?.getAuthorPrefsFor(...args)
+  ?? { hidden: false, favorite: false, readCount: 0, priority: 'normal', tags: [] };
 
-const PREFS_KEY = 'authorPreferences:data';
 const originalStates = new Map();
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — AUTHOR-PREFERENCE STORAGE
 ═══════════════════════════════════════════════════════════════════════════ */
-
-function getPrefs () {
-  try { return JSON.parse(localStorage.getItem(PREFS_KEY) || '{}'); }
-  catch (_) { return {}; }
-}
-
-function savePrefs (prefs) {
-  localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-}
-
-function getAuthorPrefs (author) {
-  return getPrefs()[author] || { hidden: false, favorite: false, readCount: 0, priority: 'normal', tags: [] };
-}
 
 function setAuthorPrefs (author, patch) {
   const prefs = getPrefs();
@@ -235,7 +227,9 @@ register(MOD, {
   onReady(() => {
     if (!active) return;
     processBlurbs();
-    observer = observe(document.body, { childList: true, subtree: true }, processBlurbs);
+    observer = observe(document.body, { childList: true, subtree: true }, () => {
+      if (active) processBlurbs();
+    });
   });
 
   return () => {

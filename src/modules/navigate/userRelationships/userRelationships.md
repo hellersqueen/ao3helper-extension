@@ -159,6 +159,24 @@ Réparé : les badges sont devenus de vrais boutons cliquables (`setFollowed()`
 marquée terminée (dépendance douce, auteur lu directement sur la page via
 `lib/ao3/work-page.js`'s `getWorkAuthor()`).
 
+`blocklistManagement.js` (ajouter/retirer/importer/tout effacer dans le
+panneau de gestion) ne déclenchait jamais l'événement `ao3h:blocking-changed`
+que `blockingInterface.js` (menu clic-droit) déclenche bien, lui. Or
+`authorBlocking.js` et `commentHiding.js` écoutent précisément cet événement
+pour rafraîchir en direct le contenu masqué. Modifier la liste de blocage
+via le panneau de gestion ne prenait donc effet qu'après un rechargement
+complet de la page. Réparé : le panneau déclenche désormais le même
+événement après chaque écriture.
+
+`authorCard.js` cherchait les préférences d'un auteur (favori, priorité,
+tags, nombre lu) sous une clé en minuscules, alors que `authorPreference.js`
+les stocke sous le nom exact tel qu'affiché sur la page (pas en minuscules)
+— tout auteur dont le pseudo contient une majuscule (la majorité) ne
+montrait donc jamais ces informations dans la fiche au survol, même après
+les avoir explicitement réglées. Réparé en passant par le même lecteur
+partagé que `authorPreference.js` (voir Détails techniques), avec la même
+clé exacte.
+
 ## Précision
 
 ⚠️ La doc historique anglaise décrit un état plus ancien du code, avec des
@@ -168,16 +186,21 @@ complets et fonctionnels, sans doublon.
 
 ## Détails techniques
 
-Stockage par sous-module :
-- `userBlocker:list` — liste des personnes bloquées, lue par `authorBlocking.js`, `blockingInterface.js`, `blocklistManagement.js` et `commentHiding.js`
-- `userBlocker:reasons` — raison de blocage optionnelle par personne
-- `authorPreferences:data` — `{ [author]: { hidden, favorite, readCount } }`, défauts `{ hidden: false, favorite: false, readCount: 0 }`
-- `authorTracking:notes` — note personnelle par auteur
-- `authorTracking:followed` — liste des auteurs suivis
-- `authorTracking:snapshots` — `{ [author]: { workCount, lastSeen } }`, utilisé pour détecter les nouvelles œuvres à la revisite
+Chaque clé de stockage a un seul sous-module *propriétaire* (qui lit et
+écrit) ; les autres sous-modules qui n'ont besoin que de la lire passent
+par un lecteur partagé exposé sur le coordinateur (`W.AO3H_UserRelationships`)
+plutôt que de relire `localStorage` eux-mêmes :
+- `userBlocker:list` — liste des personnes bloquées ; propriétaires `blockingInterface.js` (blocage/déblocage via clic-droit) et `blocklistManagement.js` (panneau de gestion) ; lue par `authorBlocking.js`/`commentHiding.js` via `getBlockedList()`
+- `userBlocker:reasons` — raison de blocage optionnelle par personne ; mêmes propriétaires, via `getBlockReasons()`/`saveBlockReasons()`
+- `authorPreferences:data` — `{ [author]: { hidden, favorite, readCount, priority, tags } }`, clé = nom exact tel qu'affiché (pas en minuscules) ; propriétaire `authorPreference.js` ; lue par `authorCard.js` via `getAuthorPrefsFor(author)` (défauts déjà appliqués)
+- `authorTracking:notes` — note personnelle par auteur (clé en minuscules) ; propriétaire `authorTracking.js` ; lue par `authorCard.js` via `getAuthorNotes()`
+- `authorTracking:followed` — liste des auteurs suivis (clé en minuscules) ; propriétaire `authorTracking.js` ; lue par `authorCard.js` via `getFollowedAuthors()`
+- `authorTracking:snapshots` — `{ [author]: { workCount, lastSeen } }`, utilisé pour détecter les nouvelles œuvres à la revisite ; propriétaire exclusif `authorTracking.js`, jamais lu ailleurs
 
 `authorBlocking.js` et `commentHiding.js` observent le contenu ajouté
-dynamiquement via `MutationObserver`. Le panneau de `blocklistManagement.js`
-a une hauteur de liste plafonnée à 220px (défilement), et son import JSON
-fusionne avec la liste existante en dédupliquant (fichiers invalides
-ignorés silencieusement).
+dynamiquement via `MutationObserver`, et écoutent aussi `ao3h:blocking-changed`
+(déclenché par `blockingInterface.js` et `blocklistManagement.js`) pour se
+rafraîchir dès qu'un blocage change, sans attendre un rechargement de page.
+Le panneau de `blocklistManagement.js` a une hauteur de liste plafonnée à
+220px (défilement), et son import JSON fusionne avec la liste existante en
+dédupliquant (fichiers invalides ignorés silencieusement).

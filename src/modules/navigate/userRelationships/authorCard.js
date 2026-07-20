@@ -9,9 +9,9 @@ anything. Purely a read-only aggregate view — it writes nothing.
 
 Notes
 
-- Reads the same storage keys as authorTracking.js/authorPreference.js
-  directly (sibling submodules under the same coordinator, same pattern
-  used elsewhere for the shared blocklist).
+- Reads authorTracking.js's/authorPreference.js's data through the shared
+  read accessors on the coordinator (`W.AO3H_UserRelationships`), same as
+  the shared blocklist readers — not by reimplementing the storage reads.
 - A short hover delay avoids flickering the card while the mouse passes over.
 
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -32,23 +32,16 @@ const NS  = 'ao3h';
 const W = getGlobalWindow();
 const parseUserHref = (...args) => W.AO3H_UserRelationships.parseUserHref(...args);
 const priorityIcon = (...args) => W.AO3H_UserRelationships.priorityIcon(...args);
+// Optional-chained: a stray hover callback can still fire in the brief
+// window after this module's coordinator has already torn down.
+const getFollowed = (...args) => W.AO3H_UserRelationships?.getFollowedAuthors(...args) ?? new Set();
+const getNotes = (...args) => W.AO3H_UserRelationships?.getAuthorNotes(...args) ?? {};
+// authorPreference.js keys its map by the exact-case author name as displayed
+// on the page (not lowercased) — must match that convention here too.
+const getAuthorPrefs = (...args) => W.AO3H_UserRelationships?.getAuthorPrefsFor(...args)
+  ?? { hidden: false, favorite: false, readCount: 0, priority: 'normal', tags: [] };
 const CARD_CLASS = `${NS}-author-card`;
 const HOVER_DELAY_MS = 350;
-
-function getFollowed () {
-  try { return new Set(JSON.parse(localStorage.getItem('authorTracking:followed') || '[]')); }
-  catch (_) { return new Set(); }
-}
-
-function getNotes () {
-  try { return JSON.parse(localStorage.getItem('authorTracking:notes') || '{}'); }
-  catch (_) { return {}; }
-}
-
-function getAuthorPrefs (key) {
-  try { return JSON.parse(localStorage.getItem('authorPreferences:data') || '{}')[key] || null; }
-  catch (_) { return null; }
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — CARD CONTENT
@@ -56,7 +49,8 @@ function getAuthorPrefs (key) {
 
 function buildCard (username) {
   const key = username.toLowerCase();
-  const prefs = getAuthorPrefs(key);
+  // Exact-case username, not `key` — authorPreference.js's storage isn't lowercased.
+  const prefs = getAuthorPrefs(username);
   const note = getNotes()[key];
 
   const card = document.createElement('div');
@@ -68,12 +62,12 @@ function buildCard (username) {
 
   const lines = [];
   if (getFollowed().has(key)) lines.push('★ You follow this author');
-  if (prefs?.favorite) lines.push('⭐ Favorite');
-  if (prefs?.priority && prefs.priority !== 'normal') {
+  if (prefs.favorite) lines.push('⭐ Favorite');
+  if (prefs.priority && prefs.priority !== 'normal') {
     lines.push(`${priorityIcon(prefs.priority)} Priority: ${prefs.priority}`);
   }
-  if (prefs?.readCount > 0) lines.push(`📖 ${prefs.readCount} read`);
-  if (prefs?.tags?.length) lines.push(`🏷️ ${prefs.tags.join(', ')}`);
+  if (prefs.readCount > 0) lines.push(`📖 ${prefs.readCount} read`);
+  if (prefs.tags?.length) lines.push(`🏷️ ${prefs.tags.join(', ')}`);
   if (note) lines.push(`📝 ${note}`);
 
   if (!lines.length) lines.push('No notes yet for this author.');

@@ -35,7 +35,7 @@ AO3 Helper — User Relationships Coordinator
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Settings } from '../../../../lib/utils/config.js';
-import { css } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import styles from './userRelationships.css?inline';
 
@@ -112,22 +112,60 @@ export function getUserRelationshipsSettings () {
 }
 
 function loadHiddenStats () {
-  try { return { works: 0, comments: 0, ...JSON.parse(localStorage.getItem(STATS_KEY) || '{}') }; }
-  catch { return { works: 0, comments: 0 }; }
+  return { works: 0, comments: 0, ...lsGet(STATS_KEY, {}) };
 }
 
 export function bumpHiddenStat (field) {
   const stats = loadHiddenStats();
   stats[field] = (stats[field] || 0) + 1;
-  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch { /* unavailable */ }
+  lsSet(STATS_KEY, stats);
 }
 
 export function getHiddenStats () { return loadHiddenStats(); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SHARED STORAGE — READ ACCESSORS FOR SIBLING SUBMODULES
+
+   Each key below has exactly one *owner* submodule that also writes it
+   (authorTracking.js for followed/notes, authorPreference.js for prefs,
+   blockingInterface.js/blocklistManagement.js for the blocklist) — these
+   accessors exist so read-only consumers (authorCard.js, authorBlocking.js,
+   commentHiding.js) don't each reimplement the same JSON localStorage read.
+═══════════════════════════════════════════════════════════════════════════ */
+
+const BLOCKLIST_KEY = 'userBlocker:list';
+const REASONS_KEY   = 'userBlocker:reasons';
+const FOLLOWED_KEY  = 'authorTracking:followed';
+const NOTES_KEY     = 'authorTracking:notes';
+const PREFS_KEY     = 'authorPreferences:data';
+
+export function getBlockedList () {
+  return lsGet(BLOCKLIST_KEY, []).map(u => String(u).toLowerCase());
+}
+export function saveBlockedList (arr) { lsSet(BLOCKLIST_KEY, arr); }
+
+export function getBlockReasons () { return lsGet(REASONS_KEY, {}); }
+export function saveBlockReasons (reasons) { lsSet(REASONS_KEY, reasons); }
+
+export function getFollowedAuthors () { return new Set(lsGet(FOLLOWED_KEY, [])); }
+export function saveFollowedAuthors (set) { lsSet(FOLLOWED_KEY, [...set]); }
+
+export function getAuthorNotes () { return lsGet(NOTES_KEY, {}); }
+export function saveAuthorNotes (notes) { lsSet(NOTES_KEY, notes); }
+
+export function getAuthorPrefsMap () { return lsGet(PREFS_KEY, {}); }
+export function saveAuthorPrefsMap (map) { lsSet(PREFS_KEY, map); }
+export function getAuthorPrefsFor (author) {
+  return { hidden: false, favorite: false, readCount: 0, priority: 'normal', tags: [], ...getAuthorPrefsMap()[author] };
+}
 
 const relationshipHelpers = {
   parseUserHref, accountKey, pseudKey, isBlockedIdentity, describeIdentity,
   cyclePriority, priorityIcon, parseTags, sortByKudosURL,
   getUserRelationshipsSettings, bumpHiddenStat, getHiddenStats,
+  getBlockedList, saveBlockedList, getBlockReasons, saveBlockReasons,
+  getFollowedAuthors, saveFollowedAuthors, getAuthorNotes, saveAuthorNotes,
+  getAuthorPrefsMap, saveAuthorPrefsMap, getAuthorPrefsFor,
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════

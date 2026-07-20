@@ -28,37 +28,29 @@ import { downloadJSON } from '../../../../lib/utils/json-file.js';
 const MOD  = 'blocklistManagement';
 const NS   = 'ao3h';
 
-const STORAGE_KEY = 'userBlocker:list';
-const REASONS_KEY = 'userBlocker:reasons';
 const W = getGlobalWindow();
 const describeIdentity = (...args) => W.AO3H_UserRelationships.describeIdentity(...args);
 const getHiddenStats = (...args) => W.AO3H_UserRelationships.getHiddenStats(...args);
+const getList = (...args) => W.AO3H_UserRelationships.getBlockedList(...args);
+const saveList = (...args) => W.AO3H_UserRelationships.saveBlockedList(...args);
+const getReasons = (...args) => W.AO3H_UserRelationships.getBlockReasons(...args);
+const saveReasons = (...args) => W.AO3H_UserRelationships.saveBlockReasons(...args);
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — BLOCKLIST STORAGE AND MANAGEMENT PANEL
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function getList () {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch (_) { return []; }
-}
-
-function saveList (arr) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-}
-
-function getReasons () {
-  try { return JSON.parse(localStorage.getItem(REASONS_KEY) || '{}'); }
-  catch (_) { return {}; }
-}
-
-function saveReasons (reasons) {
-  localStorage.setItem(REASONS_KEY, JSON.stringify(reasons));
-}
-
 function removeReason (key) {
   const reasons = getReasons();
   if (key in reasons) { delete reasons[key]; saveReasons(reasons); }
+}
+
+// Mirrors blockingInterface.js's own dispatch — authorBlocking.js and
+// commentHiding.js both listen for this to live-refresh hidden content;
+// without it, blocklist edits made from this panel only took effect after
+// a full page reload.
+function notifyBlockingChanged (action, username) {
+  document.dispatchEvent(new CustomEvent('ao3h:blocking-changed', { detail: { action, username }, bubbles: false }));
 }
 
 function buildPanel () {
@@ -114,6 +106,7 @@ function buildPanel () {
         removeBtn.addEventListener('click', () => {
           saveList(getList().filter(u => u !== key));
           removeReason(key);
+          notifyBlockingChanged('unblock', key);
           render();
         });
         li.append(nameSpan, removeBtn);
@@ -132,6 +125,7 @@ function buildPanel () {
       if (reason) { const r = getReasons(); r[username] = reason; saveReasons(r); }
       input.value = '';
       reasonInput.value = '';
+      notifyBlockingChanged('block', username);
       render();
     });
 
@@ -155,6 +149,7 @@ function buildPanel () {
           if (!Array.isArray(imported)) throw new Error('not an array');
           const merged = [...new Set([...getList(), ...imported.map(u => String(u).toLowerCase())])];
           saveList(merged);
+          notifyBlockingChanged('import');
           render();
         } catch (_) {
           // Invalid file — silently ignore
@@ -167,6 +162,7 @@ function buildPanel () {
       if (confirm('AO3 Helper: Clear all blocked users?')) {
         saveList([]);
         saveReasons({});
+        notifyBlockingChanged('clear');
         render();
       }
     });

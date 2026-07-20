@@ -32,8 +32,10 @@ const parseUserHref = (...args) => W.AO3H_UserRelationships.parseUserHref(...arg
 const isBlockedIdentity = (...args) => W.AO3H_UserRelationships.isBlockedIdentity(...args);
 const getUserRelationshipsSettings = (...args) => W.AO3H_UserRelationships.getUserRelationshipsSettings(...args);
 const bumpHiddenStat = (...args) => W.AO3H_UserRelationships.bumpHiddenStat(...args);
+// Optional-chained: a stray MutationObserver callback can still fire in the
+// brief window after this module's coordinator has already torn down.
+const getBlockedList = (...args) => W.AO3H_UserRelationships?.getBlockedList(...args) ?? [];
 
-const STORAGE_KEY = 'userBlocker:list';
 const originalDisplays = new Map();
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -41,10 +43,7 @@ const originalDisplays = new Map();
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function getBlockedUsers () {
-  try {
-    const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    return new Set(list.map(u => u.toLowerCase()));
-  } catch (_) { return new Set(); }
+  return new Set(getBlockedList());
 }
 
 function getCommentAuthorIdentity (comment) {
@@ -147,11 +146,14 @@ register(MOD, {
   onReady(() => {
     if (!active) return;
     processPage(getBlockedUsers());
-    observer = observe(document.body, { childList: true, subtree: true }, () => processPage(getBlockedUsers()));
+    observer = observe(document.body, { childList: true, subtree: true }, () => {
+      if (!active) return;
+      processPage(getBlockedUsers());
+    });
   });
 
   // Live-update when blockingInterface dispatches a block/unblock action
-  const onBlockingChanged = () => { restoreHiddenContent(); processPage(getBlockedUsers()); };
+  const onBlockingChanged = () => { if (active) { restoreHiddenContent(); processPage(getBlockedUsers()); } };
   document.addEventListener('ao3h:blocking-changed', onBlockingChanged);
 
   return () => {

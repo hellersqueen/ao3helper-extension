@@ -19,7 +19,7 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { observe, onReady } from '../../../../lib/utils/index.js';
+import { observe, onReady, lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -29,46 +29,39 @@ const MOD  = 'authorTracking';
 const NS   = 'ao3h';
 const W    = getGlobalWindow();
 const sortByKudosURL = (...args) => W.AO3H_UserRelationships.sortByKudosURL(...args);
+// Optional-chained: a stray MutationObserver callback can still fire in the
+// brief window after this module's coordinator has already torn down.
+const getNotes = (...args) => W.AO3H_UserRelationships?.getAuthorNotes(...args) ?? {};
+const saveNotes = (...args) => W.AO3H_UserRelationships?.saveAuthorNotes(...args);
+const getFollowed = (...args) => W.AO3H_UserRelationships?.getFollowedAuthors(...args) ?? new Set();
+const saveFollowed = (...args) => W.AO3H_UserRelationships?.saveFollowedAuthors(...args);
 
-const NOTES_KEY     = 'authorTracking:notes';
-const FOLLOWED_KEY  = 'authorTracking:followed';
 const SNAPSHOTS_KEY = 'authorTracking:snapshots';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — TRACKING STORAGE
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function getNotes () {
-  try { return JSON.parse(localStorage.getItem(NOTES_KEY) || '{}'); }
-  catch (_) { return {}; }
-}
-
-function getFollowed () {
-  try { return new Set(JSON.parse(localStorage.getItem(FOLLOWED_KEY) || '[]')); }
-  catch (_) { return new Set(); }
-}
-
 function getSnapshots () {
-  try { return JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || '{}'); }
-  catch (_) { return {}; }
+  return lsGet(SNAPSHOTS_KEY, {});
 }
 
 function saveSnapshots (snaps) {
-  localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(snaps));
+  lsSet(SNAPSHOTS_KEY, snaps);
 }
 
 function setFollowed (key, isFollowed) {
   const followed = getFollowed();
   if (isFollowed) followed.add(key);
   else followed.delete(key);
-  localStorage.setItem(FOLLOWED_KEY, JSON.stringify([...followed]));
+  saveFollowed(followed);
 }
 
 function setNote (key, note) {
   const notes = getNotes();
   if (note) notes[key] = note;
   else delete notes[key];
-  localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+  saveNotes(notes);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -206,7 +199,9 @@ register(MOD, {
     }
 
     annotateBlurbs();
-    observer = observe(document.body, { childList: true, subtree: true }, annotateBlurbs);
+    observer = observe(document.body, { childList: true, subtree: true }, () => {
+      if (active) annotateBlurbs();
+    });
   });
 
   return () => {

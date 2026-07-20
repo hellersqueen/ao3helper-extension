@@ -23,14 +23,16 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
-const STORAGE_KEY = 'userBlocker:list';
-const REASONS_KEY = 'userBlocker:reasons';
 const MENU_CLASS  = 'ao3h-user-context-menu';
 const W = getGlobalWindow();
 const parseUserHref = (...args) => W.AO3H_UserRelationships.parseUserHref(...args);
 const accountKey = (...args) => W.AO3H_UserRelationships.accountKey(...args);
 const pseudKey = (...args) => W.AO3H_UserRelationships.pseudKey(...args);
 const isBlockedIdentity = (...args) => W.AO3H_UserRelationships.isBlockedIdentity(...args);
+const getBlockedList = (...args) => W.AO3H_UserRelationships.getBlockedList(...args);
+const saveBlockedList = (...args) => W.AO3H_UserRelationships.saveBlockedList(...args);
+const getBlockReasons = (...args) => W.AO3H_UserRelationships.getBlockReasons(...args);
+const saveBlockReasons = (...args) => W.AO3H_UserRelationships.saveBlockReasons(...args);
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — CONTEXTUAL BLOCKING
@@ -95,33 +97,19 @@ class BlockingInterface {
   }
 
   _loadList() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const arr = raw ? JSON.parse(raw) : [];
-      this._blockedKeys = new Set(arr.map(u => String(u).toLowerCase()));
-    } catch (_) {
-      this._blockedKeys = new Set();
-    }
+    this._blockedKeys = new Set(getBlockedList());
   }
 
   _saveList() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(this._blockedKeys)));
-    } catch (_) {}
+    saveBlockedList(Array.from(this._blockedKeys));
   }
 
   _loadReasons() {
-    try {
-      this._reasons = JSON.parse(localStorage.getItem(REASONS_KEY) || '{}');
-    } catch (_) {
-      this._reasons = {};
-    }
+    this._reasons = getBlockReasons();
   }
 
   _saveReasons() {
-    try {
-      localStorage.setItem(REASONS_KEY, JSON.stringify(this._reasons));
-    } catch (_) {}
+    saveBlockReasons(this._reasons);
   }
 
   _onContextMenu(e) {
