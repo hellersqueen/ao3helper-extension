@@ -20,7 +20,7 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { Flags } from '../../../../lib/utils/config.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -43,16 +43,10 @@ export function buildSeparatorCssValue(text) {
 
 const MOD  = 'tagSeparatorStyle';
 const NS   = 'ao3h';
+const W    = getGlobalWindow();
 const TOGGLE_CLASS = `${NS}-tag-sep-on`;
 const CSS_VAR      = '--ao3h-tag-sep';
-
-function cfg (key, fallback) {
-  try {
-    const v = Flags.get(`mod:tagsDisplay:${key}`);
-    if (v !== undefined && v !== null) return v;
-  } catch { /* */ }
-  return fallback;
-}
+const cfg = (...args) => W.AO3H_TagsDisplay.cfg(...args);
 
 
 /* ═══════════════════════════════════════════════════════════════════════════

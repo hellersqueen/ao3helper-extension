@@ -19,8 +19,8 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { Flags } from '../../../../lib/utils/config.js';
 import { observe } from '../../../../lib/utils/index.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -29,14 +29,8 @@ import { observe } from '../../../../lib/utils/index.js';
 
 const MOD  = 'archiveWarningsDisplay';
 const NS   = 'ao3h';
-
-function cfg (key, fallback) {
-  try {
-    const v = Flags.get(`mod:tagsDisplay:${key}`);
-    if (v !== undefined && v !== null) return v;
-  } catch { /* */ }
-  return fallback;
-}
+const W    = getGlobalWindow();
+const cfg  = (...args) => W.AO3H_TagsDisplay.cfg(...args);
 
 // Clés vérifiées identiques à lib/ao3/constants.js ARCHIVE_WARNINGS (forme
 // tag canonique) — gardées ici en objet plutôt qu'importées car chaque

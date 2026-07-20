@@ -29,6 +29,8 @@ AO3 Helper — Tags Display Coordinator
     - Child modules register with parent `tagsDisplay` and lifecycle cascade
       booting starts them after this coordinator completes.
     - Settings must be synchronized before the children read their flags.
+    - Children read shared logic (cfg, tag-matching, highlight rules) off
+      window.AO3H_TagsDisplay rather than each reimplementing it.
 
 ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -200,9 +202,34 @@ export function findMatchingRule (text, rules) {
   return rules.find(rule => rule && matchesPattern(text, rule.pattern)) || null;
 }
 
+// Settings reader shared by every child module — each used to reimplement
+// this same Flags.get('mod:tagsDisplay:'+key) lookup independently.
+export function cfg (key, fallback) {
+  try {
+    const v = Flags.get(`mod:${MOD}:${key}`);
+    if (v !== undefined && v !== null) return v;
+  } catch { /* */ }
+  return fallback;
+}
+
+// Owner of the tagHighlighting rules list — tagsReordering.js and
+// tagImportancePromotion.js both need read access to "which tags are
+// important" and used to read this storage key directly instead of going
+// through the module that owns its format.
+const HIGHLIGHT_RULES_KEY = 'ao3h:tagHighlights';
+
+export function getHighlightRules () {
+  try { return JSON.parse(localStorage.getItem(HIGHLIGHT_RULES_KEY)) || []; } catch { return []; }
+}
+
+export function saveHighlightRules (arr) {
+  try { localStorage.setItem(HIGHLIGHT_RULES_KEY, JSON.stringify(arr)); } catch { /* quota */ }
+}
+
 Object.assign(noiseTagTools, {
   TAG_CATEGORIES, isExcludedCategory, sortAlphabetical, sortByLength,
-  sortByImportance, matchesPattern, findMatchingRule,
+  sortByImportance, matchesPattern, findMatchingRule, cfg,
+  getHighlightRules, saveHighlightRules,
 });
 
 async function syncFlags () {

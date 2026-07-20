@@ -20,12 +20,14 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { Flags } from '../../../../lib/utils/config.js';
 import { observe, onReady } from '../../../../lib/utils/index.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 const W = getGlobalWindow();
 const findMatchingRule = (...args) => W.AO3H_TagsDisplay.findMatchingRule(...args);
+const cfg               = (...args) => W.AO3H_TagsDisplay.cfg(...args);
+const loadRules         = (...args) => W.AO3H_TagsDisplay.getHighlightRules(...args);
+const saveRules         = (...args) => W.AO3H_TagsDisplay.saveHighlightRules(...args);
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -82,7 +84,6 @@ const NS   = 'ao3h';
 
 const MENU_CLS    = `${NS}-tag-hl-menu`;
 const HL_ATTR     = 'data-ao3h-hl-checked';
-const STORAGE_KEY = `${NS}:tagHighlights`;
 
 // ── One-time migration from the retired fandomHighlighting submodule ─────
 const LEGACY_FANDOM_KEY      = `${NS}:fandomHighlights`;
@@ -155,21 +156,6 @@ function directText(el) {
   clone.querySelectorAll('[class*="ao3h-"]').forEach(n => n.remove());
   return (clone.textContent || '').trim();
 }
-
-/* ── Settings reader (via parent module tagsDisplay) ───────────────────── */
-function cfg(key, fallback) {
-  try { return Flags.get('mod:tagsDisplay:' + key) ?? fallback; } catch { /* */ }
-  return fallback;
-}
-
-/* ── Persistent store ──────────────────────────────────────────────────── */
-function loadRules() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
-}
-function saveRules(arr) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE LIFECYCLE

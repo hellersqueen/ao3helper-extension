@@ -19,7 +19,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { Flags } from '../../../../lib/utils/config.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
@@ -32,17 +31,10 @@ const MOD  = 'tagsVisibility';
 const NS   = 'ao3h';
 const W    = getGlobalWindow();
 const isExcludedCategory = (...args) => W.AO3H_TagsDisplay.isExcludedCategory(...args);
+const cfg                = (...args) => W.AO3H_TagsDisplay.cfg(...args);
 
 const DEFAULT_DENSITY = 5;
 const PRIORITY_CLASSES = ['warnings', 'relationships', 'characters', 'freeforms'];
-
-function cfg (key, fallback) {
-  try {
-    const v = Flags.get(`mod:tagsDisplay:${key}`);
-    if (v !== undefined && v !== null) return v;
-  } catch { /* */ }
-  return fallback;
-}
 
 // Which whole categories to hide entirely (independent of the density
 // truncation below) — e.g. always hide Freeform tags, keep Characters.

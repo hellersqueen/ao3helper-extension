@@ -37,6 +37,7 @@ const findMatchingRule = (...args) => W.AO3H_TagsDisplay.findMatchingRule(...arg
 const sortAlphabetical = (...args) => W.AO3H_TagsDisplay.sortAlphabetical(...args);
 const sortByImportance = (...args) => W.AO3H_TagsDisplay.sortByImportance(...args);
 const sortByLength = (...args) => W.AO3H_TagsDisplay.sortByLength(...args);
+const loadHighlightRules = (...args) => W.AO3H_TagsDisplay.getHighlightRules(...args);
 
 const TAG_TYPES = ['fandom', 'character', 'relationship', 'freeform'];
 
@@ -72,16 +73,6 @@ function saveOrder (workId, tagType, order) {
 
 function clearOrder (workId, tagType) {
   try { localStorage.removeItem(storageKey(workId, tagType)); } catch (_) {}
-}
-
-// "Importance" sort reads tagHighlighting's own rules directly (same
-// module, so importing its pure matcher is fine) — a highlighted tag
-// counts as important.
-function loadHighlightRules () {
-  try {
-    const arr = JSON.parse(localStorage.getItem(`${NS}:tagHighlights`));
-    return Array.isArray(arr) ? arr : [];
-  } catch { return []; }
 }
 
 

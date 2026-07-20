@@ -22,8 +22,8 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { Flags } from '../../../../lib/utils/config.js';
 import { observe } from '../../../../lib/utils/index.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -68,20 +68,14 @@ export function isCompactToggleShortcut(e) {
 
 const MOD  = 'compactMode';
 const NS = 'ao3h';
+const W  = getGlobalWindow();
 
 const FORCE_OPEN_CLASS  = `${NS}-cm-force-open`;
 const IN_VIEW_CLASS     = `${NS}-cm-in-view`;
 const AUTOEXPAND_CLASS  = `${NS}-cm-autoexpand-scroll`;
 const categoryClass     = (cat) => `${NS}-cm-cat-${cat}`;
 const forceOpenKey      = () => `${NS}:tagsDisplay:compactForceOpen:${location.pathname}`;
-
-function cfg (key, fallback) {
-  try {
-    const v = Flags.get(`mod:tagsDisplay:${key}`);
-    if (v !== undefined && v !== null) return v;
-  } catch { /* */ }
-  return fallback;
-}
+const cfg               = (...args) => W.AO3H_TagsDisplay.cfg(...args);
 
 
 /* ═══════════════════════════════════════════════════════════════════════════

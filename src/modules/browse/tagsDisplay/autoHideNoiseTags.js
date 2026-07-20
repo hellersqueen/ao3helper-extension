@@ -19,7 +19,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { Flags } from '../../../../lib/utils/config.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
@@ -36,13 +35,7 @@ const PROCESSED_ATTR = 'data-ao3h-noise-checked';
 
 export const BLURRED_CLASS     = 'ao3h-noise-tag-blurred';
 
-function cfg (key, fallback) {
-  try {
-    const v = Flags.get(`mod:tagsDisplay:${key}`);
-    if (v !== undefined && v !== null) return v;
-  } catch { /* */ }
-  return fallback;
-}
+const cfg = (...args) => W.AO3H_TagsDisplay.cfg(...args);
 
 
 /* ═══════════════════════════════════════════════════════════════════════════

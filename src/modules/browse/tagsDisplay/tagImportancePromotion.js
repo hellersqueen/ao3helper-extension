@@ -8,8 +8,8 @@ not across categories, so AO3's usual category ordering stays intact.
 
 Notes
 
-- "Important" = matches a tagHighlighting rule (same module, own storage
-  key read directly — see tagHighlighting.js's ao3h:tagHighlights).
+- "Important" = matches a tagHighlighting rule, read via the coordinator's
+  shared getHighlightRules() (tagHighlighting.js owns the storage format).
 - Original DOM order is remembered per blurb so disabling the feature (or
   its cleanup) restores AO3's native order exactly.
 - MutationObserver re-applies to blurbs added later (AJAX/pagination).
@@ -22,7 +22,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { Flags } from '../../../../lib/utils/config.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
@@ -34,24 +33,11 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 const MOD  = 'tagImportancePromotion';
 const NS   = 'ao3h';
 const W    = getGlobalWindow();
-const findMatchingRule = (...args) => W.AO3H_TagsDisplay.findMatchingRule(...args);
-const sortByImportance = (...args) => W.AO3H_TagsDisplay.sortByImportance(...args);
+const findMatchingRule   = (...args) => W.AO3H_TagsDisplay.findMatchingRule(...args);
+const sortByImportance   = (...args) => W.AO3H_TagsDisplay.sortByImportance(...args);
+const cfg                = (...args) => W.AO3H_TagsDisplay.cfg(...args);
+const loadHighlightRules = (...args) => W.AO3H_TagsDisplay.getHighlightRules(...args);
 const PROCESSED_ATTR = 'data-ao3h-promoted';
-
-function cfg (key, fallback) {
-  try {
-    const v = Flags.get(`mod:tagsDisplay:${key}`);
-    if (v !== undefined && v !== null) return v;
-  } catch { /* */ }
-  return fallback;
-}
-
-function loadHighlightRules () {
-  try {
-    const arr = JSON.parse(localStorage.getItem(`${NS}:tagHighlights`));
-    return Array.isArray(arr) ? arr : [];
-  } catch { return []; }
-}
 
 function getItemKey (li) {
   return (li.querySelector('a.tag')?.textContent || li.textContent || '').trim();
