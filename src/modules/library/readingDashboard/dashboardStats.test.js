@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeDiversity, computeRereadPercent, computeReaderProfile, computeYearRecap } from './dashboardStats.js';
+import { computeDiversity, computeRereadPercent, computeReaderProfile, computeYearRecap } from './readingDashboard.js';
 
 function work (overrides = {}) {
   return {

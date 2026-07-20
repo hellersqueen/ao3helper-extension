@@ -161,105 +161,25 @@ et `visualMarkers.js` comme des fichiers presque vides, sans vrai code
 fonctionnel. Ce n'est plus le cas : les trois sont aujourd'hui pleinement
 codés et fonctionnels, au même titre que `seenTracking.js`.
 
----
+## Détails techniques
 
-# Détails techniques
+Stockage (`lib/storage`, préfixe `ao3h:` implicite) :
 
-```text
-AO3 Helper - Reading Tracker Module Coordinator
-    Module ID: readingTracker
-    Display Name: Reading Tracker
-    Tab: Reading
+- `rt:history` — tableau `{ id, title, author, href, seenAt, chapter, chapterId, chapterHref, totalChapters, lastReadAt, visitCount, pinned?, note? }`, plafonné à 2000 entrées (LRU — les plus anciennes sont évincées)
+- `rt:excludedWorks` — liste de `workId` et de `"fandom:<nom>"` jamais enregistrés (confidentialité)
+- `rt:progress:{workId}` — `{ chapter, chapterId, chapterHref, totalChapters, scrollY, progress, lastReadAt, title, author, bookmarks? }`, sauvegardé avec un debounce de 2 s
+- `rt:readingSpeed` — accumulateur glissant `{ wordsTotal, msTotal }`
 
-    Seen Works Marker:
-        seenMode (mark|hide|blur|strikethrough), exceptBookmarks, exceptSubscribed, exceptMFL
-        Fades, hides, blurs, or strikes through already-opened works in listings.
+API publique `W.AO3H_ReadingTracker` : `getProgress(workId)`, `markSeen(workId)`, `getHistory()`, `getReadingSpeed()` (ce dernier ajouté pour l'estimation de temps de lecture total de `laterShelf`).
 
-    History:
-        Records work-page visits in localStorage (LRU cap 2000).
-        ao3h:rt:history -- array of { id, title, author, href, seenAt,
-                           chapter, chapterId, chapterHref, totalChapters,
-                           lastReadAt, visitCount, pinned?, note? }
-        ao3h:rt:excludedWorks -- string[] of workIds and "fandom:<name>" entries never recorded
+Modules qui lisent ces mêmes clés/l'API en dépendance souple (lecture seule) :
+`chapterNavigation` (`getProgress`), `readingDashboard`, `readingTimeline`,
+`notificationCenter`, `backupAndSync`, `ficAppreciation`, `activityPanel`.
 
-    Reading Progress:
-        Auto-saves scroll position + chapter (debounced 2s).
-        ao3h:rt:progress:{workId} -- { chapter, chapterId, chapterHref,
-                                       totalChapters, scrollY, progress,
-                                       lastReadAt, title, author, bookmarks? }
-        ao3h:rt:readingSpeed -- { wordsTotal, msTotal } rolling accumulator
-
-    Public API (W.AO3H_ReadingTracker):
-        getProgress(workId), markSeen(workId), getHistory(), getReadingSpeed()
-        (getReadingSpeed added for laterShelf's total-reading-time estimate)
-
-    Submodules (imported directly as ES modules):
-        ./seenTracking.js    -- work visit recording, updated-since badges (listing pages)
-        ./visualMarkers.js   -- seen marks, chapter badges, bulk marking (listing pages)
-        ./readingProgress.js -- scroll tracking, progress display, bookmarks, resume tools (work pages)
-        ./viewHistory.js     -- history actions, Continue Reading widget (home page)
-        ./readingTrackerHelpers.js -- pure logic backing all of the above
-
-    Integration (loose coupling):
-        chapterNavigation reads W.AO3H_ReadingTracker?.getProgress(workId) (Étape 237)
-        readingDashboard, readingTimeline, notificationCenter, backupAndSync,
-        ficAppreciation, activityPanel — all read the same localStorage keys / bridges
-═══════════════════════════════════════════════════════════════════════════
-```
-
-## seenTracking.js
-
-- `recordVisit()` now computes `visitCount` (`nextVisitCount()`) and carries
-  forward `pinned`/`note` from the previous entry (see "Corrections").
-- `isExcluded(workId, fandoms)` / `excludeWork()` / `includeWork()` — the
-  privacy exclusion list, checked before every `recordVisit`.
-- The "Updated" badge label now goes through `formatUpdatedLabel()`,
-  respecting `updatedDateFormat`.
-
-## visualMarkers.js
-
-- `seenMode` now also accepts `'blur'` and `'strikethrough'`.
-- `setupBulkMarking()` — injects a checkbox per blurb and a "Mark selected
-  as seen" bar, calling `W.AO3H_ReadingTracker.markSeen()` for each checked
-  work.
-- `registerKeyboardShortcut()` — registers `V` with `W.AO3H_Keyboard` (soft
-  dependency) to temporarily reveal hidden works.
-
-## readingProgress.js
-
-- `injectFloatingBadge()`/`updateFloatingBadge()` now branch on
-  `progressStyle` (`badge`/`bar`/`donut`); the `bar` style is clickable
-  (`_seekToPercent()`) when `clickToSeek` is on.
-- `_maybeShowMilestoneToast()` — fires once per milestone per session
-  (`progressMilestonesCrossed()`), gated by `progressMilestones`.
-- `_recordSpeedSample()` / `ReadingProgress.getReadingSpeed()` — rolling
-  words-per-minute estimate from real scroll deltas, ignoring idle gaps
-  (>10 min) and backward movement; shown in the resume banner.
-- `addBookmark()`/`removeBookmark()`/`injectBookmarkControls()` — multiple
-  named manual bookmarks per work, stored as `progress.bookmarks[]`.
-
-## viewHistory.js
-
-- `injectContinueReadingWidget()` — home-page widget listing the most
-  recently opened in-progress works (`buildContinueReadingList()`), with
-  direct resume links.
-
-## readingTracker-config.js (panel)
-
-New history browser (`wireConfigArea`), reading/writing `ao3h:rt:history`
-and `ao3h:rt:excludedWorks` directly — the same raw-localStorage-access
-pattern already used by `filterManager-config.js` for its presets. Search,
-sort (date/title), day-grouping, pin, per-entry note, delete, and an
-"older than N days" cleanup (pinned entries are always kept). A second
-small panel manages the privacy exclusion list (add/remove work IDs or
-whole fandoms). Registered in `lib/ui/panel/configs/index.js`'s
-`_initializers`, per the established convention for panel configs with
-interactive buttons.
-
-## readingTrackerHelpers.js
-
-New file of pure logic: `nextVisitCount`, `groupHistoryByPeriod`,
-`sortHistory`/`pinnedFirst`, `entriesToCleanUp`, `computeReadingSpeed`,
-`progressMilestonesCrossed`, `donutDashArray`, `formatUpdatedLabel`,
-`buildContinueReadingList`. Tested independently in
-`readingTrackerHelpers.test.js`.
+Fonctions pures notables par fichier :
+- `seenTracking.js` : `recordVisit()` (calcule `visitCount` via `nextVisitCount()`, reporte `pinned`/`note` d'une visite à l'autre), `isExcluded`/`excludeWork`/`includeWork`, `formatUpdatedLabel()`
+- `visualMarkers.js` : `setupBulkMarking()`, `registerKeyboardShortcut()` (touche `V` via `W.AO3H_Keyboard`)
+- `readingProgress.js` : `injectFloatingBadge`/`updateFloatingBadge` (branchent sur `progressStyle`), `_seekToPercent()`, `_maybeShowMilestoneToast()`/`progressMilestonesCrossed()`, `_recordSpeedSample()`/`getReadingSpeed()` (ignore les trous d'inactivité >10 min et le défilement arrière), `addBookmark`/`removeBookmark`/`injectBookmarkControls`
+- `viewHistory.js` : `injectContinueReadingWidget()`/`buildContinueReadingList()`
+- `readingTrackerHelpers.js` : `nextVisitCount`, `groupHistoryByPeriod`, `sortHistory`/`pinnedFirst`, `entriesToCleanUp`, `computeReadingSpeed`, `progressMilestonesCrossed`, `donutDashArray`, `formatUpdatedLabel`, `buildContinueReadingList` — testées indépendamment dans `readingTrackerHelpers.test.js`
+- `readingTracker-config.js` (panneau) : `wireConfigArea` lit/écrit `ao3h:rt:history` et `ao3h:rt:excludedWorks` directement (même pattern que `filterManager-config.js`), enregistré dans `lib/ui/panel/configs/index.js`'s `_initializers`

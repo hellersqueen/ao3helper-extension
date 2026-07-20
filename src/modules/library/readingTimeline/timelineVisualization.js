@@ -19,9 +19,6 @@ Notes
 
 import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { getBookmarkVaultNote } from '../../../../lib/storage/keys.js';
-import { computeMilestones, getHeatmapLevel } from './timelineStats.js';
-import { getAnnotation, setAnnotation } from './dateAnnotations.js';
-import { loadPresets, savePreset, getPreset, deletePreset } from './filterPresets.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -36,9 +33,22 @@ const HEATMAP_PALETTES = {
 
 export class TimelineVisualization {
   /**
-   * @param {{ heatmapColor?: string, defaultView?: string, calendarRange?: number, heatmapIntensity?: string, analytics: import('./historyAnalytics.js').HistoryAnalytics }} opts
+   * @param {{
+   *   heatmapColor?: string, defaultView?: string, calendarRange?: number, heatmapIntensity?: string,
+   *   analytics: import('./historyAnalytics.js').HistoryAnalytics,
+   *   helpers?: {
+   *     computeMilestones?: (heatmapData: object) => object,
+   *     getHeatmapLevel?: (count: number, intensity?: string) => number,
+   *     getAnnotation?: (dateKey: string) => string,
+   *     setAnnotation?: (dateKey: string, text: string) => void,
+   *     loadPresets?: () => { name: string, criteria: object }[],
+   *     savePreset?: (name: string, criteria: object) => void,
+   *     getPreset?: (name: string) => ({ name: string, criteria: object }|null),
+   *     deletePreset?: (name: string) => void,
+   *   },
+   * }} opts
    */
-  constructor ({ heatmapColor, defaultView = 'year', calendarRange = 5, heatmapIntensity = 'medium', analytics }) {
+  constructor ({ heatmapColor, defaultView = 'year', calendarRange = 5, heatmapIntensity = 'medium', analytics, helpers = {} }) {
     this.analytics     = analytics;
     this.panel         = null;
     this.heatmapData   = {};
@@ -49,6 +59,7 @@ export class TimelineVisualization {
     this.intensity     = heatmapIntensity;
     this.palette       = HEATMAP_PALETTES[heatmapColor] || HEATMAP_PALETTES.green;
     this.searchQuery   = '';
+    this.helpers       = helpers;
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -63,7 +74,7 @@ export class TimelineVisualization {
   }
 
   getHeatmapColor (count) {
-    return this.palette[getHeatmapLevel(count, this.intensity)];
+    return this.palette[this.helpers.getHeatmapLevel(count, this.intensity)];
   }
 
   /** Build and return the heatmap grid DOM element for the given data/view. */
@@ -72,7 +83,7 @@ export class TimelineVisualization {
     this.currentYear  = year;
     this.currentView  = view;
     this.currentMonth = month;
-    this.milestones   = computeMilestones(this.analytics?.heatmapData || heatmapData);
+    this.milestones   = this.helpers.computeMilestones(this.analytics?.heatmapData || heatmapData);
 
     const container = document.createElement('div');
     container.className = 'ao3h-timeline-heatmap';
@@ -104,7 +115,7 @@ export class TimelineVisualization {
       cell.classList.add('ao3h-heatmap-cell--milestone');
       cell.title += ` — ${this.milestones[dateKey]}`;
     }
-    if (getAnnotation(dateKey)) {
+    if (this.helpers.getAnnotation(dateKey)) {
       cell.classList.add('ao3h-heatmap-cell--annotated');
     }
     if (this._matchesSearch(works)) {
@@ -376,7 +387,7 @@ export class TimelineVisualization {
 
     const refreshPresetOptions = () => {
       const selected = presetSelect.value;
-      const presets  = loadPresets();
+      const presets  = this.helpers.loadPresets();
       presetSelect.innerHTML = '';
       presetSelect.appendChild(presetPlaceholder);
       presets.forEach(p => {
@@ -396,7 +407,7 @@ export class TimelineVisualization {
 
     presetSelect.addEventListener('change', () => {
       if (!presetSelect.value) return;
-      const preset = getPreset(presetSelect.value);
+      const preset = this.helpers.getPreset(presetSelect.value);
       if (!preset) return;
       this._applyCriteriaToForm(preset.criteria, formRefs);
       this._lastFiltered = this._applyFilterCriteria(this._getHeatmapData?.() || {}, preset.criteria);
@@ -418,7 +429,7 @@ export class TimelineVisualization {
         ratingChecks, statusRadios, wcMin: wcMin.input, wcMax: wcMax.input,
         rangeSelect, dateFrom: dateFrom.input, dateTo: dateTo.input,
       });
-      savePreset(presetNameInput.value, criteria);
+      this.helpers.savePreset(presetNameInput.value, criteria);
       presetNameInput.value = '';
       refreshPresetOptions();
     });
@@ -428,7 +439,7 @@ export class TimelineVisualization {
     deletePresetBtn.className = 'ao3h-filter-secondary-btn';
     deletePresetBtn.addEventListener('click', () => {
       if (!presetSelect.value) return;
-      deletePreset(presetSelect.value);
+      this.helpers.deletePreset(presetSelect.value);
       refreshPresetOptions();
     });
 
@@ -600,8 +611,12 @@ export class TimelineVisualization {
     };
   }
 
-  /** Apply filter criteria to heatmapData and return filtered copy. */
-  _applyFilterCriteria (heatmapData, { fandom, author, ratings, status, wcMin, wcMax, dateStart, dateEnd }) {
+  /**
+   * Apply filter criteria to heatmapData and return filtered copy.
+   * @param {object} heatmapData
+   * @param {{ fandom?: string, author?: string, ratings?: string[], status?: string, wcMin?: number, wcMax?: number, dateStart?: Date, dateEnd?: Date }} [criteria]
+   */
+  _applyFilterCriteria (heatmapData, { fandom, author, ratings, status, wcMin, wcMax, dateStart, dateEnd } = {}) {
     const result = {};
     Object.entries(heatmapData).forEach(([dateKey, works]) => {
       if (dateStart || dateEnd) {
@@ -811,7 +826,7 @@ export class TimelineVisualization {
 
   _showDateDetails (dateKey, works) {
     const detailsPanel = this.panel.querySelector('.ao3h-timeline-details');
-    const existingNote  = getAnnotation(dateKey);
+    const existingNote  = this.helpers.getAnnotation(dateKey);
     if (!works.length && !existingNote) { detailsPanel.style.display = 'none'; return; }
     detailsPanel.style.display = 'block';
     detailsPanel.innerHTML = '';
@@ -876,7 +891,7 @@ export class TimelineVisualization {
     saveBtn.textContent = 'Save note';
     saveBtn.className   = 'ao3h-timeline-annotation-save';
     saveBtn.addEventListener('click', () => {
-      setAnnotation(dateKey, input.value);
+      this.helpers.setAnnotation(dateKey, input.value);
       this._refreshCellAnnotationState(dateKey);
     });
 
@@ -890,7 +905,7 @@ export class TimelineVisualization {
   _refreshCellAnnotationState (dateKey) {
     const cell = this.panel?.querySelector(`.ao3h-heatmap-cell[data-date="${dateKey}"]`);
     if (!cell) return;
-    cell.classList.toggle('ao3h-heatmap-cell--annotated', !!getAnnotation(dateKey));
+    cell.classList.toggle('ao3h-heatmap-cell--annotated', !!this.helpers.getAnnotation(dateKey));
   }
 
   _refresh () {

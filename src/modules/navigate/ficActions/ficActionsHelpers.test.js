@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getActionIcon, resolveBottomSubscribeContainer, ACTION_ICONS } from './ficActionsHelpers.js';
+import { getActionIcon, resolveBottomSubscribeContainer, ACTION_ICONS } from './ficActions.js';
 
 describe('getActionIcon', () => {
   it('retourne l’icône connue de chaque bouton réordonnable', () => {

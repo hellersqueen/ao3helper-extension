@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { characterNameRule, deadnameRule, sensitiveWordRule, RULE_PACKS, packRules } from './ruleTemplates.js';
+import { characterNameRule, deadnameRule, sensitiveWordRule, RULE_PACKS, packRules } from './wordSwap.js';
 
 describe('characterNameRule', () => {
   it('construit une règle regex alternée, mot entier, insensible à la casse', () => {

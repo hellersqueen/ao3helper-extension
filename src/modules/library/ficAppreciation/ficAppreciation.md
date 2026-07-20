@@ -185,176 +185,27 @@ codés aujourd'hui. Elle disait aussi que le rappel de commentaire à la
 revisite d'une fic était à peine commencé — en réalité c'est une bannière
 complète, avec la date du kudos et un lien direct vers les commentaires.
 
----
+## Détails techniques
 
-# Détails techniques
+Stockage (clés brutes, via `AO3H.store.lsGet`/`lsSet` — qui, malgré le nom
+"per-user" de `AO3H.store`, passent en réalité directement par le
+`localStorage` synchrone brut comme partout ailleurs ; seuls les
+`get`/`set`/`del` asynchrones, adossés aux GM-values, sont namespacés par
+nom d'utilisateur·ice AO3 détecté) :
 
-```text
-AO3 Helper — Fic Appreciation Coordinator
-    Module ID:    ficAppreciation
-    Display Name: Fic Appreciation
-    Tab:          Library
+- `ficAppreciation:finished` — `{ [workId]: { date, note? } }`
+- `ficAppreciation:kudosed` — `{ [workId]: { date, ts?, title?, author?, fandoms? } }` (les entrées antérieures à ce chantier n'ont pas les champs `ts`/`title`/`author`/`fandoms` ; tout le code qui les lit dégrade proprement — fandom/auteur "inconnus" ignorés des regroupements, horodatage absent ignoré des habitudes horaires)
+- `ficAppreciation:ratings` — `{ [workId]: { stars, date, note?, history?, categories?, moodTags? } }` (`history[]` plafonné à 10 entrées via `appendRatingHistory()`)
+- `ficAppreciation:status` — `{ [workId]: { status, date, note?, rereadCount? } }`
 
-    Submodules (instantiated by this coordinator, imported directly as ES modules):
-        MarkAsFinished        -- completion tracker + milestone toasts
-        KudosTracker          -- kudos detection, badges, reminder banner, meta capture
-        KudosDisplay          -- kudos badge display layer
-        KudosTracking         -- cross-tab sync & manual check
-        KudosManager          -- orchestrates kudos submodules
-        KudosExtendedFeatures -- kudos analytics, history, time-of-day habits & export
-        StarRatings           -- 1-5 (or half) star ratings, categories, mood tags, history
-        MultiStatusTracker    -- 7-status reading tracker, re-read count, reading %
-        KudosBookmarkFinder   -- kudosed-but-not-bookmarked finder (own Bookmarks page)
+API publique `AO3H.ficAppreciation` : `isFinished(workId)`, `hasGivenKudos(workId)`, `getRating(workId)`, `getStatus(workId)`, `markFinished(workId, note?)`, `recordKudos(workId)`, `getKudosStats()`, `getStatusStats()`, `exportKudos(format)`, `exportStatuses(format)`, `getKudosHistory({query?, order?})`, `getKudosTimeHabits()`, `getRatingStats()`, `getRatingHistory(workId)`, `getCategoryRatings(workId)`, `getMoodTags(workId)`, `findKudosedNotBookmarked()`.
 
-    Storage keys (read/written through AO3H.store.lsGet/lsSet — the Core's storage
-    helper, equivalent to localStorage.getItem/setItem('ao3h:' + key) ; despite
-    AO3H.store being a "per-user" wrapper, its lsGet/lsSet pass through to the
-    same raw synchronous localStorage as everywhere else — only the async
-    get/set/del (GM-value backed) are namespaced per detected AO3 username):
-        ficAppreciation:finished  -- { [workId]: { date, note? } }
-        ficAppreciation:kudosed   -- { [workId]: { date, ts?, title?, author?, fandoms? } }
-        ficAppreciation:ratings   -- { [workId]: { stars, date, note?, history?, categories?, moodTags? } }
-        ficAppreciation:status    -- { [workId]: { status, date, note?, rereadCount? } }
-
-    Public API (AO3H.ficAppreciation):
-        isFinished(workId), hasGivenKudos(workId), getRating(workId),
-        getStatus(workId), markFinished(workId, note?), recordKudos(workId),
-        getKudosStats(), getStatusStats(), exportKudos(format), exportStatuses(format),
-        getKudosHistory({query?, order?}), getKudosTimeHabits(),
-        getRatingStats(), getRatingHistory(workId), getCategoryRatings(workId),
-        getMoodTags(workId), findKudosedNotBookmarked()
-═══════════════════════════════════════════════════════════════════════════
-```
-
-## _ficAppreciation.js
-
-Fichier coordinateur. Initialise tous les sous-modules, adapte leur
-fonctionnement selon le type de page affiché, expose l'API publique
-ci-dessus, et gère deux comportements transverses ajoutés dans ce chantier :
-
-- **Rappel de kudos** (`kudosReminder`) : sur une page d'œuvre, si la fic est
-  marquée terminée mais jamais kudosée, appelle
-  `kudosTracker.injectKudosReminderBanner(workId)`.
-- **Nudge de notation post-complétion** (`promptRatingOnFinish`) : écoute
-  `EV_WORK_FINISHED` (déjà émis par `markAsFinished.js`) ; si la fic n'a pas
-  encore de note, fait défiler jusqu'au widget d'étoiles et l'entoure
-  brièvement (`ao3h-fa-star-wrap-highlight`).
-
-## markAsFinished.js
-
-Storage key: `ficAppreciation:finished` — `{ [workId]: { date, note? } }`.
-
-En plus du bouton "Mark as Finished" et du badge de listing déjà existants,
-`markFinished()` compare le nombre total de fics terminées avant/après
-l'appel via `milestonesCrossed()` (`ficAppreciationHelpers.js`) et affiche
-un toast (`lib/ui/toast.js`) au franchissement d'un palier
-(10/25/50/100/250/500/1000), sauf si `completionMilestones` est désactivé.
-
-## kudosTracker.js
-
-Storage key: `ficAppreciation:kudosed` —
-`{ [workId]: { date, ts?, title?, author?, fandoms? } }`.
-
-- `recordKudos(workId, meta?)` accepte désormais des métadonnées
-  optionnelles (titre, auteur·ice, fandoms, horodatage `ts`) capturées
-  depuis la page d'œuvre (`_extractWorkPageMeta()`) ou depuis le blurb
-  (`getBlurbMeta()` de `lib/ao3/parsers.js`). Les entrées antérieures à ce
-  chantier n'ont pas ces champs — tout le code qui les lit dégrade
-  proprement (fandom/auteur "inconnus" ignorés des regroupements,
-  horodatage absent ignoré des habitudes horaires).
-- `injectKudosReminderBanner(workId)` — bannière "You finished this work but
-  haven't left kudos yet" avec un bouton d'action ; réutilise `giveKudos()`
-  de `lib/ao3/actions.js`.
-- `injectQuickKudosButton()` respecte `confirmBeforeKudos` : le premier clic
-  affiche "❓ Click again to confirm" pendant 4 secondes avant d'agir.
-
-## kudosDisplay.js / kudosTracking.js / kudosManager.js
-
-Inchangés dans leur rôle (affichage enrichi, synchronisation entre onglets,
-orchestration) — non concernés par les nouveaux items de ce chantier.
-
-## kudosExtendedFeatures.js
-
-- `getStats()` retourne désormais aussi `byFandom` et `byAuthor` (top 10
-  chacun, via `groupCounts()`/`topEntries()`), en plus de `total`, `byMonth`
-  et `streak`.
-- `getHistory({query, order})` — historique chronologique complet,
-  filtrable par titre/auteur·ice/fandom (`filterKudosHistory()`) et
-  triable par date (`sortKudosHistoryByDate()`, `desc` par défaut).
-- `getTimeHabits()` — histogramme par heure de la journée à partir des
-  entrées ayant un `ts` (`hourOfDayHistogram()`/`peakHours()`) ; retourne
-  `null` si aucune entrée récente n'a de timestamp.
-- `exportKudos()` inclut désormais titre/auteur/fandoms quand disponibles.
-- `buildStatsHTML()` affiche en plus les top fandoms/auteur·ices et les
-  heures les plus actives.
-
-## starRatings.js
-
-Storage key: `ficAppreciation:ratings` —
-`{ [workId]: { stars, date, note?, history?, categories?, moodTags? } }`.
-
-- **Demi-étoiles** (`halfStars`) : un clic sur la moitié gauche d'une étoile
-  pose `stars = n - 0.5` (`halfStarValue()`), rendu avec deux `<span>`
-  superposés (`.ao3h-fa-star-back`/`.ao3h-fa-star-front`, `clip-path`).
-- **Catégories** (`ratingCategories`) : trois mini-widgets Plot/Characters/
-  Writing sur la page d'œuvre (`buildCategoryRatingsWidget()`), combinés en
-  un score moyen (`combinedCategoryScore()`) affiché en badge "Ⓒ" sur les
-  listes.
-- **Mood tags** (`moodTags`) : champ texte libre, séparé par des virgules,
-  sur la page d'œuvre.
-- **Historique** : `setRating()` archive l'ancienne valeur dans
-  `history[]` (`appendRatingHistory()`, plafonné à 10 entrées) quand la note
-  change ; affiché en bulle d'info ℹ️.
-- **Statistiques** : `getRatingStats()` → `{ total, average, distribution,
-  byMonth }` (`computeRatingStats()`/`ratingByMonth()`).
-- **Comparaison communautaire** (`showCommunityStats`) : lit
-  `dl.stats dd.kudos`/`dd.hits` déjà présents sur la page et les affiche à
-  côté de la note personnelle — aucune donnée nouvelle récupérée, aucun
-  calcul, juste une juxtaposition.
-
-## multiStatusTracker.js
-
-Storage key: `ficAppreciation:status` —
-`{ [workId]: { status, date, note?, rereadCount? } }`.
-
-- `setStatus(workId, 're-read', note?)` incrémente `rereadCount`
-  (`nextRereadCount()`) ; ce compteur survit aux changements de statut
-  suivants (il n'est pas remis à zéro si on repasse par "Reading").
-- `applyStatusBadge()` : quand le statut est "Reading" et que
-  `W.AO3H_ReadingTracker.getProgress(workId)` renvoie un pourcentage
-  (lecture déjà suivie par readingTracker), le badge affiche "📖 42%" au
-  lieu de l'icône seule, et la bulle d'info précise "42% read". Pure
-  lecture d'une donnée déjà calculée par `readingTracker` — aucune
-  duplication de son suivi.
-
-## kudosBookmarkFinder.js
-
-Nouveau sous-module. Sur sa propre page Bookmarks
-(`/users/{soi-même}/bookmarks` — jamais sur la page de quelqu'un d'autre),
-ajoute un bouton "🔍 Find kudosed works not bookmarked here". Au clic :
-
-- Récupère jusqu'à 5 pages de favoris (`fetchAO3PageText`,
-  `parseBookmarksPageHTML` — même-origine, lecture seule, propre compte)
-- Compare aux IDs kudosés localement (`diffNotBookmarked()`)
-- Affiche la liste des fics manquantes (liens directs), ou un message de
-  succès si tout y est déjà
-
-Borné à 5 pages pour rester une action ponctuelle plutôt qu'un crawl
-non borné.
-
-## ficAppreciationHelpers.js
-
-Nouveau fichier de logique pure (pas de DOM, pas de storage), couvrant
-tous les calculs ci-dessus : `groupCounts`/`topEntries`,
-`computeRatingStats`/`ratingByMonth`/`appendRatingHistory`/
-`combinedCategoryScore`/`halfStarValue`, `hourOfDayHistogram`/`peakHours`,
-`milestonesCrossed`/`nextRereadCount`, `filterKudosHistory`/
-`sortKudosHistoryByDate`, `diffNotBookmarked`. Testé indépendamment dans
-`ficAppreciationHelpers.test.js`.
-
-## ficAppreciation.css
-
-Styles de tous les éléments ci-dessus, plus une nouvelle section
-"05 — Extras (Chantier 4)" : demi-étoiles, catégories, mood tags,
-comparaison communautaire, mise en valeur du widget d'étoiles, et le
-bouton/résultats du chercheur de favoris.
+Notes techniques par fichier, en complément de la section "Fichiers" ci-dessus :
+- `_ficAppreciation.js` : le rappel de kudos appelle `kudosTracker.injectKudosReminderBanner(workId)` ; le nudge de notation post-complétion écoute `EV_WORK_FINISHED` (émis par `markAsFinished.js`) et met en valeur le widget d'étoiles via la classe `ao3h-fa-star-wrap-highlight`.
+- `markAsFinished.js` : `markFinished()` compare le total de fics terminées avant/après via `milestonesCrossed()`.
+- `kudosTracker.js` : `recordKudos(workId, meta?)` capture les métadonnées depuis `_extractWorkPageMeta()` (page d'œuvre) ou `getBlurbMeta()` (`lib/ao3/parsers.js`, depuis un blurb) ; `injectQuickKudosButton()` affiche "❓ Click again to confirm" pendant 4 secondes quand `confirmBeforeKudos` est actif ; la bannière de rappel réutilise `giveKudos()` de `lib/ao3/actions.js`.
+- `starRatings.js` : la demi-étoile pose `stars = n - 0.5` (`halfStarValue()`, selon la moitié cliquée), rendue avec deux `<span>` superposés (`.ao3h-fa-star-back`/`.ao3h-fa-star-front`, `clip-path`) ; `showCommunityStats` lit `dl.stats dd.kudos`/`dd.hits` déjà présents sur la page (simple juxtaposition, aucun calcul ni requête).
+- `multiStatusTracker.js` : `rereadCount` survit aux changements de statut suivants (pas remis à zéro en repassant par "Reading").
+- `kudosBookmarkFinder.js` : utilise `fetchAO3PageText`/`parseBookmarksPageHTML` (même origine, lecture seule).
+- `kudosDisplay.js` / `kudosTracking.js` / `kudosManager.js` : rôle inchangé (affichage enrichi, synchronisation entre onglets, orchestration).
+- `ficAppreciationHelpers.js` : logique pure testée indépendamment (`ficAppreciationHelpers.test.js`) — `groupCounts`/`topEntries`, `computeRatingStats`/`ratingByMonth`/`appendRatingHistory`/`combinedCategoryScore`/`halfStarValue`, `hourOfDayHistogram`/`peakHours`, `milestonesCrossed`/`nextRereadCount`, `filterKudosHistory`/`sortKudosHistoryByDate`, `diffNotBookmarked`.

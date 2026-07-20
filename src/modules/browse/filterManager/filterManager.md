@@ -60,16 +60,17 @@ périmètre de ce chantier)*.
 
 - Met en route les cinq autres fichiers de fonctionnalités et partage une liste de "groupes" de tags
 - Reconnaît désormais aussi la page Historique (`/users/*/readings`), en plus des favoris, tags et recherche
+- Détermine si la page actuelle est une page de listing via `isListingPage()` (recherche, tags, favoris, œuvres d'un·e utilisateur·ice, historique, collections)
 
 ### 2. `presetManagement.js` — presets de filtres
 
-- Permet de sauvegarder la combinaison actuelle de filtres sous un nom, la renommer, ou fusionner deux presets en un seul
+- Permet de sauvegarder la combinaison actuelle de filtres sous un nom, la renommer (`renamePreset(id, name)`), ou fusionner deux presets en un seul (`mergePresets(idA, idB)` → crée un nouveau preset `"A + B"` ; les champs multi-tags — fandoms, personnages, relationships, autres tags — sont unis via `mergePresetFilters()`, les autres champs simples prennent la valeur du second preset en cas de conflit)
 - Une barre d'outils avec un menu déroulant et une étoile pour les favoris
 - Un mode "Éditer en chips" pour retoucher un preset avant de lancer la recherche
 - Des raccourcis clavier pour appliquer ou sauvegarder rapidement un preset
 - Se souvient du dernier preset utilisé pour chaque fandom
-- Un historique automatique des recherches ("🕐 Recent"), distinct des presets nommés
-- Des statistiques d'usage (presets les plus utilisés), affichées dans le popover d'aide
+- Un historique automatique des recherches ("🕐 Recent", `recordSearch`/`watchFormSubmissions`) : capture automatique de chaque recherche soumise, cliquer une entrée remplit le formulaire sans le soumettre ; distinct des presets nommés
+- Des statistiques d'usage (`recordPresetUsage`/`topUsedPresets`), affichées dans le popover d'aide ("Your most-used presets")
 - Import/export des presets dans un fichier
 - Des groupes de tags qui regroupent plusieurs variantes d'un même tag (par exemple "Slow Burn")
 
@@ -77,33 +78,52 @@ périmètre de ce chantier)*.
 
 - Ajoute un badge (drapeau + nom de langue) après le titre de chaque fic, seulement s'il y a plusieurs langues différentes sur la page
 - Cliquable pour filtrer directement sur cette langue
-- Peut être limité aux langues "non préférées" pour réduire le bruit visuel
+- Peut être limité aux langues "non préférées" pour réduire le bruit visuel : quand `hidePreferredLanguageBadge` est activé, le badge n'apparaît que pour les langues absentes de `preferredLanguages` (par défaut `["English"]`)
 
 ### 4. `filterWarnings.js` — bannière d'exclusion d'avertissement
 
 - Détecte si l'adresse de la page exclut un des avertissements officiels
-- Affiche une bannière avec un bouton pour retirer facilement cette exclusion, un réglage de sensibilité (nombre minimum d'exclusions), et un bouton pour ne plus jamais la revoir
+- Affiche une bannière avec un bouton pour retirer facilement cette exclusion, un réglage de sensibilité (`warningBannerMinCount`, nombre minimum d'exclusions avant affichage, défaut 1), et un bouton "Don't show again" qui persiste `filterManager:warningBannerDismissed` (contrairement au "✕" simple, qui ne ferme que l'instance actuelle)
 
 ### 5. `userHistoryFilters.js` — filtres par historique
 
-- Cache (ou atténue) les fics déjà kudosées, suivies, en favoris, dans "à lire plus tard", déjà lues, ou faisant partie d'une série entièrement lue
-- Affiche un compteur du nombre de fics cachées, avec un aperçu temporaire par catégorie
+- Cache (ou atténue, selon `historyFilterMode`) les fics déjà kudosées, suivies, en favoris, dans "à lire plus tard", déjà lues, ou faisant partie d'une série entièrement lue
+- Affiche un compteur du nombre de fics cachées, avec un aperçu temporaire par catégorie (kudosed, subscribed, bookmarked, Later Shelf, déjà lu, série lue) — chaque catégorie a son propre lien "👁" qui ne révèle que cette catégorie sans désactiver les autres filtres
 - Utilise désormais les vraies APIs des autres modules (voir "Corrections" plus bas)
 
 ### 6. `worksFilterManager.js` — filtres rapides
 
-- Boutons à trois états (tout / seulement / cacher) pour les one-shots et les crossovers
+- Boutons à trois états (tout / seulement / cacher) pour les one-shots et les crossovers, cycle All → Only → Hide (`nextThreeState()`), classes `ao3h-fm-<filtre>-only` / `-hide` sur `<html>`
 - Filtres rapides additionnels : peu de tags, anonyme, résumé (avec longueur minimale), ratio kudos/vues, mise à jour récente, WIP à l'abandon
-- Bouton "✕" et raccourci clavier `X` pour cacher une fic individuellement
-- Badge "1️⃣" optionnel sur les one-shots
+- Bouton "✕" et raccourci clavier `X` pour cacher une fic individuellement (sur l'œuvre survolée), persistant dans `filterManager:manualHidden`, avec un lien "↺ Unhide all"
+- Badge "1️⃣" optionnel sur les one-shots, indépendant du bouton de filtre
 
 ### 7. `filterManagerHelpers.js` — logique pure partagée
 
-- Analyse de date AO3, cycle à trois états, ratio kudos/vues, seuils de tags/résumé, comparaison d'ensembles pour les séries lues, fusion de presets, historique de recherche plafonné, statistiques d'usage
+- Analyse de date AO3 (`parseAO3Date`/`isWithinDateRange`/`looksAbandoned`), cycle à trois états (`nextThreeState`/`shouldHideForThreeState`), ratio kudos/vues (`kudosRatio`/`belowRatioThreshold`), seuils de tags/résumé (`belowTagThreshold`/`summaryTooShort`), comparaison d'ensembles pour les séries lues (`isSeriesFullyRead`), fusion de presets (`mergePresetFilters`), historique de recherche plafonné (`addSearchHistoryEntry`), statistiques d'usage (`incrementUsage`/`topUsage`). Testé indépendamment dans `filterManagerHelpers.test.js`.
 
 ### 8. `filterManager.css`
 
-- Les styles visuels de la barre de presets, des badges, de la bannière, des filtres rapides, du masquage individuel et de l'aperçu par catégorie
+- Les styles visuels de la barre de presets, des badges, de la bannière, des filtres rapides, du masquage individuel et de l'aperçu par catégorie, plus les classes de filtrage à trois états et le dropdown de recherches récentes
+
+## Détails techniques
+
+**Clés de stockage :**
+- `filterManager:presets` — liste des presets sauvegardés
+- `filterManager:bundles` — groupes de tags personnalisés
+- `filterManager:lastPreset` — `{ [fandom]: presetId }`
+- `filterManager:searchHistory` — `[{ ts, filters }]`, plafonné à 20, plus récent en premier
+- `filterManager:presetUsage` — `{ [presetName]: timesApplied }`
+- `filterManager:manualHidden` — tableau des `workId` cachés manuellement
+- `filterManager:warningBannerDismissed` — booléen, "don't show again"
+- `ao3h:filterManager:seriesReadCache` — `{ [seriesId]: { allRead, checkedAt } }`, TTL 24h
+
+**API publique (`AO3H.filterManager`) :**
+- `getBundleFor(tag)` → `string[]`
+- `getAllBundles()` → `bundle[]`
+- `getPresets()` → `preset[]`
+
+**Dépendances :** `hideByTags` (⇄ dépendance croisée), `ficAppreciation`, `bookmarkVault`, `laterShelf`, `readingTracker`
 
 ## Specs — toutes traitées
 
@@ -183,124 +203,3 @@ valeurs avait été rejeté ("trop compliqué") et que le bouton de kudos
 rapide n'existait pas — cette remarque concerne en fait `ficAppreciation`,
 pas ce module ; elle est conservée ici uniquement parce qu'elle figurait
 dans une version antérieure de ce fichier.
-
----
-
-# Détails techniques
-
-```text
-AO3 Helper - Filter Manager Module Coordinator
-    Module ID: filterManager
-    Display Name: Filter Manager
-    Tab: Browse
-
-    Submodules (imported directly as ES modules):
-        1. presetManagement   → ./presetManagement.js
-        2. languageBadges     → ./languageBadges.js
-        3. filterWarnings     → ./filterWarnings.js
-        4. userHistoryFilters → ./userHistoryFilters.js
-        5. worksFilterManager → ./worksFilterManager.js
-
-    Storage keys:
-        filterManager:presets           — saved preset list
-        filterManager:bundles           — custom tag bundles
-        filterManager:lastPreset        — { [fandom]: presetId }
-        filterManager:searchHistory     — [{ ts, filters }], capped at 20, newest first
-        filterManager:presetUsage       — { [presetName]: timesApplied }
-        filterManager:manualHidden      — string[] of manually-hidden workIds
-        filterManager:warningBannerDismissed — boolean, "don't show again"
-        ao3h:filterManager:seriesReadCache   — { [seriesId]: { allRead, checkedAt } }, 24h TTL
-
-    Public API (AO3H.filterManager):
-        getBundleFor(tag)   → string[]
-        getAllBundles()      → bundle[]
-        getPresets()        → preset[]
-
-    Dependencies: hideByTags (⇄), ficAppreciation, bookmarkVault,
-                  laterShelf, readingTracker
-═══════════════════════════════════════════════════════════════════════════
-```
-
-## _filterManager.js
-
-Coordinateur. Instancie les cinq sous-modules, partage les groupes de tags,
-expose l'API publique, et détermine si la page actuelle est une page de
-listing (`isListingPage()` — recherche, tags, favoris, œuvres d'un·e
-utilisateur·ice, **historique**, collections).
-
-## presetManagement.js
-
-- `renamePreset(id, name)` — renomme un preset en place.
-- `mergePresets(idA, idB)` — crée un nouveau preset `"A + B"` ; les champs
-  multi-tags (fandoms, personnages, relationships, autres tags) sont unis
-  (`mergePresetFilters()`), les autres champs simples prennent la valeur du
-  second preset en cas de conflit.
-- `recordSearch(filters)` / `watchFormSubmissions()` — capture automatique
-  de chaque recherche soumise (`filterManager:searchHistory`, plafonné à
-  20), affichée via le bouton "🕐 Recent" ; cliquer une entrée remplit le
-  formulaire sans le soumettre. Indépendant des presets nommés.
-- `recordPresetUsage(name)` / `topUsedPresets()` — compte les applications
-  de chaque preset, affiché dans le popover d'aide ("Your most-used
-  presets").
-
-## languageBadges.js
-
-- `hidePreferredLanguageBadge` + `preferredLanguages` : quand activé, le
-  badge n'apparaît que pour les langues absentes de la liste "préférées"
-  (par défaut `["English"]"`), pour ne signaler que ce qui sort de
-  l'ordinaire.
-
-## filterWarnings.js
-
-- `warningBannerMinCount` : la bannière n'apparaît que si au moins ce
-  nombre d'avertissements officiels sont exclus (par défaut 1 = comportement
-  d'origine).
-- Bouton "Don't show again" : persiste `filterManager:warningBannerDismissed`
-  et empêche définitivement la bannière de réapparaître (contrairement au
-  "✕" simple, qui ne ferme que l'instance actuelle).
-
-## userHistoryFilters.js
-
-- Quatre lookups vers des services jamais réellement enregistrés ont été
-  remplacés par les vraies APIs (voir "Corrections" plus haut).
-- `hideRead` : nouveau filtre, cache toute œuvre présente dans
-  `W.AO3H_ReadingTracker.getHistory()`, pas seulement les séries entièrement
-  lues.
-- `historyFilterMode` (`hide` / `dim`) : les œuvres filtrées peuvent être
-  atténuées (`opacity`) plutôt que retirées de l'affichage.
-- Aperçu par catégorie : le compteur de fics cachées liste chaque raison
-  (kudosed, subscribed, bookmarked, Later Shelf, déjà lu, série lue) avec un
-  lien "👁" qui ne révèle que cette catégorie, sans désactiver les autres
-  filtres.
-
-## worksFilterManager.js
-
-- One-shots et crossovers : boutons à trois états, cycle All → Only → Hide
-  (`nextThreeState()`), classes `ao3h-fm-<filtre>-only` / `-hide` sur
-  `<html>`.
-- Nouveaux filtres rapides à seuil configurable : peu de tags
-  (`lowTagThreshold`), résumé absent/trop court (`minSummaryLength`), ratio
-  kudos/vues (`minKudosRatio`), mise à jour récente (menu
-  `quickFilterDate`), WIP à l'abandon (incomplet + 12 mois+ sans mise à
-  jour).
-- Masquage individuel : bouton "✕" sur chaque œuvre + raccourci clavier `X`
-  (sur l'œuvre survolée), persistant dans `filterManager:manualHidden`, avec
-  un lien "↺ Unhide all".
-- Badge "1️⃣" optionnel sur les one-shots, indépendant du bouton de filtre.
-
-## filterManagerHelpers.js
-
-Nouveau fichier de logique pure : `parseAO3Date`/`isWithinDateRange`/
-`looksAbandoned`, `nextThreeState`/`shouldHideForThreeState`,
-`kudosRatio`/`belowRatioThreshold`, `belowTagThreshold`/`summaryTooShort`,
-`isSeriesFullyRead`, `mergePresetFilters`, `addSearchHistoryEntry`,
-`incrementUsage`/`topUsage`. Testé indépendamment dans
-`filterManagerHelpers.test.js`.
-
-## filterManager.css
-
-Styles de tous les éléments ci-dessus, plus : classes de filtrage à trois
-états, filtres rapides additionnels, bouton et compteur de masquage
-individuel, atténuation et aperçu par catégorie des filtres d'historique,
-boutons Merge/Recent et dropdown de recherches récentes dans la barre de
-presets.

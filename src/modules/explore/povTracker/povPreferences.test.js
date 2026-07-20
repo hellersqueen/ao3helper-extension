@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parsePreferredPovs } from './povPreferences.js';
+import { parsePreferredPovs } from './_povTracker.js';
 
 describe('parsePreferredPovs', () => {
   it('parse une liste séparée par des virgules', () => {

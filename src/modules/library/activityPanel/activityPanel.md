@@ -164,95 +164,23 @@ seulement les fandoms.
 
 ---
 
-# Détails techniques
+## Détails techniques
 
-```text
-AO3 Helper - Activity Panel Module Coordinator
-    Module ID: activityPanel
-    Display Name: Activity Panel
-    Tab: Library
-
-    Submodules:
-        dataCollection   — aggregates stats from all storage buckets (ES export, imported by readingInsights)
-        readingStats     — pure helpers: calculateStreak, calculateAchievements (ES export, imported by readingInsights)
-        fandomBreakdown  — ranked fandom table + pie chart + compare mode, on dashboard
-        habitsAnalysis   — hour-of-day histogram + weekly heatmap + reader profile, on dashboard
-        patternAnalysis  — seasonal/length/shift/trend/comparison widget on dashboard
-        readingInsights  — stat cards + streak + achievements + period filter + export/refresh + tag cloud + quick links
-        sessionHistory   — records work-page sessions to activityPanel:sessions (now incl. tags/rating/category)
-
-    Storage keys (owned by submodules):
-        ao3h:activityPanel:sessions     -- owned by sessionHistory    [{ workId, startedAt, tags, rating, category, ... }], max 500
-        ao3h:activityPanel:preferences  -- owned by readingInsights   { timePeriod }
-
-    Public API: exported (store, cfg, NS) for direct import by readingInsights ; also
-    exposed as W.AO3H_ActivityPanel while enabled, for parity with the legacy bridge.
-═══════════════════════════════════════════════════════════════════════════
-```
-
-## dataCollection.js
-
-`aggregate()` now builds a `sessionMetaByWork` lookup from
-`activityPanel:sessions` (fandoms/tags/rating) and consults it whenever a
-`readingHistory` entry lacks the corresponding field — see "Corrections"
-above for why this was necessary.
-
-## sessionHistory.js
-
-`getWorkMeta()` now also reads `dd.rating.tags a` and `dd.category.tags a`
-from the work page, and captures freeform tags (`dd.freeform.tags a`), so
-downstream category/genre and tag-trend analysis has real data to work
-with.
-
-## readingInsights.js
-
-- Period selector (`activityPanel:preferences.timePeriod`): filters the
-  three stat cards by re-deriving them from `activityPanel:sessions`
-  (`computePeriodStats`) rather than the all-time `DataCollection`
-  aggregation — streak/achievements stay all-time.
-- 🔄 Refresh / ⬇ Export buttons: re-render in place, or download a JSON
-  snapshot of the full aggregation plus raw sessions.
-- Clickable tag cloud (`buildTagCloud`, gated by `showTagCloud`): links to
-  `/tags/{tag}/works`.
-- Quick links (Bookmarks/History/Subscriptions) using `detectUser()`.
-- Recap line for month/year periods (`buildRecapText`).
-
-## habitsAnalysis.js
-
-Adds a 7×24 weekly heatmap (`dayHourHeatmap`), a predicted best
-reading-time sentence (`bestReadingSlot`/`formatSlotLabel`), and a
-night-owl/regularity profile line (`isNightOwl`/`regularityScore`) below
-the existing hour-of-day bar chart.
-
-## patternAnalysis.js
-
-Adds, as additional bullet points in the existing summary list: rising
-tags (`detectTagTrend`), a month-over-month comparison
-(`compareByPeriod`), reread detection (`detectRereads`), intensive-session
-detection (`detectIntensiveSessions`), a typical abandon-point estimate
-(`estimateAbandonPoint`, cross-referencing `AO3H.ficAppreciation.
-isFinished`), a quarterly breakdown (`quarterlyBreakdown`), and the top
-category per season. The existing slump message is now encouraging rather
-than just a warning.
-
-## fandomBreakdown.js
-
-Adds a CSS conic-gradient pie chart of the top 8 fandoms
-(`fandomPercentages`), Hours and Kudos columns (hours estimated at 250
-words/minute; kudos from `AO3H.ficAppreciation.getKudosStats().byFandom`),
-and a compare mode (checkboxes, up to 3 fandoms shown side by side).
-
-## activityPanelHelpers.js
-
-New file of pure logic backing all of the above: `filterSessionsByPeriod`,
-`buildTagCloud`, `dayHourHeatmap`/`bestReadingSlot`/`formatSlotLabel`,
-`detectRereads`/`detectIntensiveSessions`, `estimateAbandonPoint`,
-`compareByPeriod`, `detectTagTrend`, `groupByField`/`quarterlyBreakdown`,
-`isNightOwl`/`regularityScore`, `fandomPercentages`, `buildRecapText`.
-Tested independently in `activityPanelHelpers.test.js`.
-
-## activityPanel.css
-
-Styles for all of the above: period selector and export/refresh controls,
-recap line, tag cloud, quick links, weekly heatmap, prediction/profile
-lines, pie chart and legend, and the fandom-compare table.
+- Clés de stockage : `ao3h:activityPanel:sessions` (propriété de
+  `sessionHistory.js`, liste de sessions `{ workId, startedAt, tags,
+  rating, category, ... }`, max 500 gardées) et
+  `ao3h:activityPanel:preferences` (propriété de `readingInsights.js`,
+  `{ timePeriod }`).
+- API publique : `activityPanelShared.js` exporte `(store, cfg, NS)` pour
+  import direct par `readingInsights.js` ; le module est aussi exposé
+  comme `W.AO3H_ActivityPanel` tant qu'il est activé, pour rester
+  compatible avec l'ancien pont (bridge) legacy.
+- Le filtrage par période de `readingInsights.js` re-dérive les cartes de
+  statistiques directement depuis `activityPanel:sessions`
+  (`computePeriodStats`) plutôt que depuis l'agrégation `dataCollection.js`
+  qui reste, elle, sur tout l'historique.
+- `sessionHistory.js`'s `getWorkMeta()` lit `dd.rating.tags a`,
+  `dd.category.tags a` et `dd.freeform.tags a` sur la page de l'œuvre pour
+  capturer note, catégorie et tags libres.
+- `activityPanelHelpers.js` est testé indépendamment dans
+  `activityPanelHelpers.test.js`.

@@ -45,7 +45,7 @@ terminée.
 
 - Les styles visuels de la fenêtre, du panneau d'accueil (et ses variantes list/banner/sidebar), de la pastille de reprise compacte, des suggestions et de la file d'attente (dont la barre de progression par fic)
 
-### `fanficBingeModeHelpers.js` — calculs purs (ajouté au passage chantier 4)
+### Calculs internes intégrés à `_fanficBingeMode.js`
 
 - Cycle de priorité de la file (`nextPriority`, low → medium → high → low, avec repli des anciennes valeurs `normal` vers `medium`)
 - Choix de la prochaine fic de la file à ouvrir automatiquement (`pickNextQueueEntry`, priorité la plus haute d'abord)
@@ -65,7 +65,7 @@ chantier 4 (2026-07-18) :
 - ~~Un mode "playlist" pour enchaîner toute une série d'un coup~~ ❌ Écarté — même raison que l'enchaînement automatique de série ci-dessus (déjà rejeté par `seriesHelper`)
 - ~~Un mode marathon sans limite~~ ❌ Écarté — reviendrait au même enchaînement automatique jugé trop intrusif ; combiner `continueReadingModal` désactivé et un `autoAdvanceDelay` long donne déjà une lecture ininterrompue pour qui le souhaite
 - ~~Utiliser les modules de suggestions "fics similaires" ou "pépites cachées" pour proposer la suite — en ce moment la suggestion de secours cherche juste par un tag au hasard~~ ❌ Écarté — `ficEngagement`'s `hiddenGems.js` et `similarFics` n'annotent que des éléments déjà présents sur la page ; aucun des deux ne récupère et n'analyse une autre page. Une vraie intégration demanderait à ce module de charger et parser une page de recherche côté client, un changement d'architecture disproportionné par rapport à ses suggestions actuelles (simples liens)
-- ~~Trois niveaux de priorité dans la file d'attente (haute/moyenne/basse) — en ce moment il n'y a que deux niveaux (normal/haute)~~ ✅ Fait — cycle low/medium/high (⚪/⭐/🌟) au clic sur l'étoile, `fanficBingeModeHelpers.js` → `nextPriority()` ; les anciennes entrées `normal` sont traitées comme `medium`
+- ~~Trois niveaux de priorité dans la file d'attente (haute/moyenne/basse) — en ce moment il n'y a que deux niveaux (normal/haute)~~ ✅ Fait — cycle low/medium/high (⚪/⭐/🌟) au clic sur l'étoile, `_fanficBingeMode.js` → `nextPriority()` ; les anciennes entrées `normal` sont traitées comme `medium`
 - ~~Choisir l'apparence du panneau d'accueil (bannière, fenêtre ou barre latérale) — en ce moment il n'y a qu'une seule présentation~~ ✅ Fait — réglage `homepagePanelStyle` (list/banner/sidebar)
 - ~~Un raccourci clavier pour reprendre sa lecture rapidement~~ ✅ Fait — `Alt+R`, enregistré via l'API publique de `keyboardShortcuts` (`W.AO3H_Keyboard.register`, dépendance optionnelle : n'existe que si ce module est aussi activé)
 - ~~Un message de bienvenue au retour sur le site, avec une petite image de la fic et un rappel du genre "Lu il y a 2 heures"~~ ✅ Fait (partiel) — le temps relatif est affiché (`lib/utils/format-date.js` → `relativeDate()`, déjà utilisé par `readingTracker`) ; pas d'image, AO3 n'a pas de notion de couverture/illustration pour une œuvre
@@ -143,13 +143,10 @@ Le module **Fanfic Binge Mode** accompagne les sessions de lecture intensive en 
 
 # Structure du module
 
-Le module est composé d’un fichier fonctionnel unique, d'un fichier de calculs
-purs (`fanficBingeModeHelpers.js`, ajouté au passage chantier 4), et d’une
-feuille de style.
+Le module est composé d’un fichier fonctionnel unique et d’une feuille de style.
 
 ```text
 _fanficBingeMode.js
-fanficBingeModeHelpers.js
 fanficBingeMode.css
 ```
 
@@ -536,7 +533,7 @@ Le système actuel utilise comme solution de secours une recherche fondée sur u
 ## Priorités multiples
 
 > ✅ Fait — cycle low/medium/high (⚪/⭐/🌟) au clic sur l'étoile
-> (`fanficBingeModeHelpers.js` → `nextPriority()`) ; les anciennes entrées
+> (`_fanficBingeMode.js` → `nextPriority()`) ; les anciennes entrées
 > `normal` sont traitées comme `medium`.
 
 Ajouter trois niveaux de priorité dans la file d’attente :
@@ -650,6 +647,5 @@ les retranchant isolément :
   elles demanderaient à ce module de récupérer et analyser une autre page,
   un changement d'architecture hors de proportion avec sa conception actuelle
   (suggestions sous forme de simples liens).
-
 
 

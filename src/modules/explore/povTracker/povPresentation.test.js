@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { PovPresentation } from './povPresentation.js';
 import { PovAnalysis } from './povAnalysis.js';
+import { analyzeChapterText, parsePreferredPovs } from './_povTracker.js';
 
 const W = getGlobalWindow();
 
@@ -44,7 +45,7 @@ describe('PovPresentation — préférence auto-appliquée', () => {
   beforeEach(() => {
     localStorage.clear();
     buildListing();
-    const analysis = new PovAnalysis();
+    const analysis = new PovAnalysis({ analyzeChapterText });
     analysis.init();
     W.AO3H_PovTracker = { _analysis: analysis };
   });
@@ -56,7 +57,7 @@ describe('PovPresentation — préférence auto-appliquée', () => {
   });
 
   it('n’auto-masque rien quand autoApplyPreferredFilter est désactivé', () => {
-    presentation = new PovPresentation({ cfg: cfgFrom(), NS: 'ao3h' });
+    presentation = new PovPresentation({ cfg: cfgFrom(), NS: 'ao3h', parsePreferredPovs });
     presentation.init();
     expect(document.getElementById('work_2').style.display).not.toBe('none');
   });
@@ -65,6 +66,7 @@ describe('PovPresentation — préférence auto-appliquée', () => {
     presentation = new PovPresentation({
       cfg: cfgFrom({ autoApplyPreferredFilter: true, preferredPovs: 'first' }),
       NS: 'ao3h',
+      parsePreferredPovs,
     });
     presentation.init();
 
@@ -76,6 +78,7 @@ describe('PovPresentation — préférence auto-appliquée', () => {
     presentation = new PovPresentation({
       cfg: cfgFrom({ autoApplyPreferredFilter: true, preferredPovs: 'first' }),
       NS: 'ao3h',
+      parsePreferredPovs,
     });
     presentation.init();
 

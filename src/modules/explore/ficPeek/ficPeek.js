@@ -36,8 +36,42 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, observe as libObserve } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { pickChapterIndex, buildCacheKey, isCacheEntryFresh, truncateFullChapterText } from './ficPeekExcerpt.js';
 import styles from './ficPeek.css?inline';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EXCERPT HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+
+export const MAX_FULL_CHAPTER_CHARS = 20000;
+
+export function pickChapterIndex (count, mode) {
+  if (!Number.isFinite(count) || count < 1) return 0;
+  if (mode === 'last') return count - 1;
+  if (mode === 'random') return Math.floor(Math.random() * count);
+  return 0;
+}
+
+/**
+ * @param {string} workUrl
+ * @param {{ chapterMode: string, excerptMode: string, excerptCustomWords?: number }} settings
+ */
+export function buildCacheKey (workUrl, { chapterMode, excerptMode, excerptCustomWords }) {
+  const wordsPart = excerptMode === 'custom' ? String(excerptCustomWords ?? '') : '';
+  return `${workUrl}::${chapterMode}::${excerptMode}::${wordsPart}`;
+}
+
+export function isCacheEntryFresh (cachedAt, ttlHours) {
+  if (!Number.isFinite(cachedAt)) return false;
+  if (!Number.isFinite(ttlHours) || ttlHours <= 0) return true;
+  return (Date.now() - cachedAt) < ttlHours * 3600 * 1000;
+}
+
+export function truncateFullChapterText (text) {
+  const value = String(text || '');
+  return value.length > MAX_FULL_CHAPTER_CHARS
+    ? value.slice(0, MAX_FULL_CHAPTER_CHARS) + '…'
+    : value;
+}
 
 
 /* ═══════════════════════════════════════════════════════════════════════════

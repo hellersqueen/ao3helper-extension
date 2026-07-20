@@ -4,7 +4,7 @@ import {
   LEGACY_MODULE_RENAMES,
   migrateLegacyModuleSettings,
   runVersionMigrations,
-} from './versionMigration.js';
+} from './_backupAndSync.js';
 
 beforeEach(() => { localStorage.clear(); });
 

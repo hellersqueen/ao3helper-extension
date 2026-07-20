@@ -7,7 +7,7 @@ import {
   recordVisit,
   getRecentPages,
   getLastPage,
-} from './paginationMemory.js';
+} from './_pageControls.js';
 
 beforeEach(() => { localStorage.clear(); });
 

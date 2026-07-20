@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   bucketLabel, groupByBucket, computePriority, isSnoozed, snoozeUntil,
   periodKey, buildDigest, parseSubscribedWorkIds,
-} from './notificationCenterHelpers.js';
+} from './notificationCenter.js';
 
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = new Date('2026-07-17T12:00:00').getTime();

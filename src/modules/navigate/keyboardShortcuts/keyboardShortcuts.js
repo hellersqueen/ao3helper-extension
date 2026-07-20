@@ -34,9 +34,77 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import styles from './keyboardShortcuts.css?inline';
 import { css, getCurrentPage, getMaxPageFromDOM, buildURLForPage } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import {
-  parseCombo, matchesEvent, detectConflicts, groupByCategory, actionLabel, clampPageJump,
-} from './keyboardShortcutsHelpers.js';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SHORTCUT LOGIC
+═══════════════════════════════════════════════════════════════════════════ */
+
+export function parseCombo (str) {
+  const parts = String(str || '').split('+');
+  return {
+    ctrl: parts.includes('Ctrl'),
+    shift: parts.includes('Shift'),
+    alt: parts.includes('Alt'),
+    key: parts[parts.length - 1],
+  };
+}
+
+export function comboToString (combo) {
+  return [combo.ctrl && 'Ctrl', combo.shift && 'Shift', combo.alt && 'Alt', combo.key]
+    .filter(Boolean).join('+');
+}
+
+export function matchesEvent (combo, event) {
+  const transformedPrintable = !combo.shift && combo.key.length === 1 && event.key === combo.key;
+  return event.key === combo.key &&
+         event.ctrlKey === combo.ctrl &&
+         (event.shiftKey === combo.shift || transformedPrintable) &&
+         event.altKey === combo.alt;
+}
+
+export function detectConflicts (map) {
+  const byCombo = new Map();
+  for (const [action, keyStr] of Object.entries(map)) {
+    const key = comboToString(parseCombo(keyStr));
+    if (!byCombo.has(key)) byCombo.set(key, []);
+    byCombo.get(key).push(action);
+  }
+  const conflicting = new Set();
+  const groups = [];
+  for (const [key, actions] of byCombo) {
+    if (actions.length < 2) continue;
+    actions.forEach(action => conflicting.add(action));
+    groups.push({ key, actions });
+  }
+  return { conflicting, groups };
+}
+
+export function categoryFor (action, categories) {
+  for (const [category, actions] of Object.entries(categories)) {
+    if (actions.includes(action)) return category;
+  }
+  return 'Other';
+}
+
+export function groupByCategory (map, categories) {
+  const grouped = {};
+  for (const [action, key] of Object.entries(map)) {
+    const category = categoryFor(action, categories);
+    (grouped[category] ||= []).push([action, key]);
+  }
+  return grouped;
+}
+
+export function actionLabel (action, labels) {
+  if (labels[action]) return labels[action];
+  return action.replace(/[_/]/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
+}
+
+export function clampPageJump (current, delta, max) {
+  const upper = Number.isFinite(max) ? max : Infinity;
+  const target = Math.min(Math.max(current + delta, 1), upper);
+  return target === current ? null : target;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { WordOccurrenceCounter } from './wordOccurrenceCounter.js';
+import { countOccurrences } from './_visualPreferences.js';
 
 function setWorkPage () {
   Object.defineProperty(window, 'location', {
@@ -21,7 +22,7 @@ afterEach(() => { document.body.innerHTML = ''; });
 
 describe('WordOccurrenceCounter', () => {
   it('n\'affiche rien quand désactivé', () => {
-    new WordOccurrenceCounter().apply(false);
+    new WordOccurrenceCounter({ countOccurrences }).apply(false);
     expect(document.querySelector('.ao3h-word-occurrence')).toBeNull();
   });
 
@@ -30,19 +31,19 @@ describe('WordOccurrenceCounter', () => {
       value: new URL('https://archiveofourown.org/works'),
       writable: true,
     });
-    new WordOccurrenceCounter().apply(true);
+    new WordOccurrenceCounter({ countOccurrences }).apply(true);
     expect(document.querySelector('.ao3h-word-occurrence')).toBeNull();
   });
 
   it('affiche le widget après dl.stats sur une page de fic', () => {
-    new WordOccurrenceCounter().apply(true);
+    new WordOccurrenceCounter({ countOccurrences }).apply(true);
     const widget = document.querySelector('.ao3h-word-occurrence');
     expect(widget).not.toBeNull();
     expect(document.querySelector('dl.stats').nextElementSibling).toBe(widget);
   });
 
   it('compte les occurrences en tapant dans le champ', () => {
-    const woc = new WordOccurrenceCounter();
+    const woc = new WordOccurrenceCounter({ countOccurrences });
     woc.apply(true);
     const input = document.querySelector('.ao3h-word-occurrence input');
     input.value = 'Harry';
@@ -51,7 +52,7 @@ describe('WordOccurrenceCounter', () => {
   });
 
   it('reset retire le widget', () => {
-    const woc = new WordOccurrenceCounter();
+    const woc = new WordOccurrenceCounter({ countOccurrences });
     woc.apply(true);
     woc.reset();
     expect(document.querySelector('.ao3h-word-occurrence')).toBeNull();

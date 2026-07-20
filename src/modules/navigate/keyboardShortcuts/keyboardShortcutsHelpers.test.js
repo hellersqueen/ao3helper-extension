@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   parseCombo, comboToString, matchesEvent, detectConflicts,
   categoryFor, groupByCategory, actionLabel, clampPageJump,
-} from './keyboardShortcutsHelpers.js';
+} from './keyboardShortcuts.js';
 
 describe('parseCombo / comboToString', () => {
   it('parse les modificateurs et la touche finale', () => {

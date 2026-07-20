@@ -18,14 +18,17 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getChapterProse } from '../../../../lib/ao3/work-page.js';
-import { countOccurrences } from './wordOccurrenceMath.js';
 
 const NS = 'ao3h';
 const LAST_WORD_KEY = `${NS}:vp:lastOccurrenceWord`;
 
 export class WordOccurrenceCounter {
-  constructor () {
+  /**
+   * @param {{ countOccurrences?: (text: string, word: string) => number }} [opts]
+   */
+  constructor ({ countOccurrences } = {}) {
     this._widget = null;
+    this._countOccurrences = countOccurrences || (() => 0);
   }
 
   _isWorkPage () {
@@ -35,7 +38,7 @@ export class WordOccurrenceCounter {
   _runCount (word) {
     if (!word.trim()) return null;
     const text = getChapterProse();
-    return countOccurrences(text, word);
+    return this._countOccurrences(text, word);
   }
 
   _build () {

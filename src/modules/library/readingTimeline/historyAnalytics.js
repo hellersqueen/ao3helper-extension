@@ -20,7 +20,6 @@ Notes
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
-import { timeOfDayBucket } from './timelineStats.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -29,10 +28,14 @@ import { timeOfDayBucket } from './timelineStats.js';
 const W = getGlobalWindow();
 
 export class HistoryAnalytics {
-  constructor () {
+  /**
+   * @param {{ timeOfDayBucket?: (date: Date) => string }} [opts]
+   */
+  constructor ({ timeOfDayBucket } = {}) {
     this.heatmapData = {};
     this._originalBackgrounds = new Map();
     this._originalDisplays = new Map();
+    this._timeOfDayBucket = timeOfDayBucket || (() => 'Night');
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
@@ -266,7 +269,7 @@ export class HistoryAnalytics {
       // Sub-divider: same calendar day, but a clearly different time of day
       // (morning/afternoon/evening/night) — the main dividers above only
       // distinguish days, not multiple reading sessions within one day.
-      const bucket = timeOfDayBucket(fullDate);
+      const bucket = this._timeOfDayBucket(fullDate);
       if (calendarDay === lastCalendarDay && bucket !== lastTimeBucket) {
         const sub       = document.createElement('li');
         sub.className   = 'ao3h-session-subdivider';

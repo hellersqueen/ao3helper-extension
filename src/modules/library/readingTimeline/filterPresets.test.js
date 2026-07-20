@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { loadPresets, savePreset, getPreset, deletePreset } from './filterPresets.js';
+import { loadPresets, savePreset, getPreset, deletePreset } from './_readingTimeline.js';
 
 beforeEach(() => localStorage.clear());
 

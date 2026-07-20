@@ -42,9 +42,83 @@ import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { getHistoryWorkIdSet, addLaterShelfItem } from '../../../../lib/storage/keys.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { filterEligible, pickRandomSample } from './candidateSelection.js';
-import { recordDraw, getRecentDrawIds } from './drawHistory.js';
 import styles from './surpriseMe.css?inline';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE-SPECIFIC HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+
+export function isCompleteWork (blurb) {
+  const chapters = blurb.querySelector('dd.chapters');
+  if (!chapters) return false;
+  const match = chapters.textContent.trim().match(/^(\d+)\/(\d+)$/);
+  return !!match && match[1] === match[2];
+}
+
+export function getWordCount (blurb) {
+  const text = blurb.querySelector('dd.words')?.textContent || '';
+  const count = parseInt(text.replace(/,/g, ''), 10);
+  return Number.isFinite(count) ? count : 0;
+}
+
+export function filterEligible (blurbs, { completedOnly = false, minWords = 0 } = {}) {
+  let eligible = blurbs;
+  if (completedOnly) eligible = eligible.filter(isCompleteWork);
+  if (minWords > 0) eligible = eligible.filter(blurb => getWordCount(blurb) >= minWords);
+  return eligible;
+}
+
+export function pickRandomSample (list, amount) {
+  const count = Math.max(0, Math.min(amount, list.length));
+  const pool = list.slice();
+  const picked = [];
+  for (let index = 0; index < count; index++) {
+    const poolIndex = Math.floor(Math.random() * pool.length);
+    picked.push(pool[poolIndex]);
+    pool.splice(poolIndex, 1);
+  }
+  return picked;
+}
+
+export const KEY_SURPRISE_ME_HISTORY = 'ao3h:surpriseMe:history';
+const MAX_HISTORY = 50;
+const AVOID_REPEAT_WINDOW = 20;
+
+export function loadHistory () {
+  try {
+    const history = JSON.parse(localStorage.getItem(KEY_SURPRISE_ME_HISTORY) || '[]');
+    return Array.isArray(history) ? history : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory (history) {
+  try {
+    localStorage.setItem(KEY_SURPRISE_ME_HISTORY, JSON.stringify(history));
+  } catch { /* storage unavailable */ }
+}
+
+export function recordDraw (entry) {
+  if (!entry?.id) return;
+  const history = loadHistory();
+  history.unshift({
+    id: entry.id,
+    title: entry.title || '(untitled)',
+    href: entry.href || null,
+    at: Date.now(),
+  });
+  if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+  saveHistory(history);
+}
+
+export function clearHistory () {
+  saveHistory([]);
+}
+
+export function getRecentDrawIds () {
+  return new Set(loadHistory().slice(0, AVOID_REPEAT_WINDOW).map(entry => String(entry.id)));
+}
 
 
 /* ═══════════════════════════════════════════════════════════════════════════

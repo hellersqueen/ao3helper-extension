@@ -36,8 +36,29 @@ import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { subscribeToWork } from '../../../../lib/ao3/actions.js';
 import { getCSRF } from '../../../../lib/ao3/requests.js';
 import { makeListReorderable, applySavedOrder } from '../../../../lib/ui/drag-reorder.js';
-import { getActionIcon, resolveBottomSubscribeContainer } from './ficActionsHelpers.js';
 import styles from './ficActions.css?inline';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACTION HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+
+export const ACTION_ICONS = {
+  bookmark: '🔖',
+  mark: '✅',
+  share: '📤',
+  subscribe: '🔔',
+  download: '⬇️',
+  comments: '💬',
+};
+
+export function getActionIcon (key) {
+  return ACTION_ICONS[key] || '•';
+}
+
+export function resolveBottomSubscribeContainer (doc, position) {
+  if (position !== 'pageEnd') return null;
+  return doc.querySelector('#main') || null;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP

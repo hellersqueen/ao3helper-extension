@@ -1,6 +1,6 @@
 // @ts-nocheck — fichier de test, pas typé au même niveau que le code produit.
 import { describe, it, expect } from 'vitest';
-import { isCompleteWork, getWordCount, filterEligible, pickRandomSample } from './candidateSelection.js';
+import { isCompleteWork, getWordCount, filterEligible, pickRandomSample } from './surpriseMe.js';
 
 function makeBlurb({ chapters, words } = {}) {
   const li = document.createElement('li');

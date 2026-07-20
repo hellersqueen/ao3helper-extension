@@ -43,7 +43,7 @@ de chacun).
 - Un bouton "+ MFL" sur chaque suggestion permet de l'ajouter directement à "à lire plus tard"
 - Garde les résultats en cache une heure (par fic et par combinaison de réglages actifs)
 
-### `similarFicsHelpers.js` — logique pure
+### Logique interne intégrée à `similarFics.js`
 
 - Calcul de la fourchette de longueur recherchée selon `lengthMode`, du score de correspondance (pondéré), du seuil minimal selon `matchStyle`, du filtre de longueur stricte, du texte d'explication en langage simple, et de la liste des œuvres écartées — testé indépendamment du DOM
 
@@ -147,11 +147,10 @@ Le module permet ainsi de découvrir rapidement d’autres œuvres proches sans 
 
 # Structure du module
 
-Le module est composé d’un fichier fonctionnel, d’un fichier de logique pure et d’une feuille de style.
+Le module est composé d’un fichier fonctionnel et d’une feuille de style.
 
 ```text
 similarFics.js
-similarFicsHelpers.js
 similarFics.css
 ```
 
@@ -401,11 +400,11 @@ Aucune API d’intelligence artificielle ou plateforme externe de recommandation
 
 ---
 
-# similarFicsHelpers.js
+# Logique interne de similarFics.js
 
 ## Rôle
 
-Fichier de logique pure, sans DOM ni stockage, ajouté au Chantier 4 pour rendre testable le calcul de recommandation.
+Section de logique pure, sans DOM ni stockage, conservée dans `similarFics.js` et exportée pour rendre testable le calcul de recommandation.
 
 ## Fonctions exposées
 
@@ -419,7 +418,7 @@ Fichier de logique pure, sans DOM ni stockage, ajouté au Chantier 4 pour rendre
 
 ## Dépendances
 
-Aucune — utilisé uniquement par `similarFics.js`.
+Aucune dépendance supplémentaire.
 
 ---
 
@@ -821,4 +820,3 @@ Proposer une similarité par œuvre sur une liste de 20+ résultats multiplierai
 Le panneau de suggestions ne se charge que lorsque l'utilisateur clique sur le bouton "Similar Stories" — il n'est ni auto-affiché, ni masqué automatiquement selon la taille d'écran.
 
 Un affichage automatique (barre latérale) déclencherait des requêtes réseau sur chaque page de fic visitée, y compris pour les personnes qui ne consultent jamais les suggestions. Masquer la fonctionnalité sur mobile plutôt que de laisser sa mise en page fluide s'adapter a aussi été jugé contraire à l'accessibilité.
-

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { PovDetailPanel } from './povDetailPanel.js';
 import { PovAnalysis } from './povAnalysis.js';
+import { analyzeChapterText } from './_povTracker.js';
 
 const W = getGlobalWindow();
 const LONG_FIRST_PERSON = 'I walked to my car and thought about my day. '.repeat(20);
@@ -36,7 +37,7 @@ function cfgFrom (overrides) {
 describe('PovDetailPanel', () => {
   beforeEach(() => {
     localStorage.clear();
-    const analysis = new PovAnalysis();
+    const analysis = new PovAnalysis({ analyzeChapterText });
     analysis.init();
     W.AO3H_PovTracker = { _analysis: analysis };
   });

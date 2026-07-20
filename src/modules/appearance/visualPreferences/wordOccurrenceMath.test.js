@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { countOccurrences } from './wordOccurrenceMath.js';
+import { countOccurrences } from './_visualPreferences.js';
 
 describe('countOccurrences', () => {
   it('compte les occurrences en mot entier, insensible à la casse', () => {

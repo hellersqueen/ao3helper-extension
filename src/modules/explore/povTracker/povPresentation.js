@@ -20,7 +20,6 @@ Notes
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { observe } from '../../../../lib/utils/index.js';
-import { parsePreferredPovs } from './povPreferences.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -48,10 +47,11 @@ function workIdFromBlurb (blurb) {
 }
 
 export class PovPresentation {
-  /** @param {{ cfg: Function, NS: string }} opts */
-  constructor ({ cfg, NS }) {
+  /** @param {{ cfg: Function, NS: string, parsePreferredPovs: Function }} opts */
+  constructor ({ cfg, NS, parsePreferredPovs }) {
     this.cfg      = cfg;
     this.NS       = NS;
+    this._parsePreferredPovs = parsePreferredPovs || (() => []);
     this._observer = null;
     this._hidden   = new Set(); // POV types currently filtered out
     this._originalDisplays = new WeakMap();
@@ -251,7 +251,7 @@ export class PovPresentation {
   // _processBlurb) applies the preference without a separate code path.
   _applyPreferredPovDefaults () {
     if (!this.cfg('autoApplyPreferredFilter')) return;
-    const preferred = parsePreferredPovs(this.cfg('preferredPovs'));
+    const preferred = this._parsePreferredPovs(this.cfg('preferredPovs'));
     if (!preferred.length) return;
     for (const pov of Object.keys(POV_META)) {
       if (!preferred.includes(pov)) this._hidden.add(pov);

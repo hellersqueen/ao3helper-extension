@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { loadAnnotations, getAnnotation, setAnnotation, clearAnnotation } from './dateAnnotations.js';
+import { loadAnnotations, getAnnotation, setAnnotation, clearAnnotation } from './_readingTimeline.js';
 
 beforeEach(() => localStorage.clear());
 

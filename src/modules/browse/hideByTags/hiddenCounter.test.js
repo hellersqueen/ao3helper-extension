@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { countHiddenBlurbs, renderHiddenCounter } from './hiddenCounter.js';
+import { countHiddenBlurbs, renderHiddenCounter } from './_hideByTags.js';
 
 const NS = 'ao3h';
 

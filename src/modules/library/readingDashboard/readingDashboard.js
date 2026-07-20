@@ -37,8 +37,87 @@ import { css } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { makeListReorderable, applySavedOrder } from '../../../../lib/ui/drag-reorder.js';
-import { computeDiversity, computeRereadPercent, computeReaderProfile, computeYearRecap } from './dashboardStats.js';
 import styles from './readingDashboard.css?inline';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DASHBOARD STATISTICS
+═══════════════════════════════════════════════════════════════════════════ */
+
+function dayKey (timestamp) {
+  if (!timestamp) return null;
+  const date = new Date(timestamp);
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+export function computeDiversity (works) {
+  const fandoms = new Set();
+  const tags = new Set();
+  (works || []).forEach(work => {
+    (work?.fandoms || []).forEach(fandom => fandom && fandoms.add(fandom.toLowerCase()));
+    (work?.tags || []).forEach(tag => tag && tags.add(tag.toLowerCase()));
+  });
+  return { workCount: (works || []).length, fandomCount: fandoms.size, tagCount: tags.size };
+}
+
+export function computeRereadPercent (works) {
+  const total = (works || []).length;
+  if (!total) return 0;
+  const reread = works.filter(work => (work?.visitCount || 1) > 1).length;
+  return Math.round((reread / total) * 100);
+}
+
+export function computeReaderProfile (works) {
+  const total = (works || []).length;
+  if (total < 3) return null;
+
+  const completedCount = works.filter(work => work?.completed).length;
+  const completionRate = completedCount / total;
+  const activeDays = new Set(works.map(work => dayKey(work?.lastVisited)).filter(Boolean));
+  const worksPerActiveDay = total / (activeDays.size || 1);
+
+  if (completionRate >= 0.7) {
+    return {
+      label: 'Completionist',
+      detail: `You've finished ${Math.round(completionRate * 100)}% of the works you've opened recently.`,
+    };
+  }
+  if (worksPerActiveDay >= 3) {
+    return {
+      label: 'Marathon reader',
+      detail: `You tend to open several works (~${worksPerActiveDay.toFixed(1)}) in the same sitting.`,
+    };
+  }
+  return { label: 'Casual reader', detail: 'You read at a relaxed, spread-out pace.' };
+}
+
+export function computeYearRecap (works, year) {
+  const targetYear = year ?? new Date().getFullYear();
+  const inYear = (works || []).filter(work =>
+    work?.lastVisited && new Date(work.lastVisited).getFullYear() === targetYear);
+  const completedCount = inYear.filter(work => work.completed).length;
+  const fandomCounts = {};
+  const tagCounts = {};
+  inYear.forEach(work => {
+    (work.fandoms || []).forEach(fandom => {
+      const key = fandom.toLowerCase();
+      if (key) fandomCounts[key] = (fandomCounts[key] || 0) + 1;
+    });
+    (work.tags || []).forEach(tag => {
+      const key = tag.toLowerCase();
+      if (key) tagCounts[key] = (tagCounts[key] || 0) + 1;
+    });
+  });
+  const topFandomEntry = Object.entries(fandomCounts).sort((a, b) => b[1] - a[1])[0];
+  return {
+    year: targetYear,
+    totalWorks: inYear.length,
+    completedCount,
+    wipCount: inYear.length - completedCount,
+    topFandom: topFandomEntry ? topFandomEntry[0] : null,
+    distinctFandoms: Object.keys(fandomCounts).length,
+    distinctTags: Object.keys(tagCounts).length,
+  };
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP

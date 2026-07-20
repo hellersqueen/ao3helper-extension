@@ -19,7 +19,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
-import { analyzeChapterText } from './povTextAnalysis.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -107,9 +106,13 @@ function detectPov (blurb) {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export class PovAnalysis {
-  constructor () {
+  /**
+   * @param {{ analyzeChapterText?: (text: string) => ({ pov: string, confidence: string }|null) }} [opts]
+   */
+  constructor ({ analyzeChapterText } = {}) {
     this._cache = {};
     this._dirty = false;
+    this._analyzeChapterText = analyzeChapterText || (() => null);
   }
 
   init () {
@@ -173,14 +176,14 @@ export class PovAnalysis {
    * never fetches or analyzes chapters proactively). Updates the entry in
    * place, keyed by chapterId so re-visiting a chapter replaces its result
    * rather than duplicating it. Returns null when the text is too short or
-   * has no pronoun signal (see povTextAnalysis.js).
+   * has no pronoun signal (see the helpers injected by _povTracker.js).
    * @param {string} workId
    * @param {string} chapterId
    * @param {string} label - Display label for this chapter (e.g. its title)
    * @param {string} text - Full chapter prose
    */
   recordChapterAnalysis (workId, chapterId, label, text) {
-    const result = analyzeChapterText(text);
+    const result = this._analyzeChapterText(text);
     if (!result) return null;
 
     const now = Date.now();

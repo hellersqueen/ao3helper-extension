@@ -40,7 +40,69 @@ import { AutoBackup } from './automateBackup.js';
 import { BackupOperations } from './backupOperations.js';
 import { CloudSync } from './cloudSync.js';
 import { ImportExportLists } from './dataTransfer.js';
-import { runVersionMigrations } from './versionMigration.js';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VERSION MIGRATION
+═══════════════════════════════════════════════════════════════════════════ */
+
+export const VERSION_KEY = 'ao3h:version';
+
+export const LEGACY_MODULE_RENAMES = {
+  downloadManager:          'ficDownloader',
+  bookmarkManager:          'bookmarkVault',
+  commentEnhancer:          'commentKit',
+  paginationManager:        'pageControls',
+  mainNavEnhancer:          'mainNavigation',
+  visualPreferencesManager: 'visualPreferences',
+  ficButtonsManager:        'ficActions',
+  readerCorner:             'readingDashboard',
+  tagsDisplayManager:       'tagsDisplay',
+  markedForLaterManager:    'laterShelf',
+  workReminder:             'laterShelf',
+};
+
+const settingsKey = moduleId => `ao3h:mod:${moduleId}:settings`;
+
+function readJSON (storage, key) {
+  try {
+    const parsed = JSON.parse(storage.getItem(key) || 'null');
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export function migrateLegacyModuleSettings (storage = localStorage) {
+  const migrated = [];
+  for (const [oldId, newId] of Object.entries(LEGACY_MODULE_RENAMES)) {
+    const oldKey = settingsKey(oldId);
+    const oldData = readJSON(storage, oldKey);
+    if (oldData === null && storage.getItem(oldKey) === null) continue;
+
+    if (oldData) {
+      const newKey = settingsKey(newId);
+      const newData = readJSON(storage, newKey) || {};
+      try {
+        storage.setItem(newKey, JSON.stringify({ ...oldData, ...newData }));
+      } catch {
+        continue;
+      }
+    }
+    try { storage.removeItem(oldKey); } catch { /* storage unavailable */ }
+    migrated.push(oldKey);
+  }
+  return migrated;
+}
+
+export function runVersionMigrations (currentVersion, storage = localStorage) {
+  const lastVersion = storage.getItem(VERSION_KEY);
+  if (lastVersion === currentVersion) {
+    return { ran: false, from: lastVersion, to: currentVersion, migrated: [] };
+  }
+  const migrated = migrateLegacyModuleSettings(storage);
+  try { storage.setItem(VERSION_KEY, currentVersion); } catch { /* storage unavailable */ }
+  return { ran: true, from: lastVersion, to: currentVersion, migrated };
+}
 
 
 

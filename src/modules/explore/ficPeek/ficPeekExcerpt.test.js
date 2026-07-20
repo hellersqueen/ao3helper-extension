@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
   pickChapterIndex, buildCacheKey, isCacheEntryFresh, truncateFullChapterText, MAX_FULL_CHAPTER_CHARS,
-} from './ficPeekExcerpt.js';
+} from './ficPeek.js';
 
 describe('pickChapterIndex', () => {
   it('retourne toujours 0 pour "first"', () => {

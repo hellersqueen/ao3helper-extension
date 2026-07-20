@@ -39,7 +39,7 @@ site et des notifications du navigateur en option.
 - Peut envoyer une vraie notification du navigateur, avec un son en option et des "heures calmes" sans aucune notification
 - Détecte aussi directement un nouveau chapitre quand on visite la page d'une fic suivie
 
-### `notificationCenterHelpers.js` — logique extraite
+### Logique interne intégrée à `notificationCenter.js`
 
 - `groupByBucket(items)` / `bucketLabel(ts)` : regroupement du flux par période (aujourd'hui/hier/cette semaine/plus ancien)
 - `computePriority({completedNow, delta})` : priorité d'une mise à jour (`high` si l'œuvre vient de se terminer ou si le saut de chapitres est important)
@@ -223,11 +223,10 @@ retirée du panneau et remplacée par les réglages réels ci-dessus.
 
 # Structure du module
 
-Le module est composé d’un fichier fonctionnel principal, d’un fichier de logique extraite et d’une feuille de style.
+Le module est composé d’un fichier fonctionnel principal et d’une feuille de style.
 
 ```text
 notificationCenter.js
-notificationCenterHelpers.js
 notificationCenter.css
 ```
 

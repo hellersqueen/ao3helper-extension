@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { clampPage, normalizeStep, percentPage, randomPage } from './pageJumpTargets.js';
+import { clampPage, normalizeStep, percentPage, randomPage } from './_pageControls.js';
 
 describe('clampPage', () => {
   it('borne dans [1, max]', () => {

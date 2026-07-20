@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeMilestones, getHeatmapLevel, timeOfDayBucket } from './timelineStats.js';
+import { computeMilestones, getHeatmapLevel, timeOfDayBucket } from './_readingTimeline.js';
 
 function daysWithWorks (spec) {
   // spec: { '2026-01-01': 3, '2026-01-02': 1, ... }

@@ -36,12 +36,94 @@ import { css } from '../../../../lib/utils/index.js';
 import { getHistoryWorkIdSet, getBookmarkVaultWorkIds, getLaterShelfWorkIds } from '../../../../lib/storage/keys.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { sendNotification, requestNotifyPermission } from '../../../../lib/utils/notifications.js';
-import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, findAllBlurbs, extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { detectUser } from '../../../../lib/utils/user-detector.js';
-import {
-  groupByBucket, computePriority, isSnoozed, snoozeUntil, buildDigest, parseSubscribedWorkIds,
-} from './notificationCenterHelpers.js';
 import styles from './notificationCenter.css?inline';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NOTIFICATION HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function startOfDay (timestamp) {
+  const date = new Date(timestamp);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+}
+
+export function bucketLabel (timestamp, now = Date.now()) {
+  const diffDays = Math.round((startOfDay(now) - startOfDay(timestamp)) / DAY_MS);
+  if (diffDays <= 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays <= 7) return 'This week';
+  return 'Older';
+}
+
+export function groupByBucket (items, now = Date.now()) {
+  const order = ['Today', 'Yesterday', 'This week', 'Older'];
+  const buckets = new Map(order.map(label => [label, []]));
+  items.forEach(item => buckets.get(bucketLabel(item.ts, now)).push(item));
+  return order
+    .map(label => ({ label, items: buckets.get(label) }))
+    .filter(group => group.items.length > 0);
+}
+
+/**
+ * @param {{ completedNow?: boolean, delta?: number }} [opts]
+ */
+export function computePriority ({ completedNow, delta } = {}) {
+  if (completedNow || (delta || 0) >= 3) return 'high';
+  return 'normal';
+}
+
+export function isSnoozed (item, now = Date.now()) {
+  return Number.isFinite(item?.snoozedUntil) && item.snoozedUntil > now;
+}
+
+export function snoozeUntil (hours, now = Date.now()) {
+  return now + hours * 60 * 60 * 1000;
+}
+
+function daysSinceEpoch (timestamp) {
+  return Math.floor(timestamp / DAY_MS);
+}
+
+export function periodKey (timestamp, mode) {
+  const days = daysSinceEpoch(timestamp);
+  return mode === 'weekly' ? `w${Math.floor(days / 7)}` : `d${days}`;
+}
+
+export function buildDigest (items, mode) {
+  if (mode !== 'daily' && mode !== 'weekly') return null;
+  const groups = new Map();
+  items.forEach(item => {
+    const key = periodKey(item.ts, mode);
+    if (!groups.has(key)) {
+      groups.set(key, { key, ts: item.ts, updateCount: 0, finishedCount: 0, works: new Set() });
+    }
+    const group = groups.get(key);
+    group.updateCount += 1;
+    if (item.completedNow) group.finishedCount += 1;
+    group.works.add(item.wid);
+    if (item.ts > group.ts) group.ts = item.ts;
+  });
+  return Array.from(groups.values())
+    .sort((a, b) => b.ts - a.ts)
+    .map(({ key, ts, updateCount, finishedCount, works }) => ({
+      key, ts, updateCount, finishedCount, workCount: works.size,
+    }));
+}
+
+export function parseSubscribedWorkIds (html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const ids = new Set();
+  findAllBlurbs(doc).forEach(blurb => {
+    const id = extractWorkIdFromBlurb(blurb);
+    if (id) ids.add(id);
+  });
+  return Array.from(ids);
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP

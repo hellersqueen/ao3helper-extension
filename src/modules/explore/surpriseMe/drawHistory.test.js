@@ -1,6 +1,6 @@
 // @ts-nocheck — fichier de test, pas typé au même niveau que le code produit.
 import { describe, it, expect, beforeEach } from 'vitest';
-import { KEY_SURPRISE_ME_HISTORY, loadHistory, recordDraw, clearHistory, getRecentDrawIds } from './drawHistory.js';
+import { KEY_SURPRISE_ME_HISTORY, loadHistory, recordDraw, clearHistory, getRecentDrawIds } from './surpriseMe.js';
 
 beforeEach(() => localStorage.clear());
 

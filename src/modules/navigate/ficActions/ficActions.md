@@ -35,7 +35,7 @@ liste sans ouvrir la fic.
 - Ajoute un bouton 🔕/🔔 sur les listes de fics pour s'abonner sans ouvrir la fic
 - Affiche un badge "🔔 Subscribed" sur les fics déjà suivies
 
-### `ficActionsHelpers.js` — logique extraite
+### Logique interne intégrée à `ficActions.js`
 
 - `getActionIcon(key)` : l'icône associée à un bouton d'action (mode icônes seules)
 - `resolveBottomSubscribeContainer(doc, position)` : trouve le conteneur où insérer le bouton Subscribe dupliqué quand la position choisie est "tout en bas de la page"
@@ -181,11 +181,10 @@ Le module **Fic Actions** améliore les boutons d’action associés aux œuvres
 
 # Structure du module
 
-Le module est composé d’un fichier fonctionnel, d’un fichier de logique extraite et d’une feuille de style.
+Le module est composé d’un fichier fonctionnel et d’une feuille de style.
 
 ```text
 ficActions.js
-ficActionsHelpers.js
 ficActions.css
 ```
 

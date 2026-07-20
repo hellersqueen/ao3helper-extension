@@ -40,15 +40,94 @@ import { UserLocalStorage } from '../../../../lib/storage/user.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { EV_SETTINGS_CHANGED } from '../../../../lib/utils/event-names.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { saveMirror, loadMirror, mergeWorkLists } from './hiddenWorksMirror.js';
-import {
-  extractWorkMeta,
-  findHideButtonAnchor,
-  hasStandaloneNote,
-  isHideBarRevealTarget,
-  resolveDisplayStyle,
-} from './skipWorksHelpers.js';
 import styles from './skipWorks.css?inline';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE-SPECIFIC HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+
+export const DISPLAY_STYLES = {
+  block : { content: 'hidden',  bar: 'block',  showButton: true  },
+  banner: { content: 'hidden',  bar: 'banner', showButton: true  },
+  dim   : { content: 'dimmed',  bar: 'banner', showButton: true  },
+  note  : { content: 'visible', bar: 'banner', showButton: false },
+};
+
+export function extractWorkMeta (blurbEl) {
+  if (!blurbEl || typeof blurbEl.querySelector !== 'function') return { title: '', author: '' };
+  const titleLink = blurbEl.querySelector('.header .heading a[href*="/works/"]')
+    || blurbEl.querySelector('a[href*="/works/"]');
+  const authorLink = blurbEl.querySelector('a[rel="author"]');
+  return {
+    title: titleLink ? titleLink.textContent.trim() : '',
+    author: authorLink ? authorLink.textContent.trim() : '',
+  };
+}
+
+export function isHideBarRevealTarget (target, namespace) {
+  if (!target || typeof target.closest !== 'function') return false;
+  if (!target.closest(`.${namespace}-m5-hidebar`)) return false;
+  return !target.closest('button');
+}
+
+export function resolveDisplayStyle (mode) {
+  return DISPLAY_STYLES[mode] || DISPLAY_STYLES.block;
+}
+
+export function findHideButtonAnchor (blurbEl, position) {
+  if (!blurbEl || typeof blurbEl.querySelector !== 'function') return null;
+  const scope = blurbEl.querySelector(':scope > .ao3h-cut') || blurbEl;
+  if (position === 'bottom') {
+    const stats = scope.querySelector('dl.stats');
+    if (stats) return { el: stats, mode: 'after' };
+  }
+  const header = scope.querySelector('.header');
+  return header ? { el: header, mode: 'append' } : null;
+}
+
+export function hasStandaloneNote (record) {
+  return !!(
+    record &&
+    record.isHidden === false &&
+    record.isStandaloneNote === true &&
+    typeof record.reason === 'string' &&
+    record.reason.trim()
+  );
+}
+
+export function buildMirrorKey (username) {
+  return `ao3h:skipWorks:hiddenWorksMirror:${username}`;
+}
+
+export function saveMirror (username, works) {
+  try {
+    localStorage.setItem(buildMirrorKey(username), JSON.stringify(works || []));
+  } catch { /* storage quota */ }
+}
+
+export function loadMirror (username) {
+  try {
+    const records = JSON.parse(localStorage.getItem(buildMirrorKey(username)));
+    return Array.isArray(records) ? records : [];
+  } catch {
+    return [];
+  }
+}
+
+export function mergeWorkLists (local, remote) {
+  const recordsByWorkId = new Map();
+  for (const record of (local || [])) {
+    if (record?.workId) recordsByWorkId.set(record.workId, record);
+  }
+  for (const record of (remote || [])) {
+    if (!record?.workId) continue;
+    const existing = recordsByWorkId.get(record.workId);
+    if (!existing || (record.updatedAt || 0) > (existing.updatedAt || 0)) {
+      recordsByWorkId.set(record.workId, record);
+    }
+  }
+  return Array.from(recordsByWorkId.values());
+}
 
 
 /* ═══════════════════════════════════════════════════════════════════════════

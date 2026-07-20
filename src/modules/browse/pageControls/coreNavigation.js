@@ -18,10 +18,6 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { randomPage, percentPage } from './pageJumpTargets.js';
-import { listingKey, recordVisit, getRecentPages } from './paginationMemory.js';
-
-
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -72,8 +68,9 @@ function buildPageURL (pageNum) {
    FEATURE — PAGE-JUMP WIDGET
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function buildWidget (current, max, cfg) {
+function buildWidget (current, max, cfg, pageHelpers) {
   const opt = (key, fallback) => (cfg ? cfg(key, fallback) : fallback);
+  const { randomPage, percentPage, listingKey, getRecentPages } = pageHelpers;
 
   const row   = document.createElement('div');
   row.className = ROW_CLASS;
@@ -187,13 +184,15 @@ export class CoreNavigation {
 
   setup () {
     const cfg     = this._opts.cfg || null;
+    const pageHelpers = this._opts.pageHelpers;
+    if (!pageHelpers) return;
     const current = getCurrentPage();
     const max     = getMaxPage();
     if (max <= 1) return; // no pagination needed
 
     // Remember this visit so the widget can offer "resume"/"recent" links
     if (!cfg || cfg('rememberRecentPages', true)) {
-      recordVisit(listingKey(location.href), current);
+      pageHelpers.recordVisit(pageHelpers.listingKey(location.href), current);
     }
 
     // Inject beside each .pagination block (position is configurable)
@@ -201,7 +200,7 @@ export class CoreNavigation {
     document.querySelectorAll('ol.pagination, ul.pagination, .pagination').forEach(pg => {
       const neighbor = above ? pg.previousElementSibling : pg.nextElementSibling;
       if (neighbor?.classList.contains(ROW_CLASS)) return; // already injected
-      const widget = buildWidget(current, max, cfg);
+      const widget = buildWidget(current, max, cfg, pageHelpers);
       pg.insertAdjacentElement(above ? 'beforebegin' : 'afterend', widget);
       this._widgets.push(widget);
     });

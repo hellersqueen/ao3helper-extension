@@ -41,6 +41,88 @@ import { EnhancedNavigation } from './enhancedNavigation.js';
 import { BackToTop } from './backToTop.js';
 import { InfiniteScroll } from './infiniteScroll.js';
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE-SPECIFIC HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+
+export function clampPage (page, max) {
+  if (!Number.isFinite(page)) return 1;
+  return Math.min(Math.max(Math.round(page), 1), Math.max(max, 1));
+}
+
+export function normalizeStep (step, fallback) {
+  const value = parseInt(String(step), 10);
+  return Number.isFinite(value) && value >= 1 && value <= 10000 ? value : fallback;
+}
+
+export function percentPage (fraction, max) {
+  return clampPage(Math.round(max * fraction), max);
+}
+
+export function randomPage (current, max, rng = Math.random) {
+  if (max <= 1) return 1;
+  let page = clampPage(1 + Math.floor(rng() * max), max);
+  if (page === current) page = page === max ? page - 1 : page + 1;
+  return clampPage(page, max);
+}
+
+export const MEMORY_KEY = 'ao3h:pc:recentPages';
+export const MAX_PAGES_PER_LISTING = 5;
+export const MAX_LISTINGS = 30;
+
+export function listingKey (href) {
+  try {
+    const url = new URL(href, 'https://archiveofourown.org');
+    const params = [...url.searchParams.entries()]
+      .filter(([key]) => key !== 'page')
+      .sort(([a], [b]) => a.localeCompare(b));
+    const query = params.map(([key, value]) => `${key}=${value}`).join('&');
+    return url.pathname + (query ? `?${query}` : '');
+  } catch {
+    return String(href);
+  }
+}
+
+function loadPaginationMemory (storage) {
+  try {
+    const data = JSON.parse(storage.getItem(MEMORY_KEY) || '{}');
+    return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePaginationMemory (storage, data) {
+  try { storage.setItem(MEMORY_KEY, JSON.stringify(data)); } catch { /* storage unavailable */ }
+}
+
+export function recordVisit (key, page, storage = localStorage) {
+  if (!Number.isFinite(page) || page < 1) return;
+  const data = loadPaginationMemory(storage);
+  const entry = data[key] || { pages: [], at: 0 };
+  entry.pages = [page, ...entry.pages.filter(previous => previous !== page)]
+    .slice(0, MAX_PAGES_PER_LISTING);
+  entry.at = Date.now();
+  data[key] = entry;
+  const keys = Object.keys(data);
+  if (keys.length > MAX_LISTINGS) {
+    keys.sort((a, b) => (data[a].at || 0) - (data[b].at || 0));
+    for (const stale of keys.slice(0, keys.length - MAX_LISTINGS)) delete data[stale];
+  }
+  savePaginationMemory(storage, data);
+}
+
+export function getRecentPages (key, storage = localStorage) {
+  const entry = loadPaginationMemory(storage)[key];
+  return Array.isArray(entry?.pages)
+    ? entry.pages.filter(page => Number.isFinite(page) && page >= 1)
+    : [];
+}
+
+export function getLastPage (key, storage = localStorage) {
+  return getRecentPages(key, storage)[0] ?? null;
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP
@@ -97,7 +179,11 @@ async function init() {
 
   if (!isListingPage()) return () => {};
 
-  const diOpts = { cfg };
+  const diOpts = {
+    cfg,
+    pageHelpers: { randomPage, percentPage, listingKey, recordVisit, getRecentPages },
+    normalizeStep,
+  };
 
   // Infinite scroll replaces the jump-to-page controls (they'd point at
   // pages the appended list has already absorbed).

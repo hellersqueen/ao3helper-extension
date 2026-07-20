@@ -35,7 +35,7 @@ lecture.
 - Garde en mémoire les extraits déjà récupérés (clé incluant le chapitre et la longueur choisis) ; la durée de vie, l'activation, et la persistance au-delà de la session sont réglables
 - Un mode "spoiler-free" affiche le texte flouté avec un bouton "⚠ Reveal spoilers" pour le révéler
 
-### `ficPeekExcerpt.js` — logique extraite
+### Logique interne intégrée à `ficPeek.js`
 
 - `pickChapterIndex(count, mode)` : quel chapitre choisir (premier/dernier/aléatoire)
 - `buildCacheKey(workUrl, opts)` : clé de cache incluant les réglages qui changent le texte extrait
@@ -170,11 +170,10 @@ Le module **Fic Peek** ajoute un bouton **Preview** sur les œuvres affichées d
 
 # Structure du module
 
-Le module est composé d’un fichier fonctionnel principal, d’un fichier de logique extraite et d’une feuille de style.
+Le module est composé d’un fichier fonctionnel principal et d’une feuille de style.
 
 ```text
 ficPeek.js
-ficPeekExcerpt.js
 ficPeek.css
 ```
 
@@ -507,7 +506,6 @@ Ce mode ne tente pas de détecter les divulgâcheurs : il masque simplement l’
 Une ancienne documentation présentait l’ajout automatique des boutons sur les nouvelles œuvres comme une fonctionnalité non implémentée.
 
 Cette fonction existe maintenant : le module surveille la page et ajoute automatiquement le bouton **Preview** aux nouvelles fiches sans rechargement.
-
 
 
 

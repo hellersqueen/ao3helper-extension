@@ -5,7 +5,7 @@ import {
   addTempHide,
   removeTempHide,
   getActiveTempHides,
-} from './tempHides.js';
+} from './_hideByTags.js';
 
 beforeEach(() => { localStorage.clear(); });
 

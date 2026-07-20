@@ -19,7 +19,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { CoreNavigation as Core } from './coreNavigation.js';
-import { normalizeStep } from './pageJumpTargets.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -102,6 +101,7 @@ export class EnhancedNavigation {
     if (max <= 1)  return;
 
     const cfg  = this._opts.cfg || null;
+    const normalizeStep = this._opts.normalizeStep || ((value, fallback) => fallback);
     const opts = {
       showStep:    cfg ? cfg('showPlusMinus10Buttons', true) : true,
       step:        normalizeStep(cfg ? cfg('quickJumpStep', 10) : 10, 10),

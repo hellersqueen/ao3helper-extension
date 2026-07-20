@@ -48,6 +48,36 @@ import { BlurbSectionOrder, DEFAULT_ORDER as DEFAULT_BLURB_ORDER } from './blurb
 import { GridView } from './gridView.js';
 import { WordOccurrenceCounter } from './wordOccurrenceCounter.js';
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE-SPECIFIC HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+
+export function dateAgeBucket (dateLike, now = Date.now()) {
+  const date = dateLike instanceof Date ? dateLike : new Date(dateLike);
+  const timestamp = date.getTime();
+  if (!Number.isFinite(timestamp)) return null;
+  const diffDays = Math.floor((now - timestamp) / 86400000);
+  if (diffDays < 1) return 'today';
+  if (diffDays < 7) return 'week';
+  if (diffDays < 30) return 'month';
+  return 'older';
+}
+
+function escapeOccurrenceRegex (value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function countOccurrences (text, word) {
+  const needle = String(word || '').trim();
+  if (!needle) return 0;
+  try {
+    const pattern = new RegExp(`\\b${escapeOccurrenceRegex(needle)}\\b`, 'gi');
+    return (String(text || '').match(pattern) || []).length;
+  } catch {
+    return 0;
+  }
+}
+
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -115,14 +145,14 @@ class VisualPreferences {
       statsVisibility:      new StatsVisibility(),
       datesTimestamps:      new DatesTimestamps(),
       minimalHeader:        new MinimalHeader(),
-      statsDisplayFormat:   new StatsDisplayFormat(),
+      statsDisplayFormat:   new StatsDisplayFormat({ dateAgeBucket }),
       hoverReveal:          new HoverReveal(),
       visibilityPresets:    new VisibilityPresets(),
       statsOnChaptersList:  new StatsOnChaptersList(),
       layoutDensity:        new LayoutDensity(),
       blurbSectionOrder:    new BlurbSectionOrder(),
       gridView:             new GridView(),
-      wordOccurrenceCounter: new WordOccurrenceCounter(),
+      wordOccurrenceCounter: new WordOccurrenceCounter({ countOccurrences }),
     };
   }
 

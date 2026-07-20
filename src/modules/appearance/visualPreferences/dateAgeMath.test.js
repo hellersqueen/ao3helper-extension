@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dateAgeBucket } from './dateAgeMath.js';
+import { dateAgeBucket } from './_visualPreferences.js';
 
 const NOW = new Date('2026-07-17T12:00:00').getTime();
 

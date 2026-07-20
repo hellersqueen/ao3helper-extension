@@ -35,8 +35,77 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet, onReady, observe } from '../../../../lib/utils/index.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
-import { characterNameRule, deadnameRule, sensitiveWordRule, RULE_PACKS, packRules } from './ruleTemplates.js';
 import styles from './wordSwap.css?inline';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RULE TEMPLATES
+═══════════════════════════════════════════════════════════════════════════ */
+
+const templateUid = () => `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+const escapeTemplateRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const templateRule = (overrides) => ({
+    id: templateUid(), name: '', find: '', replace: '',
+    enabled: true, regex: false, caseSensitive: false, wholeWord: true,
+    category: '', ...overrides,
+});
+
+export function characterNameRule(variantsCsv, canonical) {
+    const variants = String(variantsCsv || '')
+        .split(',').map(value => value.trim()).filter(Boolean);
+    const target = String(canonical || '').trim();
+    if (!variants.length || !target) return null;
+    return templateRule({
+        name: `Name: ${target}`,
+        find: variants.map(escapeTemplateRegex).join('|'),
+        replace: target,
+        regex: true,
+        category: 'names',
+    });
+}
+
+export function deadnameRule(deadname, chosenName) {
+    const from = String(deadname || '').trim();
+    const to = String(chosenName || '').trim();
+    if (!from || !to) return null;
+    return templateRule({ name: `Name: ${to}`, find: from, replace: to, category: 'names' });
+}
+
+export function sensitiveWordRule(word, replacement) {
+    const from = String(word || '').trim();
+    if (!from) return null;
+    return templateRule({
+        name: `Soften: ${from}`,
+        find: from,
+        replace: String(replacement ?? '').trim() || '▓▓▓',
+        category: 'sensitive',
+    });
+}
+
+const UK_US_PAIRS = [
+    ['colour', 'color'], ['favourite', 'favorite'], ['honour', 'honor'],
+    ['realise', 'realize'], ['recognise', 'recognize'], ['apologise', 'apologize'],
+    ['grey', 'gray'], ['theatre', 'theater'], ['centre', 'center'], ['travelling', 'traveling'],
+];
+
+const TYPO_PAIRS = [
+    ['teh', 'the'], ['adn', 'and'], ['thier', 'their'], ['recieve', 'receive'],
+    ['definately', 'definitely'], ['occured', 'occurred'], ['seperate', 'separate'],
+    ['alot', 'a lot'], ['wierd', 'weird'], ['untill', 'until'],
+];
+
+export const RULE_PACKS = [
+    { id: 'uk-to-us', label: 'UK → US spelling', category: 'spelling', pairs: UK_US_PAIRS },
+    { id: 'us-to-uk', label: 'US → UK spelling', category: 'spelling', pairs: UK_US_PAIRS.map(([uk, us]) => [us, uk]) },
+    { id: 'typos', label: 'Common typo fixes', category: 'typos', pairs: TYPO_PAIRS },
+];
+
+export function packRules(packId) {
+    const pack = RULE_PACKS.find(candidate => candidate.id === packId);
+    if (!pack) return [];
+    return pack.pairs.map(([find, replace]) =>
+        templateRule({ name: `${pack.label}: ${find}`, find, replace, category: pack.category }));
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP

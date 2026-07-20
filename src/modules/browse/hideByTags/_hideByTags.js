@@ -40,9 +40,101 @@ import styles from './hideByTags.css?inline';
 import { HiddenTags } from './hiddenTags.js';
 import { NopeWords } from './nopeWords.js';
 import { WhitelistExceptions } from './whitelistExceptions.js';
-import { countHiddenBlurbs, renderHiddenCounter } from './hiddenCounter.js';
-import { addTempHide, getActiveTempHides } from './tempHides.js';
 import { getCustomNoiseWords, isNoiseTag, mergeNoisePatterns, NOISE_PATTERNS } from '../tagsDisplay/noiseTagUtils.js';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODULE-SPECIFIC HELPERS
+═══════════════════════════════════════════════════════════════════════════ */
+
+export const TEMP_HIDES_KEY = 'ao3h:hideByTags:tempHides';
+
+export function endOfDay (now = Date.now()) {
+  const date = new Date(now);
+  date.setHours(23, 59, 59, 999);
+  return date.getTime();
+}
+
+function loadTempHides (storage) {
+  try {
+    const data = JSON.parse(storage.getItem(TEMP_HIDES_KEY) || '{}');
+    return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveTempHides (storage, data) {
+  try { storage.setItem(TEMP_HIDES_KEY, JSON.stringify(data)); } catch { /* storage unavailable */ }
+}
+
+export function addTempHide (tag, storage = localStorage, now = Date.now()) {
+  const canonicalTag = String(tag || '').trim().toLowerCase();
+  if (!canonicalTag) return;
+  const data = loadTempHides(storage);
+  data[canonicalTag] = endOfDay(now);
+  saveTempHides(storage, data);
+}
+
+export function removeTempHide (tag, storage = localStorage) {
+  const data = loadTempHides(storage);
+  delete data[String(tag || '').trim().toLowerCase()];
+  saveTempHides(storage, data);
+}
+
+export function getActiveTempHides (storage = localStorage, now = Date.now()) {
+  const data = loadTempHides(storage);
+  const active = [];
+  let purged = false;
+  for (const [tag, expiry] of Object.entries(data)) {
+    if (Number.isFinite(expiry) && expiry >= now) active.push(tag);
+    else {
+      delete data[tag];
+      purged = true;
+    }
+  }
+  if (purged) saveTempHides(storage, data);
+  return active;
+}
+
+export function countHiddenBlurbs (blurbs, namespace) {
+  return blurbs.filter(blurb =>
+    blurb.classList.contains(`${namespace}-wrapped`) ||
+    blurb.classList.contains(`${namespace}-dimmed`)
+  ).length;
+}
+
+export function renderHiddenCounter ({ doc, NS, count, enabled, el, onRescan }) {
+  if (!enabled || count === 0) {
+    el?.remove();
+    return null;
+  }
+
+  if (!el || !el.isConnected) {
+    el = doc.createElement('div');
+    el.className = `${NS}-hbt-counter`;
+    doc.querySelector('#main')?.prepend(el);
+  }
+
+  let text = el.querySelector(`.${NS}-hbt-counter-text`);
+  if (!text) {
+    text = doc.createElement('span');
+    text.className = `${NS}-hbt-counter-text`;
+    el.textContent = '';
+    el.appendChild(text);
+  }
+  text.textContent = `🚫 ${count} work${count === 1 ? '' : 's'} hidden because of your tag filters`;
+
+  if (typeof onRescan === 'function' && !el.querySelector(`.${NS}-hbt-rescan`)) {
+    const button = doc.createElement('button');
+    button.type = 'button';
+    button.className = `${NS}-hbt-rescan`;
+    button.textContent = '↻ Re-scan';
+    button.title = 'Re-check every work on this page against your filters';
+    button.addEventListener('click', () => onRescan());
+    el.appendChild(button);
+  }
+  return el;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP

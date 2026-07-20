@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   getWordRangeForMode, minScoreForStyle, scoreWork, passesLengthFilter,
   buildReasonText, filterDismissed, addDismissed, parseSeriesPartOf,
-} from './similarFicsHelpers.js';
+} from './similarFics.js';
 
 describe('getWordRangeForMode', () => {
   it('force une fourchette basse pour "quick"', () => {

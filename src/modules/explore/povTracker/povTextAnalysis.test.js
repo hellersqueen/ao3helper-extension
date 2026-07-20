@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { countPronouns, classifyByPronounCounts, analyzeChapterText, MIN_ANALYZABLE_CHARS } from './povTextAnalysis.js';
+import { countPronouns, classifyByPronounCounts, analyzeChapterText, MIN_ANALYZABLE_CHARS } from './_povTracker.js';
 
 describe('countPronouns', () => {
   it('compte les pronoms de chaque personne, insensible à la casse', () => {

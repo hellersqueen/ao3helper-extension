@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { describe, it, expect, beforeEach } from 'vitest';
-import { buildMirrorKey, saveMirror, loadMirror, mergeWorkLists } from './hiddenWorksMirror.js';
+import { buildMirrorKey, saveMirror, loadMirror, mergeWorkLists } from './_skipWorks.js';
 
 describe('buildMirrorKey', () => {
   it('inclut le nom d\'utilisateur dans la clé', () => {

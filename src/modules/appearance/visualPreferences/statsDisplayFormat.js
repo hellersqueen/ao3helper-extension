@@ -18,7 +18,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { observe } from '../../../../lib/utils/index.js';
-import { dateAgeBucket } from './dateAgeMath.js';
 
 const AGE_BUCKETS = ['today', 'week', 'month', 'older'];
 
@@ -29,10 +28,14 @@ const AGE_BUCKETS = ['today', 'week', 'month', 'older'];
 ═══════════════════════════════════════════════════════════════════════════ */
 
 export class StatsDisplayFormat {
-  constructor() {
+  /**
+   * @param {{ dateAgeBucket?: (dateLike: string|Date, now?: number) => (string|null) }} [opts]
+   */
+  constructor({ dateAgeBucket } = {}) {
     this._observer  = null;
     this._originalDateTitles = new WeakMap();
     this._activeFlags = { relativeDates: false, dateAgeColoring: false };
+    this._dateAgeBucket = dateAgeBucket || (() => null);
   }
 
 
@@ -129,7 +132,7 @@ export class StatsDisplayFormat {
       // Read the original date text — untouched even if relativeDates also
       // ran first and replaced el.textContent with "3 days ago".
       const raw = el.dataset.ao3hOriginalDate || el.textContent.trim();
-      const bucket = dateAgeBucket(raw);
+      const bucket = this._dateAgeBucket(raw);
       if (!bucket) return;
       AGE_BUCKETS.forEach(b => el.classList.remove(`ao3h-date-age-${b}`));
       el.classList.add(`ao3h-date-age-${bucket}`);
