@@ -329,10 +329,9 @@ function registerGroup (moduleId, definitions) {
   definitions.forEach((definition, index) => {
     if (!definition || typeof definition.action !== 'function' || typeof definition.key !== 'string') return;
     const action = `${moduleId}:${index}`;
-    const combo = [
-      definition.ctrlKey && 'Ctrl', definition.shiftKey && 'Shift',
-      definition.altKey && 'Alt', definition.key,
-    ].filter(Boolean).join('+');
+    const combo = comboToString({
+      ctrl: definition.ctrlKey, shift: definition.shiftKey, alt: definition.altKey, key: definition.key,
+    });
     registerAction(action, combo, () => { definition.action(); return true; });
   });
   return () => unregisterGroup(moduleId);
