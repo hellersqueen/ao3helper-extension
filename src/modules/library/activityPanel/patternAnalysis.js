@@ -20,6 +20,7 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 const W = getGlobalWindow();
 
@@ -30,13 +31,6 @@ const W = getGlobalWindow();
 
 const MOD = 'patternAnalysis';
 const NS  = 'ao3h';
-
-const SESSIONS_KEY = 'ao3h:activityPanel:sessions';
-
-function loadSessions () {
-  try { return JSON.parse(localStorage.getItem(SESSIONS_KEY) || '[]'); }
-  catch (_) { return []; }
-}
 
 const SEASON_MONTHS = {
   winter: [11, 0, 1], spring: [2, 3, 4],
@@ -127,10 +121,6 @@ function detectPatterns (sessions) {
    FEATURE — PATTERN SUMMARY WIDGET
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function esc (s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
 function buildWidget (p) {
   const wrap = document.createElement('div');
   wrap.id = `${NS}-pattern-widget`;
@@ -144,22 +134,22 @@ function buildWidget (p) {
     `🍂 Peak reading season: <strong>${p.peakSeason}</strong>`,
     `📏 Length preference: <strong>${p.lengthPreference}</strong>`,
     p.fandomShift
-      ? `🔀 Fandom shift detected — you've moved from <strong>${esc(p.topOverall)}</strong> to <strong>${esc(p.topRecent)}</strong>`
-      : `🎯 Consistent fandom: <strong>${esc(p.topOverall || '—')}</strong>`,
+      ? `🔀 Fandom shift detected — you've moved from <strong>${escapeHtml(p.topOverall)}</strong> to <strong>${escapeHtml(p.topRecent)}</strong>`
+      : `🎯 Consistent fandom: <strong>${escapeHtml(p.topOverall || '—')}</strong>`,
     p.slump
       ? `⚠️ <strong>Reading slump detected</strong> — no sessions in the last 14 days. Whenever you're ready, there's always something good waiting for you 💛`
       : `✅ Active reader`,
   ];
 
   if (p.tagTrend.length) {
-    items.push(`📈 Reading more <strong>${esc(p.tagTrend[0].tag)}</strong> lately (${p.tagTrend[0].count} recently vs ${p.tagTrend[0].priorCount} before)`);
+    items.push(`📈 Reading more <strong>${escapeHtml(p.tagTrend[0].tag)}</strong> lately (${p.tagTrend[0].count} recently vs ${p.tagTrend[0].priorCount} before)`);
   }
   if (p.monthCompare.previous.works > 0 || p.monthCompare.current.works > 0) {
     const d = p.monthCompare.deltaPct;
     items.push(`📅 This month: <strong>${p.monthCompare.current.works}</strong> work${p.monthCompare.current.works !== 1 ? 's' : ''} vs <strong>${p.monthCompare.previous.works}</strong> last month${d !== null ? ` (${d >= 0 ? '+' : ''}${d}%)` : ''}`);
   }
   if (p.rereads.length) {
-    items.push(`🔁 You've reread <strong>${esc(p.rereads[0].title)}</strong>${p.rereads.length > 1 ? ` and ${p.rereads.length - 1} other work${p.rereads.length > 2 ? 's' : ''}` : ''}`);
+    items.push(`🔁 You've reread <strong>${escapeHtml(p.rereads[0].title)}</strong>${p.rereads.length > 1 ? ` and ${p.rereads.length - 1} other work${p.rereads.length > 2 ? 's' : ''}` : ''}`);
   }
   if (p.intensive.length) {
     items.push(`🚀 ${p.intensive.length} intensive reading session${p.intensive.length !== 1 ? 's' : ''} detected (well above your usual pace)`);
@@ -169,11 +159,11 @@ function buildWidget (p) {
   }
   if (p.quarters.length) {
     const lastQ = p.quarters[p.quarters.length - 1];
-    items.push(`📊 ${p.quarters.length} quarter${p.quarters.length !== 1 ? 's' : ''} tracked — most recent (${esc(lastQ.label)}): ${lastQ.count} session${lastQ.count !== 1 ? 's' : ''}`);
+    items.push(`📊 ${p.quarters.length} quarter${p.quarters.length !== 1 ? 's' : ''} tracked — most recent (${escapeHtml(lastQ.label)}): ${lastQ.count} session${lastQ.count !== 1 ? 's' : ''}`);
   }
   const seasonCategoryEntries = Object.entries(p.bySeasonCategory);
   if (seasonCategoryEntries.length) {
-    items.push(`🎭 Category by season: ${seasonCategoryEntries.map(([s, c]) => `${s} → ${esc(c)}`).join(', ')}`);
+    items.push(`🎭 Category by season: ${seasonCategoryEntries.map(([s, c]) => `${s} → ${escapeHtml(c)}`).join(', ')}`);
   }
 
   wrap.innerHTML = `
@@ -185,12 +175,6 @@ function buildWidget (p) {
   return wrap;
 }
 
-function isDashboardPage () {
-  return /\/users\/[^/]+\/dashboard/.test(location.pathname) ||
-         /\/users\/[^/]+\/?$/.test(location.pathname);
-}
-
-
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE LIFECYCLE
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -200,9 +184,9 @@ register(MOD, {
   parent:           'activityPanel',
   enabledByDefault: false,
 }, async function init () {
-  if (!isDashboardPage()) return () => {};
+  if (!W.AO3H_ActivityPanel.isDashboardPage()) return () => {};
 
-  const widget = buildWidget(detectPatterns(loadSessions()));
+  const widget = buildWidget(detectPatterns(W.AO3H_ActivityPanel.store.get('activityPanel:sessions') || []));
   const anchor = document.querySelector('#dashboard-modules, #main');
   if (anchor) anchor.prepend(widget);
 

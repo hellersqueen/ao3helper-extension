@@ -20,6 +20,7 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 const W = getGlobalWindow();
 
@@ -31,17 +32,10 @@ const W = getGlobalWindow();
 const MOD = 'fandomBreakdown';
 const NS  = 'ao3h';
 
-const SESSIONS_KEY = 'ao3h:activityPanel:sessions';
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — FANDOM STATISTICS AND TABLE
 ═══════════════════════════════════════════════════════════════════════════ */
-
-function loadSessions () {
-  try { return JSON.parse(localStorage.getItem(SESSIONS_KEY) || '[]'); }
-  catch (_) { return []; }
-}
 
 function computeFandomStats (sessions) {
   // Deduplicate: count each work only once per workId
@@ -69,10 +63,6 @@ function computeFandomStats (sessions) {
     .sort((a, b) => b.works - a.works);
 }
 
-function esc (s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
 const PIE_COLORS = ['#2c5f8a', '#5b8fb9', '#8ab4d6', '#b0c4de', '#d0722a', '#e8a05c', '#7a9e7e', '#a8c9ab'];
 
 function buildPieChart (stats, totalWorks) {
@@ -85,7 +75,7 @@ function buildPieChart (stats, totalWorks) {
     return `${PIE_COLORS[i % PIE_COLORS.length]} ${start}% ${acc}%`;
   }).join(', ');
   const legend = top.map((f, i) =>
-    `<li><span class="${NS}-fb-swatch" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span>${esc(f.name)} — ${f.pct}%</li>`
+    `<li><span class="${NS}-fb-swatch" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span>${escapeHtml(f.name)} — ${f.pct}%</li>`
   ).join('');
   return `
     <div class="${NS}-fb-pie-wrap">
@@ -130,9 +120,9 @@ function buildTable (stats) {
         <tbody>
           ${sorted.slice(0, 20).map((f, i) => `
             <tr class="${NS}-fb-row">
-              <td><input type="checkbox" class="${NS}-fb-compare-cb" data-name="${esc(f.name)}" ${compared.has(f.name) ? 'checked' : ''}></td>
+              <td><input type="checkbox" class="${NS}-fb-compare-cb" data-name="${escapeHtml(f.name)}" ${compared.has(f.name) ? 'checked' : ''}></td>
               <td>${i + 1}</td>
-              <td>${esc(f.name)}</td>
+              <td>${escapeHtml(f.name)}</td>
               <td>${f.works}</td>
               <td>${f.words.toLocaleString('en-US')}</td>
               <td>${f.hours}</td>
@@ -170,10 +160,10 @@ function buildTable (stats) {
     const rows = [...compared].map(name => stats.find(f => f.name === name)).filter(Boolean);
     resultEl.hidden = false;
     resultEl.innerHTML = `
-      <h5>Comparing ${rows.map(f => esc(f.name)).join(' vs ')}</h5>
+      <h5>Comparing ${rows.map(f => escapeHtml(f.name)).join(' vs ')}</h5>
       <table>
         <tbody>
-          <tr><td></td>${rows.map(f => `<th>${esc(f.name)}</th>`).join('')}</tr>
+          <tr><td></td>${rows.map(f => `<th>${escapeHtml(f.name)}</th>`).join('')}</tr>
           <tr><td>Works</td>${rows.map(f => `<td>${f.works}</td>`).join('')}</tr>
           <tr><td>Words</td>${rows.map(f => `<td>${f.words.toLocaleString('en-US')}</td>`).join('')}</tr>
           <tr><td>Hours</td>${rows.map(f => `<td>${f.hours}</td>`).join('')}</tr>
@@ -186,12 +176,6 @@ function buildTable (stats) {
   return wrap;
 }
 
-function isDashboardPage () {
-  return /\/users\/[^/]+\/dashboard/.test(location.pathname) ||
-         /\/users\/[^/]+\/?$/.test(location.pathname);
-}
-
-
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE LIFECYCLE
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -201,9 +185,9 @@ register(MOD, {
   parent:           'activityPanel',
   enabledByDefault: false,
 }, async function init () {
-  if (!isDashboardPage()) return () => {};
+  if (!W.AO3H_ActivityPanel.isDashboardPage()) return () => {};
 
-  const stats = computeFandomStats(loadSessions());
+  const stats = computeFandomStats(W.AO3H_ActivityPanel.store.get('activityPanel:sessions') || []);
   const table = buildTable(stats);
   const anchor = document.querySelector('#dashboard-modules, #main');
   if (anchor) anchor.prepend(table);

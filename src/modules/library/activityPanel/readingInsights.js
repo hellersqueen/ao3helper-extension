@@ -94,10 +94,6 @@ function isTargetPage () {
   );
 }
 
-function esc (s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
 function render (container, data, cfg) {
   const { buildTagCloud, buildRecapText } = W.AO3H_ActivityPanel;
   const { totalWorks, totalWords, totalKudos, streak, achievements, topTags } = data;

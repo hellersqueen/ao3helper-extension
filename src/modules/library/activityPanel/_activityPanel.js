@@ -231,11 +231,18 @@ export function buildRecapText (label, stats) {
   return `Your ${label} on AO3: ${stats.works} work${stats.works !== 1 ? 's' : ''}, ${stats.words.toLocaleString('en-US')} words read.`;
 }
 
+// Shared by fandomBreakdown/habitsAnalysis/patternAnalysis — all three used
+// to reimplement this same route check independently.
+export function isDashboardPage (pathname = location.pathname) {
+  return /\/users\/[^/]+\/dashboard/.test(pathname) ||
+         /\/users\/[^/]+\/?$/.test(pathname);
+}
+
 const activityPanelHelpers = {
   filterSessionsByPeriod, buildTagCloud, dayHourHeatmap, bestReadingSlot, formatSlotLabel,
   detectRereads, detectIntensiveSessions, estimateAbandonPoint, compareByPeriod,
   detectTagTrend, groupByField, quarterlyBreakdown, isNightOwl, regularityScore,
-  fandomPercentages, buildRecapText,
+  fandomPercentages, buildRecapText, isDashboardPage,
 };
 
 export class DataCollection {

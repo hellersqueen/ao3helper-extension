@@ -32,17 +32,10 @@ const W   = getGlobalWindow();
 
 function helpers () { return W.AO3H_ActivityPanel; }
 
-const SESSIONS_KEY = 'ao3h:activityPanel:sessions';
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — READING-TIME ANALYSIS AND HISTOGRAM
 ═══════════════════════════════════════════════════════════════════════════ */
-
-function loadSessions () {
-  try { return JSON.parse(localStorage.getItem(SESSIONS_KEY) || '[]'); }
-  catch (_) { return []; }
-}
 
 function analyzeHabits (sessions) {
   const byHour = new Array(24).fill(0);
@@ -128,12 +121,6 @@ function buildHeatmap (sessions) {
   return `<div class="ao3h-heatmap-wrap"><h5>Weekly heatmap</h5>${rows}</div>`;
 }
 
-function isDashboardPage () {
-  return /\/users\/[^/]+\/dashboard/.test(location.pathname) ||
-         /\/users\/[^/]+\/?$/.test(location.pathname);
-}
-
-
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE LIFECYCLE
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -143,9 +130,9 @@ register(MOD, {
   parent:           'activityPanel',
   enabledByDefault: false,
 }, async function init () {
-  if (!isDashboardPage()) return () => {};
+  if (!helpers().isDashboardPage()) return () => {};
 
-  const sessions = loadSessions();
+  const sessions = helpers().store.get('activityPanel:sessions') || [];
   const widget   = buildWidget(analyzeHabits(sessions), sessions.length, sessions);
   const anchor   = document.querySelector('#dashboard-modules, #main');
   if (anchor) anchor.prepend(widget);

@@ -20,6 +20,8 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { getWorkTitle, getWorkFandoms } from '../../../../lib/ao3/work-page.js';
+import { getWorkPageStats } from '../../../../lib/ao3/work-stats.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -49,18 +51,13 @@ function saveSessions (sessions) {
 function getWorkMeta () {
   const workId = extractWorkIdFromHref(location.pathname);
   if (!workId) return null;
-  const title = document.querySelector('h2.title')?.textContent.trim() ||
-                document.title.split('|')[0].trim();
-  const fandomTags = [...document.querySelectorAll('.fandom.tags a')]
-    .map(a => a.textContent.trim());
+  const title = getWorkTitle(document) || document.title.split('|')[0].trim();
   const freeformTags = [...document.querySelectorAll('dd.freeform.tags a')]
     .map(a => a.textContent.trim());
-  const words = parseInt(
-    (document.querySelector('.stats dd.words')?.textContent || '0').replace(/,/g, ''), 10
-  ) || 0;
+  const words = getWorkPageStats(document).words || 0;
   const rating   = document.querySelector('dd.rating.tags a')?.textContent.trim() || null;
   const category = document.querySelector('dd.category.tags a')?.textContent.trim() || null;
-  return { workId, title, fandoms: fandomTags, tags: freeformTags, words, rating, category };
+  return { workId, title, fandoms: getWorkFandoms(document), tags: freeformTags, words, rating, category };
 }
 
 function startSession (meta) {

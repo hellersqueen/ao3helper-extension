@@ -171,10 +171,12 @@ seulement les fandoms.
   rating, category, ... }`, max 500 gardées) et
   `ao3h:activityPanel:preferences` (propriété de `readingInsights.js`,
   `{ timePeriod }`).
-- API publique : `_activityPanel.js` exporte `(store, cfg, NS)` pour
-  import direct par `readingInsights.js` ; le module est aussi exposé
-  comme `W.AO3H_ActivityPanel` tant qu'il est activé, pour rester
-  compatible avec l'ancien pont (bridge) legacy.
+- API publique : `_activityPanel.js` exporte `(store, cfg, NS)` et expose
+  aussi le module entier comme `W.AO3H_ActivityPanel` tant qu'il est activé
+  (store, cfg, logique pure, `isDashboardPage()`) ; c'est cette dernière
+  voie que `fandomBreakdown.js`/`habitsAnalysis.js`/`patternAnalysis.js`/
+  `readingInsights.js` utilisent — aucun sous-module n'importe directement
+  `_activityPanel.js` (seuls les fichiers de test le font).
 - Le filtrage par période de `readingInsights.js` re-dérive les cartes de
   statistiques directement depuis `activityPanel:sessions`
   (`computePeriodStats`) plutôt que depuis l'agrégation de `_activityPanel.js`
