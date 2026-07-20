@@ -31,10 +31,11 @@ AO3 Helper — Collapse Author Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css, onReady, observe } from '../../../../lib/utils/index.js';
+import { css, onReady, observe, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { Flags } from '../../../../lib/utils/config.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { Storage, clearStorageByPrefix } from '../../../../lib/storage/index.js';
 import styles from './collapseAuthorNotes.css?inline';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -97,31 +98,16 @@ function stateKey (suffix) {
 
 function loadState (suffix) {
   const k = stateKey(suffix);
-  if (!k) return null;                     // null = no saved preference
-  try {
-    const v = localStorage.getItem(k);
-    if (v === 'true')  return true;
-    if (v === 'false') return false;
-  } catch {}
-  return null;
+  return k ? lsGet(k, null) : null;          // null = no saved preference
 }
 
 function saveState (suffix, expanded) {
   const k = stateKey(suffix);
-  if (!k) return;
-  try { localStorage.setItem(k, String(expanded)); } catch {}
+  if (k) lsSet(k, expanded);
 }
 
 function clearAllStates () {
-  try {
-    const prefix = `${NS}:notes:`;
-    const toRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k?.startsWith(prefix)) toRemove.push(k);
-    }
-    toRemove.forEach(k => localStorage.removeItem(k));
-  } catch {}
+  clearStorageByPrefix(`${NS}:notes:`, Storage);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
