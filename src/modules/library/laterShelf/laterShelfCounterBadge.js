@@ -20,8 +20,8 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { loadItems } from './laterShelfStore.js';
 import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -29,6 +29,7 @@ import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
 
 const MOD = 'laterShelfCounterBadge';
 const D   = document;
+const W   = getGlobalWindow();
 
 function findPrimaryHeaderUL () {
   const selectors = [
@@ -54,6 +55,7 @@ register(MOD, {
   parent: 'laterShelf',
   enabledByDefault: true,
 }, function init () {
+  const { loadItems } = W.AO3H_LaterShelf;
   const headerUL = findPrimaryHeaderUL();
   if (!headerUL) return function cleanup () {};
 

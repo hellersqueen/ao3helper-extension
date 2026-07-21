@@ -32,10 +32,9 @@ Les données sauvegardées comprennent notamment :
 
 ## Structure du module
 
-Le module est composé d’un coordinateur, de quatre sous-modules fonctionnels et d’une feuille de style.
+Le module est composé d’un coordinateur, de trois sous-modules fonctionnels et d’une feuille de style.
 - `_backupAndSync.js`
 - `automateBackup.js`
-- `backupOperations.js`
 - `cloudSync.js`
 - `dataTransfer.js`
 - `backupAndSync.css`
@@ -50,7 +49,7 @@ Fichier coordinateur du module. Il initialise les autres sous-modules, centralis
 #### Responsabilités
 - Met en route les autres sous-modules du module.
 - Garde en mémoire la liste des sauvegardes et la partage entre les sous-modules.
-- Coordonne les opérations de sauvegarde et de restauration.
+- Possède et exécute les opérations de sauvegarde et de restauration.
 - Sert de point d'entrée unique pour le reste de l'extension.
 
 #### Fonctions exposées
@@ -99,10 +98,10 @@ Gère entièrement les sauvegardes automatiques de l'extension. Il surveille l'i
 #### Configuration
 Le sous-module utilise la configuration stockée sous la clé `backupAndSync`. Les paramètres utilisés sont `enableAutoBackup`, `backupInterval` et `maxBackups`. Le module peut également notifier le reste de l'extension lorsqu'une sauvegarde est créée.
 
-### 3. `backupOperations.js` — les sauvegardes à la demande
+### Opérations de sauvegarde à la demande — intégrées à `_backupAndSync.js`
 
 #### Rôle
-Gère toutes les opérations de sauvegarde exécutées à la demande de l'utilisateur. Contrairement à `automateBackup.js`, qui crée des sauvegardes automatiques à intervalles réguliers, ce sous-module s'occupe des sauvegardes manuelles, de leur restauration et des différentes méthodes de sauvegarde disponibles. Il constitue également la base des fonctionnalités avancées comme les sauvegardes sélectives, chiffrées, compressées ou incrémentales.
+Le coordinateur gère toutes les opérations de sauvegarde exécutées à la demande de l'utilisateur. Contrairement à `automateBackup.js`, qui planifie les sauvegardes automatiques, ce moteur interne s'occupe des sauvegardes manuelles, de leur restauration et des méthodes sélectives, chiffrées, compressées ou incrémentales.
 
 #### Fonctionnalités
 
@@ -156,9 +155,9 @@ Les données sauvegardées sont récupérées directement depuis `localStorage`.
 Chaque sauvegarde constitue un instantané complet de l'état de l'extension à un moment précis, avec sa propre date, son propre horodatage et son propre contenu. Cela permet une restauration « point dans le temps » (point-in-time recovery).
 
 ##### Dépendances
-Ce sous-module fournit les opérations de sauvegarde utilisées par `_backupAndSync.js`, `automateBackup.js` et `dataTransfer.js`. Il ne gère ni les sauvegardes automatiques ni la synchronisation entre appareils, qui sont respectivement prises en charge par `automateBackup.js` et `cloudSync.js`.
+Ce moteur interne fournit les opérations utilisées par le coordinateur et `automateBackup.js`. Il ne planifie pas les sauvegardes automatiques et ne gère pas la synchronisation entre appareils, prises en charge respectivement par `automateBackup.js` et `cloudSync.js`.
 
-### 4. `cloudSync.js` — la synchronisation entre appareils
+### 3. `cloudSync.js` — la synchronisation entre appareils
 
 #### Rôle
 Gère la synchronisation des données d'AO3 Helper entre plusieurs appareils. Le module utilise le système de synchronisation natif du navigateur (`chrome.storage.sync` / `browser.storage.sync`, ~100 KB) afin que les réglages et les données de l'extension puissent être retrouvés automatiquement lorsqu'un utilisateur se connecte avec le même compte sur un autre ordinateur. La synchronisation est entièrement optionnelle et doit être activée par l'utilisateur via le réglage `syncEnabled` (aucune donnée n'est envoyée ni récupérée tant qu'elle est désactivée).
@@ -188,7 +187,7 @@ Le stockage synchronisé du navigateur possède une capacité limitée d'environ
 ##### Résolution des conflits
 Comparaison des dates de modification, avec restauration silencieuse uniquement pour un appareil sans historique de sync ; sinon, choix explicite proposé à l'utilisateur (voir ci-dessus). Les données choisies sont ensuite fusionnées dans le `localStorage`.
 
-### 5. `dataTransfer.js` — exporter et importer
+### 4. `dataTransfer.js` — exporter et importer
 
 #### Rôle
 Gère tous les échanges de données entre AO3 Helper et des fichiers externes : exporter les données de l'extension, importer une sauvegarde existante, exporter des listes de fics dans différents formats, et construire les éléments d'interface liés à ces opérations (y compris les boutons d'activation/désactivation de la synchronisation).
@@ -229,7 +228,7 @@ Le sous-module construit les éléments visibles dans le panneau de configuratio
 Le module informe l'utilisateur du déroulement des opérations via des notifications (« toast »), des indicateurs de progression, des messages de succès/erreur et des mises à jour d'état.
 
 #### Dépendances
-Le module travaille principalement avec `_backupAndSync.js`, `backupOperations.js` et `cloudSync.js`, qu'il utilise pour effectuer les sauvegardes, restaurations et synchronisations.
+Le module travaille principalement avec le moteur interne de `_backupAndSync.js` et `cloudSync.js` pour effectuer les sauvegardes, restaurations et synchronisations.
 
 ### Migration des données entre versions — intégrée à `_backupAndSync.js`
 
@@ -237,7 +236,7 @@ Le module travaille principalement avec `_backupAndSync.js`, `backupOperations.j
 - Déplace les réglages enregistrés sous les anciens noms de modules (avant la vague de renommage : `downloadManager` → `ficDownloader`, `bookmarkManager` → `bookmarkVault`, etc.) vers leur nom actuel, puis supprime les vieilles clés
 - Les réglages déjà présents sous le nouveau nom gagnent toujours sur les anciens
 
-### 6. `backupAndSync.css`
+### 5. `backupAndSync.css`
 
 #### Rôle
 Contient l'ensemble des styles utilisés par le module Backup and Sync : boutons d'export et d'import, contrôles de sauvegarde, messages d'état et notifications affichées par le module.

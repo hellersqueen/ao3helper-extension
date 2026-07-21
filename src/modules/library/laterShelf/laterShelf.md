@@ -30,9 +30,10 @@ et une archive consultable des fics retirées.
 ### 1. `_laterShelf.js` — le chef d'orchestre
 
 - Met en route les quatre autres fichiers de fonctionnalités de ce module
-- Expose `W.AO3H_LaterShelf = { loadItems, saveItems, markCurrent, SK_ITEMS, cfg }`
+- Possède le stockage, l'archive et la configuration de l'étagère
+- Expose leur contrat ciblé aux quatre fonctionnalités via `W.AO3H_LaterShelf`
 
-### 2. `laterShelfStore.js` — la mémoire partagée
+### Stockage et logique interne — intégrés à `_laterShelf.js`
 
 - Garde en un seul endroit la liste des fics sauvegardées (priorité, note,
   groupe, ordre manuel, instantané des chapitres à l'ajout), pour que les
@@ -43,8 +44,6 @@ et une archive consultable des fics retirées.
 - Affiche une petite célébration ("🎉 N fics sauvegardées !") quand la liste
   franchit un cap (10, 25, 50, 100…)
 
-### 3. Logique pure intégrée à `_laterShelf.js`
-
 - Tri (date/titre/mots/mise à jour/priorité/manuel/pépites/"smart"),
   glisser-déposer (maths pures), pioche aléatoire, temps de lecture estimé,
   suggestion selon un budget de temps, seuils de caps franchis, détection de
@@ -52,7 +51,7 @@ et une archive consultable des fics retirées.
   récurrence, heure de pointe de lecture, statistiques de conversion, export
   CSV/liens de liens — testé sans DOM (`laterShelf.logic.test.js`)
 
-### 4. `quickMarkForLaterButton.js` — bouton de sauvegarde rapide
+### 2. `quickMarkForLaterButton.js` — bouton de sauvegarde rapide
 
 - Ajoute un bouton "📌 Save for later" sur chaque fic d'une liste, à la
   position choisie dans les réglages
@@ -62,7 +61,7 @@ et une archive consultable des fics retirées.
 - Ajout groupé depuis n'importe quelle page de résultats (`bulkAddEnabled`)
 - Bouton "Add whole series to Later Shelf" sur les pages `/series/:id`
 
-### 5. `markedForLaterStatus.js` — badges, tri, contrôles et sélection
+### 3. `markedForLaterStatus.js` — badges, tri, contrôles et sélection
 
 - Affiche un badge 📌 sur les fics déjà sauvegardées, partout où elles
   apparaissent, et un badge "🆕 New chapter" / "✅ Completed!" si la fic a
@@ -79,7 +78,7 @@ et une archive consultable des fics retirées.
   "Undo" quand rien n'a été soumis à AO3
 - Retrait automatique quand une fic est marquée terminée (`autoRemoveOnFinish`)
 
-### 6. `workReminder.js` — rappels programmés
+### 4. `workReminder.js` — rappels programmés
 
 - Bouton "⏰ Remind me" pour choisir une date de rappel, avec un message
   personnalisé et une récurrence (quotidienne/hebdomadaire) optionnels ;
@@ -92,13 +91,13 @@ et une archive consultable des fics retirées.
 - Badge ⏰ sur les fics avec un rappel actif (⚠️ si indisponible)
 - Envoie une notification du navigateur quand la date du rappel arrive
 
-### 7. `laterShelfCounterBadge.js` — compteur permanent dans le menu
+### 5. `laterShelfCounterBadge.js` — compteur permanent dans le menu
 
 - Ajoute un badge "📌 N" dans le menu principal du site, sur toutes les pages
 - Un clic ouvre un aperçu rapide des dernières fics sauvegardées, sans
   changer de page
 
-### 8. `laterShelf.css`
+### 6. `laterShelf.css`
 
 - Les styles visuels de tous les boutons, badges, contrôles et barres
   ci-dessus, ainsi que des listes du panneau de réglages (groupes, archive,
@@ -113,17 +112,17 @@ et une archive consultable des fics retirées.
 
 ## Fonctionnalités ajoutées — Chantier 4
 
-- ~~Des niveaux de priorité pour la liste (haute/moyenne/basse)~~ ✅ Fait — champ `priority` par fic (`laterShelfStore.updateItem`), sélecteur sur la page MFL (`markedForLaterStatus.injectItemControls`), et mode de tri dédié.
+- ~~Des niveaux de priorité pour la liste (haute/moyenne/basse)~~ ✅ Fait — champ `priority` par fic (`_laterShelf.updateItem`), sélecteur sur la page MFL (`markedForLaterStatus.injectItemControls`), et mode de tri dédié.
 - ~~Écrire une raison pour laquelle on a sauvegardé une fic~~ ✅ Fait — champ `note`, éditable via le bouton "📝" sur la page MFL, et proposé à l'ajout si `noteOnAdd` est activé (voir aussi l'item suivant, la même fonctionnalité couvre les deux).
 - ~~Des statistiques sur la liste (combien de fics sauvegardées sont vraiment lues ensuite)~~ ✅ Fait — section "Stats" du panneau de réglages, croise l'étagère avec `readingTracker` (lu) et `ficAppreciation` (abandonné).
-- ~~Réorganiser la liste à la main par glisser-déposer~~ ✅ Fait — mode de tri "Manual" sur la page MFL ; l'ordre est persisté (`laterShelfStore.reorderItems`).
+- ~~Réorganiser la liste à la main par glisser-déposer~~ ✅ Fait — mode de tri "Manual" sur la page MFL ; l'ordre est persisté (`_laterShelf.reorderItems`).
 - ~~Piocher une fic au hasard directement depuis la liste~~ ✅ Fait — bouton "🎲 Pick for me", met en surbrillance et fait défiler jusqu'à la fic choisie.
 - ~~Des groupes dans la liste (lecture du week-end, fics courtes, gros projets)~~ ✅ Fait — champ `group` libre par fic, filtre par groupe sur la page MFL, gestion (renommer/effacer) dans le panneau de réglages.
 - ~~Un message "annuler" après avoir sauvegardé ou retiré une fic~~ ✅ Fait — toast "Undo" (`lib/ui/toast.js`, bouton d'action ajouté au composant partagé) après un ajout, un retrait individuel, ou une suppression groupée sans soumission à AO3.
 - ~~Sélectionner plusieurs fics directement sur une page de résultats pour les ajouter toutes en même temps à la liste~~ ✅ Fait — réglage `bulkAddEnabled`, réutilise `lib/ui/bulk-select.js`.
 - ~~Retirer automatiquement de la liste les fics qu'on a finies de lire~~ ✅ Fait — réglage `autoRemoveOnFinish`, écoute l'événement `ao3h:workFinished` de Fic Appreciation.
 - ~~Voir le temps de lecture estimé pour toute la liste~~ ✅ Fait — affiché sous le compteur sur la page MFL, utilise la vitesse de lecture réelle de `readingTracker` si disponible (sinon 250 mots/min par défaut).
-- ~~Des petites célébrations quand on atteint un cap, par exemple "10 fics sauvegardées"~~ ✅ Fait — toast "🎉 N fics sauvegardées !" dans `laterShelfStore.addItem`, même mécanique que les caps de Fic Appreciation.
+- ~~Des petites célébrations quand on atteint un cap, par exemple "10 fics sauvegardées"~~ ✅ Fait — toast "🎉 N fics sauvegardées !" dans `_laterShelf.addItem`, même mécanique que les caps de Fic Appreciation.
 - ~~Des rappels intelligents qui se basent sur les moments où on lit habituellement~~ ✅ Fait — l'heure par défaut d'un nouveau rappel suit l'heure de pointe de lecture calculée depuis les sessions d'activityPanel.
 - ~~Un rappel spécial pour les fics qu'on a abandonnées~~ ✅ Fait — nudge automatique et ponctuel pour toute fic de l'étagère marquée "dropped" dans Fic Appreciation.
 - ~~Pouvoir reporter un rappel à plus tard~~ ✅ Fait — bouton "💤 Snooze 3d" sur la page MFL.
@@ -133,7 +132,7 @@ et une archive consultable des fics retirées.
 - ~~Trier automatiquement la liste selon des critères intelligents~~ ✅ Fait — mode de tri "Smart" : priorité, puis pépites cachées, puis ancienneté — une formule documentée et transparente, pas une boîte noire.
 - ~~Un badge avec le nombre total de fics dans la liste, visible en permanence dans le menu du site, sur lequel on peut cliquer pour voir un aperçu rapide sans changer de page~~ ✅ Fait — `laterShelfCounterBadge.js`.
 - ~~Un objectif de lecture hebdomadaire pour vider la liste (par exemple "5 fics par semaine"), avec une barre de progression et un message d'encouragement~~ ❌ Écarté — même décision que `readingDashboard`/`activityPanel` : la lecture reste un loisir, pas un objectif chiffré à atteindre.
-- ~~Garder une archive consultable des fics qu'on a retirées de la liste, au lieu de les perdre définitivement~~ ✅ Fait — `laterShelfStore` archive toute suppression par défaut ; section "Archive" du panneau de réglages (restaurer / supprimer définitivement).
+- ~~Garder une archive consultable des fics qu'on a retirées de la liste, au lieu de les perdre définitivement~~ ✅ Fait — le coordinateur archive toute suppression par défaut ; section "Archive" du panneau de réglages (restaurer / supprimer définitivement).
 - ~~Recevoir les rappels par email, en plus des notifications du navigateur~~ ❌ Écarté — l'extension reste 100% locale, sans backend ni service d'envoi d'email ; contredirait ce principe pour tous les modules.
 - ~~Des rappels pour reprendre une fic qu'on est en train de lire, même si elle n'est pas dans la liste "à lire plus tard"~~ ✅ Fait — section "Resume Reminders" du panneau de réglages, lit l'historique de `readingTracker`.
 - ~~Ajouter une série entière à la liste en un clic, au lieu de fic par fic~~ ✅ Fait — bouton sur les pages `/series/:id`, lit directement les fics déjà listées sur la page (pas besoin d'aller chercher chaque œuvre séparément, contrairement à `similarFics`).

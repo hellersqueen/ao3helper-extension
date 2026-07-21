@@ -1,10 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { PovPresentation } from './povPresentation.js';
-import { PovAnalysis } from './povAnalysis.js';
-import { analyzeChapterText, parsePreferredPovs } from './_povTracker.js';
-
-const W = getGlobalWindow();
+import { PovAnalysis, parsePreferredPovs } from './_povTracker.js';
 
 function buildListing () {
   document.body.innerHTML = `
@@ -41,23 +37,22 @@ function cfgFrom (overrides) {
 
 describe('PovPresentation — préférence auto-appliquée', () => {
   let presentation;
+  let analysis;
 
   beforeEach(() => {
     localStorage.clear();
     buildListing();
-    const analysis = new PovAnalysis({ analyzeChapterText });
+    analysis = new PovAnalysis();
     analysis.init();
-    W.AO3H_PovTracker = { _analysis: analysis };
   });
 
   afterEach(() => {
     presentation?.destroy();
-    delete W.AO3H_PovTracker;
     document.body.innerHTML = '';
   });
 
   it('n’auto-masque rien quand autoApplyPreferredFilter est désactivé', () => {
-    presentation = new PovPresentation({ cfg: cfgFrom(), NS: 'ao3h', parsePreferredPovs });
+    presentation = new PovPresentation({ cfg: cfgFrom(), analysis, parsePreferredPovs });
     presentation.init();
     expect(document.getElementById('work_2').style.display).not.toBe('none');
   });
@@ -65,7 +60,7 @@ describe('PovPresentation — préférence auto-appliquée', () => {
   it('masque automatiquement les œuvres hors des POV préférés', () => {
     presentation = new PovPresentation({
       cfg: cfgFrom({ autoApplyPreferredFilter: true, preferredPovs: 'first' }),
-      NS: 'ao3h',
+      analysis,
       parsePreferredPovs,
     });
     presentation.init();
@@ -77,7 +72,7 @@ describe('PovPresentation — préférence auto-appliquée', () => {
   it('affiche le bouton de filtre correspondant déjà actif', () => {
     presentation = new PovPresentation({
       cfg: cfgFrom({ autoApplyPreferredFilter: true, preferredPovs: 'first' }),
-      NS: 'ao3h',
+      analysis,
       parsePreferredPovs,
     });
     presentation.init();

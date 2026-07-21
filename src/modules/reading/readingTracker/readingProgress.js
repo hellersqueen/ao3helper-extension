@@ -18,6 +18,8 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { getWorkPageStats } from '../../../../lib/ao3/work-stats.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -199,11 +201,10 @@ export class ReadingProgress {
       // Ignore idle gaps (tab left open) and any backward/zero movement.
       if (deltaPct > 0 && deltaMs > 0 && deltaMs < 10 * 60000) {
         const deltaWords = totalWords * (deltaPct / 100);
-        let acc = { wordsTotal: 0, msTotal: 0 };
-        try { acc = JSON.parse(localStorage.getItem(SK_SPEED) || 'null') || acc; } catch { /* ignore */ }
+        const acc = lsGet(SK_SPEED, { wordsTotal: 0, msTotal: 0 });
         acc.wordsTotal += deltaWords;
         acc.msTotal    += deltaMs;
-        try { localStorage.setItem(SK_SPEED, JSON.stringify(acc)); } catch { /* unavailable */ }
+        lsSet(SK_SPEED, acc);
       }
     }
     this._speedSample = { pct, at: now, totalWords };
@@ -211,18 +212,16 @@ export class ReadingProgress {
 
   /** @returns {number|null} average words-per-minute from all tracked sessions */
   static getReadingSpeed (helpers) {
-    try {
-      const acc = JSON.parse(localStorage.getItem(SK_SPEED) || 'null');
-      if (!acc) return null;
-      return helpers.computeReadingSpeed([{ words: acc.wordsTotal, ms: acc.msTotal }]);
-    } catch { return null; }
+    const acc = lsGet(SK_SPEED);
+    if (!acc) return null;
+    return helpers.computeReadingSpeed([{ words: acc.wordsTotal, ms: acc.msTotal }]);
   }
 
   setupScrollTracking (workId) {
     const { saveProgress } = this;
     const userstuff = document.querySelector('.userstuff.module, #workskin .userstuff');
     if (!userstuff) return;
-    const totalWords = parseInt((document.querySelector('dl.stats dd.words')?.textContent || '').replace(/,/g, ''), 10) || 0;
+    const totalWords = getWorkPageStats().words ?? 0;
     let lastPct = 0;
     const docHeight  = () => Math.max(document.documentElement.scrollHeight - W.innerHeight, 1);
     const getPercent = () => Math.min(100, Math.round((W.scrollY / docHeight()) * 100));

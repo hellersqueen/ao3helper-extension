@@ -21,7 +21,6 @@ Notes
 import { extractWorkIdFromHref, isListingPage } from '../../../../../lib/ao3/parsers.js';
 import { observe, lsGet, lsSet } from '../../../../../lib/utils/index.js';
 import { getGlobalWindow } from '../../../../../lib/utils/globals.js';
-import { SK_LAST } from './statusIndicators.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -31,6 +30,7 @@ import { SK_LAST } from './statusIndicators.js';
 const D = document;
 const W = getGlobalWindow();
 const noteQueryMatch = (...args) => W.AO3H_BookmarkVault.noteQueryMatch(...args);
+const lastReadKey = () => W.AO3H_BookmarkVault.storageKeys.lastRead;
 
 export class ReadingStatusTracking {
   constructor (cfgFn) {
@@ -51,9 +51,9 @@ export class ReadingStatusTracking {
   _trackLastRead () {
     const workId = extractWorkIdFromHref(location.pathname);
     if (!workId) return;
-    const data = lsGet(SK_LAST, {});
+    const data = lsGet(lastReadKey(), {});
     data[workId] = Date.now();
-    lsSet(SK_LAST, data);
+    lsSet(lastReadKey(), data);
   }
 
   /* ═══════════════════════════════════════════════════════════════════════

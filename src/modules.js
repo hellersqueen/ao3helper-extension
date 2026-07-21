@@ -44,8 +44,6 @@ async function loadUserRelationships() {
     () => import('./modules/navigate/userRelationships/authorPreference.js'),
     () => import('./modules/navigate/userRelationships/authorTracking.js'),
     () => import('./modules/navigate/userRelationships/authorCard.js'),
-    () => import('./modules/navigate/userRelationships/blockingInterface.js'),
-    () => import('./modules/navigate/userRelationships/blocklistManagement.js'),
     () => import('./modules/navigate/userRelationships/commentHiding.js'),
   ];
   for (const load of children) {
@@ -56,17 +54,6 @@ async function loadUserRelationships() {
 }
 
 async function loadTextToSpeech() {
-  const children = [
-    () => import('./modules/reading/textToSpeech/speechEngine.js'),
-    () => import('./modules/reading/textToSpeech/playbackControls.js'),
-    () => import('./modules/reading/textToSpeech/visualFeedback.js'),
-    () => import('./modules/reading/textToSpeech/contentFiltering.js'),
-    () => import('./modules/reading/textToSpeech/pronunciationManager.js'),
-  ];
-  for (const load of children) {
-    await load();
-    await yieldToBrowser();
-  }
   return import('./modules/reading/textToSpeech/_textToSpeech.js');
 }
 

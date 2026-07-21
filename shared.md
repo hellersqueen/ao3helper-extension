@@ -431,9 +431,9 @@ La comparaison confirme que plusieurs candidats « browse » sont en réalité *
 En plus des 4 copies de browse, **library contient 16 copies supplémentaires** de la même extraction :
 
    - Depuis un blurb (`h4.heading a[href*="/works/"]` + regex) — 9 copies :
-  `markedForLaterStatus.js` l.54 · `quickMarkForLaterButton.js` l.33 · `workReminder.js` l.110 et l.140 (inline, 2×) · `organizationTools.js` l.31 · `richTextNotes.js` l.44 · `statusIndicators.js` l.38 · `readingStatusTracking.js` l.30 · `_ficAppreciation.js` l.101 · `historyAnalytics.js` l.138
+  `markedForLaterStatus.js` l.54 · `quickMarkForLaterButton.js` l.33 · `workReminder.js` l.110 et l.140 (inline, 2×) · `organizationTools.js` l.31 · `richTextNotes.js` l.44 · `statusIndicators.js` l.38 · `readingStatusTracking.js` l.30 · `_ficAppreciation.js` l.101 · `_readingTimeline.js` l.194
    - Depuis `location.pathname` — 7 copies :
-  `laterShelfStore.js` l.26 · `sessionHistory.js` l.28 · `_fanficBingeMode.js` l.71 · `notificationCenter.js` l.162 · `readingDashboard.js` l.125 · `_ficAppreciation.js` l.97 · `readingStatusTracking.js` l.37
+  `_laterShelf.js` l.40 · `sessionHistory.js` l.28 · `_fanficBingeMode.js` l.71 · `notificationCenter.js` l.162 · `readingDashboard.js` l.125 · `_ficAppreciation.js` l.97 · `readingStatusTracking.js` l.37
 
 Soit **~20 copies au total** dans le projet alors que `lib/ao3/parsers.js` exporte déjà `extractWorkIdFromBlurb()` et `parseWorkIds()`. Nuance : les versions library sont plus strictes (`h4.heading` uniquement) que `extractWorkIdFromBlurb` (fallback sur n'importe quel lien). Harmoniser vers la version stricte en priorité de sélecteur est déjà le comportement du parseur partagé — risque faible. La réserve sur skipWorks (clé IndexedDB = href) reste inchangée.
 
@@ -457,7 +457,7 @@ Le besoin d'un `isListingPage()` / `isWorkPage()` unique dans `lib/ao3/parsers.j
 #### D3. Lecture des réglages de module (confirme A5)
 
 Library reproduit le même bloc `cfg()`/`loadSettings()` 6 fois de plus :
-`laterShelfStore.js` l.10 · `activityPanelShared.js` l.13 · `notificationCenter.js` l.70 · `_bookmarkVault.js` l.73 · `bookmarkNavigation.js` l.22 · `bookmarkMaintenance.js` l.25 — plus la variante `_ficAppreciation.js` l.71 (via `AO3H.flags`).
+`_laterShelf.js` l.64 · `activityPanelShared.js` l.13 · `notificationCenter.js` l.70 · `_bookmarkVault.js` l.73 · `bookmarkNavigation.js` l.22 · `bookmarkMaintenance.js` l.25 — plus la variante `_ficAppreciation.js` l.71 (via `AO3H.flags`).
 
 **Total projet : ~14 copies.** À noter : 3 versions library (`activityPanelShared`, `notificationCenter`, `_ficAppreciation`) ont une couche de fallback supplémentaire `W.AO3H_Config?.[MOD]?.defaults` — l'API partagée (`makeCfg`) doit accepter ce fallback optionnel. Confirme `lib/storage/module-settings.js` comme extraction n°1 en rentabilité.
 
@@ -467,7 +467,7 @@ Library reproduit le même bloc `cfg()`/`loadSettings()` 6 fois de plus :
 
 #### D4. Export JSON/CSV par fichier (confirme A9, élargit au CSV)
 
-5 copies supplémentaires dans library : `multiStatusTracker.js` l.277-303 (JSON+CSV) · `kudosExtendedFeatures.js` l.85-106 (JSON+CSV) · `bookmarkMaintenance.js` l.52 · `timelineVisualization.js` l.502 · `historyAnalytics.js` l.233-242.
+5 copies supplémentaires dans library : `multiStatusTracker.js` l.277-303 (JSON+CSV) · `kudosExtendedFeatures.js` l.85-106 (JSON+CSV) · `bookmarkMaintenance.js` l.52 · `timelineVisualization.js` l.502 · `_readingTimeline.js` l.297-299.
 → `lib/utils/json-file.js` doit offrir `downloadJSON()` **et** un `downloadFile(content, filename, mime)` générique (les exports CSV de ficAppreciation l'utiliseront).
 
 
@@ -476,7 +476,7 @@ Library reproduit le même bloc `cfg()`/`loadSettings()` 6 fois de plus :
 
 #### D5. lsGet/lsSet JSON avec try/catch (confirme la remarque « à surveiller » de l'étape 1 — devient À EXTRAIRE)
 
-Le pattern `try { JSON.parse(localStorage.getItem(K) || fallback) } catch { fallback }` apparaît **~25 fois** dans library (`laterShelfStore`, `workReminder` l.47, `notificationCenter` l.89-92, `habitsAnalysis`/`fandomBreakdown`/`patternAnalysis`/`sessionHistory` (4 copies identiques de `loadSessions`), `organizationTools` l.25-28, `richTextNotes` l.26, `statusIndicators` l.26-32, `readingStatusTracking` l.23-24, `sortingAndFiltering` l.34, `readingDashboard.loadData/saveData`, `activityPanelShared.store`…).
+Le pattern `try { JSON.parse(localStorage.getItem(K) || fallback) } catch { fallback }` apparaît **~25 fois** dans library (`_laterShelf`, `workReminder` l.47, `notificationCenter` l.89-92, `habitsAnalysis`/`fandomBreakdown`/`patternAnalysis`/`sessionHistory` (4 copies identiques de `loadSessions`), `organizationTools` l.25-28, `richTextNotes` l.26, `statusIndicators` l.26-32, `readingStatusTracking` l.23-24, `sortingAndFiltering` l.34, `readingDashboard.loadData/saveData`, `activityPanelShared.store`…).
 `lib/utils/index.js` exporte déjà `lsGet`/`lsSet`. Reclassé : **à faire converger systématiquement** (plus seulement « au fil des retouches »), car c'est le doublon le plus fréquent du projet. Attention aux préfixes : certains modules préfixent `ao3h:` dans la clé, d'autres non (`readingDashboard` utilise `ao3h_dashboard_data_v1` sans préfixe — documenté comme volontaire).
 
 
@@ -504,7 +504,7 @@ Le pattern `try { JSON.parse(localStorage.getItem(K) || fallback) } catch { fall
 #### E1. Extraction de données de la page d'un work (titre, fandoms, tags)
 
    **Où ça existe actuellement :**
-   - Titre du work : `laterShelfStore.js` → `markCurrent()` l.31 (`'h2.title.heading, .title.heading'`) · `readingDashboard.js` → `getWorkTitle()` l.131 (4 sélecteurs) · `notificationCenter.js` → `onWorkPage()` l.166 (`'h2.title.heading'`) · côté browse : `hiddenGems.js` → `_attachToWorkPage()` l.104 (`'div.preface.group h2.title'`)
+   - Titre du work : `_laterShelf.js` → `markCurrent()` l.111 (`'h2.title.heading, .title.heading'`) · `readingDashboard.js` → `getWorkTitle()` l.131 (4 sélecteurs) · `notificationCenter.js` → `onWorkPage()` l.166 (`'h2.title.heading'`) · côté browse : `hiddenGems.js` → `_attachToWorkPage()` l.104 (`'div.preface.group h2.title'`)
    - Fandoms : `readingDashboard.js` → `getWorkFandoms()` l.146
    - Tags : `readingDashboard.js` → `getWorkTags()` l.156
 
@@ -555,7 +555,7 @@ Le pattern `try { JSON.parse(localStorage.getItem(K) || fallback) } catch { fall
 #### E3. Badge sur le titre d'un blurb (`h4.heading`)
 
    **Où ça existe actuellement :** au moins 9 copies du même bloc « créer un span, classe + emoji + title, l'appicher sur `h4.heading` » :
-   - library : `markedForLaterStatus.js` l.62-75 (📌) · `quickMarkForLaterButton.js` l.88-97 (📌, dupliqué en 2 endroits du même fichier) · `workReminder.js` l.105-128 (⏰/⚠️) · `statusIndicators.js` l.77-99 (⭐/🔒/📝/date) · `organizationTools.js` l.45-58 (étiquettes catégorie) · `markAsFinished.js` l.76-88 (✅) · `kudosTracker.js` l.102-117 (🧡) · `multiStatusTracker.js` l.99-116 (statut) · `historyAnalytics.js` l.162-170 (📚 Read)
+   - library : `markedForLaterStatus.js` l.62-75 (📌) · `quickMarkForLaterButton.js` l.88-97 (📌, dupliqué en 2 endroits du même fichier) · `workReminder.js` l.105-128 (⏰/⚠️) · `statusIndicators.js` l.77-99 (⭐/🔒/📝/date) · `organizationTools.js` l.45-58 (étiquettes catégorie) · `markAsFinished.js` l.76-88 (✅) · `kudosTracker.js` l.102-117 (🧡) · `multiStatusTracker.js` l.99-116 (statut) · `_readingTimeline.js` l.212-218 (📚 Read)
    - browse : `hiddenGems.js` (💎) · `languageBadges.js` (drapeau)
 
    **Ce que ça fait :** injection idempotente d'un badge de statut sur l'en-tête d'un blurb (avec garde anti-doublon, tooltip, parfois `aria-label`).
@@ -605,7 +605,7 @@ Le pattern `try { JSON.parse(localStorage.getItem(K) || fallback) } catch { fall
    **Où ça existe actuellement :**
    - `kudosDisplay.js` → `_formatDate()` + `_relativeDate()` l.116-133 (long/short/relative)
    - `statusIndicators.js` l.94-95 (`today / yesterday / Nd ago`)
-   - `historyAnalytics.js` → `insertSessionDividers()` l.204-210 (Today / Yesterday / Last 7 Days / Last Month)
+   - `_readingTimeline.js` → `insertSessionDividers()` l.239-294 (Today / Yesterday / Last 7 Days / Last Month)
    - + affichages simples `toLocaleDateString` (markedForLaterStatus l.98, bookmarkMaintenance l.73, notificationCenter l.299)
 
    **Ce que ça fait :** convertit un timestamp/date en libellé lisible relatif ou localisé.
@@ -616,7 +616,7 @@ Le pattern `try { JSON.parse(localStorage.getItem(K) || fallback) } catch { fall
 
    **Emplacement proposé :** `lib/utils/format-date.js`
 
-   **Importeurs potentiels :** `kudosDisplay`, `statusIndicators`, `markedForLaterStatus`, `notificationCenter`, `bookmarkMaintenance` ; `historyAnalytics` (buckets — offrir `dateBucketLabel(ts)` si on veut aussi couvrir ce cas, sinon le laisser).
+   **Importeurs potentiels :** `kudosDisplay`, `statusIndicators`, `markedForLaterStatus`, `notificationCenter`, `bookmarkMaintenance` ; `_readingTimeline` (buckets — offrir `dateBucketLabel(ts)` si on veut aussi couvrir ce cas, sinon le laisser).
 
    **Différences à harmoniser :** granularité (jours vs mois/années) ; locale (`en-CA` vs `en-US`).
 
@@ -665,7 +665,7 @@ Le pattern `try { JSON.parse(localStorage.getItem(K) || fallback) } catch { fall
 
    **Emplacement proposé :** `lib/storage/keys.js`
 
-   **Importeurs potentiels :** `notificationCenter`, `dataCollection`, `userHistoryFilters`, `laterShelfStore`, `bookmarkVault`, `readingTracker`.
+   **Importeurs potentiels :** `notificationCenter`, `dataCollection`, `userHistoryFilters`, `_laterShelf`, `bookmarkVault`, `readingTracker`.
 
    **Différences à harmoniser :** formats d'items divergents déjà visibles (`item.wid || item.id || item` dans notificationCenter = trois schémas historiques du même bucket).
 
@@ -702,8 +702,8 @@ Le pattern `try { JSON.parse(localStorage.getItem(K) || fallback) } catch { fall
 | Tri de blurbs dans la liste (title/words/date/fandom) | `markedForLaterStatus.js` → `sortBlurbs()` l.158-185 · `organizationTools.js` → `_sortBlurbs()` l.267-285 | Même squelette (extraire les `li`, trier, ré-appender) mais modes différents ; extraction possible en `lib/ao3/blurb-sort.js` (comparateurs nommés) si un 3ᵉ consommateur apparaît (sortingAndFiltering ?). |
 | Ancre d'injection des toolbars (`#main > h2, #main > h3` + `insertAdjacentElement('afterend')`) | `statusIndicators`, `readingStatusTracking`, `organizationTools` (×3), `markedForLaterStatus`, `noteManagement` | Micro-pattern répété ~7× dans bookmark-vault/later-shelf ; un helper `insertAfterMainHeading(el)` dans `lib/utils/dom.js` est envisageable mais gain limité. |
 | Barre de recherche filtrante sur blurbs (input + compteur + hide) | `readingStatusTracking._injectNoteSearch()` l.94-124 · `noteManagement.injectNotesSearch()` l.29-68 | **Doublon fonctionnel réel dans le même module** (deux recherches de notes concurrentes dans bookmarkVault !) — à fusionner d'abord au niveau produit, puis voir si le widget devient partageable. |
-| Agrégation stats de lecture (`calculateStreak`, tops par comptage) | `readingStats.js`, `dataCollection.js` (activity-panel) vs `readingDashboard.js` (fandomCounts/tagCounts) vs `historyAnalytics.js` | Trois modules calculent des « tops fandoms/tags » sur des sources différentes ; candidat `lib/ao3/reading-stats.js` seulement si les sources de données sont d'abord unifiées (voir E7). |
-| Masquage/restauration de blurbs avec mémoire du `display` d'origine | `_ficAppreciation.js` l.124-145 (`hiddenBlurbs` Map) · `historyAnalytics.js` l.145-186 (`_originalDisplays`) · versions simples (`style.display='none'` + dataset) dans statusIndicators, noteManagement, readingStatusTracking, organizationTools | Pattern « hide/restore » répété avec 3 niveaux de sophistication ; un helper `lib/utils/dom.js` (`hideElement/restoreElement`) est possible, mais la sémantique (dataset marker par module pour le cleanup) diffère. |
+| Agrégation stats de lecture (`calculateStreak`, tops par comptage) | `readingStats.js`, `dataCollection.js` (activity-panel) vs `readingDashboard.js` (fandomCounts/tagCounts) vs `_readingTimeline.js` | Trois modules calculent des « tops fandoms/tags » sur des sources différentes ; candidat `lib/ao3/reading-stats.js` seulement si les sources de données sont d'abord unifiées (voir E7). |
+| Masquage/restauration de blurbs avec mémoire du `display` d'origine | `_ficAppreciation.js` l.124-145 (`hiddenBlurbs` Map) · `_readingTimeline.js` l.187-235 (`_originalDisplays`) · versions simples (`style.display='none'` + dataset) dans statusIndicators, noteManagement, readingStatusTracking, organizationTools | Pattern « hide/restore » répété avec 3 niveaux de sophistication ; un helper `lib/utils/dom.js` (`hideElement/restoreElement`) est possible, mais la sémantique (dataset marker par module pour le cleanup) diffère. |
 
 
 ---------------------------------------------------------------------------
@@ -713,7 +713,7 @@ Le pattern `try { JSON.parse(localStorage.getItem(K) || fallback) } catch { fall
 
    - `STATUSES` et logique 7 statuts (`multiStatusTracker.js`) — vocabulaire métier de ficAppreciation.
    - Seuils d'achievements et calcul de streak (`readingStats.js`) — métier activity-panel (le streak pourrait servir ailleurs, mais pas de 2ᵉ consommateur).
-   - Heatmap, couleurs de récence, dividers de session (`historyAnalytics.js`, `timelineVisualization.js`) — métier reading-timeline.
+   - Heatmap, couleurs de récence, dividers de session (`_readingTimeline.js`, `timelineVisualization.js`) — métier reading-timeline.
    - Quiet-hours, purge du feed 90 j, confetti/sons (`notificationCenter.js`) — métier notification-center.
    - Anneau de progression SVG (`statusIndicators.js` l.120-153) — présentation propre à bookmark-vault.
    - Logique de file d'attente binge (`_fanficBingeMode.js`) — métier du module.
@@ -801,7 +801,7 @@ Appearance ajoute 5 copies : `individualDownloads.js` → `getWorkIdFromBlurb()`
 
 #### I7. Dates relatives (E5) — 4ᵉ implémentation
 
-`statsDisplayFormat.js` → `_getRelativeTime()` l.75-85 (« X years/months/days ago ») s'ajoute à `kudosDisplay._relativeDate`, `statusIndicators` (inline) et `historyAnalytics` (buckets). Quatre granularités différentes pour le même concept.
+`statsDisplayFormat.js` → `_getRelativeTime()` l.75-85 (« X years/months/days ago ») s'ajoute à `kudosDisplay._relativeDate`, `statusIndicators` (inline) et `_readingTimeline` (buckets). Quatre granularités différentes pour le même concept.
 
 
 ---------------------------------------------------------------------------
@@ -891,15 +891,15 @@ Deux candidats classés « rester dans le module » aux étapes précédentes ch
 
 #### K3. Snapshot localStorage du namespace AO3H (interne à backup-and-sync, avec doublons)
 
-   **Où :** `backupOperations.js` → `getAllAO3HelperData()` l.117-129 (+ variante `createSelectiveBackup` l.137-153) · `dataTransfer.js` → boucle identique dans `exportSettings()` l.233-241. Et **`automateBackup.js` duplique `createBackup()`/`restoreBackup()` de `backupOperations.js` quasi verbatim** (l.75-127 vs l.69-115) alors que le coordinateur lui injecte déjà `getAllData` — AutoBackup devrait déléguer entièrement à BackupOperations au lieu de recopier.
+   **État actuel :** la collecte et le moteur `BackupOperations` sont intégrés à `_backupAndSync.js`; `automateBackup.js` reçoit ce contrat et lui délègue les opérations réelles. `dataTransfer.js` et `cloudSync.js` reçoivent le même collecteur par injection.
 
    **Ce que ça fait :** collecte toutes les clés localStorage du namespace (`ao3h`/`AO3H`) hors backups.
 
    **Pourquoi partager :** 3 copies du scan ; et la définition de « données AO3H » (filtre par `key.includes(NS)`) est une décision globale qui intéresse aussi un futur outil de debug/migration.
 
-   **Nom proposé :** `lib/storage/snapshot.js` — export `collectNamespaceData({ exclude })` ; la déduplication AutoBackup↔BackupOperations est un refactoring interne au module, indépendant.
+   **Décision :** conserver `collectAO3HelperData()` dans le coordinateur tant qu'aucun autre module parent ne consomme ce contrat.
 
-   **Importeurs :** backupOperations, dataTransfer, cloudSync (via `getAllData`). Risque faible.
+   **Consommateurs :** moteur interne, `dataTransfer.js` et `cloudSync.js` via injection.
 
 
 ---
@@ -929,7 +929,7 @@ Deux candidats classés « rester dans le module » aux étapes précédentes ch
 | theme-builder indépendant de `lib/themes/*` | `_themeBuilder.js` (note d'en-tête : « indépendant de lib/themes », conservé en Phase 24) | **À surveiller** — il existe déjà une bibliothèque partagée de thèmes (`lib/themes/engine`, `builtin`, `templates`) que le module n'utilise pas ; convergence = décision produit documentée, pas simple extraction. |
 | Migration legacy (flags → settings) | `_visualPreferences.js` → `migrateFromOldModules()` l.160-207 | **Laisser** — migration ponctuelle propre au module. |
 | `DEFAULTS` const + `getDefaults()` dupliqués dans le même fichier | `_visualPreferences.js` l.65-80 vs l.116-133 | **Laisser** (mais noter : doublon intra-fichier à fusionner à la prochaine retouche). |
-| Chiffrement/compression de backups (WebCrypto, CompressionStream) | `backupOperations.js` l.170-309 | **Laisser** — métier backup ; à ne sortir en `lib/utils/crypto.js` que si un 2ᵉ consommateur apparaît. |
+| Chiffrement/compression de backups (WebCrypto, CompressionStream) | moteur interne de `_backupAndSync.js` | **Laisser** — métier backup ; à ne sortir en bibliothèque que si un second module parent apparaît. |
 | Presets de visibilité | `visibilityPresets.js` | **Laisser** — vocabulaire métier visual-preferences. |
 | File d'attente/format/Kindle | `downloadEnhancements.js`, `batchDownload.js` | **Laisser** — métier fic-downloader. |
 
@@ -956,7 +956,7 @@ Deux candidats classés « rester dans le module » aux étapes précédentes ch
 | Fetch work complet (K1) | 5 (+1 cousin) | `lib/ao3/requests.js` (existant) | 3 |
 | MutationObserver blurbs (D6) | ~22 blocs | `observe()` existant + `lib/utils/dom-observer.js` | 5 |
 
-Nouvelles entrées internes aux modules (pas dans `lib/`) : gabarit HTML fic-downloader (K2), déduplication AutoBackup↔BackupOperations (K3), fusion des deux recherches de notes de bookmarkVault (étape 2, section F).
+Nouvelles entrées internes aux modules (pas dans `lib/`) : gabarit HTML fic-downloader (K2) et fusion des deux recherches de notes de bookmarkVault (étape 2, section F). La déduplication AutoBackup↔BackupOperations (K3) est terminée.
 
 Décisions produit à trancher avant extraction : fandomHighlighting vs tagHighlighting (K4) · theme-builder vs lib/themes (L) · formes exactes des Archive Warnings (A11).
 
@@ -980,9 +980,9 @@ Explore ajoute **8 copies** : `surpriseMe.js` l.162 · `searchAutocomplete.js` l
 ---
 
 
-#### N2. `lsGet`/`lsSet` locaux (D5) — ~27 → **~34 copies**
+#### N2. `lsGet`/`lsSet` locaux (D5) — ~27 → **~33 copies**
 
-+7 : `_searchEnhancer.js` l.44 (exposé via bridge window à ses enfants) · `searchAutocomplete.js` l.63 · `relatedSearches.js` l.50 · `resultsSorting.js` l.57 (avec fallback sur le bridge) · `_tropeGames.js` l.63 (idem bridge) · `_povTracker.js` l.57 · `povAnalysis.js` l.51.
++6 : `_searchEnhancer.js` l.44 (exposé via bridge window à ses enfants) · `searchAutocomplete.js` l.63 · `relatedSearches.js` l.50 · `resultsSorting.js` l.57 (avec fallback sur le bridge) · `_tropeGames.js` l.63 (idem bridge) · `_povTracker.js` l.34.
 
 
 ---
@@ -1041,7 +1041,7 @@ Explore ajoute **8 copies** : `surpriseMe.js` l.162 · `searchAutocomplete.js` l
 
 #### N9. Cache TTL — la lib existe mais n'est pas utilisée
 
-`relatedSearches.js` → `cacheGet`/`cacheSet` (TTL 7 j) l.62-78 · `povAnalysis.js` → cache 7 j l.18-19 · `ficPeek.js` → double cache Map + sessionStorage l.29-34. Or `lib/utils/index.js` exporte `createCache(ttlMs)` et `lib/storage/cache.js` existe. Même situation que les observers : converger vers l'existant.
+`relatedSearches.js` → `cacheGet`/`cacheSet` (TTL 7 j) l.62-78 · `_povTracker.js` → cache 7 j l.56-57 · `ficPeek.js` → double cache Map + sessionStorage l.29-34. Or `lib/utils/index.js` exporte `createCache(ttlMs)` et `lib/storage/cache.js` existe. Même situation que les observers : converger vers l'existant.
 
 
 ---------------------------------------------------------------------------
@@ -1179,7 +1179,7 @@ Modules analysés : `fic-actions`, `series-helper` (2 sous-modules), `keyboard-s
 ### S. CONFIRMATIONS
 #### S1. Lecture des réglages (A5/D3/I3/N3) — ~23 → **~33 copies**, et un contre-exemple vertueux
 
-+10 : `ficActions.js` l.65 · `keyboardShortcuts.js` l.32 · `seriesProgress.js` l.239 (via `wrappedStorage.lsGet`) · et le pattern « enfant lit la clé du parent » recopié **6× à l'identique** dans comment-kit (`commentComposing.js` l.54, `draftManagement.js` l.50, `threadManagement.js` l.43, `commentHighlighting.js` l.40, `commentConfiguration.js` l.35, `commentNavigation.js` l.33).
++10 : `ficActions.js` l.65 · `keyboardShortcuts.js` l.32 · `seriesProgress.js` l.239 (via `wrappedStorage.lsGet`) · et la lecture de la clé commune recopiée **6× à l'identique** dans comment-kit (`_commentKit.js` l.60, `commentComposing.js` l.54, `draftManagement.js` l.50, `threadManagement.js` l.43, `commentHighlighting.js` l.40, `commentNavigation.js` l.33).
 **Contre-exemple vertueux :** `user-relationships` a fait ce que les autres modules n'ont pas fait — un fichier partagé local (`userRelationshipsSettings.js`, 14 lignes) que ses 6 enfants importent. C'est exactement la forme que `lib/storage/module-settings.js` généraliserait ; comment-kit et search-enhancer devraient a minima copier ce pattern en attendant.
 
 
@@ -1188,7 +1188,7 @@ Modules analysés : `fic-actions`, `series-helper` (2 sous-modules), `keyboard-s
 
 #### S2. `lsGet`/`lsSet` locaux (D5/N2) — ~34 → **~46 copies**
 
-+12 : `_seriesHelper.js` l.40 (variante préfixée `ao3h:sh:`) · `threadManagement.js` l.55 · et les paires get/save inline de `authorPreference.js` l.55, `authorTracking.js` l.43/48/53 (3 clés), `blockingInterface.js` l.94, `commentHiding.js` l.32, `ficActions.js` l.77/266 (2 clés), `quickLinks.js` l.25, `blocklistManagement.js` l.41.
++11 : `_seriesHelper.js` l.40 (variante préfixée `ao3h:sh:`) · `threadManagement.js` l.55 · et les paires get/save inline de `authorPreference.js` l.55, `authorTracking.js` l.43/48/53 (3 clés), `_userRelationships.js` l.139-145, `commentHiding.js` l.32, `ficActions.js` l.77/266 (2 clés), `quickLinks.js` l.25.
 
 
 ---
@@ -1196,7 +1196,7 @@ Modules analysés : `fic-actions`, `series-helper` (2 sous-modules), `keyboard-s
 
 #### S3. Extraction d'auteur (E1/I6) — ~11 → **~19 copies**
 
-+6 requêtes `a[rel="author"]` : `authorBlocking.js` → `getAuthorName()` l.43 · `authorPreference.js` l.76 · `authorTracking.js` l.110 · `blockingInterface.js` l.111 · `commentHighlighting.js` l.59 · (+ la variante `.authors a[href*="/users/"]`). Tout le module user-relationships repose sur cette extraction — le `getBlurbAuthor(blurb)` proposé en E1/I6 est sa fondation naturelle.
++6 requêtes `a[rel="author"]` : `authorBlocking.js` → `getAuthorName()` l.43 · `authorPreference.js` l.76 · `authorTracking.js` l.110 · `_userRelationships.js` l.223 · `commentHighlighting.js` l.59 · (+ la variante `.authors a[href*="/users/"]`). Tout le module user-relationships repose sur cette extraction — le `getBlurbAuthor(blurb)` proposé en E1/I6 est sa fondation naturelle.
 
 
 ---
@@ -1220,7 +1220,7 @@ Modules analysés : `fic-actions`, `series-helper` (2 sous-modules), `keyboard-s
 
 #### S6. Gardes de route (A3/D2) — 3ᵉ garde boguée
 
-`seriesProgress.js` → `isListingPage()` l.21 : `/^\/(works|tags|bookmarks|users|search)/` — matche aussi les pages de work et les profils (3ᵉ garde trop permissive après statusIndicators et individualDownloads). `blocklistManagement.js` → `isManagementPage()` l.148 introduit un nouveau type de page (profil/préférences) à ajouter au `parsers.js` centralisé. `ficActions.js` l.127 est le **seul module du projet** à utiliser `Routes.isWork()` de `lib/ao3/routes.js` (avec fallback inline) — preuve que la centralisation est consommable dès qu'elle existe.
+`seriesProgress.js` → `isListingPage()` l.21 : `/^\/(works|tags|bookmarks|users|search)/` — matche aussi les pages de work et les profils (3ᵉ garde trop permissive après statusIndicators et individualDownloads). `_userRelationships.js` → `isBlocklistManagementPage()` l.401 introduit un nouveau type de page (profil/préférences) à ajouter au `parsers.js` centralisé. `ficActions.js` l.127 est le **seul module du projet** à utiliser `Routes.isWork()` de `lib/ao3/routes.js` (avec fallback inline) — preuve que la centralisation est consommable dès qu'elle existe.
 
 
 ---
@@ -1228,7 +1228,7 @@ Modules analysés : `fic-actions`, `series-helper` (2 sous-modules), `keyboard-s
 
 #### S7. Export/import JSON (A9/D4/I5) — ~18 → **~20 copies**
 
-`blocklistManagement.js` : export l.107-115 + import FileReader l.117-133.
+`_userRelationships.js` : export du panneau + import FileReader l.370-388.
 
 
 ---
@@ -1236,7 +1236,7 @@ Modules analysés : `fic-actions`, `series-helper` (2 sous-modules), `keyboard-s
 
 #### S8. Managers de liste (A8) — 4ᵉ consommateur
 
-`blocklistManagement.buildPanel()` l.49-145 : liste + compteur + input Add (avec Enter) + Remove par ligne + Export/Import JSON + Clear All avec confirm — c'est le squelette des 3 managers de hideByTags en version panneau inline (pas modale). L'API `list-manager` proposée en A8 doit donc prévoir un mode « inline » en plus du mode modal.
+`_userRelationships.buildBlocklistPanel()` l.296-399 : liste + compteur + input Add (avec Enter) + Remove par ligne + Export/Import JSON + Clear All avec confirm — c'est le squelette des 3 managers de hideByTags en version panneau inline (pas modale). L'API `list-manager` proposée en A8 doit donc prévoir un mode « inline » en plus du mode modal.
 
 
 ---
@@ -1244,9 +1244,9 @@ Modules analysés : `fic-actions`, `series-helper` (2 sous-modules), `keyboard-s
 
 #### S9. Observers, badges, hide/restore
 
-   - +10 blocs `MutationObserver` (authorBlocking l.112, authorPreference l.179, authorTracking l.155, commentHiding l.115, commentComposing l.362, draftManagement l.290, threadManagement l.300, commentHighlighting l.160, commentConfiguration l.89, seriesProgress l.229) → **~35 blocs** au total projet.
+   - +10 blocs `MutationObserver` (authorBlocking l.112, authorPreference l.179, authorTracking l.155, commentHiding l.115, commentComposing l.362, draftManagement l.290, threadManagement l.300, commentHighlighting l.160, `_commentKit.js` l.175, seriesProgress l.229) → **~35 blocs** au total projet.
    - Badges sur heading (E3) : +2 (`ficActions` 🔔 Subscribed l.244-253, badges de `seriesProgress` — variante insérée après le lien série).
-   - Hide/restore avec Map des `display` d'origine : +2 copies (`authorBlocking.js` l.32/51, pattern déjà vu dans ficAppreciation et historyAnalytics).
+   - Hide/restore avec Map des `display` d'origine : +2 copies (`authorBlocking.js` l.32/51, pattern déjà vu dans ficAppreciation et `_readingTimeline`).
 
 
 ---------------------------------------------------------------------------
@@ -1277,7 +1277,7 @@ Modules analysés : `fic-actions`, `series-helper` (2 sous-modules), `keyboard-s
 
 #### T2. Store local du blocklist — duplication intra-module (4 copies)
 
-   **Où :** la clé `userBlocker:list` est lue/écrite par 4 sous-modules avec 4 paires get/save locales : `authorBlocking.js` l.31-40 · `blocklistManagement.js` l.38-47 · `blockingInterface.js` l.38/94 · `commentHiding.js` l.28-33. Trois normalisent en lowercase, une non (`commentHiding` compare sans `.map(toLowerCase)` — **bug latent** : un username bloqué avec majuscules n'est pas masqué dans les commentaires).
+   **Où :** la clé `userBlocker:list` possède maintenant un propriétaire unique dans `_userRelationships.js`; `authorBlocking.js` et `commentHiding.js` utilisent son lecteur partagé normalisé en minuscules.
 
    **Ce que ça fait :** liste des utilisateurs bloqués (le cœur du module).
 
@@ -1303,7 +1303,7 @@ Modules analysés : `fic-actions`, `series-helper` (2 sous-modules), `keyboard-s
 
 | Élément | Où | Note |
 |---|---|---|
-| Menu contextuel custom (clic droit) | `blockingInterface.js` (menu block/unblock sur les liens users) + `tagHighlighting.js` (browse, menu couleurs sur les tags) | 2ᵉ menu contextuel du projet — même squelette (createElement, position clientX/Y, fermeture clic extérieur). Candidat `lib/ui/context-menu.js` au 3ᵉ consommateur. |
+| Menu contextuel custom (clic droit) | `_userRelationships.js` (menu block/unblock sur les liens users) + `tagHighlighting.js` (browse, menu couleurs sur les tags) | 2ᵉ menu contextuel du projet — même squelette (createElement, position clientX/Y, fermeture clic extérieur). Candidat `lib/ui/context-menu.js` au 3ᵉ consommateur. |
 | Panneau de gestion CRUD de templates | `commentComposing.js` l.149+ (add/edit/remove templates) | Parent de la famille « list manager » (A8/S8) — vérifier lors de l'extraction A8 si l'API couvre ce cas (édition en plus d'ajout/suppression). |
 | Détection prev/next chapitre | `keyboardShortcuts.js` l.128-138 (`a[rel="prev"]`, `.chapter.previous a`…) + `seriesProgress.js` l.183-186 (mêmes sélecteurs pour la série) | Sélecteurs de navigation AO3 dupliqués 2× ; `reading/chapterNavigation` en aura forcément une 3ᵉ copie → à trancher à l'étape 6 (candidat `lib/ao3/parsers.js` → `findPrevNextLinks()`). |
 | Parse « Part X of Y » | `seriesProgress.js` → `parsePartOf()` l.30-37 | Connaissance AO3 (format des liens de série) ; un seul consommateur pour l'instant — candidat parsers.js si un module library/reading lit aussi la progression de série (readingTracker `isSeriesRead` ?). À vérifier à l'étape 6. |
@@ -1751,9 +1751,8 @@ choisir à ta place, et le code actuel fonctionne des deux côtés (juste en dou
 - `_visualPreferences.js` : `DEFAULTS` const + `getDefaults()` dupliqués dans le
   même fichier (l.65-80 vs l.116-133) — doublon intra-fichier, indépendant de
   tout le chantier `lib/`.
-- `AutoBackup` (`automateBackup.js`) duplique `createBackup()`/`restoreBackup()`
-  de `BackupOperations` quasi verbatim alors que le coordinateur lui injecte déjà
-  `getAllData` — devrait déléguer entièrement au lieu de recopier.
+- `AutoBackup` délègue maintenant les opérations au moteur `BackupOperations`
+  intégré au coordinateur; l'ancienne duplication a été supprimée.
 - Gabarit HTML de fic-downloader (K2) : `individualDownloads.js` et
   `batchDownload.js` ont deux gabarits HTML quasi identiques (~60 lignes
   chacun) — extraction interne au module (`workHtmlTemplate.js`), pas vers `lib/`.

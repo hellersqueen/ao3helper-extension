@@ -34,7 +34,7 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, lsGet, lsSet, lsDel, onReady } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
-import { isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
 import { relativeDate } from '../../../../lib/utils/format-date.js';
 import styles from './readingTracker.css?inline';
 
@@ -91,16 +91,6 @@ const cfg = makeCfg(MOD, DEFAULTS);
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURES
 ═══════════════════════════════════════════════════════════════════════════ */
-
-function isListingPage () {
-  return (
-    /^\/works(\/|$|\?)/.test(location.pathname)           ||
-    /^\/tags\/[^/]+\/works/.test(location.pathname)       ||
-    /^\/users\/[^/]+\/bookmarks/.test(location.pathname)  ||
-    /^\/users\/[^/]+\/works/.test(location.pathname)      ||
-    /^\/bookmarks(\/|$|\?)/.test(location.pathname)
-  );
-}
 
 function isHistoryPage () {
   return /^\/users\/[^/]+\/readings/.test(location.pathname);

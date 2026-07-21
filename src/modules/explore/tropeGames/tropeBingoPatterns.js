@@ -37,12 +37,8 @@ const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'tropeBingoPatterns';
 const LOG  = `[AO3H][${MOD}]`;
-// Exported so tropeAchievements references this module's key constant
-// instead of duplicating the string literal.
-export const BINGO_KEY = `${NS}:tg:bingo`;
-const SK   = BINGO_KEY;
-
 function getShared () { return W.AO3H_TropeGames || null; }
+const storageKey = () => W.AO3H_TropeGames.storageKeys.bingo;
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — CARD GENERATION AND PERSISTENCE
@@ -82,14 +78,14 @@ function freshState (opts) {
 }
 
 function loadState (opts) {
-  const state = lsGet(SK);
+  const state = lsGet(storageKey());
   if (state?.card?.length === opts.size * opts.size) return state;
   const fresh = freshState(opts);
-  lsSet(SK, fresh);
+  lsSet(storageKey(), fresh);
   return fresh;
 }
 
-function saveState (state) { lsSet(SK, state); }
+function saveState (state) { lsSet(storageKey(), state); }
 
 
 /* ═══════════════════════════════════════════════════════════════════════════

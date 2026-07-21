@@ -13,7 +13,6 @@ AO3 Helper — Backup & Sync Coordinator
 
     Submodules
         automateBackup.js    — Schedules automatic backups.
-        backupOperations.js  — Creates, stores, lists, and restores backups.
         cloudSync.js         — Synchronizes data through browser storage.
         dataTransfer.js      — Imports and exports settings and work lists.
 
@@ -37,7 +36,6 @@ import { makeCfg, saveModuleSettings } from '../../../../lib/storage/module-sett
 import styles from './backupAndSync.css?inline';
 
 import { AutoBackup } from './automateBackup.js';
-import { BackupOperations } from './backupOperations.js';
 import { CloudSync } from './cloudSync.js';
 import { ImportExportLists } from './dataTransfer.js';
 
@@ -126,6 +124,221 @@ export function collectAO3HelperData (storage = localStorage, { exclude } = {}) 
     data[key] = storage.getItem(key);
   }
   return data;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INTERNAL BACKUP ENGINE
+
+   Owned by the coordinator because it stores and transforms backup data but
+   has no independently visible lifecycle. The export keeps the focused unit
+   test and allows the coordinator's public API to delegate to a clear contract.
+═══════════════════════════════════════════════════════════════════════════ */
+
+export class BackupOperations {
+  constructor (config = {}) {
+    this.backups = config.backups || [];
+    this.onBackupCreated = config.onBackupCreated || null;
+    this.maxBackups = config.maxBackups || 10;
+    this.getAllData = config.getAllData || (() => ({}));
+  }
+
+  _record (backup) {
+    this.backups.unshift(backup);
+    if (this.backups.length > this.maxBackups) this.backups.length = this.maxBackups;
+    this.onBackupCreated?.(this.backups);
+    return backup;
+  }
+
+  _restoreData (data) {
+    Object.entries(data).forEach(([key, value]) => localStorage.setItem(key, value));
+  }
+
+  getAllAO3HelperData () { return this.getAllData(); }
+  getBackups () { return this.backups; }
+
+  createBackup () {
+    const backup = this._record({
+      timestamp: new Date().toISOString(),
+      data: this.getAllAO3HelperData(),
+    });
+    console.log(`[BackupOperations] Backup saved (${this.backups.length}/${this.maxBackups})`);
+    return backup;
+  }
+
+  restoreBackup (index = 0) {
+    const backup = this.backups[index];
+    if (!backup?.data || typeof backup.data !== 'object') {
+      console.error('[BackupOperations] Backup not found or not restorable at index:', index);
+      return false;
+    }
+    const date = new Date(backup.timestamp).toLocaleString();
+    if (!confirm(`Restore backup from ${date}?\n\nThis will overwrite current data.`)) return false;
+    this._restoreData(backup.data);
+    console.log(`[BackupOperations] Restored backup from ${date}`);
+    return true;
+  }
+
+  createSelectiveBackup (categories = []) {
+    const all = this.getAllData();
+    const data = categories.length === 0
+      ? all
+      : Object.fromEntries(Object.entries(all).filter(([key]) =>
+          categories.some(category => key.toLowerCase().includes(category.toLowerCase()))
+        ));
+    const backup = this._record({
+      timestamp: new Date().toISOString(),
+      type: 'selective',
+      categories,
+      data,
+    });
+    console.log(`[BackupOperations] Selective backup saved (${Object.keys(data).length} keys, categories: ${categories.join(', ') || 'all'})`);
+    return backup;
+  }
+
+  async _deriveKey (password, salt) {
+    const encoded = new TextEncoder();
+    const material = await crypto.subtle.importKey(
+      'raw', encoded.encode(password), 'PBKDF2', false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      material,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  async createEncryptedBackup (password) {
+    if (!password) throw new Error('[BackupOperations] Password required for encrypted backup.');
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await this._deriveKey(password, salt);
+    const plaintext = new TextEncoder().encode(JSON.stringify(this.getAllAO3HelperData()));
+    const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext);
+    const backup = this._record({
+      timestamp: new Date().toISOString(),
+      type: 'encrypted',
+      salt: Array.from(salt),
+      iv: Array.from(iv),
+      ciphertext: Array.from(new Uint8Array(ciphertext)),
+    });
+    console.log('[BackupOperations] Encrypted backup saved.');
+    return backup;
+  }
+
+  async restoreEncryptedBackup (index = 0, password) {
+    const backup = this.backups[index];
+    if (!backup || backup.type !== 'encrypted') {
+      console.error('[BackupOperations] No encrypted backup at index:', index);
+      return false;
+    }
+    if (!password) throw new Error('[BackupOperations] Password required to restore encrypted backup.');
+    const date = new Date(backup.timestamp).toLocaleString();
+    if (!confirm(`Restore encrypted backup from ${date}?\n\nThis will overwrite current data.`)) return false;
+    try {
+      const key = await this._deriveKey(password, new Uint8Array(backup.salt));
+      const plaintext = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: new Uint8Array(backup.iv) },
+        key,
+        new Uint8Array(backup.ciphertext)
+      );
+      this._restoreData(JSON.parse(new TextDecoder().decode(plaintext)));
+      console.log(`[BackupOperations] Encrypted backup restored from ${date}`);
+      return true;
+    } catch {
+      console.error('[BackupOperations] Decryption failed — wrong password or corrupt backup.');
+      return false;
+    }
+  }
+
+  async _gzip (input, mode) {
+    const stream = mode === 'compress' ? new CompressionStream('gzip') : new DecompressionStream('gzip');
+    const writer = stream.writable.getWriter();
+    await writer.write(mode === 'compress' ? new TextEncoder().encode(input) : new Uint8Array(input));
+    await writer.close();
+    const chunks = [];
+    const reader = stream.readable.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+    const merged = new Uint8Array(chunks.reduce((total, chunk) => total + chunk.length, 0));
+    let offset = 0;
+    for (const chunk of chunks) {
+      merged.set(chunk, offset);
+      offset += chunk.length;
+    }
+    return mode === 'compress' ? Array.from(merged) : new TextDecoder().decode(merged);
+  }
+
+  async createCompressedBackup () {
+    const data = this.getAllAO3HelperData();
+    const serialized = JSON.stringify(data);
+    const compressed = await this._gzip(serialized, 'compress');
+    const backup = this._record({ timestamp: new Date().toISOString(), type: 'compressed', compressed });
+    const ratio = ((1 - compressed.length / serialized.length) * 100).toFixed(1);
+    console.log(`[BackupOperations] Compressed backup saved (${ratio}% smaller).`);
+    return backup;
+  }
+
+  async restoreCompressedBackup (index = 0) {
+    const backup = this.backups[index];
+    if (!backup || backup.type !== 'compressed') {
+      console.error('[BackupOperations] No compressed backup at index:', index);
+      return false;
+    }
+    const date = new Date(backup.timestamp).toLocaleString();
+    if (!confirm(`Restore compressed backup from ${date}?\n\nThis will overwrite current data.`)) return false;
+    try {
+      this._restoreData(JSON.parse(/** @type {string} */ (await this._gzip(backup.compressed, 'decompress'))));
+      console.log(`[BackupOperations] Compressed backup restored from ${date}`);
+      return true;
+    } catch (error) {
+      console.error('[BackupOperations] Decompression failed:', error);
+      return false;
+    }
+  }
+
+  createIncrementalBackup () {
+    const current = this.getAllAO3HelperData();
+    const base = this.backups.find(backup => backup.data && typeof backup.data === 'object') || null;
+    const baseData = base?.data || {};
+    const delta = {};
+    for (const [key, value] of Object.entries(current)) {
+      if (baseData[key] !== value) delta[key] = value;
+    }
+    for (const key of Object.keys(baseData)) {
+      if (!(key in current)) delta[key] = null;
+    }
+    const backup = this._record({
+      timestamp: new Date().toISOString(),
+      type: 'incremental',
+      baseTimestamp: base?.timestamp || null,
+      delta,
+    });
+    console.log(`[BackupOperations] Incremental backup saved (${Object.keys(delta).length} changed keys).`);
+    return backup;
+  }
+
+  restoreIncrementalBackup (index = 0) {
+    const backup = this.backups[index];
+    if (!backup || backup.type !== 'incremental') {
+      console.error('[BackupOperations] No incremental backup at index:', index);
+      return false;
+    }
+    const date = new Date(backup.timestamp).toLocaleString();
+    if (!confirm(`Restore incremental backup from ${date}?\n\nThis will apply the stored delta to current data.`)) return false;
+    for (const [key, value] of Object.entries(backup.delta)) {
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+    }
+    console.log(`[BackupOperations] Incremental backup applied from ${date}`);
+    return true;
+  }
+
+  cleanup () {}
 }
 
 
@@ -232,6 +445,13 @@ register(
       createBackup:    () => backupOpsInst?.createBackup(),
       getBackups:      () => backupOpsInst?.getBackups() ?? [],
       restoreBackup:   (i) => backupOpsInst?.restoreBackup(i),
+      createSelectiveBackup:    (categories) => backupOpsInst?.createSelectiveBackup(categories),
+      createEncryptedBackup:    (password) => backupOpsInst?.createEncryptedBackup(password),
+      restoreEncryptedBackup:   (i, password) => backupOpsInst?.restoreEncryptedBackup(i, password),
+      createCompressedBackup:   () => backupOpsInst?.createCompressedBackup(),
+      restoreCompressedBackup:  (i) => backupOpsInst?.restoreCompressedBackup(i),
+      createIncrementalBackup:  () => backupOpsInst?.createIncrementalBackup(),
+      restoreIncrementalBackup: (i) => backupOpsInst?.restoreIncrementalBackup(i),
       exportWorksList: (format) => {
         const works = importExportInst?.extractWorksList();
         if (!works) return;

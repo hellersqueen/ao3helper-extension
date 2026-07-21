@@ -40,8 +40,7 @@ les constantes et outils communs, centralise l'accès à la configuration et
 les fonctions de lecture/écriture des préférences, et expose via
 `W.AO3H_RF` (mis en place avant la cascade de démarrage des sous-modules) :
 
-- Fonctions : `cfg(key)`, `isWorkPage()`, `prefGet(key, def)`,
-  `prefSet(key, val)`, `walkTextNodes(el, fn)`
+- Fonctions : `cfg(key)`, `isWorkPage()`, `walkTextNodes(el, fn)`
 - Constantes : `NS`, `ROOT_CLS`, `SANSSERIF_CLS`, `CLEAN_CLS`, `NOINDENT_CLS`
 
 Assure aussi la compatibilité avec `themeBuilder` (couleurs d'accent,

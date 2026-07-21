@@ -22,7 +22,6 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
-import { STATS_SEEN_KEY } from './tropeStatistics.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -58,7 +57,7 @@ function getRetrospective () {
   const yKey = getShared().dateKey(yesterday);
   const entry = lsGet(`${NS}:tg:horoscope:${yKey}`);
   if (!entry?.trope) return null;
-  const seen = lsGet(STATS_SEEN_KEY) || [];
+  const seen = lsGet(W.AO3H_TropeGames.storageKeys.statsSeen) || [];
   const cameTrue = getShared().horoscopeCameTrue(seen, entry.trope, yKey);
   if (cameTrue === null) return null;
   return { trope: entry.trope, cameTrue };

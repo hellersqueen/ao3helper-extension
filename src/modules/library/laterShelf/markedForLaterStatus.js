@@ -24,7 +24,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { loadItems, saveItems, updateItem, removeItem, reorderItems, getGroups, cfg } from './laterShelfStore.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromBlurb, getBlurbMeta, parseChapterCount } from '../../../../lib/ao3/parsers.js';
@@ -57,6 +56,7 @@ register(MOD, {
   enabledByDefault: true,
 }, function init () {
   const {
+    cfg, loadItems, saveItems, updateItem, removeItem, reorderItems, getGroups,
     sortEntries, pickRandom, estimateTotalReadingMinutes,
     suggestByTimeBudget, detectUpdates, toCSV, toLinksList,
   } = W.AO3H_LaterShelf;

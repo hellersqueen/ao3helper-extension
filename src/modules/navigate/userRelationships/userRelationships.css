@@ -140,7 +140,7 @@
   margin: 2px 0;
 }
 
-/* ── blockingInterface — Context menu ───────────────────────────────────── */
+/* ── Coordinator — Context menu ─────────────────────────────────────────── */
 
 .ao3h-user-context-menu {
   position: fixed;
@@ -163,7 +163,7 @@
   background: #f5f5f5;
 }
 
-/* ── blocklistManagement — Blocklist manager panel ──────────────────────── */
+/* ── Coordinator — Blocklist manager panel ──────────────────────────────── */
 
 #ao3h-blocklist-manager {
   margin: 1em 0;

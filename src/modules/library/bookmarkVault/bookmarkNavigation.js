@@ -21,8 +21,7 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { lsGet } from '../../../../lib/utils/index.js';
-import { SK_DATA } from './bookmarkStatus/statusIndicators.js';
-import { SK_NOTES } from './richTextNotes.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -31,6 +30,8 @@ import { SK_NOTES } from './richTextNotes.js';
 
 const MOD = 'bookmarkNavigation';
 const NS  = 'ao3h';
+const W   = getGlobalWindow();
+const storageKey = name => W.AO3H_BookmarkVault.storageKeys[name];
 
 const REFERER_KEY = `${NS}:bookmarkNavReferer`;
 
@@ -88,7 +89,7 @@ function injectViewBookmarkLink () {
   const workId = (location.pathname.match(/\/works\/([0-9]+)/) || [])[1];
   if (!workId) return;
 
-  const bookmarkData = lsGet(SK_DATA, {});
+  const bookmarkData = lsGet(storageKey('data'), {});
 
   if (!bookmarkData[workId]) return;
 
@@ -103,7 +104,7 @@ function injectViewBookmarkLink () {
 
   // Quick preview on hover: bookmark visibility, note excerpt, personal note
   const bm = bookmarkData[workId];
-  const inlineNote = lsGet(SK_NOTES, {})[workId] || '';
+  const inlineNote = lsGet(storageKey('inlineNotes'), {})[workId] || '';
   const parts = [`${bm.pub ? 'Public' : 'Private'} bookmark`];
   if (bm.notes)    parts.push(`Note: ${String(bm.notes).slice(0, 120)}`);
   if (inlineNote)  parts.push(`Personal: ${inlineNote.slice(0, 120)}`);

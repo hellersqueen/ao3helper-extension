@@ -9,7 +9,7 @@ AO3 Helper — Later Shelf Coordinator
     Purpose
 
     Coordinates quick marked-for-later actions, shelf presentation, and timed
-    reminders through a shared store and runtime API.
+    reminders through coordinator-owned persistence and a runtime API.
 
     Submodules
 
@@ -23,7 +23,7 @@ AO3 Helper — Later Shelf Coordinator
 
     Notes
 
-    - Shared store helpers are available as ES exports and AO3H_LaterShelf.
+    - Persistence helpers live here and are exposed through AO3H_LaterShelf.
     - Each reminder and shelf collection owns a separate storage key.
 
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -35,8 +35,12 @@ AO3 Helper — Later Shelf Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css } from '../../../../lib/utils/index.js';
-import { SK_ITEMS, cfg, loadItems, markCurrent, saveItems, setLaterShelfHelpers } from './laterShelfStore.js';
+import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { KEY_LATER_SHELF_ITEMS } from '../../../../lib/storage/keys.js';
+import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
+import { extractWorkIdFromHref, parseChapterCount } from '../../../../lib/ao3/parsers.js';
+import { showToast } from '../../../../lib/ui/toast.js';
 import './markedForLaterStatus.js';
 import './quickMarkForLaterButton.js';
 import './workReminder.js';
@@ -53,7 +57,21 @@ css(styles, 'ao3h-laterShelf');
 const W    = getGlobalWindow();
 const MOD  = 'laterShelf';
 
-export { SK_ITEMS, cfg, loadItems, markCurrent, saveItems } from './laterShelfStore.js';
+export const SK_ITEMS = KEY_LATER_SHELF_ITEMS;
+export const SK_ARCHIVE = 'ao3h:laterShelf:archive';
+
+const DEFAULTS = {
+  showQuickButton: true,
+  remindersEnabled: false,
+  buttonPosition: 'after-title',
+  noteOnAdd: false,
+  bulkAddEnabled: false,
+  autoRemoveOnFinish: false,
+  gridView: false,
+  staleDays: 45,
+};
+
+export const cfg = makeCfg(MOD, DEFAULTS);
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -66,6 +84,104 @@ const DEFAULT_WPM = 250;
 const DEFAULT_MILESTONES = [10, 25, 50, 100, 250, 500, 1000];
 const DAY_MS = 24 * 60 * 60 * 1000;
 const RECURRENCE_MS = { daily: DAY_MS, weekly: 7 * DAY_MS };
+
+export function loadItems () {
+  return lsGet(SK_ITEMS, []);
+}
+
+export function saveItems (items) {
+  lsSet(SK_ITEMS, items);
+}
+
+export function addItem (wid, title, extra = {}) {
+  if (!wid) return false;
+  const items = loadItems();
+  if (items.some(item => String(item.wid || item) === wid)) return true;
+  const prevCount = items.length;
+  items.push({ wid, title, addedAt: Date.now(), order: Date.now(), ...extra });
+  saveItems(items);
+  document.dispatchEvent(new CustomEvent(EV_MARKED_FOR_LATER, { detail: { workId: wid, title } }));
+  const crossed = milestonesCrossed(prevCount, items.length);
+  if (crossed.length) {
+    showToast(`🎉 ${crossed[crossed.length - 1]} works saved for later!`, { type: 'success', duration: 4000 });
+  }
+  return true;
+}
+
+export function markCurrent () {
+  const wid = extractWorkIdFromHref(location.pathname);
+  if (!wid) return false;
+  const title = document.querySelector('h2.title.heading, .title.heading')?.textContent?.trim() || `Work ${wid}`;
+  const parsed = parseChapterCount(document.querySelector('dd.chapters'));
+  return addItem(wid, title, { chaptersAtAdd: parsed.published, completeAtAdd: parsed.isComplete });
+}
+
+export function updateItem (wid, patch) {
+  const items = loadItems();
+  const index = items.findIndex(item => String(item.wid || item) === String(wid));
+  if (index === -1) return false;
+  items[index] = { ...items[index], ...patch };
+  saveItems(items);
+  return true;
+}
+
+export function removeItem (wid, { archive = true } = {}) {
+  const items = loadItems();
+  const index = items.findIndex(item => String(item.wid || item) === String(wid));
+  if (index === -1) return null;
+  const [removed] = items.splice(index, 1);
+  saveItems(items);
+  if (archive) archiveItem(removed);
+  return removed;
+}
+
+export function reorderItems (orderedWids) {
+  const items = loadItems();
+  const byWid = new Map(items.map(item => [String(item.wid || item), item]));
+  orderedWids.forEach((wid, index) => {
+    const item = byWid.get(String(wid));
+    if (item) item.order = index;
+  });
+  saveItems(items);
+}
+
+export function getGroups () {
+  return [...new Set(loadItems().map(item => item.group).filter(Boolean))].sort();
+}
+
+export function loadArchive () {
+  return lsGet(SK_ARCHIVE, []);
+}
+
+function saveArchive (entries) {
+  lsSet(SK_ARCHIVE, entries);
+}
+
+function archiveItem (item) {
+  if (!item) return;
+  const archive = loadArchive();
+  archive.unshift({ ...item, removedAt: Date.now() });
+  saveArchive(archive.slice(0, 200));
+}
+
+export function restoreItem (wid) {
+  const archive = loadArchive();
+  const index = archive.findIndex(item => String(item.wid || item) === String(wid));
+  if (index === -1) return false;
+  const [restored] = archive.splice(index, 1);
+  saveArchive(archive);
+  return addItem(restored.wid, restored.title, {
+    note: restored.note,
+    priority: restored.priority,
+    group: restored.group,
+    chaptersAtAdd: restored.chaptersAtAdd,
+    completeAtAdd: restored.completeAtAdd,
+  });
+}
+
+export function deleteArchiveEntry (wid) {
+  saveArchive(loadArchive().filter(item => String(item.wid || item) !== String(wid)));
+}
 
 export function priorityWeight (priority) {
   const idx = PRIORITIES.indexOf(priority);
@@ -192,14 +308,15 @@ export function toLinksList (items) {
   return (items || []).map(i => `https://archiveofourown.org/works/${i.wid}`).join('\n');
 }
 
-const laterShelfHelpers = {
+const laterShelfApi = {
+  SK_ITEMS, SK_ARCHIVE, cfg,
+  loadItems, saveItems, addItem, markCurrent, updateItem, removeItem,
+  reorderItems, getGroups, loadArchive, restoreItem, deleteArchiveEntry,
   PRIORITIES, priorityWeight, isGem, sortEntries, reorderArray, pickRandom,
   estimateReadingMinutes, estimateTotalReadingMinutes, suggestByTimeBudget,
   milestonesCrossed, isStale, detectUpdates, snoozeDate, nextRecurrence,
   peakHourFromSessions, suggestReminderDate, computeConversionStats, toCSV, toLinksList,
 };
-
-setLaterShelfHelpers(laterShelfHelpers);
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -210,7 +327,7 @@ register(MOD, {
   title: 'Later Shelf',
   enabledByDefault: false,
 }, function init () {
-  W.AO3H_LaterShelf = { loadItems, saveItems, markCurrent, SK_ITEMS, cfg, ...laterShelfHelpers };
+  W.AO3H_LaterShelf = laterShelfApi;
   return function cleanup () {
     if (W.AO3H_LaterShelf?.markCurrent === markCurrent) delete W.AO3H_LaterShelf;
   };

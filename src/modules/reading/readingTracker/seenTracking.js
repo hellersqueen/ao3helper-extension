@@ -18,13 +18,14 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
-import { extractWorkIdFromHref } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, parseChapterCount } from '../../../../lib/ao3/parsers.js';
+import { getWorkTitle, getWorkAuthor, getWorkFandoms } from '../../../../lib/ao3/work-page.js';
+import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 
 const SK_EXCLUDED = 'ao3h:rt:excludedWorks';
 
 function loadExcluded () {
-  try { return new Set(JSON.parse(localStorage.getItem(SK_EXCLUDED) || '[]')); }
-  catch { return new Set(); }
+  return new Set(lsGet(SK_EXCLUDED, []));
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -56,14 +57,13 @@ export class SeenTracking {
   }
 
   parseWorkMeta () {
-    const title  = document.querySelector('h2.title')?.textContent.trim() || '';
-    const author = document.querySelector('h3.byline a')?.textContent.trim() || '';
-    const fandoms = [...document.querySelectorAll('dd.fandom.tags a')].map(a => a.textContent.trim());
-    const chapDd    = document.querySelector('dd.chapters');
-    const chapText  = chapDd?.textContent.trim() || '';
-    const chapMatch = chapText.match(/^(\d+)\/(\d+|\?)$/);
-    const chapter       = chapMatch ? parseInt(chapMatch[1], 10) : 1;
-    const totalChapters = chapMatch && chapMatch[2] !== '?' ? parseInt(chapMatch[2], 10) : null;
+    const title   = getWorkTitle() || '';
+    const author  = getWorkAuthor().name || '';
+    const fandoms = getWorkFandoms();
+    const chapDd  = document.querySelector('dd.chapters');
+    const { published, total } = parseChapterCount(chapDd);
+    const chapter       = published ?? 1;
+    const totalChapters = total;
     const select    = document.querySelector('select#selected_id');
     const selOpt    = select?.querySelector('option[selected]');
     const chapterId = selOpt?.value || null;
@@ -86,13 +86,13 @@ export class SeenTracking {
   excludeWork (workId) {
     const excluded = loadExcluded();
     excluded.add(workId);
-    try { localStorage.setItem(SK_EXCLUDED, JSON.stringify([...excluded])); } catch {}
+    lsSet(SK_EXCLUDED, [...excluded]);
   }
 
   includeWork (workId) {
     const excluded = loadExcluded();
     excluded.delete(workId);
-    try { localStorage.setItem(SK_EXCLUDED, JSON.stringify([...excluded])); } catch {}
+    lsSet(SK_EXCLUDED, [...excluded]);
   }
 
   recordVisit (workId, meta) {

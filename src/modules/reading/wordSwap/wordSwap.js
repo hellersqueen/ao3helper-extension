@@ -32,20 +32,18 @@ AO3 Helper — Word Swap
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { css, lsGet, lsSet, onReady, observe } from '../../../../lib/utils/index.js';
+import { css, lsGet, lsSet, onReady, observe, escapeRegex } from '../../../../lib/utils/index.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 import styles from './wordSwap.css?inline';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    RULE TEMPLATES
 ═══════════════════════════════════════════════════════════════════════════ */
 
-const templateUid = () => `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-const escapeTemplateRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
 const templateRule = (overrides) => ({
-    id: templateUid(), name: '', find: '', replace: '',
+    id: uid(), name: '', find: '', replace: '',
     enabled: true, regex: false, caseSensitive: false, wholeWord: true,
     category: '', ...overrides,
 });
@@ -57,7 +55,7 @@ export function characterNameRule(variantsCsv, canonical) {
     if (!variants.length || !target) return null;
     return templateRule({
         name: `Name: ${target}`,
-        find: variants.map(escapeTemplateRegex).join('|'),
+        find: variants.map(escapeRegex).join('|'),
         replace: target,
         regex: true,
         category: 'names',
@@ -129,10 +127,6 @@ function loadSettings() { return loadModuleSettings(MOD); }
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function loadRules() { return lsGet(LS_RULES) || []; }
-
-function escapeRegex(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 function buildRegex(rule) {
     try {
@@ -220,12 +214,6 @@ function uid() {
     return `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 }
 
-function escHtml(s) {
-    return String(s)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
 function renderRulesPanel(container) {
     if (!container) return;
 
@@ -246,13 +234,13 @@ function renderRulesPanel(container) {
                 <label title="Enable/disable">
                     <input type="checkbox" class="ao3h-ws-toggle" ${rule.enabled ? 'checked' : ''}>
                 </label>
-                <span class="ao3h-ws-find" title="Find">${escHtml(rule.find)}</span>
+                <span class="ao3h-ws-find" title="Find">${escapeHtml(rule.find)}</span>
                 <span class="ao3h-ws-arrow">→</span>
-                <span class="ao3h-ws-replace" title="Replace">${escHtml(rule.replace ?? '')}</span>
-                ${rule.category ? `<span class="ao3h-ws-cat">${escHtml(rule.category)}</span>` : ''}
+                <span class="ao3h-ws-replace" title="Replace">${escapeHtml(rule.replace ?? '')}</span>
+                ${rule.category ? `<span class="ao3h-ws-cat">${escapeHtml(rule.category)}</span>` : ''}
                 <span class="ao3h-ws-actions">
-                    <button class="ao3h-btn-sm ao3h-ws-edit" data-id="${escHtml(rule.id)}">Edit</button>
-                    <button class="ao3h-btn-sm ao3h-ws-delete" data-id="${escHtml(rule.id)}">✕</button>
+                    <button class="ao3h-btn-sm ao3h-ws-edit" data-id="${escapeHtml(rule.id)}">Edit</button>
+                    <button class="ao3h-btn-sm ao3h-ws-delete" data-id="${escapeHtml(rule.id)}">✕</button>
                 </span>`;
             ul.appendChild(li);
         });
@@ -272,7 +260,7 @@ function renderRulesPanel(container) {
             <option value="character">Normalize a character name…</option>
             <option value="deadname">Replace a deadname…</option>
             <option value="sensitive">Soften a sensitive word…</option>
-            ${RULE_PACKS.map(p => `<option value="pack:${p.id}">${escHtml(p.label)} (${p.pairs.length} rules)</option>`).join('')}`;
+            ${RULE_PACKS.map(p => `<option value="pack:${p.id}">${escapeHtml(p.label)} (${p.pairs.length} rules)</option>`).join('')}`;
         container.appendChild(tplSel);
 
         tplSel.addEventListener('change', () => {
@@ -381,13 +369,13 @@ function renderRulesPanel(container) {
         };
         modal.innerHTML = `
             <div class="ao3h-ws-form-row"><label>Name</label>
-                <input class="ao3h-ws-f-name" value="${escHtml(rule.name)}" placeholder="Rule name"></div>
+                <input class="ao3h-ws-f-name" value="${escapeHtml(rule.name)}" placeholder="Rule name"></div>
             <div class="ao3h-ws-form-row"><label>Find</label>
-                <input class="ao3h-ws-f-find" value="${escHtml(rule.find)}" placeholder="Text to find"></div>
+                <input class="ao3h-ws-f-find" value="${escapeHtml(rule.find)}" placeholder="Text to find"></div>
             <div class="ao3h-ws-form-row"><label>Replace</label>
-                <input class="ao3h-ws-f-replace" value="${escHtml(rule.replace ?? '')}" placeholder="Replacement"></div>
+                <input class="ao3h-ws-f-replace" value="${escapeHtml(rule.replace ?? '')}" placeholder="Replacement"></div>
             <div class="ao3h-ws-form-row"><label>Category</label>
-                <input class="ao3h-ws-f-cat" value="${escHtml(rule.category ?? '')}" placeholder="e.g. fandom name"></div>
+                <input class="ao3h-ws-f-cat" value="${escapeHtml(rule.category ?? '')}" placeholder="e.g. fandom name"></div>
             <div class="ao3h-ws-form-opts">
                 <label><input type="checkbox" class="ao3h-ws-f-cs" ${rule.caseSensitive ? 'checked' : ''}> Case-sensitive</label>
                 <label><input type="checkbox" class="ao3h-ws-f-ww" ${rule.wholeWord ? 'checked' : ''}> Whole word</label>

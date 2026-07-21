@@ -21,6 +21,7 @@ Notes
 import { extractWorkIdFromBlurb, isListingPage } from '../../../../../lib/ao3/parsers.js';
 import { observe, lsGet, lsSet } from '../../../../../lib/utils/index.js';
 import { relativeDate } from '../../../../../lib/utils/format-date.js';
+import { getGlobalWindow } from '../../../../../lib/utils/globals.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -28,8 +29,8 @@ import { relativeDate } from '../../../../../lib/utils/format-date.js';
 ═══════════════════════════════════════════════════════════════════════════ */
 
 const D = document;
-export const SK_DATA = 'ao3h:bookmarkVault:data';
-export const SK_LAST = 'ao3h:bookmarkVault:lastRead';
+const W = getGlobalWindow();
+const storageKey = name => W.AO3H_BookmarkVault.storageKeys[name];
 
 export class StatusIndicators {
   constructor (cfgFn) {
@@ -44,7 +45,7 @@ export class StatusIndicators {
   ═══════════════════════════════════════════════════════════════════════ */
 
   _scanAndCache () {
-    const data = lsGet(SK_DATA, {});
+    const data = lsGet(storageKey('data'), {});
     D.querySelectorAll('li.bookmark.blurb').forEach(blurb => {
       const wid = extractWorkIdFromBlurb(blurb);
       if (!wid) return;
@@ -53,12 +54,12 @@ export class StatusIndicators {
       const notes    = (notesEl?.textContent || '').trim().slice(0, 200);
       data[wid] = { pub: isPublic, notes };
     });
-    lsSet(SK_DATA, data);
+    lsSet(storageKey('data'), data);
   }
 
   _processBlurbs (blurbs) {
-    const data      = lsGet(SK_DATA, {});
-    const lastRead  = this.cfg('showLastReadDate') ? lsGet(SK_LAST, {}) : {};
+    const data      = lsGet(storageKey('data'), {});
+    const lastRead  = this.cfg('showLastReadDate') ? lsGet(storageKey('lastRead'), {}) : {};
     const showBadge = this.cfg('showPublicPrivateBadge');
     const showNote  = this.cfg('showNoteIcon');
     const showDate  = this.cfg('showLastReadDate');
@@ -162,7 +163,7 @@ export class StatusIndicators {
 
   _injectStatusFilter () {
     if (D.getElementById('ao3h-bv-sf')) return;
-    const data       = lsGet(SK_DATA, {});
+    const data       = lsGet(storageKey('data'), {});
     const bookmarked = new Set(Object.keys(data));
     const def        = this.cfg('bookmarkStatusFilterDefault') || 'all';
     const showCount  = this.cfg('showStatusFilterCount');

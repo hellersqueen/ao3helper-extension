@@ -15,7 +15,6 @@ breakdown once more than one chapter has been analyzed.
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { Routes } from '../../../../lib/ao3/routes.js';
 import { getWorkMeta, getChapterProse } from '../../../../lib/ao3/work-page.js';
 
@@ -24,7 +23,6 @@ import { getWorkMeta, getChapterProse } from '../../../../lib/ao3/work-page.js';
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
 
-const W = getGlobalWindow();
 const PANEL_ID = 'ao3h-pov-detail-panel';
 
 function currentChapterLabel () {
@@ -33,9 +31,10 @@ function currentChapterLabel () {
 }
 
 export class PovDetailPanel {
-  /** @param {{ cfg: Function }} opts */
-  constructor ({ cfg }) {
+  /** @param {{ cfg: Function, analysis: Object }} opts */
+  constructor ({ cfg, analysis }) {
     this.cfg = cfg;
+    this.analysis = analysis;
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -49,14 +48,11 @@ export class PovDetailPanel {
     const meta = getWorkMeta();
     if (!meta.workId) return;
 
-    const analysis = W.AO3H_PovTracker?._analysis;
-    if (!analysis) return;
-
     const chapterScope = document.querySelector('#workskin .chapter');
     const text = getChapterProse(chapterScope);
     if (text) {
-      analysis.recordChapterAnalysis(meta.workId, meta.chapterId || 'single', currentChapterLabel(), text);
-      analysis.flush();
+      this.analysis.recordChapterAnalysis(meta.workId, meta.chapterId || 'single', currentChapterLabel(), text);
+      this.analysis.flush();
     }
 
     this._render(meta.workId);
@@ -65,7 +61,7 @@ export class PovDetailPanel {
   _render (workId) {
     document.getElementById(PANEL_ID)?.remove();
 
-    const combined = W.AO3H_PovTracker?._analysis?.getCombinedResult(workId);
+    const combined = this.analysis.getCombinedResult(workId);
     if (!combined) return;
 
     const panel = document.createElement('div');

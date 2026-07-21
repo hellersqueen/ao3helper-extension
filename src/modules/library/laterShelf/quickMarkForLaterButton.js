@@ -16,7 +16,7 @@ Features
 Notes
 
 - The `showQuickButton` setting enables or disables the feature.
-- Removing a work archives it (see laterShelfStore.removeItem) rather than
+- Removing a work archives it through the parent coordinator rather than
   deleting it outright — the Undo toast restores it from that archive.
 
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -26,12 +26,12 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { loadItems, addItem, removeItem, restoreItem, cfg } from './laterShelfStore.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { extractWorkIdFromBlurb, getBlurbMeta, parseChapterCount } from '../../../../lib/ao3/parsers.js';
 import { showToast } from '../../../../lib/ui/toast.js';
 import { createBulkSelect } from '../../../../lib/ui/bulk-select.js';
+import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -39,6 +39,7 @@ import { createBulkSelect } from '../../../../lib/ui/bulk-select.js';
 
 const MOD = 'quickMarkForLaterButton';
 const D   = document;
+const W   = getGlobalWindow();
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE LIFECYCLE
@@ -49,6 +50,7 @@ register(MOD, {
   parent: 'laterShelf',
   enabledByDefault: true,
 }, function init () {
+  const { loadItems, addItem, removeItem, restoreItem, cfg } = W.AO3H_LaterShelf;
 
   if (!cfg('showQuickButton')) return function cleanup () {};
 

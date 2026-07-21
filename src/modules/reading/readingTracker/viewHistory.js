@@ -19,6 +19,7 @@ Notes
 
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { fetchAO3PageText } from '../../../../lib/ao3/requests.js';
+import { escapeHtml } from '../../../../lib/utils/dom.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -125,7 +126,6 @@ export class ViewHistory {
     const main = document.querySelector('#main');
     if (!main) return;
 
-    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const wrap = document.createElement('div');
     wrap.id        = `${NS}-continue-reading`;
     wrap.className = `${NS}-continue-reading`;
@@ -134,7 +134,7 @@ export class ViewHistory {
       <ul>
         ${items.map(e => `
           <li>
-            <a href="${esc(e.chapterHref || e.href || `/works/${e.id}`)}">${esc(e.title || `Work #${e.id}`)}</a>
+            <a href="${escapeHtml(e.chapterHref || e.href || `/works/${e.id}`)}">${escapeHtml(e.title || `Work #${e.id}`)}</a>
             ${e.totalChapters ? `<span class="${NS}-continue-reading-progress">Ch ${e.chapter}/${e.totalChapters}</span>` : ''}
           </li>`).join('')}
       </ul>`;

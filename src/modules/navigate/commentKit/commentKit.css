@@ -493,7 +493,7 @@
 }
 .ao3h-quote-reply-btn:hover { border-color: #900; color: #900; }
 
-/* ── commentConfiguration — Display density ─────────────────────────────── */
+/* ── Coordinator — Display density ──────────────────────────────────────── */
 
 html.ao3h-comment-density-compact li.comment {
   padding-top: 2px;

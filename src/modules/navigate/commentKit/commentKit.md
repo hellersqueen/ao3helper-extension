@@ -41,10 +41,11 @@ discussion.
 
 ### 1. `_commentKit.js` — le chef d'orchestre
 
-- Met en route les six autres fichiers de fonctionnalités de ce module
+- Met en route les cinq autres fichiers de fonctionnalités de ce module
 - Chaque sous-module s'enregistre avec `parent: 'commentKit'` et est démarré/arrêté automatiquement par la cascade du cycle de vie
 - Centralise la logique des modèles, brouillons, surlignages, recherches, sauts de page, et la détection du pseudo connecté (`getCurrentUsername()`, réutilisée par `commentComposing.js` et `commentHighlighting.js`)
-- Les réglages partagés vivent dans `navigate-interact/commentKit-config.js` ; tous les sous-modules, y compris `commentConfiguration.js`, lisent la même clé de stockage partagée `ao3h:mod:commentKit:settings` (voir Détails techniques)
+- Les réglages partagés vivent dans `navigate-interact/commentKit-config.js` ; le coordinateur et les cinq sous-modules lisent la même clé de stockage partagée `ao3h:mod:commentKit:settings` (voir Détails techniques)
+- Le coordinateur possède aussi les badges de chapitre de la boîte de réception, la valeur par défaut des commentaires invités et la densité d'affichage
 
 ### 2. `commentComposing.js` — outils de rédaction
 
@@ -81,13 +82,13 @@ discussion.
 - Bouton "❝ Reply" par commentaire pour citer son contenu dans sa propre réponse — clique le lien natif "Reply" d'AO3 pour révéler son formulaire (AO3 l'injecte via sa propre requête AJAX, donc le sous-module attend brièvement l'apparition de la zone de texte), puis pré-remplit une citation de l'auteur et d'un extrait du commentaire
 - Marque les commentaires jamais vus avec un badge "NEW", avec un bouton pour tout marquer comme lu
 
-### 7. `commentConfiguration.js` — petits réglages annexes
+### Réglages annexes — intégrés à `_commentKit.js`
 
 - Affiche un badge "Ch N" sur les commentaires de la boîte de réception, pour savoir à quel chapitre ils correspondent
 - Coche automatiquement l'option "Allow guest comments" en créant une nouvelle fic
 - Applique la densité d'affichage choisie (compact/normal/spacieux) aux commentaires
 
-### 8. `commentKit.css`
+### 7. `commentKit.css`
 
 - Les styles visuels de tous les fichiers ci-dessus
 
@@ -137,8 +138,8 @@ vraiment dans ce module (pas de code pour ça) :
 ⚠️ La doc historique anglaise décrit une organisation du code bien plus
 désordonnée que la réalité actuelle (fonctionnalités rangées dans les
 mauvais fichiers, deux systèmes de réglages séparés). Le code actuel est
-propre : 6 fichiers correctement nommés, un seul jeu de réglages partagé
-par tous, y compris `commentConfiguration.js`.
+propre : un seul jeu de réglages partagé par le coordinateur et ses cinq
+sous-modules fonctionnels.
 
 ⚠️ Une autre doc historique affirme que le repli global des fils de
 discussion ("Collapse all" / "Expand all") n'a jamais été codé. C'est

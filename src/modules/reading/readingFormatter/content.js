@@ -20,6 +20,7 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { getWorkTitle, getWorkAuthor } from '../../../../lib/ao3/work-page.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -196,9 +197,9 @@ function createReadingRuler (NS) {
 /** Repeat title / author / tags below the work for end-of-reading reference. */
 function injectEndOfWorkInfo (NS) {
   if (document.getElementById(`${NS}-rf-endinfo`)) return;
-  const title = document.querySelector('h2.title.heading')?.textContent.trim();
+  const title = getWorkTitle();
   if (!title) return;
-  const author = document.querySelector('h3.byline.heading a[rel="author"], .byline a[href*="/users/"]')?.textContent.trim();
+  const author = getWorkAuthor().name;
   const tags = Array.from(document.querySelectorAll(
     '.work.meta.group dd.fandom.tags a.tag, .work.meta.group dd.relationship.tags a.tag, .work.meta.group dd.freeform.tags a.tag'
   )).slice(0, 12);

@@ -39,6 +39,7 @@ import { StatusIndicators } from './bookmarkStatus/statusIndicators.js';
 import { RichTextNotes } from './richTextNotes.js';
 import { OrganizationTools } from './organizationTools.js';
 import { ReadingStatusTracking } from './bookmarkStatus/readingStatusTracking.js';
+import { buildStarsEl } from './personalRatings.js';
 import './bookmarkNavigation.js';
 import './bookmarkMaintenance.js';
 import './noteManagement.js';
@@ -91,6 +92,12 @@ const DEFAULTS = {
 
 const cfg = makeCfg(MOD, DEFAULTS);
 
+export const BOOKMARK_VAULT_STORAGE_KEYS = Object.freeze({
+  data: 'ao3h:bookmarkVault:data',
+  lastRead: 'ao3h:bookmarkVault:lastRead',
+  inlineNotes: 'ao3h:bookmarkVault:inlineNotes',
+});
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURES
@@ -130,7 +137,10 @@ export function noteQueryMatch (text, query) {
 
 export function isImportantNote (text) { return /^\s*!/.test(String(text || '')); }
 
-const vaultTools = { vaultToCSV, vaultToHTML, findStaleBookmarks, noteQueryMatch, isImportantNote };
+const vaultTools = {
+  storageKeys: BOOKMARK_VAULT_STORAGE_KEYS,
+  vaultToCSV, vaultToHTML, findStaleBookmarks, noteQueryMatch, isImportantNote,
+};
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -144,10 +154,10 @@ register(MOD, {
   W.AO3H_BookmarkVault = vaultTools;
   const instances = [];
 
-  function tryBoot (Cls) {
+  function tryBoot (Cls, dependencies) {
     let inst = null;
     try {
-      inst = new Cls(cfg);
+      inst = new Cls(cfg, dependencies);
       inst.boot();
       return inst;
     } catch (e) {
@@ -157,8 +167,13 @@ register(MOD, {
     }
   }
 
-  for (const Cls of [StatusIndicators, RichTextNotes, OrganizationTools, ReadingStatusTracking]) {
-    const inst = tryBoot(Cls);
+  for (const [Cls, dependencies] of [
+    [StatusIndicators],
+    [RichTextNotes, { buildStarsEl }],
+    [OrganizationTools],
+    [ReadingStatusTracking],
+  ]) {
+    const inst = tryBoot(Cls, dependencies);
     if (inst) instances.push(inst);
   }
 

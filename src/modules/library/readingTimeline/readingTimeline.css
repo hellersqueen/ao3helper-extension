@@ -83,7 +83,7 @@
       └──────────────────────────────────────────────────┘
     ⚠️ La couleur de fond (background-color) reste dynamique en JS
        car elle est calculée par _recencyColor() selon la date.
-    ⚠️ La classe ao3h-rt-read-blurb est ajoutée par historyAnalytics.js.
+    ⚠️ La classe ao3h-rt-read-blurb est ajoutée par _readingTimeline.js.
   ═══════════════════════════════════════════════════════════════════════
 */
 

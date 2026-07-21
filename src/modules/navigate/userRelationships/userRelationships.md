@@ -57,26 +57,24 @@ commentaires et ses notes de bookmark.
 - Affiche une petite fiche en survolant le nom d'un auteur : suivi, favori, priorité, tags, note, nombre lu
 - Purement en lecture : n'écrit jamais rien, se contente d'agréger ce que les autres sous-modules savent déjà
 
-### 8. `blockingInterface.js` — menu pour bloquer quelqu'un
+### Blocage et gestion de la liste — intégrés à `_userRelationships.js`
 
 - Ajoute un menu (clic droit) sur le nom d'un auteur pour le bloquer ou le débloquer
 - Quand l'auteur a plusieurs pseudonymes, propose de bloquer soit tout le compte, soit seulement le pseudonyme affiché
 - Demande (optionnellement) une raison au moment du blocage
 - Garde la liste officielle des personnes bloquées, utilisée par les autres fichiers de ce module
 
-### 9. `blocklistManagement.js` — gérer sa liste de blocage
-
 - Affiche sur la page de profil la liste complète des personnes bloquées, avec leur raison de blocage si renseignée
 - Affiche des statistiques globales : nombre de personnes bloquées, œuvres et commentaires masqués au total
 - Permet d'ajouter (avec une raison optionnelle), de retirer, d'exporter, d'importer, ou de tout effacer d'un coup
 
-### 10. `commentHiding.js` — cacher les commentaires des personnes bloquées
+### 8. `commentHiding.js` — cacher les commentaires des personnes bloquées
 
 - Cache les commentaires écrits par une personne bloquée, y compris quand seul un pseudonyme précis est bloqué
 - Cache aussi les notes laissées par une personne bloquée sur ses bookmarks
 - Compte chaque commentaire masqué dans les statistiques de blocage globales
 
-### 11. `userRelationships.css`
+### 9. `userRelationships.css`
 
 - Les styles visuels de tous les fichiers ci-dessus
 
@@ -159,9 +157,9 @@ Réparé : les badges sont devenus de vrais boutons cliquables (`setFollowed()`
 marquée terminée (dépendance douce, auteur lu directement sur la page via
 `lib/ao3/work-page.js`'s `getWorkAuthor()`).
 
-`blocklistManagement.js` (ajouter/retirer/importer/tout effacer dans le
-panneau de gestion) ne déclenchait jamais l'événement `ao3h:blocking-changed`
-que `blockingInterface.js` (menu clic-droit) déclenche bien, lui. Or
+Le panneau de gestion de la liste (ajouter/retirer/importer/tout effacer) ne
+déclenchait jamais l'événement `ao3h:blocking-changed` que le menu clic-droit
+déclenche bien, lui. Or
 `authorBlocking.js` et `commentHiding.js` écoutent précisément cet événement
 pour rafraîchir en direct le contenu masqué. Modifier la liste de blocage
 via le panneau de gestion ne prenait donc effet qu'après un rechargement
@@ -181,7 +179,7 @@ clé exacte.
 
 ⚠️ La doc historique anglaise décrit un état plus ancien du code, avec des
 fichiers en double et des sous-modules vides sans vrai code. Ce n'est plus
-le cas : le code actuel a exactement 6 fichiers de fonctionnalités, tous
+le cas : le code actuel a exactement 5 fichiers de fonctionnalités, tous
 complets et fonctionnels, sans doublon.
 
 ## Détails techniques
@@ -190,8 +188,8 @@ Chaque clé de stockage a un seul sous-module *propriétaire* (qui lit et
 écrit) ; les autres sous-modules qui n'ont besoin que de la lire passent
 par un lecteur partagé exposé sur le coordinateur (`W.AO3H_UserRelationships`)
 plutôt que de relire `localStorage` eux-mêmes :
-- `userBlocker:list` — liste des personnes bloquées ; propriétaires `blockingInterface.js` (blocage/déblocage via clic-droit) et `blocklistManagement.js` (panneau de gestion) ; lue par `authorBlocking.js`/`commentHiding.js` via `getBlockedList()`
-- `userBlocker:reasons` — raison de blocage optionnelle par personne ; mêmes propriétaires, via `getBlockReasons()`/`saveBlockReasons()`
+- `userBlocker:list` — liste des personnes bloquées ; propriétaire `_userRelationships.js` (menu clic-droit et panneau de gestion) ; lue par `authorBlocking.js`/`commentHiding.js` via `getBlockedList()`
+- `userBlocker:reasons` — raison de blocage optionnelle par personne ; même propriétaire, via `getBlockReasons()`/`saveBlockReasons()`
 - `authorPreferences:data` — `{ [author]: { hidden, favorite, readCount, priority, tags } }`, clé = nom exact tel qu'affiché (pas en minuscules) ; propriétaire `authorPreference.js` ; lue par `authorCard.js` via `getAuthorPrefsFor(author)` (défauts déjà appliqués)
 - `authorTracking:notes` — note personnelle par auteur (clé en minuscules) ; propriétaire `authorTracking.js` ; lue par `authorCard.js` via `getAuthorNotes()`
 - `authorTracking:followed` — liste des auteurs suivis (clé en minuscules) ; propriétaire `authorTracking.js` ; lue par `authorCard.js` via `getFollowedAuthors()`
@@ -199,8 +197,8 @@ plutôt que de relire `localStorage` eux-mêmes :
 
 `authorBlocking.js` et `commentHiding.js` observent le contenu ajouté
 dynamiquement via `MutationObserver`, et écoutent aussi `ao3h:blocking-changed`
-(déclenché par `blockingInterface.js` et `blocklistManagement.js`) pour se
+(déclenché par les deux interfaces du coordinateur) pour se
 rafraîchir dès qu'un blocage change, sans attendre un rechargement de page.
-Le panneau de `blocklistManagement.js` a une hauteur de liste plafonnée à
+Le panneau de gestion du coordinateur a une hauteur de liste plafonnée à
 220px (défilement), et son import JSON fusionne avec la liste existante en
 dédupliquant (fichiers invalides ignorés silencieusement).

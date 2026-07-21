@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { PovAnalysis } from './povAnalysis.js';
-import { analyzeChapterText } from './_povTracker.js';
+import { PovAnalysis } from './_povTracker.js';
 
 const LONG_FIRST_PERSON = 'I walked to my car and thought about my day. '.repeat(20);
 const LONG_THIRD_PERSON = 'She walked to her car and thought about her day. '.repeat(20);
@@ -11,7 +10,7 @@ describe('PovAnalysis — full-text chapter tracking', () => {
 
   beforeEach(() => {
     localStorage.clear();
-    analysis = new PovAnalysis({ analyzeChapterText });
+    analysis = new PovAnalysis();
     analysis.init();
   });
 

@@ -138,7 +138,7 @@ register(MOD, {
     });
   });
 
-  // Live-update when blockingInterface dispatches a block/unblock action
+  // Live-update when the parent coordinator dispatches a block/unblock action
   const onBlockingChanged = () => { if (active) { restoreBlurbs(); processBlurbs(getBlockedAuthors()); } };
   document.addEventListener('ao3h:blocking-changed', onBlockingChanged);
 

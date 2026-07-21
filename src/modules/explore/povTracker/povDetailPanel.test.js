@@ -1,10 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { PovDetailPanel } from './povDetailPanel.js';
-import { PovAnalysis } from './povAnalysis.js';
-import { analyzeChapterText } from './_povTracker.js';
+import { PovAnalysis } from './_povTracker.js';
 
-const W = getGlobalWindow();
 const LONG_FIRST_PERSON = 'I walked to my car and thought about my day. '.repeat(20);
 
 function setPath (path) {
@@ -35,22 +32,22 @@ function cfgFrom (overrides) {
 }
 
 describe('PovDetailPanel', () => {
+  let analysis;
+
   beforeEach(() => {
     localStorage.clear();
-    const analysis = new PovAnalysis({ analyzeChapterText });
+    analysis = new PovAnalysis();
     analysis.init();
-    W.AO3H_PovTracker = { _analysis: analysis };
   });
 
   afterEach(() => {
-    delete W.AO3H_PovTracker;
     document.body.innerHTML = '';
   });
 
   it('ne fait rien hors d’une page de work', () => {
     setPath('/tags/some-tag/works');
     buildWorkPage();
-    const panel = new PovDetailPanel({ cfg: cfgFrom() });
+    const panel = new PovDetailPanel({ cfg: cfgFrom(), analysis });
     panel.init();
     expect(document.getElementById('ao3h-pov-detail-panel')).toBeNull();
   });
@@ -58,7 +55,7 @@ describe('PovDetailPanel', () => {
   it('ne fait rien quand showDetailPanel ou analyzeFullText est désactivé', () => {
     setPath('/works/42');
     buildWorkPage();
-    const panel = new PovDetailPanel({ cfg: cfgFrom({ analyzeFullText: false }) });
+    const panel = new PovDetailPanel({ cfg: cfgFrom({ analyzeFullText: false }), analysis });
     panel.init();
     expect(document.getElementById('ao3h-pov-detail-panel')).toBeNull();
   });
@@ -66,25 +63,25 @@ describe('PovDetailPanel', () => {
   it('analyse le chapitre affiché et affiche le verdict', () => {
     setPath('/works/42');
     buildWorkPage({ chapterOptionText: '1. First Chapter' });
-    const panel = new PovDetailPanel({ cfg: cfgFrom() });
+    const panel = new PovDetailPanel({ cfg: cfgFrom(), analysis });
     panel.init();
 
     const summary = document.querySelector('#ao3h-pov-detail-panel .ao3h-pov-panel-summary');
     expect(summary?.textContent).toContain('first');
-    expect(W.AO3H_PovTracker._analysis.getChapterAnalyses('42')).toHaveLength(1);
-    expect(W.AO3H_PovTracker._analysis.getChapterAnalyses('42')[0].label).toBe('1. First Chapter');
+    expect(analysis.getChapterAnalyses('42')).toHaveLength(1);
+    expect(analysis.getChapterAnalyses('42')[0].label).toBe('1. First Chapter');
   });
 
   it('affiche la liste par chapitre et un avertissement quand le POV change', () => {
     setPath('/works/42');
-    W.AO3H_PovTracker._analysis.recordChapterAnalysis('42', 'ch1', 'Chapter 1', LONG_FIRST_PERSON);
-    W.AO3H_PovTracker._analysis.recordChapterAnalysis(
+    analysis.recordChapterAnalysis('42', 'ch1', 'Chapter 1', LONG_FIRST_PERSON);
+    analysis.recordChapterAnalysis(
       '42', 'ch2', 'Chapter 2',
       'She walked to her car and thought about her day. '.repeat(20),
     );
     buildWorkPage({ chapterOptionText: '3. Third Chapter' });
 
-    const panel = new PovDetailPanel({ cfg: cfgFrom() });
+    const panel = new PovDetailPanel({ cfg: cfgFrom(), analysis });
     panel.init();
 
     const consistency = document.querySelector('#ao3h-pov-detail-panel .ao3h-pov-panel-consistency');
@@ -95,7 +92,7 @@ describe('PovDetailPanel', () => {
   it('destroy retire le panneau', () => {
     setPath('/works/42');
     buildWorkPage({ chapterOptionText: '1. First Chapter' });
-    const panel = new PovDetailPanel({ cfg: cfgFrom() });
+    const panel = new PovDetailPanel({ cfg: cfgFrom(), analysis });
     panel.init();
     expect(document.getElementById('ao3h-pov-detail-panel')).not.toBeNull();
     panel.destroy();

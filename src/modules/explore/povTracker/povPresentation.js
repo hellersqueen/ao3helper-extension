@@ -18,7 +18,6 @@ Notes
    IMPORTS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { observe } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 
@@ -26,8 +25,6 @@ import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
 ═══════════════════════════════════════════════════════════════════════════ */
-
-const W = getGlobalWindow();
 
 const FILTER_BAR_ID = 'ao3h-pov-filter-bar';
 const STATS_BAR_ID  = 'ao3h-pov-stats-bar';
@@ -43,10 +40,10 @@ const POV_META = {
 };
 
 export class PovPresentation {
-  /** @param {{ cfg: Function, NS: string, parsePreferredPovs: Function }} opts */
-  constructor ({ cfg, NS, parsePreferredPovs }) {
+  /** @param {{ cfg: Function, analysis: Object, parsePreferredPovs: Function }} opts */
+  constructor ({ cfg, analysis, parsePreferredPovs }) {
     this.cfg      = cfg;
-    this.NS       = NS;
+    this.analysis = analysis;
     this._parsePreferredPovs = parsePreferredPovs || (() => []);
     this._observer = null;
     this._hidden   = new Set(); // POV types currently filtered out
@@ -59,7 +56,7 @@ export class PovPresentation {
 
   _processAllBlurbs () {
     document.querySelectorAll('li.work.blurb, div.work.blurb').forEach(b => this._processBlurb(b));
-    W.AO3H_PovTracker?._analysis?.flush();
+    this.analysis.flush();
   }
 
   _processBlurb (blurb) {
@@ -69,15 +66,11 @@ export class PovPresentation {
     const workId = extractWorkIdFromBlurb(blurb);
     if (!workId) return;
 
-    const api      = W.AO3H_PovTracker;
-    const analysis = api?._analysis;
-    if (!analysis) return;
-
     // If autoAnalyze is off, only use cached results — skip fresh detection
     const autoAnalyze = this.cfg('autoAnalyze');
     const result = autoAnalyze
-      ? analysis.getOrDetect(workId, blurb)
-      : analysis.getFromCache(workId);
+      ? this.analysis.getOrDetect(workId, blurb)
+      : this.analysis.getFromCache(workId);
     if (!result) return;
 
     const { pov } = result;
@@ -195,9 +188,7 @@ export class PovPresentation {
 
   _injectStatsBar () {
     if (document.getElementById(STATS_BAR_ID)) return;
-    const api = W.AO3H_PovTracker;
-    if (!api?._analysis) return;
-    const counts = api._analysis.getStats();
+    const counts = this.analysis.getStats();
     const total  = Object.values(counts).reduce((a, b) => a + b, 0);
     if (total === 0) return;
 
@@ -228,7 +219,7 @@ export class PovPresentation {
             node.querySelectorAll('li.work.blurb, div.work.blurb').forEach(b => this._processBlurb(b));
           }
         }
-        W.AO3H_PovTracker?._analysis?.flush();
+        this.analysis.flush();
       }
     });
   }

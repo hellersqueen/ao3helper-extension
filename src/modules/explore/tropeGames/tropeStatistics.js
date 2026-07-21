@@ -34,26 +34,19 @@ const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'tropeStatistics';
 const LOG  = `[AO3H][${MOD}]`;
-// Exported so sibling modules (tropeAchievements, tropeHoroscope) reference
-// this module's key constants instead of duplicating the string literals.
-export const STATS_KEY = `${NS}:tg:stats`;
-const SK   = STATS_KEY;
-
 function getShared () { return W.AO3H_TropeGames || null; }
-
-export const STATS_SEEN_KEY = `${NS}:tg:stats:seen`;
-const SK_SEEN = STATS_SEEN_KEY;
+const storageKey = name => W.AO3H_TropeGames.storageKeys[name];
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE — TROPE TRACKING AND READING STREAKS
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function loadStats () { return lsGet(SK) || {}; }
-function saveStats (stats) { lsSet(SK, stats); }
+function loadStats () { return lsGet(storageKey('stats')) || {}; }
+function saveStats (stats) { lsSet(storageKey('stats'), stats); }
 
-function loadSeen () { return lsGet(SK_SEEN) || []; }
-function saveSeen (seen) { lsSet(SK_SEEN, seen); }
+function loadSeen () { return lsGet(storageKey('statsSeen')) || []; }
+function saveSeen (seen) { lsSet(storageKey('statsSeen'), seen); }
 
 function calcStreak (seen) {
   const dates = new Set(seen.map(e => (typeof e === 'object' ? e.date : null)).filter(Boolean));

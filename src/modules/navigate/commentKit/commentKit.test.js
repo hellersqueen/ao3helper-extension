@@ -61,12 +61,11 @@ async function boot (settings = {}) {
   await setEnabled('commentNavigation', true);
   await setEnabled('commentHighlighting', true);
   await setEnabled('threadManagement', true);
-  await setEnabled('commentConfiguration', true);
   return { setEnabled };
 }
 
 async function teardown (setEnabled) {
-  for (const mod of ['commentConfiguration', 'threadManagement', 'commentHighlighting', 'commentNavigation', 'draftManagement', 'commentComposing']) {
+  for (const mod of ['threadManagement', 'commentHighlighting', 'commentNavigation', 'draftManagement', 'commentComposing']) {
     await setEnabled(mod, false);
   }
   await setEnabled('commentKit', false);

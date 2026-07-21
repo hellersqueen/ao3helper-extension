@@ -22,8 +22,6 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
-import { STATS_KEY } from './tropeStatistics.js';
-import { BINGO_KEY } from './tropeBingoPatterns.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -35,8 +33,6 @@ const NS   = 'ao3h';
 const MOD  = 'tropeAchievements';
 const LOG  = `[AO3H][${MOD}]`;
 const SK   = `${NS}:tg:achievements`;
-const BINGO_SK = BINGO_KEY;
-const STATS_SK = STATS_KEY;
 const activeToasts = new Set();
 const activeTimers = new Set();
 
@@ -133,8 +129,8 @@ function loadUnlocked () { return lsGet(SK) || []; }
 function saveUnlocked (list) { lsSet(SK, list); }
 
 function checkNewUnlocks () {
-  const stats   = lsGet(STATS_SK) || {};
-  const bingo   = lsGet(BINGO_SK) || {};
+  const stats   = lsGet(W.AO3H_TropeGames.storageKeys.stats) || {};
+  const bingo   = lsGet(W.AO3H_TropeGames.storageKeys.bingo) || {};
   const current = loadUnlocked();
   const unlockedIds = new Set(current.map(u => u.id));
   const newUnlocks  = [];

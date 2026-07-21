@@ -26,8 +26,6 @@ import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { observe, onReady, lsGet } from '../../../../lib/utils/index.js';
 import { relativeDate } from '../../../../lib/utils/format-date.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { SK_DATA, SK_LAST } from './bookmarkStatus/statusIndicators.js';
-import { SK_NOTES } from './richTextNotes.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -37,6 +35,7 @@ import { SK_NOTES } from './richTextNotes.js';
 const MOD = 'bookmarkMaintenance';
 const NS  = 'ao3h';
 const W   = getGlobalWindow();
+const storageKey = name => W.AO3H_BookmarkVault.storageKeys[name];
 const vaultToCSV = (...args) => W.AO3H_BookmarkVault.vaultToCSV(...args);
 const vaultToHTML = (...args) => W.AO3H_BookmarkVault.vaultToHTML(...args);
 const findStaleBookmarks = (...args) => W.AO3H_BookmarkVault.findStaleBookmarks(...args);
@@ -71,11 +70,11 @@ function applyPrivateDefault () {
 ═══════════════════════════════════════════════════════════════════════════ */
 
 function _loadVault () {
-  return lsGet(SK_DATA, {});
+  return lsGet(storageKey('data'), {});
 }
 
 function _loadInlineNotes () {
-  return lsGet(SK_NOTES, {});
+  return lsGet(storageKey('inlineNotes'), {});
 }
 
 function doExport (format = 'json') {
@@ -178,7 +177,7 @@ function injectStaleReminder () {
   if (!/\/users\/[^/]+\/bookmarks/.test(location.pathname)) return;
   if (document.getElementById(`${NS}-bm-stale`)) return;
 
-  const lastRead = lsGet(SK_LAST, {});
+  const lastRead = lsGet(storageKey('lastRead'), {});
   const stale = new Set(findStaleBookmarks(_loadVault(), lastRead, months));
   if (!stale.size) return;
 

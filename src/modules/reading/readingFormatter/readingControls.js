@@ -19,6 +19,8 @@ Notes
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { Storage } from '../../../../lib/storage/index.js';
+import { parseWorkIds } from '../../../../lib/ao3/parsers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -186,19 +188,19 @@ register(MOD, {
   const RF = W.AO3H_RF;
   if (!RF) { console.warn(`${LOG} W.AO3H_RF not ready`); return () => {}; }
 
-  const { ROOT_CLS, NOINDENT_CLS, isWorkPage, prefGet } = RF;
+  const { ROOT_CLS, NOINDENT_CLS, isWorkPage } = RF;
 
   if (!isWorkPage() || !document.getElementById('workskin')) return () => {};
 
   // Per-work preferences: when enabled, the Aa panel reads/writes keys scoped
   // to this work, falling back to the global value for anything not yet set.
-  const workId = (/^\/works\/(\d+)/.exec(location.pathname) || [])[1] || null;
+  const workId = parseWorkIds(location)?.workId ?? null;
   const perWork = !!RF.cfg('perWorkPrefs') && !!workId;
   const scopedKey = (key) => perWork ? `${key}:${workId}` : key;
   const readPref = (key, def) => perWork
-    ? prefGet(scopedKey(key), prefGet(key, def))
-    : prefGet(key, def);
-  const prefSet = (key, val) => RF.prefSet(scopedKey(key), val);
+    ? Storage.lsGet(scopedKey(key), Storage.lsGet(key, def))
+    : Storage.lsGet(key, def);
+  const prefSet = (key, val) => Storage.lsSet(scopedKey(key), val);
 
   const state = {
     scale:   readPref(PK_SCALE,   1.0),

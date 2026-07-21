@@ -20,7 +20,7 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
-import { lsGet, lsSet } from '../../../../lib/utils/index.js';
+import { lsGet, lsSet, escapeRegex } from '../../../../lib/utils/index.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -45,10 +45,6 @@ register(MOD, { title: 'Pronunciation Manager', parent: 'textToSpeech', enabledB
 
   function loadDict () { return lsGet(LS_DICT) || []; }
   function saveDict (arr) { lsSet(LS_DICT, arr); }
-
-  function escapeRegex (str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
 
   /* ═════════════════════════════════════════════════════════════════════════
      FEATURE — PRONUNCIATION DICTIONARY

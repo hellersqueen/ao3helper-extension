@@ -112,7 +112,7 @@
       │ [▶ Play] [⏸] [⏹]           │
       │ Speed ──────────── 1×       │
       └─────────────────────────────┘
-    ⚠️ Lié au JS : playbackControls.js alterne display none/'' sur ce panneau.
+    ⚠️ Lié au JS : _textToSpeech.js alterne display none/'' sur ce panneau.
   ═══════════════════════════════════════════════════════════════════════
 */
 
@@ -159,7 +159,7 @@
     SECTION 02 — BOUTONS
   ───────────────────────────────────────────────────────────────────────
     Boutons Play, Pause, Stop et le bouton flottant "Read Aloud".
-    ⚠️ Lié au JS : playbackControls.js active/désactive les boutons via
+    ⚠️ Lié au JS : _textToSpeech.js active/désactive les boutons via
         l'attribut `disabled` et la classe `.ao3h-tts-active`.
   ═══════════════════════════════════════════════════════════════════════
 */
@@ -188,13 +188,13 @@
 }
 
 .ao3h-tts-btn:disabled {
-  /*- ⚠️ Lié au JS : état désactivé géré par playbackControls.js */
+  /*- ⚠️ Lié au JS : état désactivé géré par _textToSpeech.js */
   background: #ccc;
   cursor: not-allowed;
 }
 
 .ao3h-tts-btn.ao3h-tts-active {
-  /*- ⚠️ Lié au JS : classe ajoutée/retirée par playbackControls.js */
+  /*- ⚠️ Lié au JS : classe ajoutée/retirée par _textToSpeech.js */
   background: var(--ao3h-tts-color-accent);
 }
 
@@ -204,7 +204,7 @@
   ─────────────────────────────────────────────────────────────
       └─ Visible en permanence sur les pages d'œuvre, remplace le panneau
          quand celui-ci est fermé. Positionné au même endroit que le panneau.
-      └─ ⚠️ Lié au JS : playbackControls.js alterne display none/'' entre le
+      └─ ⚠️ Lié au JS : _textToSpeech.js alterne display none/'' entre le
              FAB et le panneau.
   ───────────────────────────────────────────────────────────── */
 
@@ -268,7 +268,7 @@
 }
 
 .ao3h-tts-mute-btn.ao3h-tts-active {
-  /*- ⚠️ Lié au JS : playbackControls.js ajoute cette classe quand muet */
+  /*- ⚠️ Lié au JS : _textToSpeech.js ajoute cette classe quand muet */
   background: var(--ao3h-tts-color-accent);
   border-color: var(--ao3h-tts-color-accent);
 }
@@ -347,7 +347,7 @@
     SECTION 05 — BARRE DE PROGRESSION
   ───────────────────────────────────────────────────────────────────────
     Fine barre en haut du panneau indiquant la progression de la lecture.
-    ⚠️ Lié au JS : playbackControls.js modifie dynamiquement la width
+    ⚠️ Lié au JS : _textToSpeech.js modifie dynamiquement la width
         de .ao3h-tts-progress-bar via style.width (valeur en %, calculée).
   ═══════════════════════════════════════════════════════════════════════
 */
@@ -467,7 +467,7 @@
   ───────────────────────────────────────────────────────────────────────
     Classe ajoutée brièvement sur <body> juste avant de cliquer sur le lien
     du chapitre suivant, pour adoucir le passage automatique.
-    ⚠️ Lié au JS : playbackControls.js ajoute cette classe dans onFinished().
+    ⚠️ Lié au JS : _textToSpeech.js ajoute cette classe dans onFinished().
   ═══════════════════════════════════════════════════════════════════════
 */
 

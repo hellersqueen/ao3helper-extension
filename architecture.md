@@ -10,10 +10,12 @@ les responsabilités et les dépendances réelles, pas la taille des fichiers.
 - **Module parent** : fonctionnalité visible et configurable d'AO3 Helper.
 - **Coordinateur** : point d'entrée du module parent; il charge les réglages,
   assemble les dépendances, démarre les fonctionnalités et assure le nettoyage.
-- **Sous-module fonctionnel** : unité cohérente du module parent possédant un
-  comportement réel et une API ou un cycle de vie clairement délimité.
-- **Service interne** : store, moteur ou composant fondamental utilisé par
-  plusieurs sous-modules du même parent.
+- **Sous-module fonctionnel** : mini-fonctionnalité autonome et perceptible par
+  l'utilisateur, utilisable sans activer ou instancier les autres sous-modules
+  fonctionnels du même parent, avec une API ou un cycle de vie délimité.
+- **Logique interne** : store, moteur, calcul ou composant fondamental sans
+  résultat utilisateur autonome; elle appartient au coordinateur lorsqu'elle
+  ne sert qu'un seul module parent.
 - **Bibliothèque partagée** : logique générale utilisée par plusieurs modules
   parents et placée sous `lib/`.
 
@@ -34,15 +36,17 @@ Avant de déplacer ou de fusionner un fichier, déterminer dans cet ordre :
 
 ## Règles de placement
 
-1. **Conserver un sous-module séparé** lorsqu'il porte une responsabilité
-   fonctionnelle cohérente qui peut être initialisée, utilisée, nettoyée et
-   testée comme une unité. Un sous-module peut dépendre d'une API injectée,
-   mais il ne doit pas connaître les détails internes de ses fichiers frères.
+1. **Conserver un sous-module séparé** lorsqu'il porte une mini-fonctionnalité
+   perceptible par l'utilisateur qui peut être initialisée, utilisée, nettoyée
+   et testée sans les autres sous-modules fonctionnels du parent. Un contrat
+   technique cohérent ne suffit pas si le fichier ne produit aucun résultat
+   utilisable à lui seul.
 
-2. **Intégrer au coordinateur** les calculs, constantes, règles, adaptateurs et
-   fonctions d'orchestration qui ne servent qu'au module parent. Un fichier
-   `*Helpers.js`, `*Utils.js`, `*Math.js`, `*Rules.js` ou `*Shared.js` n'est pas
-   justifié par son nom : sa responsabilité réelle décide de son emplacement.
+2. **Intégrer au coordinateur** les calculs, constantes, règles, adaptateurs,
+   fonctions d'orchestration, stores et moteurs qui ne servent qu'au module
+   parent. Un fichier `*Store.js`, `*Engine.js`, `*Helpers.js`, `*Utils.js`,
+   `*Math.js`, `*Rules.js` ou `*Shared.js` n'est pas justifié par son nom, son
+   état ou son contrat technique.
 
 3. **Fusionner avec le sous-module principalement aidé** lorsqu'un fichier ne
    sert qu'un seul sous-module et complète directement son comportement. Cela
@@ -62,10 +66,11 @@ Avant de déplacer ou de fusionner un fichier, déterminer dans cet ordre :
    plusieurs sous-modules du même parent. Plusieurs consommateurs dans un même
    dossier ne transforment pas cette logique en utilitaire global.
 
-7. **Conserver un service interne séparé** lorsqu'un store, moteur ou composant
-   fondamental représente lui-même une unité cohérente avec un contrat clair.
-   Il peut aider plusieurs sous-modules sans être une fonctionnalité visible.
-   `laterShelfStore.js` est un exemple de service interne légitime.
+7. **Consolider les services purement internes dans le coordinateur.** Un store,
+   moteur ou composant fondamental sans comportement utilisateur autonome ne
+   reste pas un fichier frère, même s'il possède un état, des tests et un
+   contrat clair ou s'il alimente plusieurs sous-modules. Le coordinateur en
+   reste propriétaire et injecte ou expose un contrat ciblé à ses enfants.
 
 8. **Déplacer vers `lib/utils/`** une logique générale réellement utilisée par
    plusieurs modules parents. Le fichier doit être spécialisé et clairement
@@ -78,9 +83,9 @@ Avant de déplacer ou de fusionner un fichier, déterminer dans cet ordre :
    et `lib/ui/` pour les composants d'interface réutilisables.
 
 10. **Créer un nouveau sous-module** seulement lorsqu'une partie du coordinateur
-    est devenue une fonctionnalité autonome avec un contrat, un cycle de vie ou
-    des tests propres. La longueur du coordinateur ne suffit pas à justifier
-    l'extraction.
+    est devenue une fonctionnalité autonome perceptible par l'utilisateur, avec
+    un contrat et un cycle de vie propres. Des tests isolés, un état interne ou
+    la longueur du coordinateur ne suffisent pas à justifier l'extraction.
 
 11. **Scinder un sous-module devenu trop large** seulement s'il contient
     plusieurs responsabilités autonomes. La séparation doit rester utile même
@@ -100,13 +105,14 @@ Avant de déplacer ou de fusionner un fichier, déterminer dans cet ordre :
     conserver artificiellement un coordinateur préfixé par `_`.
 
 15. **Ne rien modifier** lorsqu'un petit fichier possède malgré tout une vraie
-    responsabilité autonome. La petite taille, le nombre limité d'exports ou
-    l'absence d'interface visible ne sont pas des raisons suffisantes pour le
-    fusionner.
+    fonctionnalité utilisateur autonome. La petite taille ou le nombre limité
+    d'exports ne sont pas des raisons suffisantes pour le fusionner.
 
 ## Critères d'autonomie d'un sous-module
 
-Un fichier mérite généralement de rester séparé lorsqu'il remplit plusieurs
+Un fichier mérite de rester séparé seulement s'il apporte un comportement
+utilisateur ou métier identifiable pouvant fonctionner sans les autres
+sous-modules fonctionnels du parent. Il remplit ensuite généralement plusieurs
 des critères suivants :
 
 - il expose une API cohérente orientée vers une responsabilité précise;
@@ -114,13 +120,14 @@ des critères suivants :
 - il peut être testé sans instancier tout le module parent;
 - il peut être remplacé par une autre implémentation derrière le même contrat;
 - il assure lui-même son initialisation et son nettoyage;
-- il apporte un comportement utilisateur ou métier identifiable;
 - ses dépendances sont injectées ou proviennent de bibliothèques partagées,
   plutôt que d'importer les détails internes d'un fichier frère.
 
 À l'inverse, un fichier ne constitue généralement pas un sous-module lorsqu'il :
 
 - ne contient que des fonctions pures propres au parent;
+- ne fait que stocker, calculer ou préparer des données affichées ou utilisées
+  par d'autres sous-modules;
 - répète la configuration, le stockage ou les constantes du coordinateur;
 - appelle presque exclusivement les méthodes d'un fichier frère;
 - ne peut rien faire sans recevoir l'instance concrète d'un fichier frère;
@@ -136,9 +143,10 @@ des critères suivants :
   des mêmes helpers ou réglages.
 - Éviter les imports circulaires entre coordinateur et sous-modules. Si des
   fonctions du coordinateur doivent être utilisées, les injecter explicitement.
-- Éviter les imports directs entre fichiers frères lorsque la dépendance ne
-  représente pas un service interne stable. Une dépendance exclusive indique
-  souvent que les deux fichiers doivent être consolidés.
+- Éviter les imports directs entre fichiers frères. Une dépendance commune doit
+  appartenir au coordinateur et être injectée ou fournie par son contrat; une
+  dépendance exclusive indique souvent que les deux fichiers doivent être
+  consolidés.
 - Chaque propriétaire d'un écouteur, timer, observer, contrôleur de requête ou
   élément DOM doit également posséder son nettoyage.
 - Une ressource partagée doit avoir un propriétaire unique afin d'éviter les
@@ -162,7 +170,7 @@ des critères suivants :
 
 - Utilisé par un seul sous-module → fusionner avec ce sous-module.
 - Utilisé par plusieurs sous-modules du même parent → coordinateur avec
-  injection, sauf véritable store ou moteur autonome.
+  injection ou contrat ciblé.
 - Utilisé par plusieurs modules parents → bibliothèque spécialisée sous `lib/`.
 - Vide, no-op, proxy pur ou remplacé par le CSS → supprimer.
 - Même état et même cycle de vie qu'un fichier frère → consolider.
@@ -194,8 +202,11 @@ des critères suivants :
   `tagsDisplay` et `hideByTags` l'utilisent tous les deux.
 - La révélation au survol de `visualPreferences` reste directement dans la
   feuille CSS, sans adaptateur JavaScript vide.
-- Les stores et moteurs cohérents peuvent rester séparés même s'ils ne sont pas
-  visibles directement, à condition de posséder un contrat fonctionnel clair.
+- Les moteurs d'analyse de POV Tracker et de stockage de Later Shelf ont été
+  consolidés dans leurs coordinateurs : ils alimentaient des fonctionnalités
+  visibles, mais ne produisaient aucun résultat utilisateur autonome.
+- Le moteur `BackupOperations` appartient au coordinateur Backup & Sync : les
+  sous-modules reçoivent son contrat sans conserver un fichier de service frère.
 
 ## Enregistrement et cycle de vie
 

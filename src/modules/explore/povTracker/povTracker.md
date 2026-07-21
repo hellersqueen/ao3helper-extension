@@ -43,10 +43,11 @@ supplémentaire.
 ### 1. `_povTracker.js` — le chef d'orchestre
 
 - Met en route les autres fichiers et partage les réglages avec eux
-- Expose `W.AO3H_PovTracker` comme API pour les autres fichiers du module
+- Possède le moteur d'analyse et son cache, puis injecte son contrat aux composants d'interface
+- Expose `W.AO3H_PovTracker` comme API publique du module, sans exposer le moteur interne
 - Clés de stockage : `ao3h:mod:povTracker:settings` (réglages utilisateur) et `ao3h_pov_tracker_data_v1` (cache d'analyse par fic)
 
-### 2. `povAnalysis.js` — détection du point de vue
+### Analyse et cache — intégrés à `_povTracker.js`
 
 - Analyse les tags et le résumé d'une fic pour deviner son point de vue (utilisé sur les listes)
 - Garde en mémoire, par fic, les analyses de texte intégral faites chapitre par chapitre (`recordChapterAnalysis`) au fur et à mesure de la lecture
@@ -63,19 +64,19 @@ supplémentaire.
 
 - Découpe le réglage `preferredPovs` ("first,third") en liste de clés valides
 
-### 5. `povDetailPanel.js` — panneau sur la page d'une œuvre
+### 2. `povDetailPanel.js` — panneau sur la page d'une œuvre
 
-- Analyse le texte du chapitre actuellement affiché et l'enregistre via `povAnalysis`
+- Analyse le texte du chapitre actuellement affiché et l'enregistre via le moteur du coordinateur
 - Affiche un panneau : verdict global, cohérence entre les chapitres déjà lus (avec avertissement si le point de vue change), et la liste des chapitres analysés
 
-### 6. `povPresentation.js` — badges et filtres
+### 3. `povPresentation.js` — badges et filtres
 
 - Affiche un badge coloré sur chaque fic d'une liste, selon son point de vue (badge inséré dans le titre de la fiche, seulement pour les fics déjà présentes dans le cache d'analyse)
 - Ajoute une barre de filtres cliquables pour cacher ou montrer les fics selon leur point de vue
 - Peut afficher un petit résumé de la répartition des points de vue rencontrés
 - Applique automatiquement un filtre sur les points de vue préférés si `autoApplyPreferredFilter` est activé
 
-### 7. `povTracker.css`
+### 4. `povTracker.css`
 
 - Les styles visuels des badges, de la barre de filtres, de la barre de statistiques et du panneau détaillé
 

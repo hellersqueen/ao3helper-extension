@@ -25,16 +25,16 @@ que tu as déjà lu.
 ### 1. `_readingTimeline.js` — le chef d'orchestre
 
 - Regarde sur quelle page on se trouve (détection de listing centralisée via `lib/ao3/parsers.js`'s `isListingPage()`) et active la bonne fonctionnalité (surlignage/masquage sur les listes, ou séparateurs sur la page d'historique)
-- Importe directement `historyAnalytics.js` et `timelineVisualization.js` comme modules ES et leur transmet les données d'analyse ; dépend en priorité de l'API `W.AO3H_ReadingTracker.getHistory()` de **Reading Tracker** — `ao3h:readingHistory:data` n'est qu'un ancien nom de clé de repli, jamais écrit nulle part dans le code actuel
+- Possède directement l'analyse, les statistiques et les annotations de page, puis transmet les données à `timelineVisualization.js` ; dépend en priorité de l'API `W.AO3H_ReadingTracker.getHistory()` de **Reading Tracker** — `ao3h:readingHistory:data` n'est qu'un ancien nom de clé de repli, jamais écrit nulle part dans le code actuel
 
-### 2. `historyAnalytics.js` — analyser l'historique de lecture
+### Analyse de l'historique — intégrée à `_readingTimeline.js`
 
 - Charge tout l'historique de lecture et le classe par date
 - Calcule des statistiques : nombre total de lectures, jour le plus actif, tes 5 fandoms préférés, la plus longue série de jours consécutifs de lecture
 - Sur les listes de fics, surligne les fics déjà lues avec une couleur qui dépend de la date de lecture (ou les cache, si `hideReadWorks` est activé), avec un badge "📚 Read" (ou "📚 Read N×" si lue plusieurs fois)
 - Sur la page d'historique d'AO3, ajoute des séparateurs de jour ("Aujourd'hui", "Hier", "7 derniers jours", "Mois dernier", "Plus ancien") et des sous-séparateurs matin/après-midi/soir/nuit quand plusieurs lectures ont eu lieu le même jour
 
-### 3. `timelineVisualization.js` — le panneau flottant
+### 2. `timelineVisualization.js` — le panneau flottant
 
 - Ajoute un bouton dans le menu du site pour ouvrir le panneau
 - Propose une vue "année" façon calendrier de contributions, ou une vue "mois" façon calendrier classique ; l'intensité des teintes suit `heatmapIntensity`
@@ -52,7 +52,7 @@ que tu as déjà lu.
 
 ### Filtres favoris nommés — intégrés à `_readingTimeline.js`
 
-### 7. `readingTimeline.css`
+### 3. `readingTimeline.css`
 
 - Les styles visuels du surlignage, des badges, des séparateurs (et sous-séparateurs), du panneau, des grilles, des jalons/annotations/mise en avant de recherche et des filtres favoris
 

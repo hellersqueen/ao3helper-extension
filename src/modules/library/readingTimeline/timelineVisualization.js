@@ -7,7 +7,7 @@ search tools, advanced filters, and data exports.
 
 Notes
 
-- History data and aggregate operations are supplied by `HistoryAnalytics`.
+- History data and aggregate operations are supplied by the parent coordinator.
 - The configured palette is resolved once when the visualization is created.
 - Cleanup removes both the panel and its injected navigation control.
 
@@ -35,7 +35,7 @@ export class TimelineVisualization {
   /**
    * @param {{
    *   heatmapColor?: string, defaultView?: string, calendarRange?: number, heatmapIntensity?: string,
-   *   analytics: import('./historyAnalytics.js').HistoryAnalytics,
+   *   analytics: Object,
    *   helpers?: {
    *     computeMilestones?: (heatmapData: object) => object,
    *     getHeatmapLevel?: (count: number, intensity?: string) => number,

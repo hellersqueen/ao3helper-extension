@@ -83,6 +83,12 @@ const DEFAULTS = {
 
 const cfg = makeCfg(MOD, DEFAULTS);
 
+export const TROPE_STORAGE_KEYS = Object.freeze({
+  stats: `${NS}:tg:stats`,
+  statsSeen: `${NS}:tg:stats:seen`,
+  bingo: `${NS}:tg:bingo`,
+});
+
 export const TROPE_CATEGORIES = {
   'Slow Burn': 'Romance', 'Enemies to Lovers': 'Romance', 'Fake Dating': 'Romance',
   'Soulmates': 'Romance', 'Mutual Pining': 'Romance', 'Idiots in Love': 'Romance',
@@ -307,7 +313,7 @@ register(
 
     // Expose shared API for submodules
     W.AO3H_TropeGames = {
-      TROPE_LIST, lsGet, lsSet, NS, cfg, ...tropeGamesHelpers,
+      TROPE_LIST, storageKeys: TROPE_STORAGE_KEYS, lsGet, lsSet, NS, cfg, ...tropeGamesHelpers,
       registerMenuItem (btn) { menu ? menu.registerMenuItem(btn) : onReady(() => menu?.registerMenuItem(btn)); },
     };
 

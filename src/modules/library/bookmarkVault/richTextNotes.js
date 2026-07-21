@@ -21,9 +21,7 @@ Notes
 import { extractWorkIdFromBlurb } from '../../../../lib/ao3/parsers.js';
 import { observe, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
-import { buildStarsEl } from './personalRatings.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
-import { SK_DATA } from './bookmarkStatus/statusIndicators.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -33,7 +31,7 @@ import { SK_DATA } from './bookmarkStatus/statusIndicators.js';
 const D = document;
 const W = getGlobalWindow();
 const isImportantNote = (...args) => W.AO3H_BookmarkVault.isImportantNote(...args);
-export const SK_NOTES = 'ao3h:bookmarkVault:inlineNotes';
+const storageKey = name => W.AO3H_BookmarkVault.storageKeys[name];
 export const NOTE_HISTORY_KEY = 'ao3h:bookmarkVault:noteHistory';
 export const MAX_VERSIONS = 5;
 
@@ -65,8 +63,14 @@ export function getNoteVersions (wid, storage = localStorage) {
 }
 
 export class RichTextNotes {
-  constructor (cfgFn) {
+  /**
+   * @param {Function} cfgFn
+   * @param {Object} [deps]
+   * @param {(wid: string, doc?: Document) => Element} [deps.buildStarsEl]
+   */
+  constructor (cfgFn, { buildStarsEl } = {}) {
     this.cfg  = cfgFn;
+    this.buildStarsEl = buildStarsEl;
     this._obs = [];
     this._timers = new Set();
   }
@@ -200,7 +204,7 @@ export class RichTextNotes {
   ═══════════════════════════════════════════════════════════════════════ */
 
   _processBlurbsForNotes (blurbs) {
-    const notes = lsGet(SK_NOTES, {});
+    const notes = lsGet(storageKey('inlineNotes'), {});
     Array.from(blurbs).forEach(blurb => {
       if (blurb.dataset.bvRtnDone) return;
       blurb.dataset.bvRtnDone = '1';
@@ -226,7 +230,7 @@ export class RichTextNotes {
       wrap.appendChild(btn);
       if (this.cfg('showPersonalRating')) {
         wrap.appendChild(D.createTextNode(' '));
-        wrap.appendChild(buildStarsEl(wid, D));
+        if (this.buildStarsEl) wrap.appendChild(this.buildStarsEl(wid, D));
       }
       const userMod = blurb.querySelector('.user.module.group') || blurb;
       userMod.insertAdjacentElement('beforeend', wrap);
@@ -235,7 +239,7 @@ export class RichTextNotes {
 
   _openEditor (blurb, wid, wrap, btn) {
     if (wrap.querySelector('.ao3h-bv-editor')) return;
-    const notes  = lsGet(SK_NOTES, {});
+    const notes  = lsGet(storageKey('inlineNotes'), {});
     const editor = D.createElement('div');
     editor.className = 'ao3h-bv-editor';
     const ta = D.createElement('textarea');
@@ -330,13 +334,13 @@ export class RichTextNotes {
   }
 
   _persistNote (wid, val) {
-    const n = lsGet(SK_NOTES, {});
+    const n = lsGet(storageKey('inlineNotes'), {});
     // Keep the overwritten version so it can be restored from the editor
     if ((n[wid] || '') !== val) pushNoteVersion(wid, n[wid] || '');
     if (val) n[wid] = val; else delete n[wid];
-    lsSet(SK_NOTES, n);
-    const d = lsGet(SK_DATA, {});
-    if (d[wid]) { d[wid].notes = val.slice(0, 200); lsSet(SK_DATA, d); }
+    lsSet(storageKey('inlineNotes'), n);
+    const d = lsGet(storageKey('data'), {});
+    if (d[wid]) { d[wid].notes = val.slice(0, 200); lsSet(storageKey('data'), d); }
   }
 
   _refreshPreview (wrap, btn, wid, val) {
@@ -376,7 +380,7 @@ export class RichTextNotes {
 
     const wrap = D.createElement('div');
     wrap.className = 'ao3h-bv-note-wrap ao3h-bv-quicknote';
-    const note = lsGet(SK_NOTES, {})[wid] || '';
+    const note = lsGet(storageKey('inlineNotes'), {})[wid] || '';
     if (note) {
       const prev = D.createElement('span');
       prev.className = 'ao3h-bv-note-preview';
@@ -393,7 +397,7 @@ export class RichTextNotes {
     wrap.appendChild(btn);
     if (this.cfg('showPersonalRating')) {
       wrap.appendChild(D.createTextNode(' '));
-      wrap.appendChild(buildStarsEl(wid, D));
+      if (this.buildStarsEl) wrap.appendChild(this.buildStarsEl(wid, D));
     }
     title.insertAdjacentElement('afterend', wrap);
   }

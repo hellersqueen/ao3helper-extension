@@ -31,7 +31,6 @@ AO3 Helper — Reading Formatter Coordinator
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css } from '../../../../lib/utils/index.js';
-import { Storage } from '../../../../lib/storage/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 import styles from './readingFormatter.css?inline';
@@ -74,13 +73,6 @@ const cfg = makeCfg(MOD, DEFAULTS);
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURES
 ═══════════════════════════════════════════════════════════════════════════ */
-
-function prefGet (key, def) {
-  return Storage.lsGet(key, def);
-}
-function prefSet (key, val) {
-  Storage.lsSet(key, val);
-}
 
 /** Walk only Text nodes inside a container. */
 function walkTextNodes (el, fn) {
@@ -154,7 +146,7 @@ register(MOD, {
 
   W.AO3H_RF = {
     NS, SANSSERIF_CLS, CLEAN_CLS, ROOT_CLS, NOINDENT_CLS,
-    cfg, isWorkPage, prefGet, prefSet, walkTextNodes,
+    cfg, isWorkPage, walkTextNodes,
     isLongParagraph, splitWallText, cleanPasteArtifacts,
     isEmptyParagraphText, findDialogueSpans,
   };

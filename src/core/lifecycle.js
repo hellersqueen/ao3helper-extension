@@ -89,7 +89,8 @@ try {
   }
 
   const Modules = (()=>{
-    // name => { meta, init, enabledKey, enabledKeyAlt, _booted, _dispose }
+    // name => { meta, init, enabledKey, enabledKeyAlt, _booted, _dispose,
+    //           _bootPromise, _stopPromise }
     const list = new Map();
     let lastMainThreadYield = performance?.now?.() ?? Date.now();
 
@@ -123,15 +124,19 @@ try {
 
     async function bootOne(name){
       const m = list.get(name);
-      if (!m || m._booted) return false;
+      if (!m) return false;
+      if (m._bootPromise) return m._bootPromise;
+      if (m._stopPromise) await m._stopPromise;
+      if (m._booted) return false;
 
       // If this is a child, verify parent is booted
       if (m.meta?.parent) {
         const parent = list.get(m.meta.parent);
+        if (!parent?._booted && parent?._bootPromise) await parent._bootPromise;
         if (!parent || !parent._booted) return false;
       }
 
-      return await guard(async ()=>{
+      const bootPromise = guard(async ()=>{
         log.info(`Boot ${name}`);
         log.info(`Boot ${name} - has init:`, !!m.init, 'type:', typeof m.init);
         const ret = await m.init?.();
@@ -149,16 +154,23 @@ try {
         }
 
         return true;
-      }, `init:${name}`);
+      }, `init:${name}`).finally(() => {
+        if (m._bootPromise === bootPromise) m._bootPromise = null;
+      });
+      m._bootPromise = bootPromise;
+      return bootPromise;
     }
 
     async function stopOne(name){
       const m = list.get(name);
-      if (!m || !m._booted) return false;
-      return await guard(async ()=>{
+      if (!m) return false;
+      if (m._stopPromise) return m._stopPromise;
+      if (m._bootPromise) await m._bootPromise;
+      if (!m._booted) return false;
+      const stopPromise = guard(async ()=>{
         // Cascade: stop children first
         for (const [childName, child] of list) {
-          if (child.meta?.parent === name && child._booted) {
+          if (child.meta?.parent === name && (child._booted || child._bootPromise)) {
             await stopOne(childName);
           }
         }
@@ -169,7 +181,11 @@ try {
         m._booted  = false;
         Bus.emit('module:stopped', { name });
         return true;
-      }, `stop:${name}`);
+      }, `stop:${name}`).finally(() => {
+        if (m._stopPromise === stopPromise) m._stopPromise = null;
+      });
+      m._stopPromise = stopPromise;
+      return stopPromise;
     }
 
     async function _refresh(name){
@@ -186,7 +202,7 @@ try {
 
       const want = _effectiveOn(m);
       if (want && !m._booted) await bootOne(name);
-      else if (!want && m._booted) await stopOne(name);
+      else if (!want && (m._booted || m._bootPromise)) await stopOne(name);
     }
 
     function register(name, meta, init){
@@ -199,6 +215,8 @@ try {
         enabledKeyAlt: alt,
         _booted: false,
         _dispose: null,
+        _bootPromise: null,
+        _stopPromise: null,
       };
       list.set(name, base);
       // DIAG: module registered
@@ -240,7 +258,9 @@ try {
       }
       await Flags.set(m.enabledKey, !!val);
       if (m.enabledKeyAlt !== m.enabledKey) await Flags.set(m.enabledKeyAlt, !!val);
-      // Watchers call _refresh; 
+      // Watchers request refreshes too, but awaiting one here gives callers a
+      // reliable terminal state. Transition promises deduplicate all requests.
+      await _refresh(name);
     }
 
     async function onFlagChanged(key, val){

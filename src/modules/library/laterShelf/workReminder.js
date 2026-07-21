@@ -29,7 +29,6 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { register } from '../../../core/lifecycle.js';
-import { cfg, loadItems } from './laterShelfStore.js';
 import { appendHeadingBadge } from '../../../../lib/ui/badges.js';
 import { sendNotification, requestNotifyPermission } from '../../../../lib/utils/notifications.js';
 import { extractWorkIdFromBlurb, getBlurbMeta } from '../../../../lib/ao3/parsers.js';
@@ -60,7 +59,7 @@ register(MOD, {
   parent: 'laterShelf',
   enabledByDefault: false,
 }, function init () {
-  const { isStale, snoozeDate, nextRecurrence, peakHourFromSessions } = W.AO3H_LaterShelf;
+  const { cfg, loadItems, isStale, snoozeDate, nextRecurrence, peakHourFromSessions } = W.AO3H_LaterShelf;
 
   if (!cfg('remindersEnabled')) return function cleanup () {};
 

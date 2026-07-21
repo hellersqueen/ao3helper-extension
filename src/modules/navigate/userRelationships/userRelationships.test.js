@@ -80,6 +80,43 @@ describe('userRelationships — blocage par pseudonyme (intégration)', () => {
   });
 });
 
+describe('userRelationships — interfaces de blocage du coordinateur', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    history.pushState(null, '', '/works');
+    buildListing();
+  });
+
+  it('ouvre le menu contextuel de blocage sans module enfant dédié', async () => {
+    const { setEnabled } = await import('../../../core/lifecycle.js');
+    await import('./_userRelationships.js');
+    await setEnabled('userRelationships', true);
+
+    const author = document.querySelector('#work_1 a[rel="author"]');
+    author.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+    expect(document.querySelector('.ao3h-user-context-menu')).not.toBeNull();
+
+    await setEnabled('userRelationships', false);
+    await vi.waitFor(() => {
+      expect(document.querySelector('.ao3h-user-context-menu')).toBeNull();
+    });
+  });
+
+  it('injecte puis retire le panneau de gestion depuis le coordinateur', async () => {
+    history.pushState(null, '', '/users/me/preferences');
+    document.body.innerHTML = '<main id="main"></main>';
+    const { setEnabled } = await import('../../../core/lifecycle.js');
+    await import('./_userRelationships.js');
+    await setEnabled('userRelationships', true);
+
+    expect(document.getElementById('ao3h-blocklist-manager')).not.toBeNull();
+    await setEnabled('userRelationships', false);
+    await vi.waitFor(() => {
+      expect(document.getElementById('ao3h-blocklist-manager')).toBeNull();
+    });
+  });
+});
+
 describe('userRelationships — suivre un auteur et écrire une note (intégration)', () => {
   beforeEach(() => {
     localStorage.clear();
