@@ -41,6 +41,10 @@
         │     notation, les mood tags et les demi-étoiles
         │     → SECTION 05 — EXTRAS (Chantier 4)
 
+        ├─  🗂️ La page "My Kudos" (barre de recherche, état vide,
+        │     message de troncature — le reste vient du CSS natif AO3)
+        │     → SECTION 06 — PAGE KUDOS HISTORY
+
         ────────────────────────────────────────────────────────────── */
 
 
@@ -57,6 +61,8 @@
 /*==       ├─  04. Statut et kudos                           */
 /*#        |                                                 */
 /*===      ├─  05. Extras (Chantier 4)                       */
+/*#        |                                                 */
+/*======   ├─  06. Page Kudos History                        */
 /*#        |                                                 */
 /*#        └─*/
 
@@ -516,4 +522,43 @@
   max-height: 240px;
   overflow-y: auto;
   padding-left: 18px;
+}
+
+
+/*======
+  ═══════════════════════════════════════════════════════════════════════
+    SECTION 06 — PAGE KUDOS HISTORY
+  ───────────────────────────────────────────────────────────────────────
+    La page "My Kudos" (route virtuelle /users/toi/kudos-history) réutilise
+    délibérément les classes natives AO3 (work index group, work blurb,
+    header module, heading, fandoms heading, datetime) pour hériter du
+    rendu du site sans CSS maison — seuls la recherche, l'état vide et le
+    message de troncature ont besoin de styles ici.
+  ═══════════════════════════════════════════════════════════════════════
+*/
+
+
+.ao3h-fa-kudos-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.ao3h-fa-kudos-search input[type="search"] {
+  flex: 0 1 320px;
+  padding: 5px 8px;
+  border: 1px solid var(--ao3h-fa-color-blue-border);
+  border-radius: var(--ao3h-fa-radius);
+}
+
+.ao3h-fa-kudos-count {
+  font-size: 12px;
+  color: var(--ao3h-fa-text-muted);
+}
+
+.ao3h-fa-kudos-empty {
+  color: var(--ao3h-fa-text-muted);
+  font-style: italic;
+  padding: 12px 0;
 }

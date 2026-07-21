@@ -31,6 +31,7 @@ seule de ces choses.
 | `kudosReminder` | désactivé | Bannière sur la page d'une fic terminée mais jamais kudosée, avec un bouton kudos en un clic |
 | `confirmBeforeKudos` | désactivé | Demande un second clic sur le bouton de kudos rapide d'une liste, pour éviter les clics accidentels |
 | `kudosBookmarkFinder` | activé | Bouton "Find kudosed works not bookmarked" sur sa propre page Bookmarks |
+| `kudosHistoryPage` | activé | Lien "Kudos History" dans la nav AO3 et dans la sidebar Dashboard, ouvrant une page listant toutes ses fics kudosées (recherche par titre/auteur·ice/fandom) |
 | `halfStars` | désactivé | Autorise les notes en demi-étoile (.5) sur le widget de la page d'œuvre |
 | `ratingCategories` | désactivé | Ajoute des mini-notations Intrigue / Personnages / Écriture, plus un score combiné affiché sur les listes |
 | `moodTags` | désactivé | Tags d'humeur libres (drôle, réconfortant...) attachés à la note, sur la page d'œuvre |
@@ -106,6 +107,14 @@ périmètre de ce chantier)*.
 - Sur sa propre page Bookmarks, ajoute un bouton qui scanne les pages récentes de favoris (jusqu'à 5) et liste les fics kudosées localement qui n'y apparaissent pas
 - Requêtes en lecture seule, sur son propre compte uniquement
 
+### 7bis. `kudosHistoryPage.js` — la page "My Kudos"
+
+- Ajoute un lien "Kudos History" dans la navigation AO3 (toutes les pages) et un lien "Kudos (N)" dans la sidebar Dashboard d'AO3 (page `/users/toi`, juste après "History")
+- Sur la route virtuelle `/users/toi/kudos-history` — une URL qui n'existe pas nativement sur AO3 (le serveur y répond par un 404) — construit une page complète listant toutes les fics kudosées localement, avec une recherche texte (titre/auteur·ice/fandom)
+- Réutilise les classes natives AO3 (`work index group`, `work blurb`, `header module`...) pour hériter du rendu du site plutôt que d'inventer un style maison
+- Ne supprime jamais le contenu d'origine de `#main` : le cache (affichage masqué) et le restaure à la désactivation du module
+- Scope volontairement minimal : pas de filtre par fandom, pas de catégories — juste liste + recherche
+
 ### 8. Logique pure partagée intégrée à `_ficAppreciation.js`
 
 - Regroupements et statistiques (kudos par fandom/auteur, notes moyennes/répartition/évolution mensuelle)
@@ -137,7 +146,8 @@ encore de code. Chacune a été implémentée ou explicitement écartée :
 - ~~Un pourcentage de progression au lieu du simple statut "terminé"~~ ✅ Fait — le badge de statut "en cours" affiche le pourcentage lu (`multiStatusTracker`, via `W.AO3H_ReadingTracker.getProgress`).
 - ~~Transformer automatiquement une tentative de re-kudos en petit commentaire~~ ❌ Écarté — poster un commentaire automatiquement, sans relecture par l'utilisateur·ice, va à l'encontre du principe (déjà appliqué ailleurs, ex. commentKit) de toujours laisser relire avant de poster ; répéter le même texte sur plusieurs fics ressemblerait aussi à du spam.
 - ~~Limiter le nombre de kudos qu'on peut donner par minute~~ ❌ Écarté — il n'existe aucune action de kudos en masse dans ce module (le bouton rapide est un clic manuel unique) ; AO3 limite déjà côté serveur. Rien à limiter côté client.
-- ~~Un historique chronologique de tous les kudos donnés, filtrable~~ ✅ Fait — `kudosExtendedFeatures.getHistory({query, order})`, recherche par titre/auteur·ice/fandom.
+- ~~Un historique chronologique de tous les kudos donnés, filtrable~~ ✅ Fait — `kudosExtendedFeatures.getHistory({query, order})`, recherche par titre/auteur·ice/fandom. *(Précision : pendant longtemps cette méthode n'était appelée par aucune interface — voir l'item "page dédiée" ci-dessous, qui lui donne enfin un affichage.)*
+- ~~Une page dédiée pour voir toutes ses fics kudosées~~ ✅ Fait — `kudosHistoryPage.js` : route virtuelle `/users/toi/kudos-history` (n'existe pas nativement sur AO3, réponse 404 réelle), interceptée pour afficher une page listant toutes les fics kudosées avec recherche, dans le style natif AO3 (classes `work blurb` réutilisées). Deux points d'entrée : lien dans la navigation AO3 et lien "Kudos (N)" dans la sidebar Dashboard, juste après "History" (réglage `kudosHistoryPage`). Reprend l'idée de l'ancien module pré-Vite `checkForKudos`/`kudosPage-ui.js`, avec un scope volontairement réduit (pas de filtre par fandom, pas de panneau de typographie).
 - ~~Un score personnel unique qui combine plusieurs notes par catégories~~ ✅ Fait — `combinedCategoryScore()`, affiché en badge "Ⓒ" sur les listes quand `ratingCategories` est actif.
 - ~~Une fenêtre de confirmation avant d'envoyer un kudos~~ ✅ Fait — réglage `confirmBeforeKudos` (second clic requis sur le bouton rapide d'une liste).
 - ~~Proposer de noter la fic en étoiles au moment où on la marque comme terminée~~ ✅ Fait — réglage `promptRatingOnFinish` (met en valeur le widget d'étoiles, ne note jamais automatiquement).
@@ -197,5 +207,6 @@ Notes techniques par fichier, en complément de la section "Fichiers" ci-dessus 
 - `starRatings.js` : la demi-étoile pose `stars = n - 0.5` (`halfStarValue()`, selon la moitié cliquée), rendue avec deux `<span>` superposés (`.ao3h-fa-star-back`/`.ao3h-fa-star-front`, `clip-path`) ; `showCommunityStats` lit `dl.stats dd.kudos`/`dd.hits` déjà présents sur la page (simple juxtaposition, aucun calcul ni requête).
 - `multiStatusTracker.js` : `rereadCount` survit aux changements de statut suivants (pas remis à zéro en repassant par "Reading").
 - `kudosBookmarkFinder.js` : utilise `fetchAO3PageText`/`parseBookmarksPageHTML` (même origine, lecture seule).
+- `kudosHistoryPage.js` : aucune nouvelle clé de stockage — lit `ficAppreciation:kudosed` via `kudosExtendedFeatures.getHistory()`/`getStats()`. Détection de route via `isKudosHistoryPage()` (`lib/ao3/parsers.js`, définition canonique partagée avec `core/lifecycle.js` et `mainNavigation`). Le lien de sidebar Dashboard s'insère juste après le lien "History" trouvé via `#dashboard a[href*="/readings"]`.
 - `kudosTracker.js` / `_ficAppreciation.js` : cycle complet des kudos et orchestration générale du module.
 - `_ficAppreciation.js` expose aussi la logique pure testée dans `ficAppreciation.logic.test.js` — `groupCounts`/`topEntries`, `computeRatingStats`/`ratingByMonth`/`appendRatingHistory`/`combinedCategoryScore`/`halfStarValue`, `hourOfDayHistogram`/`peakHours`, `milestonesCrossed`/`nextRereadCount`, `filterKudosHistory`/`sortKudosHistoryByDate`, `diffNotBookmarked`.

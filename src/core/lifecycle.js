@@ -14,28 +14,6 @@ import { Storage } from '../../lib/storage/index.js';
 import { UserStorage, wrapStorageForUser } from '../../lib/storage/user.js';
 import { Routes } from '../../lib/ao3/routes.js';
 
-/* ──────────────────────────────────────────────────────────────────────────
-   ROUTE FLAGS (no early return)
-   Why: The core must always initialize so the global AO3H namespace exists.
-        Modules are responsible for skipping themselves on restricted routes
-        (e.g., Kudos History). We only set a route flag here.
-─────────────────────────────────────────────────────────────────────────── */
-try {
-  const W = (typeof unsafeWindow !== 'undefined') ? unsafeWindow : window;
-  W.__AO3H_ROUTE_FLAGS__ = W.__AO3H_ROUTE_FLAGS__ || {};
-  const path = location.pathname;
-  const IS_KUDOS_HISTORY = /^\/users\/[^/]+\/kudos-history(?:\/|$)/.test(path);
-  W.__AO3H_ROUTE_FLAGS__.isKudosHistory = !!IS_KUDOS_HISTORY;
-
-  if (IS_KUDOS_HISTORY) {
-    console.log('[AO3H] Kudos History detected — core will init; modules should self-guard.');
-  }
-} catch (e) {
-  // Soft-fail: never block core init because of a route check
-  console.warn('[AO3H] route flag init failed:', e);
-}
-
-
   const W = getGlobalWindow();
 
    /* ──────────────────────────────────────────────────────────────────────────
@@ -598,11 +576,9 @@ try {
       bridgeEvents().catch(e => log.error('Event bridging failed:', e));
     }
     
-    // Create navigation button (unless on restricted routes)
+    // Create navigation button
     onReady(() => {
-      if (!W.__AO3H_ROUTE_FLAGS__?.isKudosHistory) {
-        createNavigationButton();
-      }
+      createNavigationButton();
     });
     
     // Module loading is now handled by module-loader.js

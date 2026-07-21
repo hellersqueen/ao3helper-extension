@@ -193,4 +193,40 @@ describe('ficAppreciation (intégration)', () => {
       await teardown(setEnabled);
     }
   });
+
+  it('rend la page "My Kudos" sur la route virtuelle kudos-history, avec ses deux liens d\'entrée', async () => {
+    history.pushState(null, '', '/users/testuser/kudos-history');
+    document.head.innerHTML = '';
+    setMeta();
+    document.body.innerHTML = `
+      <div id="header">
+        <ul class="primary navigation"></ul>
+        <div class="header module"><a href="/users/testuser">testuser</a></div>
+      </div>
+      <div id="dashboard" class="region own">
+        <ul class="navigation actions"><li><a href="/users/testuser/readings">History</a></li></ul>
+      </div>
+      <div id="main"><p>Page not found</p></div>
+    `;
+    localStorage.setItem('ao3h:ficAppreciation:kudosed', JSON.stringify({
+      70: { date: '2025-01-01', title: 'Kudosed Fic', author: 'carol' },
+    }));
+
+    const { setEnabled } = await boot();
+    try {
+      expect(document.querySelector('.ao3h-fa-kudos-nav-link')).not.toBeNull();
+      expect(document.querySelector('.ao3h-fa-kudos-dashboard-link')?.textContent).toBe('Kudos (1)');
+
+      const entry = document.querySelector('.ao3h-fa-kudos-list li.work.blurb.group');
+      expect(entry?.textContent).toContain('Kudosed Fic');
+      expect(entry?.querySelector('a').getAttribute('href')).toBe('/works/70');
+      // Pas sur une page d'œuvre : aucun wiring de la page d'œuvre ne doit s'exécuter
+      expect(document.getElementById('ao3h-fa-finish-btn')).toBeNull();
+    } finally {
+      await teardown(setEnabled);
+      expect(document.querySelector('.ao3h-fa-kudos-page')).toBeNull();
+      expect(document.querySelector('.ao3h-fa-kudos-nav-link')).toBeNull();
+      expect(document.querySelector('.ao3h-fa-kudos-dashboard-link')).toBeNull();
+    }
+  });
 });

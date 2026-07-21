@@ -32,7 +32,7 @@ import { register } from '../../../core/lifecycle.js';
 import { css } from '../../../../lib/utils/index.js';
 import { Settings, Flags } from '../../../../lib/utils/config.js';
 import { detectUser } from '../../../../lib/utils/user-detector.js';
-import { isListingPage } from '../../../../lib/ao3/parsers.js';
+import { isListingPage, isKudosHistoryPage } from '../../../../lib/ao3/parsers.js';
 import styles from './mainNavigation.css?inline';
 
 import { AddNavLinks } from './addNavLinks.js';
@@ -138,10 +138,6 @@ const DEFAULTS = {
    FEATURES
 ═══════════════════════════════════════════════════════════════════════════ */
 
-function isKudosPage() {
-  return /\/users\/[^/]+\/kudos-history(?:\/?|$)/.test(location.pathname);
-}
-
 function findPrimaryHeaderUL() {
   const selectors = [
     '#header ul.primary.navigation',
@@ -167,7 +163,7 @@ register(MOD, { title: 'Main Navigation', enabledByDefault: false }, async funct
   const migrated = QuickLinks.migrateLegacySettings(cfg);
   if (migrated) cfg = await Settings.set(MOD, migrated);
 
-  if (isKudosPage()) return () => {};
+  if (isKudosHistoryPage()) return () => {};
 
   const headerUL = findPrimaryHeaderUL();
   const user = detectUser() || '';

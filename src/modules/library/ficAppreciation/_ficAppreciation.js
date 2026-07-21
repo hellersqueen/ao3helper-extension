@@ -34,7 +34,7 @@ AO3 Helper — Fic Appreciation Coordinator
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, observe } from '../../../../lib/utils/index.js';
-import { extractWorkIdFromHref, extractWorkIdFromBlurb, isWorkPage, isListingPage } from '../../../../lib/ao3/parsers.js';
+import { extractWorkIdFromHref, extractWorkIdFromBlurb, isWorkPage, isListingPage, isKudosHistoryPage } from '../../../../lib/ao3/parsers.js';
 import { EV_WORK_FINISHED } from '../../../../lib/utils/event-names.js';
 import { clearAllToasts } from '../../../../lib/ui/toast.js';
 import styles from './ficAppreciation.css?inline';
@@ -45,6 +45,7 @@ import { KudosExtendedFeatures } from './kudosExtendedFeatures.js';
 import { StarRatings } from './starRatings.js';
 import { MultiStatusTracker } from './multiStatusTracker.js';
 import { KudosBookmarkFinder } from './kudosBookmarkFinder.js';
+import { KudosHistoryPage } from './kudosHistoryPage.js';
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -79,6 +80,7 @@ const DEFAULTS = {
   completionMilestones:   true,    // celebratory toast at 10/25/50/100/... finished works
   promptRatingOnFinish:   false,   // highlight the star widget right after marking finished
   kudosBookmarkFinder:    true,    // "find kudosed works not bookmarked" button on your bookmarks page
+  kudosHistoryPage:       true,    // "Kudos History" nav link + dashboard link, opening a searchable page of your kudosed works
 };
 
 function cfg (key) {
@@ -223,6 +225,7 @@ register(MOD, {
   const sr   = new StarRatings(diOpts);
   const mst  = new MultiStatusTracker(diOpts);
   const kbf  = new KudosBookmarkFinder({ NS, storeGet, helpers: ficAppreciationHelpers });
+  const khp  = new KudosHistoryPage({ NS, cfg, kef });
   const hiddenBlurbs = new Map();
 
   function hideBlurb (blurb) {
@@ -291,6 +294,11 @@ register(MOD, {
     });
   }
 
+  if (cfg('kudosHistoryPage')) {
+    khp.injectNavLink();
+    khp.injectDashboardLink();
+  }
+
   const workId = getWorkIdFromPath();
 
   if (isWorkPage() && workId) {
@@ -328,6 +336,16 @@ register(MOD, {
       W.removeEventListener(EV_WORK_FINISHED, onFinished);
       clearAllToasts();
       kt.cleanup();
+      khp.removeLinks();
+      delete AO3H.ficAppreciation;
+    };
+
+  } else if (isKudosHistoryPage() && cfg('kudosHistoryPage')) {
+    khp.render();
+
+    return () => {
+      khp.cleanupPage();
+      khp.removeLinks();
       delete AO3H.ficAppreciation;
     };
 
@@ -353,6 +371,7 @@ register(MOD, {
       });
       kbf.cleanup();
       kt.cleanup();
+      khp.removeLinks();
       delete AO3H.ficAppreciation;
     };
   }
@@ -360,6 +379,7 @@ register(MOD, {
   return () => {
     restoreHiddenBlurbs();
     kt.cleanup();
+    khp.removeLinks();
     delete AO3H.ficAppreciation;
   };
 });
