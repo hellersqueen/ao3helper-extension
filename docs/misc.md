@@ -500,3 +500,26 @@ production doit entraîner la mise à jour de son entrée et du total concerné.
 
 Les tests restent placés à côté du code qu'ils couvrent. Les documentations de
 module restent placées dans `src/modules/<catégorie>/<module>/<module>.md`.
+
+
+
+
+J'ai vérifié les règles officielles de GreasyFork (pas de mémoire — lues directement) et testé une taille réelle. Deux règles bloquent l'architecture actuelle, dans les deux sens :
+
+1. Interdiction de charger le gros du code depuis ailleurs. Règle exacte : « A script posted on Greasy Fork that simply loads the bulk of the script from somewhere else is not allowed. » Ça exclut directement la version « légère » qu'on vient de publier sur GitHub (ao3-helper.user.js qui va chercher .modules.js/.panel.js via GM_xmlhttpRequest). Il faudrait la version autonome (tout inclus, comme ao3-helper-tampermonkey.user.js).
+
+2. Interdiction de minifier, avec une limite de 2 Mo sur le code source. Règle exacte : « Code posted to Greasy Fork must not be obfuscated or minified... Scripts are limited to a size of 2 MB. Scripts may not be minified to fit under this limit. » J'ai testé une build non minifiée de la version autonome pour avoir un vrai chiffre plutôt que deviner : 2,29 Mo — au-dessus de la limite d'environ 290 Ko (~14 %).
+
+Donc concrètement : aucun des deux fichiers déjà produits ne passe tel quel. Deux façons réalistes d'avancer :
+
+Réduire la taille en dessous de 2 Mo — voir ce qui peut être allégé (CSS inline, code mort, etc.) pour repasser sous la limite en gardant tout dans un seul fichier autonome non minifié. Pas garanti que ça suffise à 14% d'écart.
+Utiliser le mécanisme officiel de GreasyFork pour scinder le script — leurs règles autorisent @require d'une « Library » GreasyFork, et une Library peut elle-même se synchroniser depuis un dépôt GitHub (donc réutiliser hellersqueen/ao3helper). Ça permettrait de rester sous 2 Mo par fichier, mais c'est un changement plus lourd : @require charge tout d'un coup au démarrage (pas à la demande comme maintenant), donc ça change le comportement de chargement, pas juste la taille.
+Aucune des deux n'est un simple interrupteur à basculer — c'est un vrai chantier, plus gros que ce qu'on vient de faire pour GitHub.
+
+Indépendamment de ce choix, le processus de soumission lui-même est le même :
+
+Créer un compte sur greasyfork.org.
+« Post a script » → coller le code (ou importer depuis une URL) + description, tags, lien vers le dépôt source.
+Une première soumission passe par une revue manuelle (les permissions sensibles comme unsafeWindow/GM_xmlhttpRequest attirent plus d'attention) — ça peut prendre quelques jours.
+Pour les mises à jour futures : soit tu republies manuellement sur GreasyFork à chaque version, soit tu configures un « sync » depuis une URL externe (ton @downloadURL GitHub) que GreasyFork revérifie périodiquement — dans ce cas npm run publish:github resterait la seule commande à relancer.
+Veux-tu que je regarde en premier si on peut passer sous 2 Mo sans changer le comportement (option 1), avant d'envisager le découpage via Library ?

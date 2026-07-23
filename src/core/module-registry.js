@@ -87,23 +87,9 @@ const GROUP_LABELS = {
 function initRegistry() {
   const modules = Modules;
 
-  // Prefer tab-registry.js if already loaded (legacy bundle compatibility —
-  // lecture window conservée jusqu'à l'étape 316)
-  const _tabDefs = W.AO3H_Common?.TabRegistry?.ALL_MODULES;
-  const moduleDefs = _tabDefs
-    ? _tabDefs.map(m => [m.id, m.title, m.tab, false])
-    : MODULE_DEFINITIONS;
-
-  if (_tabDefs) {
-    log.info(`Using tab-registry.js (${moduleDefs.length} modules)`);
-  } else {
-    log.warn('tab-registry.js not found, using inline fallback');
-  }
-
-
   W.AO3H.__batchRegistering = true;
   try {
-    moduleDefs.forEach(([id, title, group, enabledByDefault], index) => {
+    MODULE_DEFINITIONS.forEach(([id, title, group, enabledByDefault], index) => {
       const existing = modules.all?.().find(m => m.name === id);
       if (!existing) {
         modules.register(id, {
@@ -121,9 +107,8 @@ function initRegistry() {
   } finally {
     W.AO3H.__batchRegistering = false;
   }
-  W.AO3H.menu?.rebuild?.();
 
-  log.info(`Module registry initialized: ${moduleDefs.length} modules`);
+  log.info(`Module registry initialized: ${MODULE_DEFINITIONS.length} modules`);
 }
 
 initRegistry();

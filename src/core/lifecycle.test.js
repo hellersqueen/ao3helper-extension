@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Modules } from './lifecycle.js';
+import { Modules, mergeOwnPropertyDescriptors } from './lifecycle.js';
 
 let sequence = 0;
 
@@ -48,5 +48,23 @@ describe('module lifecycle transition serialization', () => {
     await Promise.all([boot, stop]);
     expect(dispose).toHaveBeenCalledTimes(1);
     expect(Modules._list.get(name)._booted).toBe(false);
+  });
+});
+
+describe('AO3H namespace merging', () => {
+  it('replaces a getter-only property without invoking a setter', () => {
+    const target = {};
+    Object.defineProperty(target, 'util', {
+      configurable: true,
+      enumerable: true,
+      get: () => ({ source: 'old' }),
+    });
+    const source = {
+      get util() { return { source: 'new' }; },
+    };
+
+    expect(() => mergeOwnPropertyDescriptors(target, source)).not.toThrow();
+    expect(target.util).toEqual({ source: 'new' });
+    expect(Object.getOwnPropertyDescriptor(target, 'util')?.set).toBeUndefined();
   });
 });

@@ -74,6 +74,19 @@ async function main() {
     const isOpen = await roots.first().evaluate((el) => el.classList.contains('open')).catch(() => false);
     check('cliquer sur le bouton ouvre le menu (classe "open")', isOpen);
 
+    const firstCategory = roots.first().locator('li.ao3h-group-container').first();
+    const categoryHeader = firstCategory.locator('a[aria-haspopup="true"]').first();
+    await categoryHeader.click({ force: true }).catch(() => {});
+    const categoryState = await firstCategory.evaluate((el) => ({
+      expanded: el.querySelector('a[aria-haspopup="true"]')?.getAttribute('aria-expanded') === 'true',
+      open: el.querySelector('ul.ao3h-submenu')?.classList.contains('open') === true,
+      modules: el.querySelectorAll('ul.ao3h-submenu > li').length,
+    })).catch(() => ({ expanded: false, open: false, modules: 0 }));
+    check(
+      'cliquer sur une catégorie affiche ses modules',
+      categoryState.expanded && categoryState.open && categoryState.modules > 0,
+    );
+
     const settingsButton = roots.first().locator('.ao3h-icon-btn[data-module-name]').first();
     await settingsButton.waitFor({ state: 'attached', timeout: 10000 }).catch(() => {});
     // The fixture keeps AO3's dropdown visually hidden; dispatch through the

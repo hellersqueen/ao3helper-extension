@@ -38,6 +38,9 @@ Chaque module a son propre fichier `.md` à côté de son code, dans
 `src/modules/<catégorie>/<module>/`. Le dossier [`docs/`](docs/) contient
 la documentation transversale du projet :
 
+- [`docs/guide-explicatif-du-projet.md`](docs/guide-explicatif-du-projet.md)
+  — explication simple et détaillée du rôle de chaque dossier/fichier
+  (source, build, `dist/`) et de pourquoi le projet fonctionne ainsi.
 - [`docs/never-built-modules.md`](docs/never-built-modules.md) — concepts de
   modules envisagés puis explicitement écartés, et pourquoi.
 - [`docs/misc.md`](docs/misc.md) — inventaire fichier par fichier de

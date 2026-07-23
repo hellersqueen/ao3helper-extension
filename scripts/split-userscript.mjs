@@ -15,6 +15,17 @@ if (!starts.length || importStart < starts.at(-1)) {
 
 const prefix = source.slice(0, starts[0]);
 const suffix = source.slice(importStart);
+const metadataEnd = source.indexOf('// ==/UserScript==');
+if (metadataEnd < 0) throw new Error('Could not identify the userscript metadata block');
+const metadataLineEnd = source.indexOf('\n', metadataEnd);
+const standaloneSource = `${source.slice(0, metadataLineEnd + 1)}\n`
+  + '(() => {\n'
+  + "  const bootScope = typeof unsafeWindow !== 'undefined' ? unsafeWindow : globalThis;\n"
+  + '  if (bootScope.__AO3H_STANDALONE_BOOTED__) return;\n'
+  + '  bootScope.__AO3H_STANDALONE_BOOTED__ = true;\n'
+  + '  globalThis.__AO3H_INLINE_BUNDLES__ = true;\n'
+  + source.slice(metadataLineEnd + 1)
+  + '\n})();\n';
 const bootstrap = [];
 const modules = [];
 const panel = [];
@@ -40,9 +51,11 @@ const modulesSource = banner('modules') + modules.join('');
 const panelSource = banner('panel') + panel.join('');
 await Promise.all([
   writeFile(bootstrapPath, bootstrapSource, 'utf8'),
+  writeFile(path.join(dist, 'ao3-helper-tampermonkey.user.js'), standaloneSource, 'utf8'),
   writeFile(path.join(dist, 'ao3-helper.modules.js'), modulesSource, 'utf8'),
   writeFile(path.join(dist, 'ao3-helper.panel.js'), panelSource, 'utf8'),
 ]);
 
 const kb = (text) => `${(Buffer.byteLength(text) / 1000).toFixed(2)} kB`;
 console.log(`AO3 Helper split: bootstrap ${kb(bootstrapSource)}, modules ${kb(modulesSource)}, panel ${kb(panelSource)}`);
+console.log(`AO3 Helper standalone Tampermonkey userscript: ${kb(standaloneSource)}`);
