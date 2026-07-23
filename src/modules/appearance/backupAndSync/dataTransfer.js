@@ -22,6 +22,8 @@ Notes
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadFile } from '../../../../lib/utils/json-file.js';
 import { showToast as libShowToast } from '../../../../lib/ui/toast.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('dataTransfer');
 
 
 
@@ -238,7 +240,7 @@ export class ImportExportLists {
               count++;
             });
 
-            console.log(`[DataTransfer] Import complete — ${count} keys restored.`);
+            log.debug(`Import complete — ${count} keys restored.`);
             this.showToast(`Import successful: ${count} keys restored.`, 'success');
             if (this.onImport) this.onImport(count);
             resolve(count);

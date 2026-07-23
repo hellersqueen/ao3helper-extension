@@ -38,6 +38,8 @@ import styles from './backupAndSync.css?inline';
 import { AutoBackup } from './automateBackup.js';
 import { CloudSync } from './cloudSync.js';
 import { ImportExportLists } from './dataTransfer.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('backupAndSync');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    VERSION MIGRATION
@@ -161,7 +163,7 @@ export class BackupOperations {
       timestamp: new Date().toISOString(),
       data: this.getAllAO3HelperData(),
     });
-    console.log(`[BackupOperations] Backup saved (${this.backups.length}/${this.maxBackups})`);
+    log.debug(`Backup saved (${this.backups.length}/${this.maxBackups})`);
     return backup;
   }
 
@@ -174,7 +176,7 @@ export class BackupOperations {
     const date = new Date(backup.timestamp).toLocaleString();
     if (!confirm(`Restore backup from ${date}?\n\nThis will overwrite current data.`)) return false;
     this._restoreData(backup.data);
-    console.log(`[BackupOperations] Restored backup from ${date}`);
+    log.debug(`Restored backup from ${date}`);
     return true;
   }
 
@@ -191,7 +193,7 @@ export class BackupOperations {
       categories,
       data,
     });
-    console.log(`[BackupOperations] Selective backup saved (${Object.keys(data).length} keys, categories: ${categories.join(', ') || 'all'})`);
+    log.debug(`Selective backup saved (${Object.keys(data).length} keys, categories: ${categories.join(', ') || 'all'})`);
     return backup;
   }
 
@@ -223,7 +225,7 @@ export class BackupOperations {
       iv: Array.from(iv),
       ciphertext: Array.from(new Uint8Array(ciphertext)),
     });
-    console.log('[BackupOperations] Encrypted backup saved.');
+    log.debug('Encrypted backup saved.');
     return backup;
   }
 
@@ -244,7 +246,7 @@ export class BackupOperations {
         new Uint8Array(backup.ciphertext)
       );
       this._restoreData(JSON.parse(new TextDecoder().decode(plaintext)));
-      console.log(`[BackupOperations] Encrypted backup restored from ${date}`);
+      log.debug(`Encrypted backup restored from ${date}`);
       return true;
     } catch {
       console.error('[BackupOperations] Decryption failed — wrong password or corrupt backup.');
@@ -279,7 +281,7 @@ export class BackupOperations {
     const compressed = await this._gzip(serialized, 'compress');
     const backup = this._record({ timestamp: new Date().toISOString(), type: 'compressed', compressed });
     const ratio = ((1 - compressed.length / serialized.length) * 100).toFixed(1);
-    console.log(`[BackupOperations] Compressed backup saved (${ratio}% smaller).`);
+    log.debug(`Compressed backup saved (${ratio}% smaller).`);
     return backup;
   }
 
@@ -293,7 +295,7 @@ export class BackupOperations {
     if (!confirm(`Restore compressed backup from ${date}?\n\nThis will overwrite current data.`)) return false;
     try {
       this._restoreData(JSON.parse(/** @type {string} */ (await this._gzip(backup.compressed, 'decompress'))));
-      console.log(`[BackupOperations] Compressed backup restored from ${date}`);
+      log.debug(`Compressed backup restored from ${date}`);
       return true;
     } catch (error) {
       console.error('[BackupOperations] Decompression failed:', error);
@@ -318,7 +320,7 @@ export class BackupOperations {
       baseTimestamp: base?.timestamp || null,
       delta,
     });
-    console.log(`[BackupOperations] Incremental backup saved (${Object.keys(delta).length} changed keys).`);
+    log.debug(`Incremental backup saved (${Object.keys(delta).length} changed keys).`);
     return backup;
   }
 
@@ -334,7 +336,7 @@ export class BackupOperations {
       if (value === null) localStorage.removeItem(key);
       else localStorage.setItem(key, value);
     }
-    console.log(`[BackupOperations] Incremental backup applied from ${date}`);
+    log.debug(`Incremental backup applied from ${date}`);
     return true;
   }
 
@@ -394,7 +396,7 @@ register(
     try {
       const migration = runVersionMigrations(AO3H.env?.VERSION || '0');
       if (migration.ran && migration.migrated.length) {
-        console.info(`${LOG} migrated ${migration.migrated.length} legacy setting key(s) (${migration.from || 'first run'} → ${migration.to})`);
+        log.debug(`${LOG} migrated ${migration.migrated.length} legacy setting key(s) (${migration.from || 'first run'} → ${migration.to})`);
       }
     } catch (err) {
       console.warn(`${LOG} version migration failed:`, err);
@@ -484,12 +486,12 @@ register(
       }),
     };
 
-    console.info(`${LOG} init complete`);
+    log.debug(`${LOG} init complete`);
 
     return function cleanup () {
       instances.forEach(inst => inst.cleanup?.());
       delete AO3H.backupAndSync;
-      console.info(`${LOG} cleanup complete`);
+      log.debug(`${LOG} cleanup complete`);
     };
   }
 );

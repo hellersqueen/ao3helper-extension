@@ -37,6 +37,7 @@ AO3 Helper — Similar Fics
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
 import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { getHistoryWorkIdSet } from '../../../../lib/storage/keys.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
@@ -160,7 +161,6 @@ css(styles, 'ao3h-similarFics');
 
 const MOD = 'similarFics';
 const W   = getGlobalWindow();
-const LOG = `[AO3H][${MOD}]`;
 
 const ROOT_CLASS = 'ao3h-similar-fics-enabled';
 const PANEL_ID = 'ao3h-similar-fics-panel';
@@ -191,8 +191,9 @@ const DEFAULTS = {
 
 const cfg = makeCfg(MOD, DEFAULTS);
 
+const logger = getLogger('similarFics');
 function log(...args) {
-  console.log(LOG, ...args);
+  logger.debug(...args);
 }
 
 function maxPerSection() {

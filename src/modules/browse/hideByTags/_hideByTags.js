@@ -28,6 +28,7 @@ AO3 Helper — Hide By Tags Coordinator
 
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
 import { onReady, observe, debounce, css } from '../../../../lib/utils/index.js';
 import { Storage } from '../../../../lib/storage/index.js';
 import { wrapStorageForUser, UserLocalStorage } from '../../../../lib/storage/user.js';
@@ -41,6 +42,8 @@ import { HiddenTags } from './hiddenTags.js';
 import { NopeWords } from './nopeWords.js';
 import { WhitelistExceptions } from './whitelistExceptions.js';
 import { getCustomNoiseWords, isNoiseTag, mergeNoisePatterns, NOISE_PATTERNS } from '../../../../lib/utils/noise-tags.js';
+
+const log = getLogger('hideByTags');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE-SPECIFIC HELPERS
@@ -689,4 +692,4 @@ function cleanup () {
   counterEl = null;
 }
 
-console.log('[AO3H][hideByTags] registered');
+log.debug('registered');

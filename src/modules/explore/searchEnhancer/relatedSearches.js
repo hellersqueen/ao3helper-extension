@@ -28,6 +28,8 @@ import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { createPersistedCache } from '../../../../lib/storage/cache.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('relatedSearches');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -37,7 +39,6 @@ import { createPersistedCache } from '../../../../lib/storage/cache.js';
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'relatedSearches';
-const LOG  = `[AO3H][${MOD}]`;
 
 // Settings are shared across all searchEnhancer children and saved by the
 // panel under the parent module id (explore/searchEnhancer-config.js).
@@ -243,7 +244,7 @@ register(
   { title: 'Related Searches', parent: 'searchEnhancer', enabledByDefault: true },
   async function init () {
     const cfg = readCfg();
-    console.log(LOG, 'init', cfg);
+    log.debug('init', cfg);
 
     const anyFeatureOn = cfg.tagSuggestions || cfg.historyBasedSuggestions ||
       cfg.searchTemplates || cfg.searchInsights || cfg.refinementTips;
@@ -264,7 +265,7 @@ register(
     return function cleanup () {
       panelEl?.remove();
       panelEl = null;
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

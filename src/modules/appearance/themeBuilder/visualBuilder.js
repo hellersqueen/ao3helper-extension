@@ -21,6 +21,8 @@ import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('visualBuilder');
 
 
 
@@ -36,7 +38,6 @@ const findProtectedViolations = (...args) => W.AO3H_ThemeBuilder.findProtectedVi
 const colorblindPalettes = () => W.AO3H_ThemeBuilder.COLORBLIND_PALETTES;
 const NS   = AO3H.env?.NS || 'ao3h';
 const MOD  = 'visualBuilder';
-const LOG  = `[AO3H][${MOD}]`;
 const VISUAL_SK  = `${NS}:tb:visual`;
 const PREVIEW_ID = `${NS}-tb-visual-preview`;
 const ELEMENT_RULES_SK = `${NS}:tb:elementRules`;
@@ -304,7 +305,7 @@ function openPanel () {
     const config = collectConfig();
     lsSet(VISUAL_SK, config);
     applyCSS(buildCSS(config));
-    console.log(LOG, 'Visual config applied');
+    log.debug('Visual config applied');
   });
 
   panelEl.querySelector('[data-action="reset"]').addEventListener('click', () => {
@@ -368,7 +369,7 @@ register(
   MOD,
   { title: 'Visual Builder', parent: 'themeBuilder', enabledByDefault: true },
   async function init () {
-    console.log(LOG, 'init');
+    log.debug('init');
 
     // Register inspector events
     document.addEventListener('mousemove', onHover);
@@ -402,7 +403,7 @@ register(
       triggerBtn?.remove();
       panelEl = null;
       triggerBtn = null;
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

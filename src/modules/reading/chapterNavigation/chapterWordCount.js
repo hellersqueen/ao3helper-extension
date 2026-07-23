@@ -23,6 +23,8 @@ import { Routes } from '../../../../lib/ao3/routes.js';
 import { observe, countWords } from '../../../../lib/utils/index.js';
 import { upsertChapterBadgePart, removeChapterBadgePartsByKey } from '../../../../lib/ui/badges.js';
 import { getChapterProse } from '../../../../lib/ao3/work-page.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('chapterWordCount');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -171,7 +173,7 @@ function removeBadges(){
 register(MOD, { title: 'Chapter word count', parent: 'chapterNavigation', enabledByDefault: true }, async function init(){
   const stopScheduler = createScheduler();
 
-  console.log(LOG, 'ready');
+  log.debug('ready');
 
   return function cleanup () {
     stopScheduler();

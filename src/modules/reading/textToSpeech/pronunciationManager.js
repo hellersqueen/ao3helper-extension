@@ -22,6 +22,8 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { lsGet, lsSet, escapeRegex } from '../../../../lib/utils/index.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('pronunciationManager');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -30,7 +32,6 @@ import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 const W   = getGlobalWindow();
 const NS  = 'ao3h';
 const MOD = 'pronunciationManager';
-const LOG = `[AO3H][${MOD}]`;
 
 function shared () { return W.AO3H_TextToSpeech || null; }
 
@@ -102,6 +103,6 @@ register(MOD, { title: 'Pronunciation Manager', parent: 'textToSpeech', enabledB
     importDict,
   };
 
-  console.log(LOG, 'init — dict entries:', loadDict().length);
+  log.debug('init — dict entries:', loadDict().length);
   return function cleanup () { delete W.AO3H_TTS_Pronunciation; };
 });

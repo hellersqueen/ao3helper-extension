@@ -43,6 +43,8 @@ import { CompletePageDownload } from './completePageDownload.js';
 import { DownloadEnhancements } from './downloadEnhancements.js';
 import { OfflineLibrary } from './offlineLibrary.js';
 import { EV_MARKED_FOR_LATER } from '../../../../lib/utils/event-names.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('ficDownloader');
 
 
 
@@ -189,13 +191,13 @@ register(
       removeOffline:   (id) => offlineInst?.removeWork?.(id),
     };
 
-    console.info(`${LOG} init complete`);
+    log.debug(`${LOG} init complete`);
 
     return function cleanup () {
       instances.forEach(inst => inst.cleanup?.());
       cleanups.forEach(fn => typeof fn === 'function' && fn());
       delete AO3H.ficDownloader;
-      console.info(`${LOG} cleanup complete`);
+      log.debug(`${LOG} cleanup complete`);
     };
   }
 );

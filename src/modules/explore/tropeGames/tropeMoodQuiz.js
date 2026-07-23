@@ -21,6 +21,8 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { onReady } from '../../../../lib/utils/index.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('tropeMoodQuiz');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -30,7 +32,6 @@ import { onReady } from '../../../../lib/utils/index.js';
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'tropeMoodQuiz';
-const LOG  = `[AO3H][${MOD}]`;
 
 function getTropeList () { return W.AO3H_TropeGames?.TROPE_LIST || []; }
 
@@ -127,7 +128,7 @@ register(
   { title: 'Trope Mood Quiz', parent: 'tropeGames', enabledByDefault: true },
   async function init () {
     if (W.AO3H_TropeGames?.cfg('enableMoodQuiz') === false) return () => {};
-    console.log(LOG, 'init');
+    log.debug('init');
 
     let active = true;
     onReady(() => {
@@ -142,7 +143,7 @@ register(
       triggerBtn?.remove();
       modalEl = null;
       triggerBtn = null;
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

@@ -37,6 +37,8 @@ import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
 import { Storage, clearStorageByPrefix } from '../../../../lib/storage/index.js';
 import styles from './collapseAuthorNotes.css?inline';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('collapseAuthorNotes');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE SETUP
@@ -47,7 +49,6 @@ css(styles, 'ao3h-collapseAuthorNotes');
 const W = getGlobalWindow();
 const NS  = 'ao3h';
 const MOD = 'collapseAuthorNotes';
-const LOG = `[AO3H][${MOD}]`;
 const ENABLE_KEY = `mod:${MOD}:enabled`;
 
 export const WARNING_RE = /\b(tw|cw|trigger\s*warning|content\s*warning)\b/i;
@@ -305,7 +306,7 @@ function cleanup () {
   // Unregister flags watcher
   if (unwatchEnable) { unwatchEnable(); unwatchEnable = null; }
 
-  console.log(LOG, 'cleaned up');
+  log.debug('cleaned up');
 }
 
 register(MOD, {
@@ -349,7 +350,7 @@ register(MOD, {
     else { process(); }
   }) ?? null;
 
-  console.log(LOG, 'initialized');
+  log.debug('initialized');
 
   return cleanup;
 });

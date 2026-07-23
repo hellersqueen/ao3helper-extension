@@ -22,6 +22,8 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { onReady } from '../../../../lib/utils/index.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('tropeRoulette');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -31,7 +33,6 @@ import { onReady } from '../../../../lib/utils/index.js';
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'tropeRoulette';
-const LOG  = `[AO3H][${MOD}]`;
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -145,7 +146,7 @@ register(
   async function init () {
     const cfg = (key) => W.AO3H_TropeGames?.cfg(key);
     if (cfg('enableRoulette') === false) return () => {};
-    console.log(LOG, 'init');
+    log.debug('init');
     const count = Math.min(5, Math.max(2, parseInt(cfg('rouletteCount'), 10) || 3));
     // document.body peut ne pas encore exister quand ce module boote — sans ce
     // report, l'appendChild plantait (Cannot read properties of null),
@@ -163,7 +164,7 @@ register(
       triggerBtn?.remove();
       modalEl = null;
       triggerBtn = null;
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

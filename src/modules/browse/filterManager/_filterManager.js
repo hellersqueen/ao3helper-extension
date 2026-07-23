@@ -39,6 +39,8 @@ import { LanguageBadges } from './languageBadges.js';
 import { FilterWarnings } from './filterWarnings.js';
 import { UserHistoryFilters } from './userHistoryFilters.js';
 import { WorksFilterManager } from './worksFilterManager.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('filterManager');
 
 
 
@@ -51,7 +53,6 @@ css(styles, 'ao3h-filterManager');
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'filterManager';
-const LOG  = `[AO3H][${MOD}]`;
 
 // ── Storage keys ──────────────────────────────────────────────────────────
 const KEY_PRESETS = 'filterManager:presets';
@@ -299,7 +300,7 @@ register(MOD, {
   title: 'Filter Manager',
   enabledByDefault: false,
 }, async function init () {
-  console.log(LOG, 'init');
+  log.debug('init');
 
   // ── Instantiate submodules ───────────────────────────────────────────
   const presetMgmt    = new PresetManagement({ NS, storeGet, storeSet, cfg, detectCurrentFandom, getBundleFor, loadBundles, saveBundles, KEY_PRESETS, KEY_BUNDLES, KEY_LAST, KEY_HISTORY, KEY_USAGE, helpers: filterManagerHelpers });
@@ -312,7 +313,7 @@ register(MOD, {
   exposePublicApi(presetMgmt);
 
   if (!isListingPage()) {
-    console.log(LOG, 'not a listing page — API exposed, UI skipped');
+    log.debug('not a listing page — API exposed, UI skipped');
     return () => {
       delete AO3H.filterManager;
     };
@@ -399,11 +400,11 @@ register(MOD, {
     }
   });
 
-  console.log(LOG, 'ready');
+  log.debug('ready');
 
   // ── Cleanup ──────────────────────────────────────────────────────────
   return () => {
-    console.log(LOG, 'cleanup');
+    log.debug('cleanup');
     observer.disconnect();
     presetMgmt.cleanup();
     warningBanner?.remove();
@@ -415,4 +416,4 @@ register(MOD, {
   };
 });
 
-console.log(LOG, 'registered');
+log.debug('registered');

@@ -20,6 +20,8 @@ Notes
 import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('visualFeedback');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FEATURE SETUP
@@ -28,7 +30,6 @@ import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 const W   = getGlobalWindow();
 const NS  = 'ao3h';
 const MOD = 'visualFeedback';
-const LOG = `[AO3H][${MOD}]`;
 
 function shared () { return W.AO3H_TextToSpeech || null; }
 function cfg (k) { const s = shared(); return s ? s.cfg(k) : null; }
@@ -102,7 +103,7 @@ register(MOD, { title: 'Visual Feedback', parent: 'textToSpeech', enabledByDefau
 
   W.AO3H_TTS_Visual = { highlightSentence, clearHighlight };
 
-  console.log(LOG, 'init');
+  log.debug('init');
   return function cleanup () {
     if (scrollRafId) { W.cancelAnimationFrame(scrollRafId); scrollRafId = null; }
     clearHighlight();

@@ -22,6 +22,8 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('tropeAchievements');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -31,7 +33,6 @@ import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'tropeAchievements';
-const LOG  = `[AO3H][${MOD}]`;
 const SK   = `${NS}:tg:achievements`;
 const activeToasts = new Set();
 const activeTimers = new Set();
@@ -145,7 +146,7 @@ function checkNewUnlocks () {
   if (newUnlocks.length) {
     const updated = [...current, ...newUnlocks.map(a => ({ id: a.id, unlockedAt: new Date().toISOString() }))];
     saveUnlocked(updated);
-    console.log(LOG, 'New achievements unlocked:', newUnlocks.map(a => a.title));
+    log.debug('New achievements unlocked:', newUnlocks.map(a => a.title));
   }
   return newUnlocks;
 }
@@ -264,7 +265,7 @@ register(
   MOD,
   { title: 'Trope Achievements', parent: 'tropeGames', enabledByDefault: true },
   async function init () {
-    console.log(LOG, 'init');
+    log.debug('init');
 
     // Check achievementsEnabled setting (default true)
     if (W.AO3H_TropeGames?.cfg('achievementsEnabled') === false) return () => {};
@@ -295,7 +296,7 @@ register(
       showHistory = false;
       panelEl = null;
       triggerBtn = null;
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

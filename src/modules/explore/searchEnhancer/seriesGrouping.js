@@ -23,6 +23,8 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromBlurb, isListingPage } from '../../../../lib/ao3/parsers.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('seriesGrouping');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -32,7 +34,6 @@ import { extractWorkIdFromBlurb, isListingPage } from '../../../../lib/ao3/parse
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'seriesGrouping';
-const LOG  = `[AO3H][${MOD}]`;
 
 // Settings are shared across all searchEnhancer children and saved by the
 // panel under the parent module id (explore/searchEnhancer-config.js).
@@ -111,7 +112,7 @@ function groupSeriesByWork (container, cfg) {
     container.appendChild(wrapper);
   }
   ungrouped.forEach(b => container.appendChild(b));
-  console.log(LOG, `Grouped ${groups.size} series`);
+  log.debug(`Grouped ${groups.size} series`);
 }
 
 
@@ -124,7 +125,7 @@ register(
   { title: 'Series Grouping', parent: 'searchEnhancer', enabledByDefault: false },
   async function init () {
     const cfg = readCfg();
-    console.log(LOG, 'init', cfg);
+    log.debug('init', cfg);
 
     if (!isListingPage()) return;
 
@@ -143,7 +144,7 @@ register(
         });
         wrapper.remove();
       });
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

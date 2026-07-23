@@ -22,6 +22,8 @@ import { register } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('tropeHoroscope');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -148,7 +150,7 @@ function injectBanner (entry) {
   });
 
   anchor.parentNode.insertBefore(banner, anchor);
-  console.log(LOG, 'Horoscope banner injected:', entry.trope);
+  log.debug('Horoscope banner injected:', entry.trope);
 }
 
 
@@ -210,7 +212,7 @@ register(
   { title: 'Trope Horoscope', parent: 'tropeGames', enabledByDefault: true },
   async function init () {
     const showDailyTrope = getShared()?.cfg('showDailyTrope') ?? true;
-    console.log(LOG, 'init', { showDailyTrope });
+    log.debug('init', { showDailyTrope });
 
     let active = true;
     onReady(() => {
@@ -220,7 +222,7 @@ register(
 
     if (isHomePage() && showDailyTrope) {
       const entry = getTrope();
-      if (!entry) console.log(LOG, 'Dismissed today, skipping banner');
+      if (!entry) log.debug('Dismissed today, skipping banner');
       else injectBanner(entry);
     }
 
@@ -233,7 +235,7 @@ register(
       modalEl = null;
       triggerBtn?.remove();
       triggerBtn = null;
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

@@ -24,6 +24,8 @@ import { downloadJSON, downloadFile } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('tropeStatistics');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -33,7 +35,6 @@ import { extractWorkIdFromHref, isWorkPage } from '../../../../lib/ao3/parsers.j
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'tropeStatistics';
-const LOG  = `[AO3H][${MOD}]`;
 function getShared () { return W.AO3H_TropeGames || null; }
 const storageKey = name => W.AO3H_TropeGames.storageKeys[name];
 
@@ -72,7 +73,7 @@ function recordTropes (stats) {
   if (workId) {
     const seen = loadSeen();
     if (seen.some(e => (typeof e === 'object' ? e.id : e) === workId)) {
-      console.log(LOG, 'Work already recorded, skipping:', workId);
+      log.debug('Work already recorded, skipping:', workId);
       return stats;
     }
     // `tropes` (chantier 4) backs the weekly challenge, monthly trend, and
@@ -238,7 +239,7 @@ register(
   { title: 'Trope Statistics', parent: 'tropeGames', enabledByDefault: true },
   async function init () {
     if (getShared()?.cfg('enableStats') === false) return () => {};
-    console.log(LOG, 'init');
+    log.debug('init');
 
     // document.body peut ne pas encore exister quand ce module boote — sans ce
     // report, l'appendChild plantait (Cannot read properties of null),
@@ -261,7 +262,7 @@ register(
       triggerBtn?.remove();
       panelEl = null;
       triggerBtn = null;
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

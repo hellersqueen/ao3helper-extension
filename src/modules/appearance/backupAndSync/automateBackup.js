@@ -1,3 +1,5 @@
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('automateBackup');
 /* ═══════════════════════════════════════════════════════════════════════════
 
 AO3 Helper - Backup & Sync › Automatic Backups
@@ -58,7 +60,7 @@ export class AutoBackup {
       this.createBackup();
     }, this.config.backupInterval || 15 * 60 * 1000);
 
-    console.log('[AutoBackup] Initialized with interval:', this.config.backupInterval);
+    log.debug('Initialized with interval:', this.config.backupInterval);
   }
 
   cleanup() {

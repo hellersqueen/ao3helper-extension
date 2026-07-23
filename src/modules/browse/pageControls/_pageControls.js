@@ -40,6 +40,8 @@ import { WorksPerPage } from './worksPerPage.js';
 import { EnhancedNavigation } from './enhancedNavigation.js';
 import { BackToTop } from './backToTop.js';
 import { InfiniteScroll } from './infiniteScroll.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('pageControls');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE-SPECIFIC HELPERS
@@ -211,7 +213,7 @@ function isListingPage () {
 register(MOD, { title: 'Page Controls', enabledByDefault: false }, init);
 
 async function init() {
-  console.log(`${LOG} init`);
+  log.debug(`${LOG} init`);
 
   if (!isListingPage()) return () => {};
 

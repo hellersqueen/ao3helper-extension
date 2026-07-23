@@ -27,6 +27,8 @@ import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { isWorkPage } from '../../../../lib/ao3/parsers.js';
 import { showToast } from '../../../../lib/ui/toast.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('tropeBingoPatterns');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -36,7 +38,6 @@ import { showToast } from '../../../../lib/ui/toast.js';
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'tropeBingoPatterns';
-const LOG  = `[AO3H][${MOD}]`;
 function getShared () { return W.AO3H_TropeGames || null; }
 const storageKey = () => W.AO3H_TropeGames.storageKeys.bingo;
 
@@ -111,7 +112,7 @@ function autoCheckFromTags (state, patterns) {
     if (pageTags.some(t => t.includes(trope.toLowerCase()) || trope.toLowerCase().includes(t))) {
       state.checked[idx] = true;
       changed = true;
-      console.log(LOG, 'Auto-checked:', trope);
+      log.debug('Auto-checked:', trope);
     }
   });
   if (changed) {
@@ -244,7 +245,7 @@ register(
   async function init () {
     const cfg = (key) => getShared()?.cfg(key);
     if (cfg('enableBingo') === false) return () => {};
-    console.log(LOG, 'init');
+    log.debug('init');
 
     const opts = cardOptions(cfg);
     const patterns = W.AO3H_TropeGames.buildBingoPatterns(opts.size);
@@ -269,7 +270,7 @@ register(
       wrapEl = null;
       toggleBtn = null;
       isOpen = false;
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

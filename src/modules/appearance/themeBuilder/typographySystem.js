@@ -19,6 +19,8 @@ Notes
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('typographySystem');
 
 
 
@@ -28,7 +30,6 @@ import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 
 const NS   = AO3H.env?.NS || 'ao3h';
 const MOD  = 'typographySystem';
-const LOG  = `[AO3H][${MOD}]`;
 const TYPO_SK    = `${NS}:tb:typography`;
 const STYLE_ID   = `${NS}-tb-typography`;
 
@@ -195,7 +196,7 @@ function openPanel () {
       letterSpacing:      parseFloat(lsRange.value),
     };
     applyTypography(config);
-    console.log(LOG, 'Typography applied:', config);
+    log.debug('Typography applied:', config);
   });
 
   panelEl.querySelector('[data-action="reset"]').addEventListener('click', () => {
@@ -223,7 +224,7 @@ register(
   MOD,
   { title: 'Typography System', parent: 'themeBuilder', enabledByDefault: true },
   async function init () {
-    console.log(LOG, 'init');
+    log.debug('init');
 
     // document.body peut ne pas encore exister quand ce module boote — sans ce
     // report, l'appendChild plantait (Cannot read properties of null),
@@ -250,7 +251,7 @@ register(
       triggerBtn?.remove();
       panelEl = null;
       triggerBtn = null;
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

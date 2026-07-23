@@ -25,6 +25,8 @@ import { lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { getBlurbStats } from '../../../../lib/ao3/work-stats.js';
 import { parseChapterCount, isListingPage } from '../../../../lib/ao3/parsers.js';
 import { buildKudosRatioBadge, RATIO_BADGE_CLASS } from '../../../../lib/ui/badges.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('resultsSorting');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -176,7 +178,7 @@ function applySort (container, blurbs, originalPositions, mode) {
   const scored = [...blurbs].map(b => ({ el: b, score: scoreBlurb(b, mode) }));
   scored.sort((a, b) => b.score - a.score);
   scored.forEach(({ el }) => container.appendChild(el));
-  console.log(LOG, 'Sorted by', mode);
+  log.debug('Sorted by', mode);
 }
 
 
@@ -189,7 +191,7 @@ register(
   { title: 'Results Sorting', parent: 'searchEnhancer', enabledByDefault: true },
   async function init () {
     const cfg = readCfg();
-    console.log(LOG, 'init', cfg);
+    log.debug('init', cfg);
 
     if (!isListingPage()) return;
 
@@ -228,7 +230,7 @@ register(
         delete blurb.dataset.seIdx;
       });
       originalPositions.clear();
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

@@ -20,6 +20,8 @@ Notes
 ═══════════════════════════════════════════════════════════════════════════ */
 
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('cloudSync');
 
 
 
@@ -141,14 +143,14 @@ export class CloudSync {
             localStorage.setItem(key, value);
           });
           localStorage.setItem('ao3h:sync:lastWrite', String(remoteTs));
-          console.log('[CloudSync] Restored from sync storage (remote was newer).');
+          log.debug('Restored from sync storage (remote was newer).');
         } else if (action === 'ask') {
           // User kept local — mark it authoritative so we stop asking and the
           // next local change overwrites the remote payload.
           localStorage.setItem('ao3h:sync:lastWrite', String(Date.now()));
-          console.log('[CloudSync] Kept local data (user choice) — local wins on next push.');
+          log.debug('Kept local data (user choice) — local wins on next push.');
         } else {
-          console.log('[CloudSync] Local is up to date — no restore needed.');
+          log.debug('Local is up to date — no restore needed.');
         }
       }
 
@@ -206,7 +208,7 @@ export class CloudSync {
       await this._syncSet(store, { ao3h_sync_payload: payload });
       if (this._destroyed) return; // cleanup() ran while this await was pending
       localStorage.setItem('ao3h:sync:lastWrite', String(Date.now()));
-      console.log('[CloudSync] Data pushed to sync storage.');
+      log.debug('Data pushed to sync storage.');
 
     } catch (err) {
       if (err?.message?.includes('QUOTA_BYTES')) {

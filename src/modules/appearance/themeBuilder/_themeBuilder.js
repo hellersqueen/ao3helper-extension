@@ -38,6 +38,8 @@ import './customStyling.js';
 import './themeManagement.js';
 import './typographySystem.js';
 import './visualBuilder.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('themeBuilder');
 
 
 
@@ -50,7 +52,6 @@ css(styles, 'ao3h-themeBuilder');
 const W    = getGlobalWindow();
 const NS   = AO3H.env?.NS || 'ao3h';
 const MOD  = 'themeBuilder';
-const LOG  = `[AO3H][${MOD}]`;
 const ACTIVE_SK = `${NS}:tb:active`;
 const APPLIED_ID = `${NS}-tb-active-theme`;
 const THEMES_SK = `${NS}:tb:themes`;
@@ -176,7 +177,7 @@ register(
   MOD,
   { title: 'Theme Builder', enabledByDefault: false },
   async function init () {
-    console.log(LOG, 'coordinator init');
+    log.debug('coordinator init');
     // ── Public API ──────────────────────────────────────────────────────
     W.AO3H_ThemeBuilder = { lsGet, lsSet, applyCSS, removeCSS, saveNewTheme, NS, APPLIED_ID, cfg: tbCfg, ...themeSafety };
 
@@ -184,13 +185,13 @@ register(
     const active = lsGet(ACTIVE_SK);
     if (active?.css) {
       applyCSS(active.css, active.source);
-      console.log(LOG, 'Restored active theme from', active.source);
+      log.debug('Restored active theme from', active.source);
     }
 
     return function cleanup () {
       document.getElementById(APPLIED_ID)?.remove();
       delete W.AO3H_ThemeBuilder;
-      console.log(LOG, 'coordinator cleanup');
+      log.debug('coordinator cleanup');
     };
   }
 );

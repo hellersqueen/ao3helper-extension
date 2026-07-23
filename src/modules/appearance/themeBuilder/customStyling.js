@@ -22,6 +22,8 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { ThemeValidator } from '../../../../lib/themes/engine/themeUtils.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('customStyling');
 
 
 
@@ -33,7 +35,6 @@ const W    = getGlobalWindow();
 const findProtectedViolations = (...args) => W.AO3H_ThemeBuilder.findProtectedViolations(...args);
 const NS   = AO3H.env?.NS || 'ao3h';
 const MOD  = 'customStyling';
-const LOG  = `[AO3H][${MOD}]`;
 const CSS_SK   = `${NS}:tb:customcss`;
 const TYPE_SK  = `${NS}:tb:customtype`;
 const PAGES_SK = `${NS}:tb:custompages`;
@@ -428,10 +429,10 @@ function renderPanel () {
         statusEl.className = `${NS}-tb-css-status ${NS}-tb-css-warn`;
       }
       injectWithPriority(code, 'css', priority);
-      console.log(LOG, 'Custom CSS applied at priority', priority);
+      log.debug('Custom CSS applied at priority', priority);
     } else {
       injectWithPriority(code, activeType, priority);
-      console.log(LOG, `Custom ${activeType} injected at priority`, priority);
+      log.debug(`Custom ${activeType} injected at priority`, priority);
     }
   });
 
@@ -450,7 +451,7 @@ function renderPanel () {
     const name = prompt('Theme name:', 'My Custom Theme');
     if (!name) return;
     W.AO3H_ThemeBuilder?.saveNewTheme(name, css);
-    console.log(LOG, 'Theme saved:', name);
+    log.debug('Theme saved:', name);
     alert(`Theme "${name}" saved!`);
   });
 }
@@ -635,7 +636,7 @@ register(
   MOD,
   { title: 'Custom Styling', parent: 'themeBuilder', enabledByDefault: true },
   async function init () {
-    console.log(LOG, 'init');
+    log.debug('init');
 
     // ── Storage migration (v1 → v2) ────────────────────────────────────────
     // v1 stored only a raw CSS string in CSS_SK with no type/pages/priority.
@@ -647,7 +648,7 @@ register(
       lsSet(TYPE_SK, 'css');
       lsSet(PAGES_SK, ['all']);
       lsSet(PRIORITY_SK, DEFAULT_PRIORITY);
-      console.log(LOG, 'migrated v1 storage → v2');
+      log.debug('migrated v1 storage → v2');
     }
 
     // document.body peut ne pas encore exister quand ce module boote (surtout
@@ -664,7 +665,7 @@ register(
       const savedPrio2  = lsGet(PRIORITY_SK) ?? DEFAULT_PRIORITY;
       if (savedCode && matchesCurrentPage(savedPages2)) {
         injectWithPriority(savedCode, savedType2, savedPrio2);
-        console.log(LOG, 'restored injection on', location.pathname, 'priority', savedPrio2);
+        log.debug('restored injection on', location.pathname, 'priority', savedPrio2);
       }
 
       triggerBtn = document.createElement('button');
@@ -686,7 +687,7 @@ register(
       document.getElementById(STYLE_ID)?.remove();
       document.getElementById(HTML_CONTAINER_ID)?.remove();
       document.getElementById(JS_TAG_ID)?.remove();
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

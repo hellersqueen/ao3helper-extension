@@ -39,6 +39,8 @@ import { relativeDate } from '../../../../lib/utils/format-date.js';
 import { showToast, clearAllToasts } from '../../../../lib/ui/toast.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import styles from './fanficBingeMode.css?inline';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('fanficBingeMode');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    BINGE QUEUE HELPERS
@@ -583,7 +585,7 @@ register(MOD, {
   title            : 'Fanfic Binge Mode',
   enabledByDefault : false,
 }, async function init () {
-  console.log(`${LOG} init`);
+  log.debug(`${LOG} init`);
 
   // document.body peut ne pas encore exister quand ce module boote — sans ce
   // report, l'appendChild/l'observer plantaient (Cannot read properties of

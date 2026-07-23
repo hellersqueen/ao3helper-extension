@@ -30,7 +30,9 @@ AO3 Helper — Visual Preferences Coordinator
 
 import { register, AO3H } from '../../../core/lifecycle.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
 import { css } from '../../../../lib/utils/index.js';
+const log = getLogger('visualPreferences');
 
 import styles from './visualPreferences.css?inline';
 
@@ -133,7 +135,7 @@ class VisualPreferences {
   }
 
   initComponents() {
-    console.log(`[${MOD}] ✅ Initializing components`);
+    log.debug(`✅ Initializing components`);
 
     this.components = {
       visibilityToggles:     new VisibilityToggles(),
@@ -179,7 +181,7 @@ class VisualPreferences {
     const migrated = localStorage.getItem(this.storage.migrationFlag);
     if (migrated === 'true') return null;
 
-    console.log(`[${MOD}] Starting migration from old modules...`);
+    log.debug(`Starting migration from old modules...`);
 
     const Flags = AO3H.flags;
     if (!Flags) {
@@ -207,7 +209,7 @@ class VisualPreferences {
       // test null, la migration écrivait des null dans la clé de settings au
       // premier boot, court-circuitant le fallback legacy ao3h:visualPreferences.
       if (val !== undefined && val !== null) {
-        console.log(`[${MOD}] Migrating ${oldKey} (${val}) -> ${newKey}`);
+        log.debug(`Migrating ${oldKey} (${val}) -> ${newKey}`);
         newState[newKey] = val;
         foundAny = true;
         try { Flags.remove(oldKey); } catch (e) {}
@@ -236,23 +238,23 @@ class VisualPreferences {
   }
 
   setup() {
-    console.log(`[${MOD}] ✅ Module init`);
+    log.debug(`✅ Module init`);
 
     // Migration
     const migrated = this.migrateFromOldModules();
     if (migrated) {
-      console.log(`[${MOD}] Migrated settings from old modules`);
+      log.debug(`Migrated settings from old modules`);
     }
 
     // Load and apply state
     this.state = this.loadState();
-    console.log(`[${MOD}] Loaded state:`, this.state);
+    log.debug(`Loaded state:`, this.state);
     this.applyAll(this.state);
 
     // Setup API
     this.setupAPI();
 
-    console.log(`[${MOD}] ✅ Ready. Type ao3hVisualPrefs.help() for console commands.`);
+    log.debug(`✅ Ready. Type ao3hVisualPrefs.help() for console commands.`);
   }
 
   setupAPI() {
@@ -312,7 +314,7 @@ class VisualPreferences {
         if (success) {
           this.state = mergedState;
           this.applyAll(mergedState);
-          console.log(`[${MOD}] Applied preset: ${presetId}`);
+          log.debug(`Applied preset: ${presetId}`);
         }
         return success;
       },
@@ -330,7 +332,7 @@ class VisualPreferences {
         this.saveState(defaults);
         this.state = defaults;
         this.applyAll(defaults);
-        console.log(`[${MOD}] Reset to defaults`);
+        log.debug(`Reset to defaults`);
         return true;
       },
 
@@ -374,7 +376,7 @@ Example:
   }
 
   cleanup() {
-    console.log(`[${MOD}] Cleanup`);
+    log.debug(`Cleanup`);
 
     // Reset all components
     Object.values(this.components).forEach(component => {

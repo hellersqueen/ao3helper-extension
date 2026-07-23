@@ -23,6 +23,8 @@ import { downloadJSON } from '../../../../lib/utils/json-file.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { lsGet, lsSet, onReady } from '../../../../lib/utils/index.js';
 import { ThemeValidator } from '../../../../lib/themes/engine/themeUtils.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('themeManagement');
 
 
 
@@ -40,7 +42,6 @@ function isSafeCSS (css) {
 const W    = getGlobalWindow();
 const NS   = AO3H.env?.NS || 'ao3h';
 const MOD  = 'themeManagement';
-const LOG  = `[AO3H][${MOD}]`;
 const THEMES_SK = `${NS}:tb:themes`;
 const ACTIVE_SK = `${NS}:tb:active-theme`;
 
@@ -294,7 +295,7 @@ function attachPanelEvents () {
       lsSet(ACTIVE_SK, theme.id);
       updatePreviewNotice();
       refreshList();
-      console.log(LOG, 'Applied theme:', theme.name);
+      log.debug('Applied theme:', theme.name);
 
     } else if (action === 'preview') {
       if (previewingId === theme.id) {
@@ -360,7 +361,7 @@ function attachPanelEvents () {
     form.style.display = 'none';
     form.querySelectorAll('input, textarea').forEach(el => { el.value = ''; });
     refreshList();
-    console.log(LOG, 'New theme created:', name);
+    log.debug('New theme created:', name);
   });
 
   // ── Import ──
@@ -387,7 +388,7 @@ function attachPanelEvents () {
         });
         saveThemes(existing);
         refreshList();
-        console.log(LOG, 'Imported', imported, 'themes', skipped ? `(${skipped} skipped: unsafe CSS)` : '');
+        log.debug('Imported', imported, 'themes', skipped ? `(${skipped} skipped: unsafe CSS)` : '');
         if (skipped) alert(`${skipped} theme(s) were skipped: unsafe CSS content.`);
       } catch {
         alert('Invalid JSON file.');
@@ -410,7 +411,7 @@ function attachPanelEvents () {
     previewPrev  = null;
     updatePreviewNotice();
     refreshList();
-    console.log(LOG, 'Active theme removed');
+    log.debug('Active theme removed');
   });
 }
 
@@ -424,7 +425,7 @@ register(
   MOD,
   { title: 'Theme Management', parent: 'themeBuilder', enabledByDefault: true },
   async function init () {
-    console.log(LOG, 'init');
+    log.debug('init');
 
     // document.body peut ne pas encore exister quand ce module boote — sans ce
     // report, le bouton déclencheur plantait (Cannot read properties of null
@@ -447,7 +448,7 @@ register(
       triggerBtn?.remove();
       panelEl    = null;
       triggerBtn = null;
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

@@ -37,6 +37,8 @@ import styles from './povTracker.css?inline';
 
 import { PovPresentation } from './povPresentation.js';
 import { PovDetailPanel } from './povDetailPanel.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('povTracker');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE-SPECIFIC HELPERS
@@ -299,7 +301,7 @@ register(MOD, {
   title            : 'POV Tracker',
   enabledByDefault : false,
 }, async function init () {
-  console.log(`${LOG} init`);
+  log.debug(`${LOG} init`);
 
   const analysis     = new PovAnalysis();
   const presentation = new PovPresentation({ cfg, analysis, parsePreferredPovs });

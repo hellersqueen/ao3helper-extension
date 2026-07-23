@@ -24,6 +24,8 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { escapeHtml } from '../../../../lib/utils/dom.js';
 import { loadModuleSettings } from '../../../../lib/storage/module-settings.js';
 import { lsGet, lsSet, onReady, observe } from '../../../../lib/utils/index.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('searchAutocomplete');
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -33,7 +35,6 @@ import { lsGet, lsSet, onReady, observe } from '../../../../lib/utils/index.js';
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'searchAutocomplete';
-const LOG  = `[AO3H][${MOD}]`;
 
 // Settings are shared across all searchEnhancer children and saved by the
 // panel under the parent module id (explore/searchEnhancer-config.js).
@@ -373,7 +374,7 @@ register(
   { title: 'Search Autocomplete', parent: 'searchEnhancer', enabledByDefault: true },
   async function init () {
     const cfg = readCfg();
-    console.log(LOG, 'init', cfg);
+    log.debug('init', cfg);
 
     // Reset per-boot state
     dropdown      = null;
@@ -422,7 +423,7 @@ register(
       cleanup_fns.forEach(fn => fn());
       observer?.disconnect();
       document.querySelectorAll(`.${ICON_CLS}`).forEach(el => el.remove());
-      console.log(LOG, 'cleanup');
+      log.debug('cleanup');
     };
   }
 );

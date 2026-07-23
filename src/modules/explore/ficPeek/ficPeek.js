@@ -37,6 +37,8 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import { css, observe as libObserve } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './ficPeek.css?inline';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('ficPeek');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    EXCERPT HELPERS
@@ -504,7 +506,7 @@ function setupObserver() {
  * Called by AO3 Helper when the module is enabled.
  */
 function init(/* context */) {
-  console.log(`${LOG_PREFIX} init`);
+  log.debug(`${LOG_PREFIX} init`);
 
   document.documentElement.classList.add(ROOT_CLASS);
   if (cfg('hoverMode', false)) document.documentElement.classList.add('hover-mode');
@@ -512,7 +514,7 @@ function init(/* context */) {
   const stopObserver = setupObserver();
 
   return function dispose() {
-    console.log(`${LOG_PREFIX} stopped`);
+    log.debug(`${LOG_PREFIX} stopped`);
     document.documentElement.classList.remove(ROOT_CLASS);
     document.documentElement.classList.remove('hover-mode');
     if (typeof stopObserver === 'function') {

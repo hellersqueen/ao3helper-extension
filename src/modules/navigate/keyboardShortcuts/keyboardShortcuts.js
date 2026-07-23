@@ -34,6 +34,8 @@ import { getGlobalWindow } from '../../../../lib/utils/globals.js';
 import styles from './keyboardShortcuts.css?inline';
 import { css, getCurrentPage, getMaxPageFromDOM, buildURLForPage } from '../../../../lib/utils/index.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('keyboardShortcuts');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SHORTCUT LOGIC
@@ -319,7 +321,7 @@ function registerAction (action, keyStr, fn) {
   externalActions.set(action, fn);
   externalShortcuts.set(action, keyStr);
   reportConflicts(getShortcuts());
-  console.log(LOG, `external shortcut registered: ${action} → ${keyStr}`);
+  log.debug(`external shortcut registered: ${action} → ${keyStr}`);
   return () => unregisterAction(action);
 }
 
@@ -544,7 +546,7 @@ function cleanup () {
   if (W.AO3H_Keyboard === keyboardApi) delete W.AO3H_Keyboard;
   if (W.AO3H_KeyboardShortcuts === keyboardApi) delete W.AO3H_KeyboardShortcuts;
   keyboardApi = null;
-  console.log(LOG, 'cleaned up');
+  log.debug('cleaned up');
 }
 
 let keyboardApi = null;
@@ -558,6 +560,6 @@ register(MOD, {
   W.AO3H_KeyboardShortcuts = keyboardApi;
   reportConflicts(getShortcuts());
   document.addEventListener('keydown', onKeyDown);
-  console.log(LOG, 'initialized');
+  log.debug('initialized');
   return cleanup;
 });

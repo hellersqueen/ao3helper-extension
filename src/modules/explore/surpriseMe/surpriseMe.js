@@ -44,6 +44,8 @@ import { extractWorkIdFromBlurb, getBlurbMeta, isListingPage } from '../../../..
 import { getBlurbStats } from '../../../../lib/ao3/work-stats.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
 import styles from './surpriseMe.css?inline';
+import { getLogger } from '../../../../lib/utils/logger.js';
+const log = getLogger('surpriseMe');
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODULE-SPECIFIC HELPERS
@@ -131,7 +133,6 @@ css(styles, 'ao3h-surpriseMe');
 const W    = getGlobalWindow();
 const NS   = 'ao3h';
 const MOD  = 'surpriseMe';
-const LOG  = `[AO3H][${MOD}]`;
 
 const MAX_EXTRA_PAGES = 4; // 'allPages' scope: current page + up to 4 more
 
@@ -482,7 +483,7 @@ function cleanup () {
   removeMultiPreview();
   removeEmptyMsg();
   hideApi();
-  console.log(LOG, 'cleaned up');
+  log.debug('cleaned up');
 }
 
 // Set by tropeGames' Trope Roulette "🎲 Surprise Pick" button before it
@@ -506,6 +507,6 @@ register(MOD, {
     triggerRandom();
   }
 
-  console.log(LOG, 'initialized');
+  log.debug('initialized');
   return cleanup;
 });

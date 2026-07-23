@@ -33,6 +33,7 @@ AO3 Helper — Reading Dashboard
 import { register } from '../../../core/lifecycle.js';
 import { detectUser } from '../../../../lib/utils/user-detector.js';
 import { getGlobalWindow } from '../../../../lib/utils/globals.js';
+import { getLogger } from '../../../../lib/utils/logger.js';
 import { css, lsGet, lsSet } from '../../../../lib/utils/index.js';
 import { extractWorkIdFromHref, isWorkPage as isWorkPageRoute } from '../../../../lib/ao3/parsers.js';
 import { makeCfg } from '../../../../lib/storage/module-settings.js';
@@ -129,7 +130,6 @@ const W = getGlobalWindow();
 
 const MOD_ID = 'readingDashboard';
 const MOD_TITLE = 'reading dashboard';
-const LOG_PREFIX = `[AO3H][${MOD_TITLE}]`;
 
 const ROOT_CLASS = 'ao3h-dashboard-enabled';
 const PANEL_ID = 'ao3h-dashboard-panel';
@@ -157,8 +157,9 @@ function intSetting(key, fallback) {
   return parseInt(String(cfg(key) ?? fallback), 10) || fallback;
 }
 
+const logger = getLogger('readingDashboard');
 function log(...args) {
-  console.log(LOG_PREFIX, ...args);
+  logger.debug(...args);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
