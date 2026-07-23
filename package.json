@@ -1,6 +1,6 @@
 {
   "name": "ao3-helper",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Enhanced AO3 experience with modern UI and features",
   "scripts": {
     "build": "vite build && node scripts/split-userscript.mjs",

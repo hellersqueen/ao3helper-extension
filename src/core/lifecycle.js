@@ -66,7 +66,12 @@ import { Routes } from '../../lib/ao3/routes.js';
       .replace(/[^a-z0-9]+/g, '');
   }
 
-  const Modules = (()=>{
+  // Ancré sur globalThis (voir lib/utils/event-bus.js) : le registre des modules
+  // DOIT être un singleton. Sinon le graphe statique (menu) et les import()
+  // dynamiques (modules) évaluent chacun lifecycle.js et obtiennent deux
+  // registres — les modules s'enregistrent dans l'un, le menu lit l'autre et
+  // reste vide.
+  const Modules = globalThis.__AO3H_Modules__ || (globalThis.__AO3H_Modules__ = (()=>{
     // name => { meta, init, enabledKey, enabledKeyAlt, _booted, _dispose,
     //           _bootPromise, _stopPromise }
     const list = new Map();
@@ -284,7 +289,7 @@ import { Routes } from '../../lib/ao3/routes.js';
     }
 
     return { register, all, getChildren, bootAll, stopAll, setEnabled, onFlagChanged, restartOne, _bootOne: bootOne, _stopOne: stopOne, _list: list };
-  })();
+  })());
 
 
 
@@ -408,11 +413,23 @@ import { Routes } from '../../lib/ao3/routes.js';
     menu: { addToggle:()=>{}, addAction:()=>{}, addSeparator:()=>{}, rebuild:()=>{} },
   };
 
+  // Object.assign invokes setters on the target. That crashes when the bootstrap
+  // runs a second time on the same page — Tampermonkey can inject a
+  // @run-at document-start script twice per navigation — and AO3H already
+  // exposes getter-only API properties such as `util`. Copying descriptors
+  // replaces configurable accessors without invoking them.
+  function mergeOwnPropertyDescriptors(target, source) {
+    Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+    return target;
+  }
+
   // Pose du namespace global window.AO3H — bridge conservé pour lib/ui (menu, panel),
   // les contrats E1/E2 des modules et lib/dev-tools ; suppression prévue étapes 315-318.
   // Merge si AO3H existait déjà (ne pas écraser), sinon pose directe (pas de copie :
   // l'objet canonique runtime et AO3H_API restent identiques).
-  const AO3H = W.AO3H ? Object.assign(W.AO3H, AO3H_API) : (W.AO3H = AO3H_API);
+  const AO3H = W.AO3H
+    ? mergeOwnPropertyDescriptors(W.AO3H, AO3H_API)
+    : (W.AO3H = AO3H_API);
   try { if (typeof window !== 'undefined' && window !== W) window.AO3H = W.AO3H; } catch {}
 
 
@@ -589,5 +606,5 @@ import { Routes } from '../../lib/ao3/routes.js';
 // The window.AO3H bridge above remains active for non-migrated modules (étapes 315-318).
 // AO3H est l'objet canonique (=== window.AO3H) : coordinator.js et module-loader.js
 // l'importent au lieu de relire le global (étape 312).
-export { Modules, guard, AO3H };
+export { Modules, guard, AO3H, mergeOwnPropertyDescriptors };
 export const { register, bootAll, stopAll, setEnabled, all, getChildren, restartOne } = Modules;
