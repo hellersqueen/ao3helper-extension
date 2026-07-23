@@ -34,7 +34,7 @@ export default defineConfig({
       userscript: {
         name: 'AO3 Helper',
         namespace: 'http://tampermonkey.net/',
-        version: '1.2.4',
+        version: '1.2.5',
         description: 'Enhanced AO3 experience with modern UI and features',
         author: 'You',
         match: ['https://archiveofourown.org/*'],

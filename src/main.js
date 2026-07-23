@@ -1,6 +1,9 @@
 // AO3 Helper — minimal document-start entry point.
 // Feature modules wait for DOMContentLoaded; settings wait for the first click.
 
+// Doit s'exécuter avant tout import() dynamique de chunk (voir le fichier) :
+// fiabilise la résolution SystemJS des chunks en mémoire dans le sandbox userscript.
+import './core/system-resolve-patch.js';
 // NB (étape 312) : lifecycle.js importe désormais lui-même config.js — cet import
 // de tête n'est plus porteur d'ordre, conservé pour lisibilité du graphe.
 import '../lib/utils/config.js';
