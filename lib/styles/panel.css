@@ -1777,8 +1777,11 @@
   ───────────────────────────────────────────────────────────── 
 */
 
-/*- Input texte/recherche dans une config */
-.ao3h-config-input {
+/*- Input texte/recherche dans une config.
+   ao3h-setting-input est conservé comme alias de migration : les nouvelles
+   configs doivent utiliser ao3h-config-input. */
+.ao3h-config-input,
+.ao3h-setting-input {
   font-size: var(--ao3h-size-xs);
   padding: 6px 10px;
   border: 1px solid var(--ao3h-border-input);
@@ -1786,6 +1789,18 @@
   background: #fff;
   box-shadow: inset 0 1px 2px 0 #ccc;
   box-sizing: border-box;
+}
+
+/*- Tailles sémantiques communes. Elles remplacent les width inline et restent
+   bornées par la largeur du panel sur petit écran. */
+.ao3h-field--xs   { inline-size: 60px;  max-inline-size: 100%; }
+.ao3h-field--sm   { inline-size: 80px;  max-inline-size: 100%; }
+.ao3h-field--md   { inline-size: 120px; max-inline-size: 100%; }
+.ao3h-field--lg   { inline-size: 200px; max-inline-size: 100%; }
+.ao3h-field--fill {
+  inline-size: 100%;
+  min-inline-size: 0;
+  flex: 1 1 12rem;
 }
 
 /*- Select dans les settings (taille et style de base) */
