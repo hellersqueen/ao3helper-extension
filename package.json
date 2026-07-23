@@ -1,10 +1,13 @@
 {
   "name": "ao3-helper",
-  "version": "1.2.0",
+  "version": "1.2.3",
   "description": "Enhanced AO3 experience with modern UI and features",
   "scripts": {
     "build": "vite build && node scripts/split-userscript.mjs",
     "dev": "vite build --watch",
+    "build:local": "node scripts/build-local.mjs",
+    "serve:dist": "node scripts/serve-dist.mjs",
+    "publish:github": "node scripts/publish-github.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

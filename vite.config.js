@@ -34,11 +34,15 @@ export default defineConfig({
       userscript: {
         name: 'AO3 Helper',
         namespace: 'http://tampermonkey.net/',
-        version: '1.2.0',
+        version: '1.2.3',
         description: 'Enhanced AO3 experience with modern UI and features',
         author: 'You',
         match: ['https://archiveofourown.org/*'],
         icon: 'https://www.google.com/s2/favicons?sz=64&domain=archiveofourown.org',
+        // Self-update pointer: only meaningful once the sibling .modules.js/.panel.js
+        // bundles are actually reachable at this same base URL (see runtime-bundles.js).
+        downloadURL: assetBase ? `${assetBase}/ao3-helper.user.js` : undefined,
+        updateURL: assetBase ? `${assetBase}/ao3-helper.user.js` : undefined,
         grant: [
           'GM_xmlhttpRequest',
           'GM_addStyle',
