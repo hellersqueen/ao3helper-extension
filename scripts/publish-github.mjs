@@ -26,7 +26,15 @@ const REPO = process.env.AO3H_PUBLISH_REPO || 'https://github.com/hellersqueen/a
 const BRANCH = process.env.AO3H_PUBLISH_BRANCH || 'main';
 const EXPECTED_BASE = (process.env.AO3H_ASSET_BASE
   || 'https://raw.githubusercontent.com/hellersqueen/ao3helper/main/dist').replace(/\/$/, '');
-const FILES = ['ao3-helper.user.js', 'ao3-helper.modules.js', 'ao3-helper.panel.js'];
+const FILES = [
+  'ao3-helper.user.js',
+  'ao3-helper.modules.js',
+  'ao3-helper.panel.js',
+  // Build tout-en-un (modules inline). C'est ce fichier que le loader @require,
+  // car le chargement fractionné à l'exécution ne résout pas de façon fiable
+  // dans le sandbox Tampermonkey.
+  'ao3-helper-tampermonkey.user.js',
+];
 // Raw URL of the loader (repo root, one level above dist/) that end users install.
 const LOADER_URL = `${EXPECTED_BASE.replace(/\/dist$/, '')}/loader.user.js`;
 

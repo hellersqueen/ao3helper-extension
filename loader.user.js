@@ -19,11 +19,12 @@
 // @connect      raw.githubusercontent.com
 // @updateURL    https://raw.githubusercontent.com/hellersqueen/ao3helper/main/loader.user.js
 // @downloadURL  https://raw.githubusercontent.com/hellersqueen/ao3helper/main/loader.user.js
-// @require      https://raw.githubusercontent.com/hellersqueen/ao3helper/main/dist/ao3-helper.user.js
+// @require      https://raw.githubusercontent.com/hellersqueen/ao3helper/main/dist/ao3-helper-tampermonkey.user.js
 // ==/UserScript==
 
 (function () {
   'use strict';
-  // Rien d'autre ici : le bundle chargé via @require fait tout le travail,
-  // et il va chercher lui-même ses modules/panel sur raw.githubusercontent.com.
+  // Rien d'autre ici : le build tout-en-un chargé via @require contient déjà
+  // tous les modules inline (aucun fetch à l'exécution, donc pas de résolution
+  // SystemJS fragile dans le sandbox Tampermonkey).
 })();
