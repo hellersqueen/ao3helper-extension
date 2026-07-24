@@ -1048,7 +1048,7 @@
               padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
-  background: var(--ao3h-bg-surface);              /*- 🎨 Fond gris clair */
+  background: #f7f7f7;              /*- 🎨 Fond gris, un peu plus foncé que --ao3h-bg-surface */
   border: 2px solid var(--ao3h-border-medium);
   border-top: none;           /*- Pas de bordure en haut (connecté au module row) */
   padding: 0 16px;            /*- Padding vertical = 0 quand fermé */
@@ -1088,13 +1088,13 @@
 
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: var(--ao3h-space-6);
+  column-gap: var(--ao3h-space-2);  /*- Même valeur que row-gap : espace identique dans les 2 sens */
   row-gap: var(--ao3h-space-2);
   align-items: start;
 }
 
 
-/*&&& 
+/*&&&
   ─────────────────────────────────────────────────────────────
       HELPER 2 COLONNES (hors grille)
   ─────────────────────────────────────────────────────────────
@@ -1109,7 +1109,7 @@
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  gap: 16px 32px;
+  gap: var(--ao3h-space-2);  /*- Même espace en ligne et en colonne, aligné sur la grille */
   align-items: flex-start;
 }
 
@@ -1139,7 +1139,7 @@
   grid-column: 1 / -1;        /*- Toujours pleine largeur */
   display: grid;
   grid-template-columns: subgrid;  /*- Hérite la grille parente */
-  row-gap: var(--ao3h-space-2);
+  row-gap: var(--ao3h-space-2);    /*- Même valeur que le column-gap hérité de la grille parente */
   align-items: start;
   margin-bottom: 0;
 }
@@ -1150,7 +1150,7 @@
 
 /*- Séparateur subtil entre deux sections consécutives */
 .ao3h-config-section + .ao3h-config-section {
-  padding-top: 2px;
+  padding-top: var(--ao3h-space-1);
 }
 
 /*- Groupe : regroupe des options avec bordure et fond */
@@ -1158,12 +1158,13 @@
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
-  row-gap: 5px;               /*- Plus serré que la grille principale */
+  row-gap: var(--ao3h-space-1);     /*- Plus serré que la grille principale — même valeur dans les 2 sens */
+  column-gap: var(--ao3h-space-1);
   align-items: start;
   border: 1px solid var(--ao3h-border);
   border-radius: var(--ao3h-radius-md);
   padding: var(--ao3h-space-3) var(--ao3h-space-4);
-  margin-bottom: 8px;
+  margin-bottom: var(--ao3h-space-2);
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
 }
 
@@ -1173,7 +1174,7 @@
 
 /*- Le label dans un groupe : espace sous lui avant les options */
 .ao3h-setting-group > .ao3h-setting-label {
-  margin-bottom: 8px;
+  margin-bottom: var(--ao3h-space-2);
 }
 
 /*- Les items dans un groupe : pas de marge (géré par row-gap) */
@@ -1229,7 +1230,7 @@
        .ao3h-config-section > div[id]:not(.ao3h-setting-item)):has(> .ao3h-setting-item) {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: var(--ao3h-space-6);
+  column-gap: var(--ao3h-space-2);
   row-gap: var(--ao3h-space-2);
   align-items: start;
 }
@@ -1326,7 +1327,7 @@
 */
 
 .ao3h-setting-item {
-  margin-bottom: 14px;        /*- Espace entre options (hors grille) */
+  margin-bottom: var(--ao3h-space-4);  /*- Espace entre options (hors grille), aligné sur la grille */
 }
 
 .ao3h-setting-item:last-child {
@@ -1347,19 +1348,20 @@
   font-size: var(--ao3h-description-size);   /*- Taille — surcharger via --ao3h-description-size */
   color: var(--ao3h-description-color);      /*- Couleur — surcharger via --ao3h-description-color */
   line-height: 1.5;
-  margin-top: 2px;
-  margin-bottom: 8px;
+  margin-top: var(--ao3h-space-1);
+  margin-bottom: var(--ao3h-space-2);
 }
 
 /*- Quand une description suit un item, l'item réduit son espace en bas */
 .ao3h-setting-item:has(+ .ao3h-setting-description) {
-  margin-bottom: 2px;
+  margin-bottom: var(--ao3h-space-1);
 }
 
-/*- Dans la grille : correction pour garder 4px entre l'item et sa description */
+/*- Dans la grille : correction pour garder --ao3h-space-1 entre l'item et sa description
+   (le row-gap de la grille vaut --ao3h-space-2 ; on le compense pour rester serré) */
 .ao3h-module-config-area.ao3h-expanded > .ao3h-setting-item + .ao3h-setting-description,
 .ao3h-config-section > .ao3h-setting-item + .ao3h-setting-description {
-  margin-top: -4px;
+  margin-top: calc(var(--ao3h-space-1) - var(--ao3h-space-2));
 }
 
 
@@ -1377,7 +1379,7 @@
   font-size: var(--ao3h-label-size);     /*- Taille — surcharger via --ao3h-label-size */
   font-weight: var(--ao3h-label-weight); /*- Graisse — surcharger via --ao3h-label-weight */
   color: var(--ao3h-label-color);        /*- Couleur — surcharger via --ao3h-label-color */
-  margin-bottom: 8px;
+  margin-bottom: var(--ao3h-space-2);
 }
 
 /*- Label dans un setting-item : espace plus généreux */
@@ -1405,7 +1407,7 @@
   font-size: var(--ao3h-size-xxs);
   font-weight: 400;
   color: var(--ao3h-text-hint);
-  margin-left: 4px;
+  margin-left: var(--ao3h-space-1);
 }
 
 
@@ -1422,7 +1424,7 @@
   display: flex;
   align-items: center;
   gap: var(--ao3h-control-gap);          /*- Espacement — surcharger via --ao3h-control-gap */
-  margin-bottom: 6px;
+  margin-bottom: var(--ao3h-space-2);
   font-size: var(--ao3h-control-size);   /*- Taille — surcharger via --ao3h-control-size */
   color: var(--ao3h-control-color);      /*- Couleur — surcharger via --ao3h-control-color */
 }
@@ -1435,7 +1437,7 @@
 .ao3h-setting-control label {
   display: inline-flex;
   align-items: center;
-  gap: 8px;                   /*- Espace entre l'input et son texte */
+  gap: var(--ao3h-space-2);   /*- Espace entre l'input et son texte */
   cursor: pointer;
   line-height: 1;
 }
@@ -1466,7 +1468,7 @@
 .ao3h-panel-box label:has(input[type="radio"]) {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--ao3h-space-2);
   line-height: 1;
 }
 
@@ -1475,7 +1477,7 @@
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 16px;
+  gap: var(--ao3h-space-2);  /*- Même espace en ligne et en colonne */
   margin-bottom: 0;
 }
 
@@ -1484,7 +1486,7 @@
 .ao3h-setting-control.ao3h-setting-control--radios-stacked {
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--ao3h-space-2);
   margin-bottom: 0;
 }
 
@@ -1492,7 +1494,7 @@
 .ao3h-setting-control.ao3h-setting-control--radios,
 .ao3h-setting-control.ao3h-radio-group {
   flex-wrap: wrap;
-  gap: 6px 16px;
+  gap: var(--ao3h-space-2);  /*- Même espace en ligne et en colonne */
   align-items: center;
   margin-bottom: 0;
 }
@@ -1502,7 +1504,7 @@
 .ao3h-setting-control.ao3h-radios-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 16px;
+  gap: var(--ao3h-space-2);  /*- Même espace en ligne et en colonne */
   align-items: start;
 }
 
@@ -1610,7 +1612,7 @@
 .ao3h-setting-hint {
   font-size: var(--ao3h-size-xxs);
   color: var(--ao3h-text-faint);
-  margin-top: 4px;
+  margin-top: var(--ao3h-space-1);
   line-height: 1.4;
 }
 
@@ -1666,7 +1668,7 @@
   order: 99;
   grid-column: 1 / -1;
   justify-content: flex-start;
-  margin-top: 10px;
+  margin-top: var(--ao3h-space-2);
 }
 
 /*- Exception : rangée import/export seule directement après un titre de section — pas de marge top
@@ -1682,7 +1684,7 @@
 
 /*- Section-actions dans n'importe quel contexte config */
 .ao3h-module-config-area .ao3h-section-actions {
-  margin-top: 10px;
+  margin-top: var(--ao3h-space-2);
 }
 
 /*- Bouton "Clear" : toujours poussé à droite dans sa rangée */
@@ -1695,7 +1697,7 @@
   order: 99;
   grid-column: 1 / -1;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: var(--ao3h-space-2);
 }
 
 
@@ -1715,7 +1717,7 @@
   font-family: Georgia, serif;
   font-weight: 400;
   color: var(--ao3h-title-color);        /*- Couleur — surcharger via --ao3h-title-color */
-  padding: var(--ao3h-space-5) 0 4px 0;
+  padding: var(--ao3h-space-5) 0 var(--ao3h-space-1) 0;
   margin: var(--ao3h-space-4) 0 var(--ao3h-space-4);
   border-top: 1px solid var(--ao3h-border-strong);  /*- Ligne séparatrice au-dessus */
 }
@@ -1724,7 +1726,7 @@
 .ao3h-config-section:first-child > .ao3h-config-section-title {
   border-top: none;
   margin-top: 0;
-  padding-top: 4px;
+  padding-top: var(--ao3h-space-1);
 }
 
 /*- Compteur à droite du titre — ex: "12 hidden" */
@@ -2015,9 +2017,9 @@
 .ao3h-config-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--ao3h-space-2);
   align-items: center;
-  padding-top: 8px;
+  padding-top: var(--ao3h-space-2);
   margin-top: var(--ao3h-space-2);
 }
 
@@ -2039,7 +2041,7 @@
 .ao3h-config-row > label {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--ao3h-space-1);
   cursor: pointer;
 }
 
@@ -2052,7 +2054,7 @@
 /*- Modifier : rangée sans espace en haut (option enfant) */
 .ao3h-config-row--tight {
   padding-top: 0;
-  margin-bottom: 4px;
+  margin-bottom: var(--ao3h-space-1);
 }
 .ao3h-config-row:has(+ .ao3h-config-row--tight) { margin-bottom: 2px; }
 
@@ -2075,7 +2077,7 @@
    Double-class pour battre ao3h-config-row:first-child et forcer le padding-top. */
 .ao3h-config-row.ao3h-config-row--child {
   padding-left: 32px;
-  padding-top: 8px;
+  padding-top: var(--ao3h-space-2);
   margin-top: 0;
 }
 
@@ -2090,31 +2092,39 @@
 */
 
 /*- Espace après un titre de section qui précède une row */
-.ao3h-config-section-title + .ao3h-config-row { margin-bottom: 8px; }
+.ao3h-config-section-title + .ao3h-config-row { margin-bottom: var(--ao3h-space-2); }
 
 /*- Espace avant une row d'actions qui suit un bloc de contenu */
 .ao3h-config-block + .ao3h-config-row--end { margin-top: var(--ao3h-space-4); }
 
 /*- Réduction d'espace pour sous-options liées (ao3h-indent) */
 .ao3h-setting-item + .ao3h-indent,
-.ao3h-config-block + .ao3h-indent { margin-top: -6px; }
+.ao3h-config-block + .ao3h-indent { margin-top: calc(var(--ao3h-space-2) - var(--ao3h-space-4)); }
 
 /*- Espace avant une row qui suit une description */
-.ao3h-setting-description + .ao3h-config-row { margin-top: 6px; }
+.ao3h-setting-description + .ao3h-config-row { margin-top: var(--ao3h-space-2); }
 
 /*- Espace avant un bloc qui suit une row */
 .ao3h-config-row + .ao3h-config-block,
-:has(> .ao3h-config-row:last-child) + .ao3h-config-block { margin-top: 12px; }
+:has(> .ao3h-config-row:last-child) + .ao3h-config-block { margin-top: var(--ao3h-space-3); }
 
 /*- Espace au-dessus des divs nommés qui suivent des toggles/rows */
 .ao3h-config-section > div[id]:not(.ao3h-setting-item):not(:first-child),
 .ao3h-module-config-area.ao3h-expanded > div[id]:not(.ao3h-setting-item):not(:first-child) {
-  padding-top: 10px;
+  padding-top: var(--ao3h-space-3);
 }
 
 /*- Espace avant une row qui suit un setting-item ou un control */
 .ao3h-setting-item + .ao3h-config-row,
 .ao3h-setting-control + .ao3h-config-row { margin-top: var(--ao3h-space-2); }
+
+/*- Rupture checkboxes ↔ radios : deux types de contrôles différents à la suite
+   sont visuellement deux "sections" distinctes, pas juste deux options de plus.
+   S'ajoute par-dessus le row-gap normal de la grille (pas une valeur totale). */
+.ao3h-setting-item:has(input[type="radio"]) + .ao3h-setting-item:has(input[type="checkbox"]),
+.ao3h-setting-item:has(input[type="checkbox"]) + .ao3h-setting-item:has(input[type="radio"]) {
+  margin-top: var(--ao3h-space-4);
+}
 
 /*- Séparateur vertical fin dans une rangée d'actions */
 .ao3h-config-separator {
@@ -2142,13 +2152,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 5px;
+  gap: var(--ao3h-space-1);
   min-height: 38px;
   padding: var(--ao3h-space-2);
   border: 1px solid var(--ao3h-border-input);
   border-radius: var(--ao3h-radius-lg);
   background: #fff;
-  margin-bottom: 8px;
+  margin-bottom: var(--ao3h-space-2);
 }
 
 
@@ -2170,7 +2180,7 @@
 .ao3h-checkbox-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--ao3h-space-2);
   font-size: var(--ao3h-size-xs);
   color: var(--ao3h-text-secondary);
   cursor: pointer;
@@ -2183,7 +2193,7 @@
 .ao3h-radio-label {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: var(--ao3h-space-2);
   font-size: var(--ao3h-size-xs);
   color: var(--ao3h-text-secondary);
   cursor: pointer;
@@ -2277,8 +2287,8 @@
 */
 
 .ao3h-config-footer {
-  margin-top: 6px;
-  padding-top: 8px;
+  margin-top: var(--ao3h-space-2);
+  padding-top: var(--ao3h-space-2);
   border-top: 1px solid var(--ao3h-border-medium);  /*- Ligne de séparation */
   display: flex;
   justify-content: flex-end;  /*- Boutons à droite par défaut */
@@ -2293,8 +2303,8 @@
   border: 1px solid #bbb;
   border-bottom-color: #aaa;
   border-radius: 0.25em;
-  padding: 6px 12px;
-  font-size: var(--ao3h-size-xs);
+  padding: var(--ao3h-space-1) var(--ao3h-space-3);
+  font-size: var(--ao3h-size-xxs);
   font-weight: 600;
   cursor: pointer;
   box-shadow: none;
@@ -2303,7 +2313,7 @@
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  height: 28px;
+  height: 24px;
   box-sizing: border-box;
 }
 .ao3h-config-save-btn:hover {
@@ -2321,8 +2331,8 @@
   border: 1px solid #bbb;
   border-bottom-color: #aaa;
   border-radius: 0.25em;
-  padding: 6px 12px;
-  font-size: var(--ao3h-size-xs);
+  padding: var(--ao3h-space-1) var(--ao3h-space-3);
+  font-size: var(--ao3h-size-xxs);
   font-weight: 400;
   cursor: pointer;
   box-shadow: none;
@@ -2331,7 +2341,7 @@
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  height: 28px;
+  height: 24px;
   box-sizing: border-box;
 }
 .ao3h-config-reset-btn:hover {
@@ -2401,12 +2411,12 @@
 
 /*- Boutons universels du panneau (Save & Close, Close) */
 .ao3h-panel-box .ao3h-panel-action-btn {
-  padding: 6px 12px;
+  padding: var(--ao3h-space-1) var(--ao3h-space-3);
   background: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
   border: 1px solid #bbb;
   border-bottom-color: #aaa;
   border-radius: 0.25em;
-  font-size: var(--ao3h-size-xs);
+  font-size: var(--ao3h-size-xxs);
   font-weight: 400;
   color: #444;
   box-shadow: none;
@@ -2416,7 +2426,7 @@
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  height: 28px;
+  height: 24px;
   box-sizing: border-box;
 }
 .ao3h-panel-box .ao3h-panel-action-btn:hover {
@@ -2590,6 +2600,7 @@
   color: #fff;
   border-radius: 12px;
   font-size: var(--ao3h-size-xxs);
+  cursor: default;  /*- Le texte n'est pas éditable/sélectionnable, pas de curseur I-beam */
 }
 
 .ao3h-chip button {
@@ -2612,16 +2623,63 @@
   color: #fff;
 }
 
-/*- Variante neutre (grise) — presets, keywords, labels */
+/*- Variante neutre (blanche) — presets, keywords, labels.
+   Reprend le skin ET les proportions de .ao3h-tag-chip (HideByTags)
+   pour que tous les tags du panel soient identiques, quel que soit
+   le module. Redéfinit gap/padding/bouton car .ao3h-chip (rouge)
+   garde ses propres proportions plus compactes. */
 .ao3h-chip--neutral {
-  background: #f0f0f0;
-  color: var(--ao3h-text-secondary);
-  border: 1px solid var(--ao3h-border-medium);
+  gap: 3px;
+  padding: 4px 8px 4px 12px;
+  background: #fff;
+  color: #555;
+  border: 1px solid #e6e8ee;
+  border-radius: 10px;
+  transition: border-color 0.12s, background 0.12s;
 }
-.ao3h-chip--neutral button { color: #aaa; }
+.ao3h-chip--neutral:hover {
+  background: #fff5f5;
+  border-color: #900;
+}
+.ao3h-chip--neutral button {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--ao3h-radius-sm);
+  color: #900;
+  opacity: 0.45;
+}
 .ao3h-chip--neutral button:hover {
   background: rgba(0,0,0,0.08);
   color: var(--ao3h-text-primary);
+  opacity: 1;
+}
+
+/*- Modificateur générique : chip "carrée" pour tout ce qui n'est PAS un tag
+   (notes, langues, presets…) — coins carrés + survol gris, par opposition
+   au style pilule/carte + survol rouge réservé aux vrais tags. */
+.ao3h-chip--square {
+  border-radius: var(--ao3h-radius-sm);
+  background: var(--ao3h-bg-subtle);
+  border-color: var(--ao3h-border-strong);
+  color: var(--ao3h-text-secondary);
+}
+.ao3h-chip--square:hover {
+  background: #eee;
+  border-color: #bbb;
+}
+.ao3h-chip--square button {
+  color: var(--ao3h-text-muted);
+}
+.ao3h-chip--square button:hover {
+  color: var(--ao3h-text-primary);
+}
+
+/*- Skip Works : presets de notes rapides. Ce ne sont PAS des tags
+   (pas de filtrage par mot-clé, juste du texte réutilisable pour la
+   note de masquage). */
+.ao3h-skipworks-preset-chip::before {
+  content: '📝';
+  font-size: var(--ao3h-size-xxs);
 }
 
 
@@ -2649,6 +2707,23 @@
 }
 .ao3h-tag-chips-card--empty { display: none; }
 
+/*- Quand la card enveloppe un .ao3h-chip-container (ex: Tags Display) :
+   la card gère déjà le padding/espacement, le container ne doit pas
+   en ajouter une deuxième couche par-dessus. */
+.ao3h-tag-chips-card > .ao3h-chip-container {
+  margin-top: 0;
+  padding: 0;
+}
+.ao3h-config-row + .ao3h-tag-chips-card,
+.ao3h-setting-control + .ao3h-tag-chips-card {
+  margin-top: var(--ao3h-space-2);
+}
+
+/*- Espace sous la card avant la description qui la suit (ex: langues) */
+.ao3h-tag-chips-card + .ao3h-setting-description {
+  margin-top: var(--ao3h-space-2);
+}
+
 .ao3h-tag-chip {
   display: inline-flex;
   align-items: center;
@@ -2662,6 +2737,7 @@
   white-space: nowrap;
   max-width: 160px;
   transition: border-color 0.12s, background 0.12s;
+  cursor: default;  /*- Le texte n'est pas éditable/sélectionnable, pas de curseur I-beam */
 }
 
 .ao3h-tag-chip > .ao3h-tag-chip-text {
@@ -2969,15 +3045,15 @@
 /*- Bouton circulaire (?) */
 .ao3h-help-btn {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   border: 1px solid var(--ao3h-border-strong);
   background: var(--ao3h-bg-subtle);
   color: #aaa;
-  font-size: 0.5625rem;
+  font-size: 0.4375rem;
   font-weight: 700;
   cursor: pointer;
   margin-left: 5px;
@@ -2986,7 +3062,7 @@
   top: -2px;
   flex-shrink: 0;
   line-height: 1;
-  padding: 0;
+  padding: 0 0 1px;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
