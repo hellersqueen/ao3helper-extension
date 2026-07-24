@@ -667,17 +667,16 @@
 }
 
 
-/*&&& 
+/*&&&
   ─────────────────────────────────────────────────────────────
       BARRE DE RECHERCHE GLOBALE
   ─────────────────────────────────────────────────────────────
       └─ La barre blanche juste sous les onglets.
          Permet de chercher dans tous les modules à la fois.
-         Apparaît à droite des boutons Enable/Disable All.
-  ───────────────────────────────────────────────────────────── 
+  ─────────────────────────────────────────────────────────────
 */
 
-/*- Barre complète : champ + boutons côte à côte */
+/*- Barre complète : juste le champ */
 .ao3h-global-search-wrapper {
   order: 2;
   padding: 8px 20px;
@@ -692,13 +691,6 @@
 /*- Le champ texte prend tout l'espace disponible */
 .ao3h-global-search-wrapper .ao3h-global-search-input {
   flex: 1;
-}
-
-/*- Les boutons Enable/Disable All à côté du champ */
-.ao3h-global-search-wrapper .ao3h-bulk-actions-buttons {
-  flex-shrink: 0;
-  display: flex;
-  gap: 6px;
 }
 
 /*- Champ de texte : styles de base */
@@ -862,7 +854,12 @@
   ───────────────────────────────────────────────────────────── 
 */
 
-.ao3h-module-quick-toggle {
+.ao3h-quick-enable-wrap {
+  /*- Renommé depuis .ao3h-module-quick-toggle : ce nom était capturé par le
+     sélecteur générique [class*="ao3h-"][class*="-toggle"] de components.css
+     (pensé pour les boutons ronds ▼ collapse/expand), qui lui appliquait un
+     fond blanc en pilule (border-radius:999px) derrière la checkbox carrée —
+     d'où le mélange rond/carré visible sur chaque ligne de module. */
   position: relative;   /*- Nécessaire pour la zone cliquable élargie */
   display: flex;
   align-items: center;
@@ -873,7 +870,7 @@
 }
 
 /*- Zone de clic élargie (+12px sur les côtés, 8px haut/bas) sans déborder du row */
-.ao3h-module-quick-toggle::before {
+.ao3h-quick-enable-wrap::before {
   content: '';
   position: absolute;
   inset: -8px -12px;
@@ -1803,6 +1800,39 @@
   flex: 1 1 12rem;
 }
 
+/*- Séparateur inline "trouver → remplacer" (règles de remplacement) */
+.ao3h-field-separator {
+  padding: 0 4px;
+  color: var(--ao3h-text-muted);
+}
+
+/*- Bascule visibilité pour les blocs d'options repliables (remplace style="display:none" inline) */
+.is-hidden { display: none; }
+
+/*- Modifier : autorise le retour à la ligne dans un setting-control à plusieurs champs */
+.ao3h-setting-control--wrap { flex-wrap: wrap; }
+
+/*- Liste à puces dans une description (remplace les <ul style="margin/padding"> inline) */
+.ao3h-config-list {
+  margin: 4px 0 0 16px;
+  padding: 0;
+}
+
+/*- État vide / erreur pour les listes chargées dynamiquement (remplace les <p style="color:..."> inline) */
+.ao3h-empty-state {
+  color: var(--ao3h-text-hint);
+  font-size: var(--ao3h-size-xs);
+  font-style: italic;
+  padding: 6px 0;
+  margin: 0;
+}
+.ao3h-error-state {
+  color: var(--ao3h-error, #c00);
+  font-size: var(--ao3h-size-xs);
+  padding: 6px 0;
+  margin: 0;
+}
+
 /*- Select dans les settings (taille et style de base) */
 .ao3h-setting-select {
   font-size: var(--ao3h-size-sm);
@@ -2369,14 +2399,7 @@
   color: var(--ao3h-text-primary) !important;
 }
 
-/*- Conteneur des boutons (flex avec espace entre eux) */
-.ao3h-bulk-actions-buttons {
-  display: none;
-  gap: 6px;
-  align-items: center;
-}
-
-/*- Boutons universels du panneau (Enable All, Disable All, Close) */
+/*- Boutons universels du panneau (Save & Close, Close) */
 .ao3h-panel-box .ao3h-panel-action-btn {
   padding: 6px 12px;
   background: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
@@ -2634,6 +2657,7 @@
   background: #fff;
   border: 1px solid #e6e8ee;
   border-radius: 10px;
+  color: #555;                     /*- Texte plus doux que --ao3h-text-primary (#333) */
   font-size: var(--ao3h-size-xxs);
   white-space: nowrap;
   max-width: 160px;
@@ -2938,7 +2962,7 @@
       └─ Petit bouton (?) à côté d'un label.
          Au clic, un tooltip flottant s'affiche avec
          l'explication du réglage.
-         Géré par : lib/ui/help-tooltips.js
+         Géré par : lib/ui/panel/help-tooltips.js
   ───────────────────────────────────────────────────────────── 
 */
 
@@ -3006,173 +3030,84 @@
 }
 
 
-/*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  PREVIEW PARITY OVERRIDES
-  The preview test intentionally tightens the panel's visual language.
-  Keep the real panel aligned with that rendering so both surfaces match.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*/
+/*?
+  ═══════════════════════════════════════════════════════════════════════
+    Interfaces riches — exceptions locales (voir docs/panel-config-style-guide.md)
+  ───────────────────────────────────────────────────────────────────────
+    Classes scopées à une config précise. Réutilisent les primitives
+    communes (ao3h-config-input, ao3h-field--*, ao3h-inline-btn) partout
+    où c'est possible ; le reste (mise en page du tableau/des chips) est
+    propre à l'interface et n'a pas d'équivalent générique.
+  ═══════════════════════════════════════════════════════════════════════
+*/
 
-.ao3h-panel-box {
-  font-family: 'Lucida Grande', 'Lucida Sans Unicode', Verdana, Helvetica, sans-serif;
+/*- keyboardShortcuts : tableau de référence des raccourcis */
+.ao3h-kb-shortcuts-table {
+  width: 100%;
+  font-size: var(--ao3h-size-xxs);
+  border-collapse: collapse;
+  margin-top: 4px;
+}
+.ao3h-kb-shortcuts-table th,
+.ao3h-kb-shortcuts-table td {
+  padding: 2px 6px;
+  text-align: left;
+}
+.ao3h-kb-shortcuts-table thead tr {
+  border-bottom: 1px solid var(--ao3h-border-medium, #e5e7eb);
+}
+.ao3h-kb-shortcuts-table .ao3h-config-input {
+  font-size: var(--ao3h-size-xxs);
 }
 
-.ao3h-panel-header {
-  background: #900 url("https://archiveofourown.org/images/skins/textures/tiles/red-ao3.png");
-  box-shadow: inset 0 -6px 10px rgba(0, 0, 0, 0.35),
-              1px 1px 3px -1px rgba(0, 0, 0, 0.25),
-              inset 0 -1px 0 rgba(0, 0, 0, 0.85);
+/*- filterManager : chips de bundles personnalisés */
+.ao3h-fm-bundle-row {
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+.ao3h-fm-bundle-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.ao3h-fm-bundle-name {
+  font-size: var(--ao3h-size-xs);
+}
+.ao3h-fm-bundle-tags {
+  font-size: var(--ao3h-size-xxs);
+  color: var(--ao3h-text-secondary);
+  word-break: break-word;
+  margin-top: 2px;
+}
+.ao3h-fm-bundle-delete {
+  flex-shrink: 0;
 }
 
-.ao3h-panel-title {
-  font-family: Georgia, serif;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+/*- mainNavigation : liste de résultats d'autocomplétion tag/fandom */
+.ao3h-mn-autocomplete-results {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
 }
 
-.ao3h-panel-close {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.75);
-  background: transparent;
-  padding: 4px 8px;
+/*- hideByTags : rangée "Add a tag / Group / New group name". Ces champs
+   n'avaient aucune règle de taille (classes ao3h-hbt-* jamais définies) —
+   un input/select sans min-width se refuse à rétrécir sous sa taille de
+   contenu dans un flex container, ce qui poussait la rangée hors du panel
+   au lieu de passer à la ligne (ao3h-config-row a pourtant flex-wrap). */
+.ao3h-hbt-tag-input,
+.ao3h-hbt-group-text {
+  flex: 1 1 140px;
+  min-width: 0;
 }
-
-.ao3h-panel-close:hover {
-  color: rgba(255, 255, 255, 1);
-  background: transparent;
+.ao3h-hbt-newgroup-input {
+  flex: 1 1 auto;
+  min-width: 0;
 }
-
-.ao3h-panel-tabs-row {
-  gap: 6px;
-  margin-bottom: 6px;
+/*- Widget réel affiché à la place du <select id="...-group"> (masqué en JS) */
+.ao3h-group-select {
+  flex: 0 1 160px;
+  min-width: 100px;
 }
-
-.ao3h-tab-btn {
-  border-radius: 4px;
-  font-size: 0.8125rem;
-}
-
-.ao3h-tab-btn.ao3h-tab-active {
-  color: #900;
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid #900;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.ao3h-global-search-wrapper {
-  padding: 8px 20px;
-  background: #fff;
-}
-
-.ao3h-bulk-actions-buttons {
-  display: none !important;
-}
-
-.ao3h-module-row {
-  padding: 8px 10px;
-}
-
-.ao3h-module-row:hover {
-  border-color: transparent;
-}
-
-.ao3h-module-row:hover .ao3h-module-name {
-  color: #900;
-}
-
-.ao3h-module-name {
-  font-family: Georgia, serif;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.ao3h-module-desc {
-  color: #767676;
-  font-size: 0.75rem;
-  padding-left: 8px;
-}
-
-.ao3h-tag-chip {
-  background: #fff;
-  border: 1px solid #e6e8ee;
-  border-radius: 10px;
-  color: #555;
-}
-
-.ao3h-tag-chip:hover {
-  background: #fff5f5;
-  border-color: #900;
-}
-
-.ao3h-panel-box input[type="checkbox"],
-.ao3h-panel-box input[type="radio"] {
-  accent-color: #900;
-}
-
-.ao3h-setting-group {
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.ao3h-config-input,
-.ao3h-inline-btn {
-  border-radius: 3px;
-}
-
-.ao3h-inline-btn:not(.ao3h-inline-btn--red):not(.ao3h-inline-btn--danger) {
-  background-image: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
-  border: 1px solid #bbb;
-  border-bottom-color: #aaa;
-  color: #444;
-  box-shadow: none;
-}
-
-.ao3h-inline-btn.ao3h-inline-btn--green {
-  background-image: linear-gradient(#f1f8e9 2%, #c8e6c9 95%, #a5d6a7 100%);
-  color: #2e7d32;
-}
-
-.ao3h-config-action-btn {
-  font-weight: normal;
-}
-
-.ao3h-inline-btn:not(.ao3h-inline-btn--red):not(.ao3h-inline-btn--danger):hover {
-  border-top-color: #999;
-  border-left-color: #999;
-  box-shadow: inset 2px 2px 2px #bbb;
-}
-
-.ao3h-footer-close,
-.ao3h-config-save-btn,
-.ao3h-config-reset-btn {
-  background: #eee;
-  background-image: linear-gradient(#fff 2%, #ddd 95%, #bbb 100%);
-  border: 1px solid #bbb;
-  border-bottom-color: #aaa;
-  border-radius: 0.25em;
-  color: #444;
-  box-shadow: none;
-}
-
-.ao3h-config-save-btn {
-  color: #900;
-  font-weight: 600;
-}
-
-.ao3h-footer-close:hover,
-.ao3h-config-save-btn:hover,
-.ao3h-config-reset-btn:hover {
-  color: #900;
-  border-top-color: #999;
-  border-left-color: #999;
-  box-shadow: inset 2px 2px 2px #bbb;
-}
-
-.ao3h-footer-close:hover {
-  color: #900;
-}
-
 
 /*?
   ═══════════════════════════════════════════════════════════════════════
